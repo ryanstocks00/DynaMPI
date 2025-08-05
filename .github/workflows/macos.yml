@@ -1,0 +1,32 @@
+---
+name: macOS
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+env:
+  CMAKE_CXX_STANDARD: 20
+  CMAKE_VERBOSE_MAKEFILE: ON
+jobs:
+  macos-clang:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        build-type: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure CMake on macOS
+        shell: bash
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+            -DDYNAMPI_BUILD_TESTS=ON \
+            -DDYNAMPI_BUILD_BENCHMARKS=ON
+      - name: Build on macOS
+        shell: bash
+        run: cmake --build build --config ${{ matrix.build-type }} --parallel
+      - name: Test on macOS
+        shell: bash
+        run: "cd build\nctest --output-on-failure --parallel -C ${{ matrix.build-type
+          }} "

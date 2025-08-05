@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <string>
 
 namespace dynampi {
@@ -15,11 +14,11 @@ static const std::string to_string() {
          std::to_string(patch);
 }
 
-static constexpr bool is_at_least(int major, int minor, int patch) {
-  return (version::major > major) ||
-         (version::major == major && version::minor > minor) ||
-         (version::major == major && version::minor == minor &&
-          version::patch >= patch);
+static constexpr bool is_at_least(int v_major, int v_minor, int v_patch) {
+  return (version::major > v_major) ||
+         (version::major == v_major && version::minor > v_minor) ||
+         (version::major == v_major && version::minor == v_minor &&
+          version::patch >= v_patch);
 }
 }; // namespace version
 

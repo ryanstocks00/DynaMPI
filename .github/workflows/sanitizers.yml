@@ -1,0 +1,42 @@
+---
+name: Sanitizers
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+env:
+  CMAKE_CXX_STANDARD: 20
+  CMAKE_VERBOSE_MAKEFILE: ON
+jobs:
+  linux-debug-sanitizers:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sanitizer: [address, undefined]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install GCC
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14
+      - name: Configure CMake with ${{ matrix.sanitizer }} sanitizer
+        shell: bash
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=gcc-14 \
+            -DCMAKE_CXX_COMPILER=g++-14 \
+            -DDYNAMPI_BUILD_TESTS=ON \
+            -DDYNAMPI_BUILD_BENCHMARKS=ON \
+            -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.sanitizer }} -fno-omit-frame-pointer" \
+            -DCMAKE_C_FLAGS="-fsanitize=${{ matrix.sanitizer }} -fno-omit-frame-pointer" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=${{ matrix.sanitizer }}" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-fsanitize=${{ matrix.sanitizer }}"
+      - name: Build with ${{ matrix.sanitizer }} sanitizer
+        shell: bash
+        run: cmake --build build --config Debug --parallel
+      - name: Test with ${{ matrix.sanitizer }} sanitizer
+        shell: bash
+        run: "cd build\nctest --output-on-failure --parallel -C Debug "

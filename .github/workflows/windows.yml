@@ -1,0 +1,66 @@
+---
+name: Windows
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+env:
+  CMAKE_CXX_STANDARD: 20
+  CMAKE_VERBOSE_MAKEFILE: ON
+jobs:
+  windows-msvc:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        build-type: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure CMake with MSVC
+        shell: pwsh
+        run: |
+          cmake -B build `
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} `
+            -DDYNAMPI_BUILD_TESTS=ON `
+            -DDYNAMPI_BUILD_BENCHMARKS=ON
+      - name: Build with MSVC
+        shell: pwsh
+        run: cmake --build build --config ${{ matrix.build-type }} --parallel
+      - name: Test with MSVC
+        shell: pwsh
+        run: |
+          cd build
+          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
+  windows-mingw:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        build-type: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MinGW-w64
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+      - name: Install MinGW-w64 GCC
+        shell: msys2 {0}
+        run: |
+          pacman -S --noconfirm mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-make
+      - name: Configure CMake with MinGW-w64
+        shell: msys2 {0}
+        run: |
+          cmake -B build \
+            -G "MinGW Makefiles" \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_CXX_COMPILER=g++ \
+            -DDYNAMPI_BUILD_TESTS=ON \
+            -DDYNAMPI_BUILD_BENCHMARKS=ON
+      - name: Build with MinGW-w64
+        shell: msys2 {0}
+        run: cmake --build build --config ${{ matrix.build-type }} --parallel
+      - name: Test with MinGW-w64
+        shell: msys2 {0}
+        run: "cd build\nctest --output-on-failure --parallel -C ${{ matrix.build-type
+          }} "

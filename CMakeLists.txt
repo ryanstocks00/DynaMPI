@@ -28,7 +28,11 @@ target_compile_definitions(
             DYNAMPI_VERSION_MINOR=${PROJECT_VERSION_MINOR}
             DYNAMPI_VERSION_PATCH=${PROJECT_VERSION_PATCH})
 
-add_compile_options("-Wall;-Wextra;-Wpedantic;-Werror")
+if(MSVC)
+  add_compile_options(/W4 /WX)
+else()
+  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+endif()
 
 if(DYNAMPI_BUILD_TESTS)
   enable_testing()

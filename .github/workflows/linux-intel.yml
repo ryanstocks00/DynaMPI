@@ -1,0 +1,46 @@
+---
+name: Linux Intel
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+env:
+  CMAKE_CXX_STANDARD: 20
+  CMAKE_VERBOSE_MAKEFILE: ON
+jobs:
+  linux-intel:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build-type: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Intel oneAPI
+        shell: bash
+        run: |
+          wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+          | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg]\
+                https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+          sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
+      - name: Configure CMake with Intel
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+            -DCMAKE_C_COMPILER=icx \
+            -DCMAKE_CXX_COMPILER=icpx \
+            -DDYNAMPI_BUILD_TESTS=ON \
+            -DDYNAMPI_BUILD_BENCHMARKS=ON
+      - name: Build with Intel
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          cmake --build build --config ${{ matrix.build-type }} --parallel
+      - name: Test with Intel
+        shell: bash
+        run: "source /opt/intel/oneapi/setvars.sh\ncd build\nctest --output-on-failure
+          --parallel -C ${{ matrix.build-type }} "
