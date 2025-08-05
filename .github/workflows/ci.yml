@@ -1,0 +1,222 @@
+---
+name: CI
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+env:
+  CMAKE_CXX_STANDARD: 20
+  CMAKE_VERBOSE_MAKEFILE: ON
+jobs:
+  # Linux with GCC
+  linux-gcc:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        gcc-version: [11, 12, 13, 14]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install GCC ${{ matrix.gcc-version }}
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-${{ matrix.gcc-version }}
+          echo "CC=gcc-${{ matrix.gcc-version }}" >> $GITHUB_ENV
+          echo "CXX=g++-${{ matrix.gcc-version }}" >> $GITHUB_ENV
+      - name: Configure CMake
+        shell: bash
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=$CC \
+            -DCMAKE_CXX_COMPILER=$CXX \
+            -DDYNAMPI_BUILD_TESTS=ON \
+            -DDYNAMPI_BUILD_BENCHMARKS=ON
+      - name: Build
+        shell: bash
+        run: cmake --build build --config Release --parallel
+      - name: Test
+        shell: bash
+        run: |
+          cd build
+          ctest --output-on-failure --parallel
+  # Linux with Clang
+  linux-clang:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        clang-version: [14, 15, 16, 17, 18]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Clang ${{ matrix.clang-version }}
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang-${{ matrix.clang-version }}\
+            libc++-${{ matrix.clang-version }}-dev\
+            libc++abi-${{ matrix.clang-version }}-dev
+          echo "CC=clang-${{ matrix.clang-version }}" >> $GITHUB_ENV
+          echo "CXX=clang++-${{ matrix.clang-version }}" >> $GITHUB_ENV
+      - name: Configure CMake
+        shell: bash
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=$CC \
+            -DCMAKE_CXX_COMPILER=$CXX \
+            -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
+            -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++" \
+            -DDYNAMPI_BUILD_TESTS=ON \
+            -DDYNAMPI_BUILD_BENCHMARKS=ON
+      - name: Build
+        shell: bash
+        run: cmake --build build --config Release --parallel
+      - name: Test
+        shell: bash
+        run: |
+          cd build
+          ctest --output-on-failure --parallel
+  # Linux with Intel oneAPI
+  linux-intel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Intel oneAPI
+        shell: bash
+        run: |
+          wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+          | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg]\
+                https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+          sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
+      - name: Configure CMake with Intel
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=icx \
+            -DCMAKE_CXX_COMPILER=icpx \
+            -DDYNAMPI_BUILD_TESTS=ON \
+            -DDYNAMPI_BUILD_BENCHMARKS=ON
+      - name: Build with Intel
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          cmake --build build --config Release --parallel
+      - name: Test with Intel
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          cd build
+          ctest --output-on-failure --parallel
+  # Windows with MSVC
+  windows-msvc:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure CMake with MSVC
+        shell: pwsh
+        run: |
+          cmake -B build `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DDYNAMPI_BUILD_TESTS=ON `
+            -DDYNAMPI_BUILD_BENCHMARKS=ON
+      - name: Build with MSVC
+        shell: pwsh
+        run: cmake --build build --config Release --parallel
+      - name: Test with MSVC
+        shell: pwsh
+        run: |
+          cd build
+          ctest --output-on-failure --parallel -C Release
+  # Windows with MinGW-w64 (GCC for Windows)
+  windows-mingw:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MinGW-w64
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+      - name: Install MinGW-w64 GCC
+        shell: msys2 {0}
+        run: |
+          pacman -S --noconfirm mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-make
+      - name: Configure CMake with MinGW-w64
+        shell: msys2 {0}
+        run: |
+          cmake -B build \
+            -G "MinGW Makefiles" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_CXX_COMPILER=g++ \
+            -DDYNAMPI_BUILD_TESTS=ON \
+            -DDYNAMPI_BUILD_BENCHMARKS=ON
+      - name: Build with MinGW-w64
+        shell: msys2 {0}
+        run: cmake --build build --config Release --parallel
+      - name: Test with MinGW-w64
+        shell: msys2 {0}
+        run: |
+          cd build
+          ctest --output-on-failure --parallel
+  # macOS with Clang
+  macos-clang:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure CMake on macOS
+        shell: bash
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DDYNAMPI_BUILD_TESTS=ON \
+            -DDYNAMPI_BUILD_BENCHMARKS=ON
+      - name: Build on macOS
+        shell: bash
+        run: cmake --build build --config Release --parallel
+      - name: Test on macOS
+        shell: bash
+        run: |
+          cd build
+          ctest --output-on-failure --parallel
+  # Debug build with sanitizers
+  linux-debug-sanitizers:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sanitizer: [address, undefined]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install GCC
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14
+      - name: Configure CMake with ${{ matrix.sanitizer }} sanitizer
+        shell: bash
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=gcc-14 \
+            -DCMAKE_CXX_COMPILER=g++-14 \
+            -DDYNAMPI_BUILD_TESTS=ON \
+            -DDYNAMPI_BUILD_BENCHMARKS=ON \
+            -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.sanitizer }} -fno-omit-frame-pointer" \
+            -DCMAKE_C_FLAGS="-fsanitize=${{ matrix.sanitizer }} -fno-omit-frame-pointer" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=${{ matrix.sanitizer }}" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-fsanitize=${{ matrix.sanitizer }}"
+      - name: Build with ${{ matrix.sanitizer }} sanitizer
+        shell: bash
+        run: cmake --build build --config Debug --parallel
+      - name: Test with ${{ matrix.sanitizer }} sanitizer
+        shell: bash
+        run: |
+          cd build
+          ctest --output-on-failure --parallel -C Debug
