@@ -28,6 +28,8 @@ target_compile_definitions(
             DYNAMPI_VERSION_MINOR=${PROJECT_VERSION_MINOR}
             DYNAMPI_VERSION_PATCH=${PROJECT_VERSION_PATCH})
 
+add_compile_options("-Wall;-Wextra;-Wpedantic;-Werror")
+
 if(DYNAMPI_BUILD_TESTS)
   enable_testing()
   add_subdirectory(test)
