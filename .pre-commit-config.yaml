@@ -32,3 +32,25 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-case-conflict
       - id: mixed-line-ending
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=100']
+      - id: check-json
+      - id: check-yaml
+      - id: check-toml
+      - id: name-tests-test
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.19.0
+    hooks:
+      - id: typos
+        args: ['--write-changes']
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint
+        args: ['--fix']
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.20.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
