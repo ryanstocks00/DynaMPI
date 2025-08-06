@@ -22,6 +22,16 @@ FetchContent_MakeAvailable(googletest)
 include(GoogleTest)
 
 # --------------------------------------------------------------------
+# Check if using Clang and add appropriate flags for GoogleTest
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # Clang has stricter inline optimization that can cause issues with GoogleTest
+  add_compile_options(-Wno-error=inline)
+  message(
+    STATUS
+      "Clang detected, added -Wno-error=inline to suppress GoogleTest warnings")
+endif()
+
+# --------------------------------------------------------------------
 # Create test executables from directories using glob
 function(create_test target src_dir link_lib)
   file(GLOB test_src CONFIGURE_DEPENDS "${src_dir}/*.cpp")

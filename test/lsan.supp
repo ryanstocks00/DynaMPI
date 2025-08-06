@@ -1,0 +1,7 @@
+leak:ompi_op_base_op_select
+leak:ompi_mpi_init
+leak:ompi_mpi_finalize
+leak:orte_finalize
+leak:libevent_core
+leak:event_base_loop
+leak:strdup

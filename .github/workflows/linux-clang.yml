@@ -25,14 +25,16 @@ jobs:
             clang-${{ matrix.clang-version }} \
             libc++-${{ matrix.clang-version }}-dev \
             libc++abi-${{ matrix.clang-version }}-dev
-      - name: Install MPI (OpenMPI, MPICH, IntelMPI)
+          echo "CC=clang-${{ matrix.clang-version }}" >> $GITHUB_ENV
+          echo "CXX=clang++-${{ matrix.clang-version }}" >> $GITHUB_ENV
+      - name: Install MPI
         run: |
           case "${{ matrix.clang-version }}" in
-            14|15)
+            14)
               sudo apt-get install -y libopenmpi-dev openmpi-bin
               echo "MPI_TYPE=OpenMPI" >> $GITHUB_ENV
               ;;
-            16|17)
+            15|16|17)
               sudo apt-get install -y libmpich-dev mpich
               echo "MPI_TYPE=MPICH" >> $GITHUB_ENV
               ;;
@@ -40,8 +42,8 @@ jobs:
               wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
                 | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
               echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] \
-                https://apt.repos.intel.com/oneapi all main" \
-                | sudo tee /etc/apt/sources.list.d/oneAPI.list
+                https://apt.repos.intel.com/oneapi all main" | \
+                sudo tee /etc/apt/sources.list.d/oneAPI.list
               sudo apt-get update
               sudo apt-get install -y intel-oneapi-mpi-devel
               echo "MPI_TYPE=IntelMPI" >> $GITHUB_ENV
@@ -49,44 +51,41 @@ jobs:
           esac
       - name: Configure CMake
         run: |
-          export CC=clang-${{ matrix.clang-version }}
-          export CXX=clang++-${{ matrix.clang-version }}
+          if [[ "${{ matrix.clang-version }}" -eq 18 ]]; then
+            source /opt/intel/oneapi/setvars.sh
+          fi
 
-          case "${{ matrix.clang-version }}" in
-            18)
-              source /opt/intel/oneapi/setvars.sh
-              export I_MPI_CC=$CC
-              export I_MPI_CXX=$CXX
-              ;;
-            16|17)
-              # MPICH needs explicit compiler overrides
-              export MPICH_CC=$CC
-              export MPICH_CXX=$CXX
-              ;;
-          esac
+          echo "MPI_TYPE: $MPI_TYPE"
+          echo "CXX: $CXX"
 
-          CMAKE_ARGS=(
-            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
-            -DCMAKE_C_COMPILER=$CC
-            -DCMAKE_CXX_COMPILER=$CXX
-            -DMPI_C_COMPILER=$CC
-            -DMPI_CXX_COMPILER=$CXX
-            -DDYNAMPI_BUILD_TESTS=ON
-            -DDYNAMPI_BUILD_BENCHMARKS=ON
-            -DCMAKE_CXX_FLAGS="-stdlib=libc++"
-            -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++"
-            -DCMAKE_MODULE_LINKER_FLAGS="-stdlib=libc++"
-          )
+          CMAKE_ARGS="-DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+            -DCMAKE_C_COMPILER=$CC \
+            -DCMAKE_CXX_COMPILER=$CXX \
+            -DDYNAMPI_BUILD_TESTS=ON \
+            -DDYNAMPI_BUILD_BENCHMARKS=ON \
+            -DMPI_C_COMPILER=$CC \
+            -DMPI_CXX_COMPILER=$CXX"
 
-          echo "Using Clang ${CC} with MPI: $MPI_TYPE"
-          cmake -B build -S . "${CMAKE_ARGS[@]}"
+          # Only IntelMPI supports libc++ reliably
+          if [[ "$MPI_TYPE" == "IntelMPI" ]]; then
+            CMAKE_ARGS="$CMAKE_ARGS \
+              -DCMAKE_CXX_FLAGS='-stdlib=libc++' \
+              -DCMAKE_EXE_LINKER_FLAGS='-stdlib=libc++' \
+              -DCMAKE_MODULE_LINKER_FLAGS='-stdlib=libc++'"
+          fi
+
+          eval "cmake -B build $CMAKE_ARGS"
       - name: Build
         run: |
-          [[ "${{ matrix.clang-version }}" -eq 18 ]] && source /opt/intel/oneapi/setvars.sh
+          if [[ "${{ matrix.clang-version }}" -eq 18 ]]; then
+            source /opt/intel/oneapi/setvars.sh
+          fi
           cmake --build build --config ${{ matrix.build-type }} --parallel
-      - name: Run Tests
+      - name: Test
         run: |
-          [[ "${{ matrix.clang-version }}" -eq 18 ]] && source /opt/intel/oneapi/setvars.sh
+          if [[ "${{ matrix.clang-version }}" -eq 18 ]]; then
+            source /opt/intel/oneapi/setvars.sh
+          fi
           cd build
-          echo "Running tests with $MPI_TYPE"
+          echo "Testing with $MPI_TYPE"
           ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
