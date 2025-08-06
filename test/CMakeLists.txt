@@ -48,7 +48,7 @@ if(MPIEXEC_EXECUTABLE)
   string(REGEX MATCH "Intel.*MPI" IS_INTEL "${MPI_VERSION_OUTPUT}")
   string(REGEX MATCH "Microsoft MPI" IS_MICROSOFT "${MPI_VERSION_OUTPUT}")
 
-  if(IS_OPENMPI OR IS_MPICH)
+  if(IS_OPENMPI)
     set(MPI_OVERSUBSCRIBE_FLAG "--oversubscribe")
     message(STATUS "Detected MPI implementation with oversubscribe support")
   else()
