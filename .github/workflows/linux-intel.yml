@@ -24,7 +24,8 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg]\
                 https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
-          sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
+          sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic intel-oneapi-mpi-devel
+          echo "MPI_TYPE=Intel MPI" >> $GITHUB_ENV
       - name: Configure CMake with Intel
         shell: bash
         run: |
@@ -42,5 +43,8 @@ jobs:
           cmake --build build --config ${{ matrix.build-type }} --parallel
       - name: Test with Intel
         shell: bash
-        run: "source /opt/intel/oneapi/setvars.sh\ncd build\nctest --output-on-failure
-          --parallel -C ${{ matrix.build-type }} "
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          cd build
+          echo "Testing with $MPI_TYPE"
+          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}

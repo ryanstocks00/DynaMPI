@@ -1,13 +1,13 @@
 ---
 name: Windows
-on:
+"on":
   push:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
 env:
   CMAKE_CXX_STANDARD: 20
-  CMAKE_VERBOSE_MAKEFILE: ON
+  CMAKE_VERBOSE_MAKEFILE: "ON"
 jobs:
   windows-msvc:
     runs-on: windows-latest
@@ -16,11 +16,48 @@ jobs:
         build-type: [Debug, Release]
     steps:
       - uses: actions/checkout@v4
+      - name: Install MS-MPI manually
+        shell: pwsh
+        run: |
+          # Download and install Microsoft MPI runtime
+          $mpiRuntimeUrl = "https://download.microsoft.com/download/a/5/2/" +
+            "a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisetup.exe"
+          $mpiSdkUrl = "https://download.microsoft.com/download/a/5/2/a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisdk.msi"
+
+          Write-Host "Downloading MS-MPI Runtime..."
+          Invoke-WebRequest -Uri $mpiRuntimeUrl -OutFile "msmpisetup.exe"
+          Write-Host "Installing MS-MPI Runtime..."
+          Start-Process -FilePath "msmpisetup.exe" -ArgumentList "-unattend" -Wait
+
+          Write-Host "Downloading MS-MPI SDK..."
+          Invoke-WebRequest -Uri $mpiSdkUrl -OutFile "msmpisdk.msi"
+          Write-Host "Installing MS-MPI SDK..."
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/i", "msmpisdk.msi", "/quiet" -Wait
+
+          # Refresh environment and verify installation
+          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") +
+            ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
+          $env:MSMPI_BIN = [System.Environment]::GetEnvironmentVariable("MSMPI_BIN","Machine")
+          $env:MSMPI_INC = [System.Environment]::GetEnvironmentVariable("MSMPI_INC","Machine")
+          $env:MSMPI_LIB64 = [System.Environment]::GetEnvironmentVariable("MSMPI_LIB64","Machine")
+          $env:MSMPI_LIB32 = [System.Environment]::GetEnvironmentVariable("MSMPI_LIB32","Machine")
+          mpiexec.exe -help
+          echo "MPI_TYPE=Microsoft MPI" >> $env:GITHUB_ENV
       - name: Configure CMake with MSVC
         shell: pwsh
         run: |
+          # Debug MS-MPI environment variables
+          Write-Host "MSMPI_BIN: $env:MSMPI_BIN"
+          Write-Host "MSMPI_INC: $env:MSMPI_INC"
+          Write-Host "MSMPI_LIB64: $env:MSMPI_LIB64"
+          Write-Host "MSMPI_LIB32: $env:MSMPI_LIB32"
+
+          # Configure CMake with MS-MPI paths
           cmake -B build `
             -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} `
+            -DMPI_CXX_INCLUDE_PATH="$env:MSMPI_INC" `
+            -DMPI_CXX_LIBRARIES="$env:MSMPI_LIB64\msmpi.lib" `
+            -DMPIEXEC_EXECUTABLE="$env:MSMPI_BIN\mpiexec.exe" `
             -DDYNAMPI_BUILD_TESTS=ON `
             -DDYNAMPI_BUILD_BENCHMARKS=ON
       - name: Build with MSVC
@@ -30,6 +67,7 @@ jobs:
         shell: pwsh
         run: |
           cd build
+          Write-Host "Testing with $env:MPI_TYPE"
           ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
   windows-mingw:
     runs-on: windows-latest
@@ -43,18 +81,59 @@ jobs:
         with:
           msystem: MINGW64
           update: true
-      - name: Install MinGW-w64 GCC
+      - name: Install MinGW-w64 GCC and MS-MPI
         shell: msys2 {0}
         run: |
-          pacman -S --noconfirm mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-make
+          pacman -S --noconfirm mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-make mingw-w64-x86_64-msmpi
+          echo "MPI_TYPE=Microsoft MPI (MinGW)" >> $GITHUB_ENV
+      - name: Install MS-MPI Runtime for mpiexec
+        shell: pwsh
+        run: |
+          # Download and install Microsoft MPI runtime for mpiexec.exe
+          $mpiRuntimeUrl = "https://download.microsoft.com/download/a/5/2/" +
+            "a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisetup.exe"
+          Write-Host "Downloading MS-MPI Runtime..."
+          Invoke-WebRequest -Uri $mpiRuntimeUrl -OutFile "msmpisetup.exe"
+          Write-Host "Installing MS-MPI Runtime..."
+          Start-Process -FilePath "msmpisetup.exe" -ArgumentList "-unattend" -Wait
+
+          # Refresh PATH to include MS-MPI binaries
+          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") +
+            ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
       - name: Configure CMake with MinGW-w64
         shell: msys2 {0}
         run: |
+          # Add Windows PATH to MSYS2 PATH to find mpiexec.exe
+          export PATH="$PATH:/c/Program Files/Microsoft MPI/Bin"
+
+          # Set MPI paths for CMake
+          export MPIEXEC_EXECUTABLE=$(which mpiexec.exe || echo "/c/Program Files/Microsoft MPI/Bin/mpiexec.exe")
+          export MPI_HOME=/mingw64
+          export MPI_C_INCLUDE_PATH=/mingw64/include
+          export MPI_CXX_INCLUDE_PATH=/mingw64/include
+          export MPI_C_LIBRARIES=/mingw64/lib/libmsmpi.a
+          export MPI_CXX_LIBRARIES=/mingw64/lib/libmsmpi.a
+
+          echo "MPIEXEC_EXECUTABLE: $MPIEXEC_EXECUTABLE"
+          echo "MPI_HOME: $MPI_HOME"
+          echo "MPI_C_INCLUDE_PATH: $MPI_C_INCLUDE_PATH"
+          echo "MPI_C_LIBRARIES: $MPI_C_LIBRARIES"
+
+          # Verify MPI components
+          ls -la /mingw64/include/mpi.h || echo "mpi.h not found"
+          ls -la /mingw64/lib/libmsmpi.a || echo "libmsmpi.a not found"
+          "$MPIEXEC_EXECUTABLE" --version || echo "mpiexec test failed"
+
           cmake -B build \
             -G "MinGW Makefiles" \
             -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
             -DCMAKE_C_COMPILER=gcc \
             -DCMAKE_CXX_COMPILER=g++ \
+            -DMPIEXEC_EXECUTABLE="$MPIEXEC_EXECUTABLE" \
+            -DMPI_C_INCLUDE_PATH="$MPI_C_INCLUDE_PATH" \
+            -DMPI_CXX_INCLUDE_PATH="$MPI_CXX_INCLUDE_PATH" \
+            -DMPI_C_LIBRARIES="$MPI_C_LIBRARIES" \
+            -DMPI_CXX_LIBRARIES="$MPI_CXX_LIBRARIES" \
             -DDYNAMPI_BUILD_TESTS=ON \
             -DDYNAMPI_BUILD_BENCHMARKS=ON
       - name: Build with MinGW-w64
@@ -62,5 +141,7 @@ jobs:
         run: cmake --build build --config ${{ matrix.build-type }} --parallel
       - name: Test with MinGW-w64
         shell: msys2 {0}
-        run: "cd build\nctest --output-on-failure --parallel -C ${{ matrix.build-type
-          }} "
+        run: |
+          cd build
+          echo "Testing with $MPI_TYPE"
+          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}

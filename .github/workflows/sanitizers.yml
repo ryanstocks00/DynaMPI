@@ -16,11 +16,12 @@ jobs:
         sanitizer: [address, undefined]
     steps:
       - uses: actions/checkout@v4
-      - name: Install GCC
+      - name: Install GCC and OpenMPI
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++-14
+          sudo apt-get install -y g++-14 libopenmpi-dev openmpi-bin
+          echo "MPI_TYPE=OpenMPI" >> $GITHUB_ENV
       - name: Configure CMake with ${{ matrix.sanitizer }} sanitizer
         shell: bash
         run: |
@@ -39,4 +40,7 @@ jobs:
         run: cmake --build build --config Debug --parallel
       - name: Test with ${{ matrix.sanitizer }} sanitizer
         shell: bash
-        run: "cd build\nctest --output-on-failure --parallel -C Debug "
+        run: |
+          cd build
+          echo "Testing with $MPI_TYPE and ${{ matrix.sanitizer }} sanitizer"
+          ctest --output-on-failure --parallel -C Debug

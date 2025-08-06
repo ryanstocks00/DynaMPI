@@ -18,6 +18,27 @@ option(DYNAMPI_BUILD_TESTS "Build tests for DynaMPI" ${IS_BASE_PROJECT})
 option(DYNAMPI_BUILD_BENCHMARKS "Build benchmarks for DynaMPI"
        ${IS_BASE_PROJECT})
 
+execute_process(
+  COMMAND git rev-parse HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+# Check for uncommitted changes
+execute_process(
+  COMMAND git diff-index --quiet HEAD --
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  RESULT_VARIABLE GIT_DIRTY)
+
+# Append '-dirty' if there are changes
+if(NOT GIT_DIRTY EQUAL 0)
+  set(GIT_COMMIT_HASH "${GIT_COMMIT_HASH}-dirty")
+endif()
+
+add_definitions(-DDYNAMPI_COMMIT_HASH="${GIT_COMMIT_HASH}")
+
+find_package(MPI REQUIRED)
+
 add_library(dynampi INTERFACE)
 target_include_directories(
   dynampi INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -27,6 +48,7 @@ target_compile_definitions(
   INTERFACE DYNAMPI_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
             DYNAMPI_VERSION_MINOR=${PROJECT_VERSION_MINOR}
             DYNAMPI_VERSION_PATCH=${PROJECT_VERSION_PATCH})
+target_link_libraries(dynampi INTERFACE MPI::MPI_CXX)
 
 if(MSVC)
   add_compile_options(/W4 /WX)

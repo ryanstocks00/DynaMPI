@@ -16,6 +16,11 @@ jobs:
         build-type: [Debug, Release]
     steps:
       - uses: actions/checkout@v4
+      - name: Install OpenMPI on macOS
+        shell: bash
+        run: |
+          brew install open-mpi
+          echo "MPI_TYPE=OpenMPI" >> $GITHUB_ENV
       - name: Configure CMake on macOS
         shell: bash
         run: |
@@ -28,5 +33,7 @@ jobs:
         run: cmake --build build --config ${{ matrix.build-type }} --parallel
       - name: Test on macOS
         shell: bash
-        run: "cd build\nctest --output-on-failure --parallel -C ${{ matrix.build-type
-          }} "
+        run: |
+          cd build
+          echo "Testing with $MPI_TYPE"
+          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
