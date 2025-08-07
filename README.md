@@ -1,4 +1,9 @@
-# DynaMP0
+<!--
+  SPDX-FileCopyrightText: 2025 Ryan Stocks <ryan.stocks00@gmail.com>
+  SPDX-License-Identifier: MIT
+ -->
+
+# DynaMPI
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/github/ryanstocks00/dynampi/graph/badge.svg?token=S65RFJ3FCX)](https://codecov.io/github/ryanstocks00/dynampi)

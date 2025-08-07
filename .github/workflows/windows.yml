@@ -1,5 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Ryan Stocks <ryan.stocks00@gmail.com>
+# SPDX-License-Identifier: MIT
 ---
-name: Windows CI
+name: Windows
 on:
   push:
     branches: [main, develop]
@@ -59,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install MinGW & Dependencies
-        uses: msys2/setup-msys2@v2.28.0
+        uses: msys2/setup-msys2@40677d36a502eb2cf0fb808cc9dec31bf6152638
         with:
           msystem: MINGW64
           update: true

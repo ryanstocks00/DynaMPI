@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2025 Ryan Stocks <ryan.stocks00@gmail.com>
+ * SPDX-License-Identifier: MIT
+ */
+
 #pragma once
 
 #include <string_view>
