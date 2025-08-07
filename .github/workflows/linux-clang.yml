@@ -22,6 +22,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            cmake \
             clang-${{ matrix.clang-version }} \
             libc++-${{ matrix.clang-version }}-dev \
             libc++abi-${{ matrix.clang-version }}-dev
@@ -30,13 +31,14 @@ jobs:
       - name: Install MPI
         run: |
           case "${{ matrix.clang-version }}" in
-            14)
+            14|15)
               sudo apt-get install -y libopenmpi-dev openmpi-bin
               echo "MPI_TYPE=OpenMPI" >> $GITHUB_ENV
               ;;
-            15|16|17)
+            16|17)
               sudo apt-get install -y libmpich-dev mpich
               echo "MPI_TYPE=MPICH" >> $GITHUB_ENV
+              echo "USE_LIBCXX=OFF" >> $GITHUB_ENV
               ;;
             18)
               wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
@@ -56,23 +58,33 @@ jobs:
           fi
 
           echo "MPI_TYPE: $MPI_TYPE"
+          echo "MPI_HOME: $MPI_HOME"
+          echo "CC: $CC"
           echo "CXX: $CXX"
+
+          if [ "$MPI_TYPE" == "MPICH" ]; then
+            export MPICH_CC=$CC
+            export MPICH_CXX=$CXX
+            export CC=mpicc
+            export CXX=mpicxx
+          fi
 
           CMAKE_ARGS="-DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
             -DCMAKE_C_COMPILER=$CC \
             -DCMAKE_CXX_COMPILER=$CXX \
             -DDYNAMPI_BUILD_TESTS=ON \
-            -DDYNAMPI_BUILD_BENCHMARKS=ON \
-            -DMPI_C_COMPILER=$CC \
-            -DMPI_CXX_COMPILER=$CXX"
+            -DDYNAMPI_BUILD_BENCHMARKS=ON"
 
-          # Only IntelMPI supports libc++ reliably
-          if [[ "$MPI_TYPE" == "IntelMPI" ]]; then
+          if [ "$MPI_TYPE" == "MPICH" ]; then
+            CMAKE_ARGS="$CMAKE_ARGS -DMPI_C_COMPILER=$CC -DMPI_CXX_COMPILER=$CXX"
+          else
             CMAKE_ARGS="$CMAKE_ARGS \
               -DCMAKE_CXX_FLAGS='-stdlib=libc++' \
               -DCMAKE_EXE_LINKER_FLAGS='-stdlib=libc++' \
               -DCMAKE_MODULE_LINKER_FLAGS='-stdlib=libc++'"
           fi
+
+          echo "CMAKE_ARGS: $CMAKE_ARGS"
 
           eval "cmake -B build $CMAKE_ARGS"
       - name: Build

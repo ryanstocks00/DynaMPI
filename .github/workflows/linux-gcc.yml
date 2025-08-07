@@ -21,7 +21,7 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++-${{ matrix.gcc-version }}
+          sudo apt-get install -y g++-${{ matrix.gcc-version }} cmake
           echo "CC=gcc-${{ matrix.gcc-version }}" >> $GITHUB_ENV
           echo "CXX=g++-${{ matrix.gcc-version }}" >> $GITHUB_ENV
       - name: Install MPI
@@ -69,6 +69,7 @@ jobs:
           echo "MPI_HOME: $MPI_HOME"
           echo "MPI_C_COMPILER: $MPI_C_COMPILER"
           echo "MPI_CXX_COMPILER: $MPI_CXX_COMPILER"
+
           # Configure CMake with explicit MPI settings
           CMAKE_ARGS="-DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
             -DCMAKE_C_COMPILER=$CC \

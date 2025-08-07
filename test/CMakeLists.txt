@@ -7,12 +7,22 @@ enable_testing()
 set(CTEST_OUTPUT_ON_FAILURE TRUE)
 
 # --------------------------------------------------------------------
+# Check if using Clang and add appropriate flags for GoogleTest
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # Clang has stricter inline optimization that can cause issues with GoogleTest
+  add_compile_options(-Wno-inline)
+  message(
+    STATUS
+      "Clang detected, added -Wno-error=inline to suppress GoogleTest warnings")
+endif()
+
+# --------------------------------------------------------------------
 # Fetch GoogleTest
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
-      DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+  URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip)
 # Prevent overriding the parent project's compiler/linker settings on Windows
 set(gtest_force_shared_crt # cmake-lint: disable=C0103
     ON
@@ -20,16 +30,6 @@ set(gtest_force_shared_crt # cmake-lint: disable=C0103
 FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)
-
-# --------------------------------------------------------------------
-# Check if using Clang and add appropriate flags for GoogleTest
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  # Clang has stricter inline optimization that can cause issues with GoogleTest
-  add_compile_options(-Wno-error=inline)
-  message(
-    STATUS
-      "Clang detected, added -Wno-error=inline to suppress GoogleTest warnings")
-endif()
 
 # --------------------------------------------------------------------
 # Create test executables from directories using glob
