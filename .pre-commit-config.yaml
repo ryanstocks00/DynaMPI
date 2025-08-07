@@ -74,7 +74,7 @@ repos:
           - "--license-filepath=license_header.txt"
           - "--use-current-year"
         files: \.txt$|\.cmake$|\.yml$|\.yaml$|\.sh$|\.gitignore$|.clang-format$
-        exclude: license_header.txt|LICENSES/.*
+        exclude: license_header.txt|LICENSES/.*|LICENSE*
       - id: insert-license
         name: "Insert license header in md files"
         args:

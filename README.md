@@ -28,3 +28,5 @@
 ---
 
 Library for efficient manager-worker dynamic load distribution using MPI
+
+This project is licensed under the terms of the MIT license.
