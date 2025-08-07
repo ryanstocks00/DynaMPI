@@ -56,6 +56,13 @@ else()
   add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 
+set(CMAKE_CXX_FLAGS_COVERAGE "-O0 -g -coverage -fprofile-arcs -ftest-coverage \
+    -fno-elide-constructors ${CMAKE_CXX_FLAGS_COVERAGE}")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set(CMAKE_CXX_FLAGS_COVERAGE
+      "${CMAKE_CXX_FLAGS_COVERAGE} -fno-default-inline")
+endif()
+
 if(DYNAMPI_BUILD_TESTS)
   enable_testing()
   add_subdirectory(test)

@@ -1,0 +1,66 @@
+---
+name: Codecov
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+jobs:
+  codecov:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Set reusable strings
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++-14 libopenmpi-dev openmpi-bin lcov
+          echo "CC=gcc-14" >> $GITHUB_ENV
+          echo "CXX=g++-14" >> $GITHUB_ENV
+          echo "GCOV=gcov-14" >> $GITHUB_ENV
+          echo "MPI_TYPE=OpenMPI" >> $GITHUB_ENV
+      - name: Configure CMake
+        run: |
+          echo "MPI_TYPE: $MPI_TYPE"
+          echo "CC: $CC"
+          echo "CXX: $CXX"
+
+          CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Coverage \
+            -DDYNAMPI_BUILD_TESTS=ON"
+
+          echo "CMAKE_ARGS: $CMAKE_ARGS"
+
+          eval "cmake -B ${{ steps.strings.outputs.build-output-dir }} $CMAKE_ARGS"
+      - name: Build
+        run: |
+          cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Coverage -j 2
+      - name: Test
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: |
+          ctest --build-config Coverage --output-on-failure
+      - name: Coverage
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: |
+          # Run tests with coverage enabled
+          ctest --build-config Coverage --output-on-failure --verbose
+      - name: Generate coverage report
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: |
+          lcov --gcov-tool $GCOV --capture --directory . --output-file coverage.info --ignore-errors mismatch
+          lcov --gcov-tool $GCOV --remove coverage.info '/usr/*' --output-file coverage.info
+          lcov --list coverage.info
+      - name: Upload coverage to codecov
+        uses: codecov/codecov-action@5c93f7ab87f1aa9b956609bbc4b50a6e747fe2fb
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ steps.strings.outputs.build-output-dir }}/coverage.info
+          flags: unittests
+          name: codecov-dynampi
+          fail_ci_if_error: true
