@@ -59,7 +59,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install MinGW & Dependencies
-        uses: msys2/setup-msys2@v2
+        uses: msys2/setup-msys2@v2.28.0
         with:
           msystem: MINGW64
           update: true
