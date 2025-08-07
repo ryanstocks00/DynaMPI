@@ -1,0 +1,87 @@
+# SPDX-FileCopyrightText: 2025 Ryan Stocks <ryan.stocks00@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+name: SMPI
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+jobs:
+  smpi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Set reusable strings
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+      - name: Install SimGrid and SMPI from packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++-14 simgrid
+
+          # Set environment variables for SMPI
+          echo "PATH=/usr/local/bin:$PATH" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          echo "CC=smpicc" >> $GITHUB_ENV
+          echo "CXX=smpicxx" >> $GITHUB_ENV
+          echo "MPI_TYPE=SimGrid SMPI" >> $GITHUB_ENV
+      - name: Configure CMake with SMPI
+        run: |
+          echo "MPI_TYPE: $MPI_TYPE"
+          echo "CC: $CC"
+          echo "CXX: $CXX"
+
+          # Set SMPI_PRETEND_CC for configuration as recommended in SimGrid docs
+          export SMPI_PRETEND_CC=1
+
+          CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=smpicc \
+            -DCMAKE_CXX_COMPILER=smpicxx \
+            -DMPIEXEC_EXECUTABLE=/usr/bin/smpirun \
+            -DMPIEXEC_PREFLAGS=-platform\;platform.xml \
+            -DDYNAMPI_BUILD_TESTS=ON \
+            -DDYNAMPI_BUILD_BENCHMARKS=OFF"
+
+          echo "CMAKE_ARGS: $CMAKE_ARGS"
+
+          eval "cmake -B ${{ steps.strings.outputs.build-output-dir }} $CMAKE_ARGS"
+      - name: Build with SMPI
+        run: |
+          cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Debug -j 2
+      - name: Create Simple SMPI Platform
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: |
+          cat > platform.xml << 'EOF'
+          <?xml version='1.0'?>
+          <!DOCTYPE platform SYSTEM "https://simgrid.org/simgrid.dtd">
+          <platform version="4.1">
+            <zone id="zone0" routing="Full">
+              <host id="host0" speed="100Gf" core="2"/>
+              <host id="host1" speed="100Gf" core="2"/>
+              <host id="host2" speed="100Gf" core="2"/>
+              <host id="host3" speed="100Gf" core="2"/>
+              <link id="link0" bandwidth="10GBps" latency="1us"/>
+              <route src="host0" dst="host1"><link_ctn id="link0"/></route>
+              <route src="host0" dst="host2"><link_ctn id="link0"/></route>
+              <route src="host0" dst="host3"><link_ctn id="link0"/></route>
+              <route src="host1" dst="host2"><link_ctn id="link0"/></route>
+              <route src="host1" dst="host3"><link_ctn id="link0"/></route>
+              <route src="host2" dst="host3"><link_ctn id="link0"/></route>
+            </zone>
+          </platform>
+          EOF
+      - name: Test with SMPI
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: |
+          echo "Testing with $MPI_TYPE"
+          cp platform.xml ${{ steps.strings.outputs.build-output-dir }}/test
+          ctest --output-on-failure --parallel
+
+          echo "Additionally running MPI tests with 100 ranks..."
+          smpirun -np 100 -platform platform.xml ./test/mpi_test

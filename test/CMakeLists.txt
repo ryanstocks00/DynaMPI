@@ -42,8 +42,10 @@ function(create_test target src_dir link_lib)
   target_link_libraries(${target} ${link_lib})
 endfunction()
 
-create_test(unit_test unit "GTest::gtest_main;dynampi")
-add_test(NAME unit_test COMMAND unit_test)
+if(NOT CMAKE_CXX_COMPILER MATCHES "smpicxx")
+  create_test(unit_test unit "GTest::gtest_main;dynampi")
+  add_test(NAME unit_test COMMAND unit_test)
+endif()
 
 create_test(mpi_test mpi "GTest::gtest;dynampi")
 
@@ -78,12 +80,15 @@ endif()
 # --------------------------------------------------------------------
 # Add MPI tests with varying ranks
 function(add_mpi_test test_name num_procs)
-  add_test(
-    NAME ${test_name}
-    COMMAND
-      ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${num_procs}
-      ${MPI_OVERSUBSCRIBE_FLAG} ${MPIEXEC_PREFLAGS} $<TARGET_FILE:mpi_test>
+  set(command
+      ${MPIEXEC_EXECUTABLE}
+      ${MPIEXEC_NUMPROC_FLAG}
+      ${num_procs}
+      ${MPI_OVERSUBSCRIBE_FLAG}
+      ${MPIEXEC_PREFLAGS}
+      $<TARGET_FILE:mpi_test>
       ${MPIEXEC_POSTFLAGS})
+  add_test(NAME ${test_name} COMMAND ${command})
 endfunction()
 
 foreach(rank 1 2 3 4 8)

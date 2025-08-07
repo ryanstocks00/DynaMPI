@@ -51,7 +51,9 @@ target_compile_definitions(
   INTERFACE DYNAMPI_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
             DYNAMPI_VERSION_MINOR=${PROJECT_VERSION_MINOR}
             DYNAMPI_VERSION_PATCH=${PROJECT_VERSION_PATCH})
-target_link_libraries(dynampi INTERFACE MPI::MPI_CXX)
+if(NOT CMAKE_CXX_COMPILER MATCHES "smpicxx")
+  target_link_libraries(dynampi INTERFACE MPI::MPI_CXX)
+endif()
 
 if(MSVC)
   add_compile_options(/W4 /WX)

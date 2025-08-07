@@ -22,6 +22,7 @@
 [![Linux Intel](https://github.com/ryanstocks00/DynaMPI/workflows/Linux%20Intel/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/linux-intel.yml)
 [![Windows](https://github.com/ryanstocks00/DynaMPI/workflows/Windows/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/windows.yml)
 [![macOS](https://github.com/ryanstocks00/DynaMPI/workflows/macOS/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/macos.yml)
+[![SMPI](https://github.com/ryanstocks00/DynaMPI/workflows/SMPI/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/smpi.yml)
 [![Sanitizers](https://github.com/ryanstocks00/DynaMPI/workflows/Sanitizers/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/sanitizers.yml)
 [![Pre-commit](https://github.com/ryanstocks00/DynaMPI/workflows/Pre-commit/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/pre-commit.yml)
 
