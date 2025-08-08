@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Ryan Stocks <ryan.stocks00@gmail.com>
+# SPDX-FileCopyrightText: 2025 QDX Technologies. Authored by Ryan Stocks <ryan.stocks00@gmail.com>
 # SPDX-License-Identifier: MIT
 ---
 # This file configures https://pre-commit.com/
@@ -9,9 +9,11 @@ repos:
       - id: cmake-format
         name: CMake Format
         entry: cmake-format
+        args: ["--line-width", "100"]
       - id: cmake-lint
         name: CMake Lint
         entry: cmake-lint
+        args: ["--max-line-length", "100"]
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v20.1.8
     hooks:
@@ -56,34 +58,6 @@ repos:
     hooks:
       - id: commitizen
         stages: [commit-msg]
-  - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.5
-    hooks:
-      - id: insert-license
-        name: "Insert license header in C++ files"
-        args:
-          - "--detect-license-in-X-top-lines=5"
-          - "--license-filepath=license_header.txt"
-          - "--comment-style=/*| *| */"
-          - "--use-current-year"
-        types_or: [c++]
-      - id: insert-license
-        name: "Insert license header in txt files"
-        args:
-          - "--detect-license-in-X-top-lines=5"
-          - "--license-filepath=license_header.txt"
-          - "--use-current-year"
-        files: \.txt$|\.cmake$|\.yml$|\.yaml$|\.sh$|\.gitignore$|.clang-format$
-        exclude: license_header.txt|LICENSES/.*|LICENSE*
-      - id: insert-license
-        name: "Insert license header in md files"
-        args:
-          - "--detect-license-in-X-top-lines=5"
-          - "--license-filepath=license_header.txt"
-          - "--use-current-year"
-          - "--comment-style=<!--| | -->"
-        files: \.md$
-        repos:
   - repo: https://github.com/fsfe/reuse-tool
     rev: v5.0.2
     hooks:

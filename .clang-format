@@ -1,8 +1,7 @@
 # SPDX-FileCopyrightText: 2025 QDX Technologies. Authored by Ryan Stocks <ryan.stocks00@gmail.com>
 # SPDX-License-Identifier: MIT
-
-compile_commands.json
-build
-bin
-.cache/
-Testing
+---
+BasedOnStyle: Google
+SpacesBeforeTrailingComments: 2
+ColumnLimit: 100
+Standard: c++20
