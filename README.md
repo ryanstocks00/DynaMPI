@@ -31,3 +31,20 @@
 Library for efficient manager-worker dynamic load distribution using MPI
 
 This project is licensed under the terms of the MIT license.
+
+## Usage
+
+## Installation
+
+DynaMPI is a header-only library with dependence only on MPI, so you can simply copy the include folder into your project. Alternatively, DynaMPI can be installed using CMake:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(
+    dynampi
+    GIT_REPOSITORY https://github.com/ryanstocks00/DynaMPI.git
+    GIT_TAG        main
+)
+FetchContent_MakeAvailable(dynampi)
+add_subdirectory(${dynampi_SOURCE_DIR} ${dynampi_BINARY_DIR})
+```
