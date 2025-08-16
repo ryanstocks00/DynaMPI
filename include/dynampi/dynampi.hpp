@@ -67,10 +67,12 @@ template <>
 struct MPI_Type<std::byte> {
   inline static MPI_Datatype value = MPI_BYTE;
 };
+#ifdef MPI_CXX_BOOL
 template <>
 struct MPI_Type<bool> {
   inline static MPI_Datatype value = MPI_CXX_BOOL;
 };
+#endif
 template <>
 struct MPI_Type<signed char> {
   inline static MPI_Datatype value = MPI_SIGNED_CHAR;
@@ -198,7 +200,7 @@ class NaiveMPIWorkDistributor {
     MPI_Send(nullptr, 0, _task_type, _manager_rank, REQUEST_TAG, _communicator.get());
     while (true) {
       MPI_Status status;
-      int message;
+      TaskT message;
       MPI_Recv(&message, 1, _task_type, _manager_rank, MPI_ANY_TAG, _communicator.get(), &status);
       if (status.MPI_TAG == DONE_TAG) {
         break;
@@ -218,7 +220,7 @@ class NaiveMPIWorkDistributor {
     return _task_queue.size();
   }
 
-  void insert_task(int task) {
+  void insert_task(TaskT task) {
     assert(_communicator.rank() == _manager_rank && "Only the manager can distribute tasks");
     _task_queue.push(task);
   }

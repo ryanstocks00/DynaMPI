@@ -1,5 +1,10 @@
 # SPDX-FileCopyrightText: 2025 QDX Technologies. Authored by Ryan Stocks <ryan.stocks00@gmail.com>
 # SPDX-License-Identifier: MIT
+#
+# Windows CI with multiple MPI implementations using setup-mpi action:
+# - MS-MPI (supports MPI 2.2 + select MPI 3.1 features)
+# - Intel MPI (full MPI 4.0 support)
+# Uses mpi4py/setup-mpi for reliable installation
 ---
 name: Windows
 on:
@@ -11,46 +16,33 @@ env:
   CMAKE_CXX_STANDARD: 20
   CMAKE_VERBOSE_MAKEFILE: "ON"
 jobs:
-  windows-msvc:
-    name: Windows MSVC
+  windows-msmpi:
+    name: Windows MS-MPI (MPI 3.1)
     runs-on: windows-latest
     strategy:
       matrix:
         build-type: [Debug, Release]
     steps:
       - uses: actions/checkout@v4
-      - name: Install Microsoft MPI
-        shell: pwsh
-        run: |
-          $urlBase = "https://download.microsoft.com/download/a/5/2/a5207ca5-1203-491a-8fb8-906fd68ae623"
-          Invoke-WebRequest "$urlBase/msmpisetup.exe" -OutFile "msmpisetup.exe"
-          Start-Process "msmpisetup.exe" -ArgumentList "-unattend" -Wait
-          Invoke-WebRequest "$urlBase/msmpisdk.msi" -OutFile "msmpisdk.msi"
-          Start-Process "msiexec.exe" -ArgumentList "/i", "msmpisdk.msi", "/quiet" -Wait
-
-          # Set MPI env vars
-          echo "MSMPI_BIN=C:\Program Files\Microsoft MPI\Bin" >> $env:GITHUB_ENV
-          echo "MSMPI_INC=C:\Program Files (x86)\Microsoft SDKs\MPI\Include" >> $env:GITHUB_ENV
-          echo "MSMPI_LIB64=C:\Program Files (x86)\Microsoft SDKs\MPI\Lib\x64" >> $env:GITHUB_ENV
-          echo "MPI_TYPE=Microsoft MPI (MSVC)" >> $env:GITHUB_ENV
-      - name: Configure CMake (MSVC)
+      - name: Setup Microsoft MPI
+        uses: mpi4py/setup-mpi@3eef4c7b925e108e534a3856830963dedefac76f
+        with:
+          mpi: msmpi
+      - name: Configure CMake (MS-MPI)
         shell: pwsh
         run: |
           cmake -B build `
             -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} `
-            -DMPI_CXX_INCLUDE_PATH="$env:MSMPI_INC" `
-            -DMPI_CXX_LIBRARIES="$env:MSMPI_LIB64\msmpi.lib" `
-            -DMPIEXEC_EXECUTABLE="$env:MSMPI_BIN\mpiexec.exe" `
             -DDYNAMPI_BUILD_TESTS=ON `
             -DDYNAMPI_BUILD_BENCHMARKS=ON
-      - name: Build (MSVC)
+      - name: Build (MS-MPI)
         shell: pwsh
         run: cmake --build build --config ${{ matrix.build-type }} --parallel
-      - name: Test (MSVC)
+      - name: Test (MS-MPI)
         shell: pwsh
         run: |
           cd build
-          echo "Testing with $env:MPI_TYPE"
+          echo "Testing with Microsoft MPI (MPI 3.1 features)"
           ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
   windows-mingw:
     name: Windows MinGW
@@ -114,4 +106,33 @@ jobs:
         run: |
           cd build
           echo "Testing with $MPI_TYPE"
+          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
+  windows-intel-mpi:
+    name: Windows Intel MPI (MPI 4.0)
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        build-type: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Intel MPI (MPI 4.0 support)
+        uses: mpi4py/setup-mpi@3eef4c7b925e108e534a3856830963dedefac76f
+        with:
+          mpi: intelmpi
+      - name: Configure CMake (Intel MPI)
+        shell: pwsh
+        run: |
+          # Intel MPI environment should be set up by setup-mpi action
+          cmake -B build `
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} `
+            -DDYNAMPI_BUILD_TESTS=ON `
+            -DDYNAMPI_BUILD_BENCHMARKS=ON
+      - name: Build (Intel MPI)
+        shell: pwsh
+        run: cmake --build build --config ${{ matrix.build-type }} --parallel
+      - name: Test (Intel MPI)
+        shell: pwsh
+        run: |
+          cd build
+          echo "Testing with Intel MPI (MPI 4.0 support)"
           ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
