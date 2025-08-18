@@ -8,6 +8,8 @@
 #include <cassert>
 #include <chrono>
 
+namespace dynampi {
+
 class Timer {
   std::optional<std::chrono::time_point<std::chrono::high_resolution_clock>> _start_time;
   std::chrono::duration<double> _elapsed_time{0.0};
@@ -53,3 +55,5 @@ class Timer {
     return os << timer.elapsed().count() << " seconds";
   }
 };
+
+}  // namespace dynampi

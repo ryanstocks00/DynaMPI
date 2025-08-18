@@ -9,6 +9,8 @@
 #include <thread>
 
 TEST(Timer, BasicFunctionality) {
+  using namespace dynampi;
+
   Timer timer1(Timer::AutoStart::No);
   EXPECT_EQ(timer1.elapsed().count(), 0.0);
   Timer timer2;

@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include <queue>
 #include <ranges>
 #include <span>

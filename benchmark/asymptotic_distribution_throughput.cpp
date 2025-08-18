@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
     std::cout << "Beginning testing dynamic MPI task distribution throughput" << std::endl;
   }
   MPI_Barrier(MPI_COMM_WORLD);
-  Timer timer;
+  dynampi::Timer timer;
 
   auto worker_task = [](size_t task) -> size_t { return task * task; };
   auto result = dynampi::mpi_manager_worker_distribution<size_t>(1e6, worker_task);

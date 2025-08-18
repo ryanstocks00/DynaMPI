@@ -57,7 +57,7 @@ jobs:
         run: |
           lcov --gcov-tool $GCOV --capture --directory . --output-file coverage.info --ignore-errors mismatch
           lcov --gcov-tool $GCOV --remove coverage.info '/usr/*' --output-file coverage.info
-          lcov --gcov-tool $GCOV --remove coverage.info '*/benchmark/*' --output-file coverage.info
+          lcov --gcov-tool $GCOV --remove coverage.info 'benchmark/*' --output-file coverage.info
           lcov --list coverage.info
       - name: Upload coverage to codecov
         uses: codecov/codecov-action@5c93f7ab87f1aa9b956609bbc4b50a6e747fe2fb
