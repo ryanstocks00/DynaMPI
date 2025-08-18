@@ -67,16 +67,22 @@ class MPIDynampicWorkDistributor {
 Allowing
 
 ```cpp
-typedef int Task;
-typedef std::vector<double> Result;
-auto worker_task = [](Task task) -> Result { return task * task; };
-{
-    dynampi::MPIDynamicWorkDistributor work_distributer(worker_task);
+  using Task = int;
+  using Result = std::vector<int>;
+  auto worker_task = [](Task task) -> Result {
+    return Result{task, task * task, task * task * task};
+  };
+  {
+    dynampi::MPIDynamicWorkDistributor<Task, Result> work_distributer(worker_task);
     if (work_distributer.is_manager()) {
-        work_distributer.insert_tasks({1, 2, 3, 4, 5});
-        work_distributer.insert_tasks({6, 7, 8});
+      work_distributer.insert_tasks({1, 2, 3, 4, 5});
+      auto results = work_distributer.distribute_tasks();
+      EXPECT_EQ(results.size(), 5);
+      work_distributer.insert_tasks({6, 7, 8});
+      results = work_distributer.distribute_tasks();
+      EXPECT_EQ(results.size(), 8);
     }
-}
+  }
 ```
 
 This allows the manager to begin distributing tasks before all of the tasks have been formed. The manager can also alternate between inserting tasks and receiving results for when task formation is dependent on the results of previous tasks. There are many configuration additional options including work prioritization, custom datatypes, and error handling.

@@ -23,7 +23,7 @@ TEST(MPI, PingPong) {
 }
 
 TEST(DynamicDistribution, Naive) {
-  typedef uint32_t TaskT;
+  using TaskT = uint32_t;
   auto worker_task = [](TaskT task) -> double {
     // Simulate work
     return sqrt(static_cast<double>(task));
