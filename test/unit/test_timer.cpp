@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-#pragma once
-
 #include <gtest/gtest.h>
 
 #include <dynampi/utilities/timer.hpp>
+#include <thread>
 
 TEST(Timer, BasicFunctionality) {
   Timer timer1(Timer::AutoStart::No);
