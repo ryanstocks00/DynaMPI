@@ -23,9 +23,6 @@ TEST(MPI, PingPong) {
 }
 
 TEST(DynamicDistribution, Naive) {
-  if (MPIEnvironment::world_comm_size() < 2) {
-    GTEST_SKIP() << "This test requires at least 2 MPI processes.";
-  }
   typedef uint32_t TaskT;
   auto worker_task = [](TaskT task) -> double {
     // Simulate work
@@ -35,7 +32,8 @@ TEST(DynamicDistribution, Naive) {
   for (size_t i = 0; i < tasks.size(); ++i) {
     tasks[i] = static_cast<TaskT>(i);
   }
-  dynampi::NaiveMPIWorkDistributor<TaskT, double> distributor(MPI_COMM_WORLD, worker_task);
+  dynampi::NaiveMPIWorkDistributor<TaskT, double> distributor(worker_task, MPI_COMM_WORLD);
+
   if (distributor.is_manager()) {
     for (int i = 0; i < 10; ++i) {
       distributor.insert_task(i);
@@ -53,18 +51,40 @@ TEST(DynamicDistribution, Naive) {
 }
 
 TEST(DynamicDistribution, Naive2) {
-  if (MPIEnvironment::world_comm_size() < 2) {
-    GTEST_SKIP() << "This test requires at least 2 MPI processes.";
-  }
-
-  std::vector<size_t> tasks;
-  if (MPIEnvironment::world_comm_rank() == 0) {
-    tasks = {0, 1};
-  }
   auto worker_task = [](size_t task) -> char { return "Hi"[task]; };
-  std::vector<char> result =
-      dynampi::mpi_manager_worker_distribution<size_t, char>(std::span<size_t>(tasks), worker_task);
+  auto result = dynampi::mpi_manager_worker_distribution<char>(2, worker_task);
   if (MPIEnvironment::world_comm_rank() == 0) {
-    EXPECT_EQ(result.size(), 2);
+    EXPECT_TRUE(result.has_value());
+    EXPECT_EQ(result->size(), 2);
+  } else {
+    EXPECT_FALSE(result.has_value());
+  }
+}
+
+TEST(DynamicDistribution, Example1) {
+  auto worker_task = [](size_t task) -> size_t { return task * task; };
+  auto result = dynampi::mpi_manager_worker_distribution<size_t>(4, worker_task);
+  if (result.has_value()) {
+    assert(result == std::vector<size_t>({0, 1, 4, 9}));
+    EXPECT_EQ(result, std::vector<size_t>({0, 1, 4, 9}));
+  }
+}
+
+TEST(DynamicDistribution, Example2) {
+  using Task = int;
+  using Result = std::vector<int>;
+  auto worker_task = [](Task task) -> Result { return Result{task, task * task, task * task * task}; };
+  {
+      dynampi::MPIDynamicWorkDistributor<Task, Result> work_distributer(worker_task);
+      if (work_distributer.is_manager()) {
+          work_distributer.insert_tasks({1});
+          auto results = work_distributer.distribute_tasks();
+          EXPECT_EQ(results.size(), 1);
+          work_distributer.insert_tasks({6});
+          results = work_distributer.distribute_tasks();
+          //EXPECT_EQ(results.size(), 8);
+      } else {
+        work_distributer.run_worker();
+      }
   }
 }

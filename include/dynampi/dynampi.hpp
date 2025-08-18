@@ -13,10 +13,13 @@
 #include <queue>
 #include <ranges>
 #include <span>
-#include <stdexcept>
+#include <stack>
 #include <string_view>
 #include <tuple>
 #include <vector>
+
+#include "mpi/mpi_communicator.hpp"
+#include "mpi/mpi_types.hpp"
 
 namespace dynampi {
 
@@ -45,127 +48,6 @@ inline constexpr std::string_view string = DYNAMPI_VERSION_STRING;
 
 }  // namespace version
 
-#define DYNAMPI_MPI_CHECK(func, args)                                              \
-  do {                                                                             \
-    int err = func args;                                                           \
-    if (err != MPI_SUCCESS) {                                                      \
-      char error_string[MPI_MAX_ERROR_STRING];                                     \
-      int length_of_error_string;                                                  \
-      MPI_Error_string(err, error_string, &length_of_error_string);                \
-      throw std::runtime_error(std::string("MPI error in " #func ": ") +           \
-                               std::string(error_string, length_of_error_string)); \
-    }                                                                              \
-  } while (false)
-
-template <class T>
-struct MPI_Type;
-template <>
-struct MPI_Type<char> {
-  inline static MPI_Datatype value = MPI_CHAR;
-};
-template <>
-struct MPI_Type<std::byte> {
-  inline static MPI_Datatype value = MPI_BYTE;
-};
-#ifdef MPI_CXX_BOOL
-template <>
-struct MPI_Type<bool> {
-  inline static MPI_Datatype value = MPI_CXX_BOOL;
-};
-#endif
-template <>
-struct MPI_Type<signed char> {
-  inline static MPI_Datatype value = MPI_SIGNED_CHAR;
-};
-template <>
-struct MPI_Type<unsigned char> {
-  inline static MPI_Datatype value = MPI_UNSIGNED_CHAR;
-};
-template <>
-struct MPI_Type<short> {
-  inline static MPI_Datatype value = MPI_SHORT;
-};
-template <>
-struct MPI_Type<unsigned short> {
-  inline static MPI_Datatype value = MPI_UNSIGNED_SHORT;
-};
-template <>
-struct MPI_Type<int> {
-  inline static MPI_Datatype value = MPI_INT;
-};
-template <>
-struct MPI_Type<unsigned int> {
-  inline static MPI_Datatype value = MPI_UNSIGNED;
-};
-template <>
-struct MPI_Type<long> {
-  inline static MPI_Datatype value = MPI_LONG;
-};
-template <>
-struct MPI_Type<unsigned long> {
-  inline static MPI_Datatype value = MPI_UNSIGNED_LONG;
-};
-template <>
-struct MPI_Type<long long> {
-  inline static MPI_Datatype value = MPI_LONG_LONG_INT;
-};
-template <>
-struct MPI_Type<unsigned long long> {
-  inline static MPI_Datatype value = MPI_UNSIGNED_LONG_LONG;
-};
-template <>
-struct MPI_Type<float> {
-  inline static MPI_Datatype value = MPI_FLOAT;
-};
-template <>
-struct MPI_Type<double> {
-  inline static MPI_Datatype value = MPI_DOUBLE;
-};
-template <>
-struct MPI_Type<long double> {
-  inline static MPI_Datatype value = MPI_LONG_DOUBLE;
-};
-
-class MPICommunicator {
- public:
-  enum Ownership {
-    NotOwned,  // The communicator is not owned by this class and should not be freed.
-    Owned,     // The communicator is owned by this class and will be freed in the destructor.
-  };
-
- private:
-  MPI_Comm _comm;
-  Ownership _ownership;
-
- public:
-  MPICommunicator(MPI_Comm comm, Ownership ownership = NotOwned)
-      : _comm(comm), _ownership(ownership) {
-    if (_ownership == Owned) {
-      DYNAMPI_MPI_CHECK(MPI_Comm_dup, (comm, &_comm));
-    }
-  }
-
-  ~MPICommunicator() {
-    if (_ownership == Owned) {
-      MPI_Comm_free(&_comm);
-    }
-  }
-
-  int rank() const {
-    int rank;
-    DYNAMPI_MPI_CHECK(MPI_Comm_rank, (_comm, &rank));
-    return rank;
-  }
-
-  int size() const {
-    int size;
-    DYNAMPI_MPI_CHECK(MPI_Comm_size, (_comm, &size));
-    return size;
-  }
-
-  [[nodiscard]] MPI_Comm get() const { return _comm; }
-};
-
 template <typename TaskT, typename ResultT>
 class NaiveMPIWorkDistributor {
   MPICommunicator _communicator;
@@ -174,6 +56,7 @@ class NaiveMPIWorkDistributor {
   std::queue<TaskT> _task_queue;
   std::vector<int64_t> _worker_task_indices;
   std::vector<ResultT> _results;
+  std::stack<size_t, std::vector<size_t>> _free_workers;
 
   size_t _tasks_sent = 0;
   size_t _results_received = 0;
@@ -183,11 +66,11 @@ class NaiveMPIWorkDistributor {
   static constexpr int RESULT_TAG = 2;
   static constexpr int REQUEST_TAG = 3;
 
-  MPI_Datatype _task_type = MPI_Type<TaskT>::value;
-  MPI_Datatype _result_type = MPI_Type<ResultT>::value;
+  using _task_type = MPI_Type<TaskT>;
+  using _result_type = MPI_Type<ResultT>;
 
  public:
-  NaiveMPIWorkDistributor(MPI_Comm comm, std::function<ResultT(TaskT)> worker_function,
+  NaiveMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function, MPI_Comm comm = MPI_COMM_WORLD,
                           int manager_rank = 0)
       : _communicator(comm, MPICommunicator::Owned),
         _worker_function(worker_function),
@@ -197,18 +80,23 @@ class NaiveMPIWorkDistributor {
 
   void run_worker() {
     assert(_communicator.rank() != _manager_rank && "Worker cannot run on the manager rank");
-    MPI_Send(nullptr, 0, _task_type, _manager_rank, REQUEST_TAG, _communicator.get());
+    MPI_Send(nullptr, 0, _task_type::value, _manager_rank, REQUEST_TAG, _communicator.get());
     while (true) {
       MPI_Status status;
-      TaskT message;
-      MPI_Recv(&message, 1, _task_type, _manager_rank, MPI_ANY_TAG, _communicator.get(), &status);
+      DYNAMPI_MPI_CHECK(MPI_Probe, (MPI_ANY_SOURCE, MPI_ANY_TAG, _communicator.get(), &status));
       if (status.MPI_TAG == DONE_TAG) {
+        MPI_Recv(nullptr, 0, _task_type::value, _manager_rank, MPI_ANY_TAG, _communicator.get(), &status);
         break;
       }
+      int count;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, _task_type::value, &count));
+      TaskT message;
+      _task_type::resize(message, count);
+      MPI_Recv(_task_type::ptr(message), 1, _task_type::value, _manager_rank, MPI_ANY_TAG, _communicator.get(), &status);
       _tasks_sent++;
       assert(status.MPI_TAG == TASK_TAG && "Unexpected tag received in worker");
       ResultT result = _worker_function(message);
-      MPI_Send(&result, 1, _result_type, _manager_rank, RESULT_TAG, _communicator.get());
+      MPI_Send(_result_type::ptr(result), _result_type::count(result), _result_type::value, _manager_rank, RESULT_TAG, _communicator.get());
       _results_received++;
     }
   }
@@ -225,6 +113,16 @@ class NaiveMPIWorkDistributor {
     _task_queue.push(task);
   }
 
+  void insert_tasks(std::span<const TaskT> tasks) {
+    assert(_communicator.rank() == _manager_rank && "Only the manager can distribute tasks");
+    for (const auto& task : tasks) {
+      _task_queue.push(task);
+    }
+  }
+  void insert_tasks(const std::vector<TaskT>& tasks) {
+    insert_tasks(std::span<const TaskT>(tasks));
+  }
+
   template <std::ranges::input_range Range>
   void insert_tasks(const Range& tasks) {
     assert(_communicator.rank() == _manager_rank && "Only the manager can distribute tasks");
@@ -233,9 +131,10 @@ class NaiveMPIWorkDistributor {
     }
   }
 
-  void receive_result(MPI_Status& status) {
+  void receive_from_any_worker() {
     assert(_communicator.rank() == _manager_rank &&
            "Only the manager can receive results and send tasks");
+    MPI_Status status;
     DYNAMPI_MPI_CHECK(MPI_Probe, (MPI_ANY_SOURCE, MPI_ANY_TAG, _communicator.get(), &status));
     if (status.MPI_TAG == RESULT_TAG) {
       int64_t task_idx =
@@ -245,31 +144,43 @@ class NaiveMPIWorkDistributor {
       if (static_cast<uint64_t>(task_idx) >= _results.size()) {
         _results.resize(task_idx + 1);
       }
-      DYNAMPI_MPI_CHECK(MPI_Recv, (&_results[task_idx], 1, _result_type, status.MPI_SOURCE,
+      int count;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, _result_type::value, &count));
+      _result_type::resize(_results[task_idx], count);
+      DYNAMPI_MPI_CHECK(MPI_Recv, (_result_type::ptr(_results[task_idx]), count, _result_type::value, status.MPI_SOURCE,
                                    RESULT_TAG, _communicator.get(), &status));
       _results_received++;
     } else {
       assert(status.MPI_TAG == REQUEST_TAG && "Unexpected tag received in worker");
-      DYNAMPI_MPI_CHECK(MPI_Recv, (nullptr, 0, _result_type, status.MPI_SOURCE, REQUEST_TAG,
+      DYNAMPI_MPI_CHECK(MPI_Recv, (nullptr, 0, _result_type::value, status.MPI_SOURCE, REQUEST_TAG,
                                    _communicator.get(), &status));
     }
+    _free_workers.push(status.MPI_SOURCE);
   }
 
   [[nodiscard]] std::vector<ResultT> distribute_tasks() {
     assert(_communicator.rank() == _manager_rank && "Only the manager can distribute tasks");
     while (!_task_queue.empty()) {
-      MPI_Status status;
-      receive_result(status);
-      TaskT& task = _task_queue.front();
-      int worker = status.MPI_SOURCE;
-      _worker_task_indices[worker - (worker > _manager_rank)] = _tasks_sent;
-      DYNAMPI_MPI_CHECK(MPI_Send, (&task, 1, _task_type, worker, TASK_TAG, _communicator.get()));
+      const TaskT& task = _task_queue.front();
+      if (_communicator.size() > 1) {
+        if (_free_workers.empty()) {
+          // If no free workers, wait for a result to be received
+          receive_from_any_worker();
+        }
+        int worker = _free_workers.top();
+        _free_workers.pop();
+        _worker_task_indices[idx_for_worker(worker)] = _tasks_sent;
+        DYNAMPI_MPI_CHECK(MPI_Send, (_task_type::ptr(task), _task_type::count(task), _task_type::value, worker, TASK_TAG, _communicator.get()));
+      } else {
+        // If there's only one process, we just run the worker function directly
+        _results.emplace_back(_worker_function(task));
+        _results_received++;
+      }
       _task_queue.pop();
       _tasks_sent++;
     }
-    for (int i = 1; i < _communicator.size(); i++) {
-      MPI_Status status;
-      receive_result(status);
+    while (_free_workers.size() + 1 < static_cast<size_t>(_communicator.size())) {
+      receive_from_any_worker();
     }
     assert(_results_received == _tasks_sent && "Not all tasks were processed by workers");
     assert(_results.size() == _tasks_sent && "Results size should match tasks sent");
@@ -279,9 +190,11 @@ class NaiveMPIWorkDistributor {
   void finalize() {
     assert(_communicator.rank() == _manager_rank &&
            "Only the manager can finalize the work distribution");
+    assert(_free_workers.size() + 1 == static_cast<size_t>(_communicator.size()) &&
+           "All workers should be free before finalizing");
     for (int i = 0; i < _communicator.size() - 1; i++) {
       DYNAMPI_MPI_CHECK(MPI_Send,
-                        (nullptr, 0, _task_type, worker_for_idx(i), DONE_TAG, _communicator.get()));
+                        (nullptr, 0, _task_type::value, worker_for_idx(i), DONE_TAG, _communicator.get()));
     }
   }
 
@@ -303,22 +216,23 @@ class NaiveMPIWorkDistributor {
   int worker_for_idx(int idx) const { return (idx < _manager_rank) ? idx : (idx + 1); }
 };
 
-template <typename TaskT, typename ResultT>
-std::vector<ResultT> mpi_manager_worker_distribution(const std::span<TaskT>& tasks,
-                                                     std::function<ResultT(TaskT)> worker_function,
-                                                     MPI_Comm comm = MPI_COMM_WORLD,
-                                                     int manager_rank = 0) {
-  NaiveMPIWorkDistributor<TaskT, ResultT> distributor(comm, worker_function, manager_rank);
+template <typename ResultT>
+std::optional<std::vector<ResultT>> mpi_manager_worker_distribution(
+    size_t n_tasks, std::function<ResultT(size_t)> worker_function, MPI_Comm comm = MPI_COMM_WORLD,
+    int manager_rank = 0) {
+  NaiveMPIWorkDistributor<size_t, ResultT> distributor(worker_function, comm, manager_rank);
   if (distributor.is_manager()) {
-    for (const auto& task : tasks) {
-      distributor.insert_task(task);
+    for (size_t i = 0; i < n_tasks; ++i) {
+      distributor.insert_task(i);
     }
     return distributor.distribute_tasks();
   } else {
-    assert(tasks.empty() && "Workers should not have tasks to process");
     distributor.run_worker();
     return {};
   }
 }
+
+template <typename TaskT, typename ResultT>
+using MPIDynamicWorkDistributor = NaiveMPIWorkDistributor<TaskT, ResultT>;
 
 }  // namespace dynampi
