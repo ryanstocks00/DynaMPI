@@ -16,12 +16,12 @@
 #endif
 #include <stdexcept>
 
-#define DYNAMPI_MPI_CHECK(func, args) \
-  do {                                \
-    int err = func args;              \
-    if (err != MPI_SUCCESS) {         \
-      mpi_check(err, #func #args);    \
-    }                                 \
+#define DYNAMPI_MPI_CHECK(func, args)       \
+  do {                                      \
+    int err = func args;                    \
+    if (err != MPI_SUCCESS) {               \
+      dynampi::mpi_check(err, #func #args); \
+    }                                       \
   } while (false)
 
 namespace dynampi {
