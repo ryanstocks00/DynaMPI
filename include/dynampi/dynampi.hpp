@@ -199,9 +199,7 @@ class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
  private:
   TaskT get_next_task_to_send() {
     assert(_communicator.rank() == _config.manager_rank && "Only the manager can get next task");
-    if (_unallocated_task_queue.empty()) {
-      throw std::runtime_error("No more tasks to distribute");
-    }
+    assert(!_unallocated_task_queue.empty() && "There should be tasks available to send");
     TaskT task;
     if constexpr (std::is_same_v<QueueT, std::queue<TaskT>>) {
       task = _unallocated_task_queue.front();

@@ -5,18 +5,48 @@
 
 #pragma once
 
+#include <cassert>
 #include <chrono>
 
 class Timer {
-  std::chrono::time_point<std::chrono::high_resolution_clock> _start_time;
+  std::optional<std::chrono::time_point<std::chrono::high_resolution_clock>> _start_time;
+  std::chrono::duration<double> _elapsed_time{0.0};
 
  public:
-  Timer() : _start_time(std::chrono::high_resolution_clock::now()) {}
+  enum class AutoStart { Yes, No };
 
-  void reset() { _start_time = std::chrono::high_resolution_clock::now(); }
-  std::chrono::duration<double> elapsed() const {
+  Timer(AutoStart auto_start = AutoStart::Yes) {
+    if (auto_start == AutoStart::Yes) {
+      start();
+    }
+  }
+
+  void start() {
+    assert(!_start_time.has_value() && "Timer already started");
+    _start_time = std::chrono::high_resolution_clock::now();
+  }
+
+  std::chrono::duration<double> stop() {
+    assert(_start_time.has_value() && "Timer not started");
     auto end_time = std::chrono::high_resolution_clock::now();
-    return std::chrono::duration<double>(end_time - _start_time);
+    _elapsed_time += end_time - _start_time.value();
+    _start_time.reset();
+    return _elapsed_time;
+  }
+
+  void reset(AutoStart auto_start = AutoStart::Yes) {
+    _start_time.reset();
+    _elapsed_time = std::chrono::duration<double>(0.0);
+    if (auto_start == AutoStart::Yes) {
+      start();
+    }
+  }
+
+  [[nodiscard]] std::chrono::duration<double> elapsed() const {
+    if (_start_time.has_value()) {
+      return _elapsed_time + (std::chrono::high_resolution_clock::now() - _start_time.value());
+    }
+    return _elapsed_time;
   }
 
   friend std::ostream& operator<<(std::ostream& os, const Timer& timer) {
