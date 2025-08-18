@@ -44,17 +44,15 @@ TEST(DynamicDistribution, Naive) {
   for (size_t i = 0; i < tasks.size(); ++i) {
     tasks[i] = static_cast<TaskT>(i);
   }
-  dynampi::NaiveMPIWorkDistributor<TaskT, double,
-                                   dynampi::DynamicDistributionConfig{.auto_run_workers = false}>
-      distributor(worker_task, MPI_COMM_WORLD);
-
+  dynampi::NaiveMPIWorkDistributor<TaskT, double> distributor(
+      worker_task, {.comm = MPI_COMM_WORLD, .auto_run_workers = false});
   if (distributor.is_manager()) {
     for (int i = 0; i < 10; ++i) {
       distributor.insert_task(i);
     }
   }
   if (distributor.is_manager()) {
-    auto results = distributor.distribute_tasks();
+    auto results = distributor.finish_remaining_tasks();
     EXPECT_EQ(results.size(), 10);
     for (size_t i = 0; i < results.size(); ++i) {
       EXPECT_DOUBLE_EQ(results[i] * results[i], static_cast<double>(i));
@@ -97,11 +95,40 @@ TEST(DynamicDistribution, Example2) {
     dynampi::MPIDynamicWorkDistributor<Task, Result> work_distributer(worker_task);
     if (work_distributer.is_manager()) {
       work_distributer.insert_tasks({1, 2, 3, 4, 5});
-      auto results = work_distributer.distribute_tasks();
-      EXPECT_EQ(results.size(), 5);
+      auto results = work_distributer.finish_remaining_tasks();
+      EXPECT_EQ(results, (std::vector<std::vector<int>>{
+                             {1, 1, 1}, {2, 4, 8}, {3, 9, 27}, {4, 16, 64}, {5, 25, 125}}));
       work_distributer.insert_tasks({6, 7, 8});
-      results = work_distributer.distribute_tasks();
-      EXPECT_EQ(results.size(), 8);
+      results = work_distributer.finish_remaining_tasks();
+      EXPECT_EQ(results, (std::vector<std::vector<int>>{{1, 1, 1},
+                                                        {2, 4, 8},
+                                                        {3, 9, 27},
+                                                        {4, 16, 64},
+                                                        {5, 25, 125},
+                                                        {6, 36, 216},
+                                                        {7, 49, 343},
+                                                        {8, 64, 512}}));
+    }
+  }
+}
+
+TEST(DynamicDistribution, PriorityQueue) {
+  using Task = int;
+  using Result = int;
+  auto worker_task = [](Task task) -> Result { return task * task; };
+  {
+    dynampi::MPIDynamicWorkDistributor<Task, Result, std::priority_queue<std::pair<double, Task>>>
+        work_distributer(worker_task);
+    if (work_distributer.is_manager()) {
+      work_distributer.insert_task(1, 1.0);
+      work_distributer.insert_task(7, 7.0);
+      work_distributer.insert_task(3, 3.0);
+      work_distributer.insert_task(6, 6.0);
+      work_distributer.insert_task(2, 2.0);
+      work_distributer.insert_task(4, 4.0);
+      work_distributer.insert_task(5, 5.0);
+      auto result = work_distributer.finish_remaining_tasks();
+      EXPECT_EQ(result, (std::vector<int>{49, 36, 25, 16, 9, 4, 1}));
     }
   }
 }
