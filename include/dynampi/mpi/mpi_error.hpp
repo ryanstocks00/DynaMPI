@@ -3,9 +3,15 @@
  * SPDX-License-Identifier: MIT
  */
 
+#pragma once
+
 #include <mpi.h>
 
+#if __has_include(<source_location>)
 #include <source_location>
+#else
+#include <experimental/source_location>
+#endif
 #include <stdexcept>
 
 #define DYNAMPI_MPI_CHECK(func, args)                               \

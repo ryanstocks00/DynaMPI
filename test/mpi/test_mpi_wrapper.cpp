@@ -70,6 +70,16 @@ TEST(DynamicDistribution, Example1) {
   }
 }
 
+TEST(DynamicDistribution, Example1_ManagerLast) {
+  auto worker_task = [](size_t task) -> size_t { return task * task; };
+  auto result = dynampi::mpi_manager_worker_distribution<size_t>(
+      4, worker_task, MPI_COMM_WORLD, MPIEnvironment::world_comm_size() - 1);
+  if (result.has_value()) {
+    assert(result == std::vector<size_t>({0, 1, 4, 9}));
+    EXPECT_EQ(result, std::vector<size_t>({0, 1, 4, 9}));
+  }
+}
+
 TEST(DynamicDistribution, Example2) {
   using Task = int;
   using Result = std::vector<int>;
