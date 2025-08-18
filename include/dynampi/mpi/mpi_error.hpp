@@ -16,17 +16,18 @@
 #endif
 #include <stdexcept>
 
-#define DYNAMPI_MPI_CHECK(func, args)                               \
-  do {                                                              \
-    int err = func args;                                            \
-    if (err != MPI_SUCCESS) {                                       \
-      mpi_check(err, #func #args, std::source_location::current()); \
-    }                                                               \
+#define DYNAMPI_MPI_CHECK(func, args) \
+  do {                                \
+    int err = func args;              \
+    if (err != MPI_SUCCESS) {         \
+      mpi_check(err, #func #args);    \
+    }                                 \
   } while (false)
 
 namespace dynampi {
-inline void mpi_check(int err, std::string_view command,
+inline void mpi_check(int err, std::string_view command
 #ifndef NO_SOURCE_LOCATION
+                      ,
                       std::source_location loc = std::source_location::current()
 #endif
 ) {
@@ -35,9 +36,9 @@ inline void mpi_check(int err, std::string_view command,
     int length_of_error_string;
     MPI_Error_string(err, error_string, &length_of_error_string);
     throw std::runtime_error(std::string("MPI error in ") + std::string(command) + ": " +
-                             std::string(error_string, length_of_error_string) + " at " +
+                             std::string(error_string, length_of_error_string)
 #ifndef NO_SOURCE_LOCATION
-                             loc.file_name() + ":" + std::to_string(loc.line())
+                             + " at " + loc.file_name() + ":" + std::to_string(loc.line())
 #endif
     );
   }
