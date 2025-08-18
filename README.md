@@ -36,7 +36,7 @@ This project is licensed under the terms of the MIT license.
 
 For dynamic load distribution of a static number of tasks, we provide the simple API
 
-```
+```cpp
 template <typename ResultT>
 std::optional<std::vector<ResultT>> mpi_manager_worker_distribution(
     size_t n_tasks, std::function<ResultT(size_t)> worker_function, MPI_Comm comm = MPI_COMM_WORLD,
@@ -57,14 +57,16 @@ The order of the result is guaranteed to be in order of the task indexes.
 
 It is common for the number of tasks to not be static. It can also be inefficient to form all tasks prior to 
 
-```
+```cpp
 template <typename TaskT, typename ResultT>
 class MPIDynampicWorkDistributor {
 
+};
 ```
 
 Allowing
-```
+
+```cpp
 typedef int Task;
 typedef std::vector<double> Result;
 auto worker_task = [](Task task) -> Result { return task * task; };
