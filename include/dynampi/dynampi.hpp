@@ -48,7 +48,12 @@ inline constexpr std::string_view string = DYNAMPI_VERSION_STRING;
 
 }  // namespace version
 
-template <typename TaskT, typename ResultT>
+struct DynamicDistributionConfig {
+  bool auto_run_workers = true;  // Automatically run workers if not on manager rank
+};
+
+template <typename TaskT, typename ResultT,
+          DynamicDistributionConfig config = DynamicDistributionConfig{}>
 class NaiveMPIWorkDistributor {
   MPICommunicator _communicator;
   std::function<ResultT(TaskT)> _worker_function;
@@ -76,6 +81,9 @@ class NaiveMPIWorkDistributor {
         _worker_function(worker_function),
         _manager_rank(manager_rank) {
     if (is_manager()) _worker_task_indices.resize(_communicator.size() - 1, -1);
+    if (config.auto_run_workers && _communicator.rank() != _manager_rank) {
+      run_worker();
+    }
   }
 
   void run_worker() {
@@ -231,10 +239,8 @@ std::optional<std::vector<ResultT>> mpi_manager_worker_distribution(
       distributor.insert_task(i);
     }
     return distributor.distribute_tasks();
-  } else {
-    distributor.run_worker();
-    return {};
   }
+  return {};
 }
 
 template <typename TaskT, typename ResultT>

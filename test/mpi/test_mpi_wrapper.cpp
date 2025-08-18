@@ -32,7 +32,9 @@ TEST(DynamicDistribution, Naive) {
   for (size_t i = 0; i < tasks.size(); ++i) {
     tasks[i] = static_cast<TaskT>(i);
   }
-  dynampi::NaiveMPIWorkDistributor<TaskT, double> distributor(worker_task, MPI_COMM_WORLD);
+  dynampi::NaiveMPIWorkDistributor<TaskT, double,
+                                   dynampi::DynamicDistributionConfig{.auto_run_workers = false}>
+      distributor(worker_task, MPI_COMM_WORLD);
 
   if (distributor.is_manager()) {
     for (int i = 0; i < 10; ++i) {
@@ -89,14 +91,12 @@ TEST(DynamicDistribution, Example2) {
   {
     dynampi::MPIDynamicWorkDistributor<Task, Result> work_distributer(worker_task);
     if (work_distributer.is_manager()) {
-      work_distributer.insert_tasks({1});
+      work_distributer.insert_tasks({1, 2, 3, 4, 5});
       auto results = work_distributer.distribute_tasks();
-      EXPECT_EQ(results.size(), 1);
-      work_distributer.insert_tasks({6});
+      EXPECT_EQ(results.size(), 5);
+      work_distributer.insert_tasks({6, 7, 8});
       results = work_distributer.distribute_tasks();
-      // EXPECT_EQ(results.size(), 8);
-    } else {
-      work_distributer.run_worker();
+      EXPECT_EQ(results.size(), 8);
     }
   }
 }
