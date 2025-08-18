@@ -52,8 +52,21 @@ struct DynamicDistributionConfig {
   bool prioritize_tasks = false;
 };
 
+class MPIDynamicWorkDistributorInterface {
+ public:
+  void run_worker();
+  bool is_manager() const;
+  size_t remaining_tasks_count() const;
+  void insert_task(int64_t task);
+  void insert_task(const int64_t& task, double priority);
+
+  template <std::ranges::input_range Range>
+  void insert_tasks(const Range& tasks);
+  std::vector<int64_t> finish_remaining_tasks();
+};
+
 template <typename TaskT, typename ResultT, typename QueueT = std::queue<TaskT>>
-class NaiveMPIWorkDistributor {
+class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
  public:
   struct Config {
     MPI_Comm comm = MPI_COMM_WORLD;
@@ -152,14 +165,7 @@ class NaiveMPIWorkDistributor {
     using task_type = MPI_Type<TaskT>;
     assert(_communicator.rank() == _config.manager_rank && "Only the manager can distribute tasks");
     while (!_unallocated_task_queue.empty()) {
-      const TaskT* t = nullptr;
-      if constexpr (std::is_same_v<QueueT, std::queue<TaskT>>) {
-        t = &_unallocated_task_queue.front();
-      } else {
-        const std::pair<double, TaskT>& p = _unallocated_task_queue.top();
-        t = &p.second;
-      }
-      const TaskT& task = *t;
+      const TaskT task = get_next_task_to_send();
       if (_communicator.size() > 1) {
         if (_free_worker_indices.empty()) {
           // If no free workers, wait for a result to be received
@@ -175,7 +181,6 @@ class NaiveMPIWorkDistributor {
         _results.emplace_back(_worker_function(task));
         _results_received++;
       }
-      _unallocated_task_queue.pop();
       _tasks_sent++;
     }
     while (_free_worker_indices.size() + 1 < static_cast<size_t>(_communicator.size())) {
@@ -189,6 +194,22 @@ class NaiveMPIWorkDistributor {
   ~NaiveMPIWorkDistributor() {
     if (is_manager()) send_done_to_workers();
     assert(_tasks_sent == _results_received && "Not all tasks were processed by workers");
+  }
+
+ private:
+  TaskT get_next_task_to_send() {
+    assert(_communicator.rank() == _config.manager_rank && "Only the manager can get next task");
+    if (_unallocated_task_queue.empty()) {
+      throw std::runtime_error("No more tasks to distribute");
+    }
+    TaskT task;
+    if constexpr (std::is_same_v<QueueT, std::queue<TaskT>>) {
+      task = _unallocated_task_queue.front();
+    } else {
+      task = _unallocated_task_queue.top().second;
+    }
+    _unallocated_task_queue.pop();
+    return task;
   }
 
   void send_done_to_workers() {
@@ -218,6 +239,8 @@ class NaiveMPIWorkDistributor {
   void receive_from_any_worker() {
     assert(_communicator.rank() == _config.manager_rank &&
            "Only the manager can receive results and send tasks");
+    assert(_communicator.size() > 1 &&
+           "There should be at least one worker to receive results from");
     using result_type = MPI_Type<ResultT>;
     MPI_Status status;
     DYNAMPI_MPI_CHECK(MPI_Probe, (MPI_ANY_SOURCE, MPI_ANY_TAG, _communicator.get(), &status));
