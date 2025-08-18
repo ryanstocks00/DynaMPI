@@ -72,3 +72,7 @@ if(DYNAMPI_BUILD_TESTS)
   enable_testing()
   add_subdirectory(test)
 endif()
+
+if(DYNAMPI_BUILD_BENCHMARKS)
+  add_subdirectory(benchmark)
+endif()
