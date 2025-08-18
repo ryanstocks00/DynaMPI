@@ -56,7 +56,7 @@ class NaiveMPIWorkDistributor {
   std::queue<TaskT> _task_queue;
   std::vector<int64_t> _worker_task_indices;
   std::vector<ResultT> _results;
-  std::stack<size_t, std::vector<size_t>> _free_workers;
+  std::stack<int, std::vector<int>> _free_workers;
 
   size_t _tasks_sent = 0;
   size_t _results_received = 0;
@@ -70,8 +70,8 @@ class NaiveMPIWorkDistributor {
   using _result_type = MPI_Type<ResultT>;
 
  public:
-  NaiveMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function, MPI_Comm comm = MPI_COMM_WORLD,
-                          int manager_rank = 0)
+  NaiveMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
+                          MPI_Comm comm = MPI_COMM_WORLD, int manager_rank = 0)
       : _communicator(comm, MPICommunicator::Owned),
         _worker_function(worker_function),
         _manager_rank(manager_rank) {
@@ -85,18 +85,21 @@ class NaiveMPIWorkDistributor {
       MPI_Status status;
       DYNAMPI_MPI_CHECK(MPI_Probe, (MPI_ANY_SOURCE, MPI_ANY_TAG, _communicator.get(), &status));
       if (status.MPI_TAG == DONE_TAG) {
-        MPI_Recv(nullptr, 0, _task_type::value, _manager_rank, MPI_ANY_TAG, _communicator.get(), &status);
+        MPI_Recv(nullptr, 0, _task_type::value, _manager_rank, MPI_ANY_TAG, _communicator.get(),
+                 &status);
         break;
       }
       int count;
       DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, _task_type::value, &count));
       TaskT message;
       _task_type::resize(message, count);
-      MPI_Recv(_task_type::ptr(message), 1, _task_type::value, _manager_rank, MPI_ANY_TAG, _communicator.get(), &status);
+      MPI_Recv(_task_type::ptr(message), 1, _task_type::value, _manager_rank, MPI_ANY_TAG,
+               _communicator.get(), &status);
       _tasks_sent++;
       assert(status.MPI_TAG == TASK_TAG && "Unexpected tag received in worker");
       ResultT result = _worker_function(message);
-      MPI_Send(_result_type::ptr(result), _result_type::count(result), _result_type::value, _manager_rank, RESULT_TAG, _communicator.get());
+      MPI_Send(_result_type::ptr(result), _result_type::count(result), _result_type::value,
+               _manager_rank, RESULT_TAG, _communicator.get());
       _results_received++;
     }
   }
@@ -147,8 +150,9 @@ class NaiveMPIWorkDistributor {
       int count;
       DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, _result_type::value, &count));
       _result_type::resize(_results[task_idx], count);
-      DYNAMPI_MPI_CHECK(MPI_Recv, (_result_type::ptr(_results[task_idx]), count, _result_type::value, status.MPI_SOURCE,
-                                   RESULT_TAG, _communicator.get(), &status));
+      DYNAMPI_MPI_CHECK(MPI_Recv,
+                        (_result_type::ptr(_results[task_idx]), count, _result_type::value,
+                         status.MPI_SOURCE, RESULT_TAG, _communicator.get(), &status));
       _results_received++;
     } else {
       assert(status.MPI_TAG == REQUEST_TAG && "Unexpected tag received in worker");
@@ -170,7 +174,8 @@ class NaiveMPIWorkDistributor {
         int worker = _free_workers.top();
         _free_workers.pop();
         _worker_task_indices[idx_for_worker(worker)] = _tasks_sent;
-        DYNAMPI_MPI_CHECK(MPI_Send, (_task_type::ptr(task), _task_type::count(task), _task_type::value, worker, TASK_TAG, _communicator.get()));
+        DYNAMPI_MPI_CHECK(MPI_Send, (_task_type::ptr(task), _task_type::count(task),
+                                     _task_type::value, worker, TASK_TAG, _communicator.get()));
       } else {
         // If there's only one process, we just run the worker function directly
         _results.emplace_back(_worker_function(task));
@@ -193,8 +198,8 @@ class NaiveMPIWorkDistributor {
     assert(_free_workers.size() + 1 == static_cast<size_t>(_communicator.size()) &&
            "All workers should be free before finalizing");
     for (int i = 0; i < _communicator.size() - 1; i++) {
-      DYNAMPI_MPI_CHECK(MPI_Send,
-                        (nullptr, 0, _task_type::value, worker_for_idx(i), DONE_TAG, _communicator.get()));
+      DYNAMPI_MPI_CHECK(MPI_Send, (nullptr, 0, _task_type::value, worker_for_idx(i), DONE_TAG,
+                                   _communicator.get()));
     }
   }
 

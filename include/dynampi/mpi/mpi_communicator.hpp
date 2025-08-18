@@ -6,6 +6,7 @@
 #pragma once
 
 #include <mpi.h>
+
 #include "mpi_error.hpp"
 
 namespace dynampi {
@@ -50,4 +51,4 @@ class MPICommunicator {
   [[nodiscard]] MPI_Comm get() const { return _comm; }
 };
 
-}
+}  // namespace dynampi

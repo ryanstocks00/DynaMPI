@@ -43,7 +43,7 @@ std::optional<std::vector<ResultT>> mpi_manager_worker_distribution(
     int manager_rank = 0);
 ```
 
-Allowing 
+Allowing
 ```cpp
 #include <dynampi/dynampi.hpp>
 
@@ -55,7 +55,7 @@ if (result.has_value())
 
 The order of the result is guaranteed to be in order of the task indexes.
 
-It is common for the number of tasks to not be static. It can also be inefficient to form all tasks prior to 
+It is common for the number of tasks to not be static. It can also be inefficient to form all tasks prior to
 
 ```cpp
 template <typename TaskT, typename ResultT>

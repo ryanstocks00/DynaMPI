@@ -73,18 +73,20 @@ TEST(DynamicDistribution, Example1) {
 TEST(DynamicDistribution, Example2) {
   using Task = int;
   using Result = std::vector<int>;
-  auto worker_task = [](Task task) -> Result { return Result{task, task * task, task * task * task}; };
+  auto worker_task = [](Task task) -> Result {
+    return Result{task, task * task, task * task * task};
+  };
   {
-      dynampi::MPIDynamicWorkDistributor<Task, Result> work_distributer(worker_task);
-      if (work_distributer.is_manager()) {
-          work_distributer.insert_tasks({1});
-          auto results = work_distributer.distribute_tasks();
-          EXPECT_EQ(results.size(), 1);
-          work_distributer.insert_tasks({6});
-          results = work_distributer.distribute_tasks();
-          //EXPECT_EQ(results.size(), 8);
-      } else {
-        work_distributer.run_worker();
-      }
+    dynampi::MPIDynamicWorkDistributor<Task, Result> work_distributer(worker_task);
+    if (work_distributer.is_manager()) {
+      work_distributer.insert_tasks({1});
+      auto results = work_distributer.distribute_tasks();
+      EXPECT_EQ(results.size(), 1);
+      work_distributer.insert_tasks({6});
+      results = work_distributer.distribute_tasks();
+      // EXPECT_EQ(results.size(), 8);
+    } else {
+      work_distributer.run_worker();
+    }
   }
 }

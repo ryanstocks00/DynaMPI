@@ -4,6 +4,7 @@
  */
 
 #include <mpi.h>
+
 #include <source_location>
 #include <stdexcept>
 
