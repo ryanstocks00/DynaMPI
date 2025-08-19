@@ -1,0 +1,11 @@
+# SPDX-FileCopyrightText: 2025 QDX Technologies. Authored by Ryan Stocks <ryan.stocks00@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+coverage:
+  status:
+    project:
+      default:
+        target: 100%
+        threshold: 1%
+ignore:
+  - "benchmark"
