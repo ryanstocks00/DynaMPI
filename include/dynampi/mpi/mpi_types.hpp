@@ -54,6 +54,18 @@ DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE(long double, MPI_LONG_DOUBLE);
 DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE(bool, MPI_CXX_BOOL);
 #endif
 
+template <>
+struct MPI_Type<std::nullptr_t> {
+  inline static MPI_Datatype value = MPI_DATATYPE_NULL;
+
+  static int count(const std::nullptr_t&) noexcept { return 0; }
+  static void resize(std::nullptr_t&, int new_size) noexcept {
+    (void)new_size;  // No-op, nullptr cannot be resized
+  }
+  static void* ptr(std::nullptr_t&) noexcept { return nullptr; }
+  static const void* ptr(const std::nullptr_t&) noexcept { return nullptr; }
+};
+
 // Helper trait: is there a dynampi::MPI_Type<U> specialization?
 template <typename, typename = void>
 struct has_dynampi_mpi_type : std::false_type {};

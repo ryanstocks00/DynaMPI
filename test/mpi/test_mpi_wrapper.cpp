@@ -115,18 +115,18 @@ TEST(DynamicDistribution, PriorityQueue) {
   using Result = int;
   auto worker_task = [](Task task) -> Result { return task * task; };
   {
-    dynampi::MPIDynamicWorkDistributor<Task, Result, std::priority_queue<std::pair<double, Task>>>
-        work_distributer(worker_task);
+    dynampi::MPIDynamicWorkDistributor<Task, Result, {.prioritize_tasks = true}> work_distributer(
+        worker_task);
     if (work_distributer.is_manager()) {
       work_distributer.insert_task(1, 1.0);
       work_distributer.insert_task(7, 7.0);
       work_distributer.insert_task(3, 3.0);
       work_distributer.insert_task(6, 6.0);
       work_distributer.insert_task(2, 2.0);
-      work_distributer.insert_task(4, 4.0);
-      work_distributer.insert_task(5, 5.0);
+      work_distributer.insert_task(4, 5.0);
+      work_distributer.insert_task(5, 4.0);
       auto result = work_distributer.finish_remaining_tasks();
-      EXPECT_EQ(result, (std::vector<int>{49, 36, 25, 16, 9, 4, 1}));
+      EXPECT_EQ(result, (std::vector<int>{49, 36, 16, 25, 9, 4, 1}));
     }
   }
 }
