@@ -130,3 +130,32 @@ TEST(DynamicDistribution, PriorityQueue) {
     }
   }
 }
+
+TEST(DynamicDistribution, Statistics) {
+  using Task = int;
+  using Result = int;
+  auto worker_task = [](Task task) -> Result { return task * task; };
+  {
+    dynampi::MPIDynamicWorkDistributor<Task, Result, dynampi::enable_statistics> work_distributer(
+        worker_task);
+    if (work_distributer.is_manager()) {
+      work_distributer.insert_tasks({1, 2, 3, 4, 5});
+      auto results = work_distributer.finish_remaining_tasks();
+      size_t expected_size = 5;
+      if (MPIEnvironment::world_comm_size() == 1) {
+        expected_size = 0;
+      }
+      EXPECT_EQ(results, (std::vector<int>{1, 4, 9, 16, 25}));
+      EXPECT_EQ(work_distributer.get_statistics().total_messages_sent, expected_size);
+      EXPECT_EQ(work_distributer.get_statistics().total_bytes_sent, expected_size * sizeof(int));
+      EXPECT_EQ(work_distributer.get_statistics().total_messages_received,
+                expected_size + MPIEnvironment::world_comm_size() - 1);
+      EXPECT_EQ(work_distributer.get_statistics().total_bytes_received,
+                expected_size * sizeof(int));
+      work_distributer.finalize();
+      EXPECT_EQ(work_distributer.get_statistics().total_messages_sent,
+                expected_size + MPIEnvironment::world_comm_size() - 1);
+      EXPECT_EQ(work_distributer.get_statistics().total_bytes_sent, expected_size * sizeof(int));
+    }
+  }
+}

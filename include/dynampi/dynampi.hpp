@@ -180,7 +180,7 @@ class NaiveMPIWorkDistributor {
     }
   }
 
-  const StatisticsT& get_statistics()
+  const StatisticsT& get_statistics() const
     requires(track_statistics)
   {
     assert(is_manager() && "Only the manager can access statistics");
