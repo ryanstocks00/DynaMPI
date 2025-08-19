@@ -51,8 +51,11 @@ if(DYNAMPI_BUILD_TESTS)
 
     # Add MPI test
     add_test(NAME c_interface_test_1_rank COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 1 $<TARGET_FILE:c_interface_test>)
+    set_tests_properties(c_interface_test_1_rank PROPERTIES TIMEOUT 10)
     add_test(NAME c_interface_test_2_rank COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 $<TARGET_FILE:c_interface_test>)
+    set_tests_properties(c_interface_test_2_rank PROPERTIES TIMEOUT 10)
     add_test(NAME c_interface_test_4_rank COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 4 $<TARGET_FILE:c_interface_test>)
+    set_tests_properties(c_interface_test_4_rank PROPERTIES TIMEOUT 10)
 endif()
 
 # Install rules

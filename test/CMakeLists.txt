@@ -45,6 +45,7 @@ endfunction()
 if(NOT CMAKE_CXX_COMPILER MATCHES "smpicxx")
   create_test(unit_test unit "GTest::gtest_main;dynampi")
   add_test(NAME unit_test COMMAND unit_test)
+  set_tests_properties(unit_test PROPERTIES TIMEOUT 10)
 endif()
 
 create_test(mpi_test mpi "GTest::gtest;dynampi")
@@ -89,6 +90,7 @@ function(add_mpi_test test_name num_procs)
       $<TARGET_FILE:mpi_test>
       ${MPIEXEC_POSTFLAGS})
   add_test(NAME ${test_name} COMMAND ${command})
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 10)
 endfunction()
 
 foreach(rank 1 2 3 4 8)

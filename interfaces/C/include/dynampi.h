@@ -32,43 +32,42 @@ typedef struct {
   int auto_run_workers;
 } dynampi_config_t;
 
-// Function pointer types for C compatibility
-typedef void* (*dynampi_worker_function_t)(void* task);
+// Worker: arbitrary bytes in -> bytes out. The implementation must allocate out_data (malloc) and
+// set size
+typedef void (*dynampi_worker_t)(const unsigned char* in_data, size_t in_size,
+                                 unsigned char** out_data, size_t* out_size);
 
 // Create and destroy work distributor
-dynampi_work_distributor_t* dynampi_create_work_distributor(
-    dynampi_worker_function_t worker_function, const dynampi_config_t* config);
+dynampi_work_distributor_t* dynampi_create_work_distributor(dynampi_worker_t worker_function,
+                                                            const dynampi_config_t* config);
 
 void dynampi_destroy_work_distributor(dynampi_work_distributor_t* distributor);
 
 // Configuration helpers
 dynampi_config_t dynampi_default_config(void);
-void dynampi_set_comm(dynampi_config_t* config, MPI_Comm comm);
-void dynampi_set_manager_rank(dynampi_config_t* config, int rank);
-void dynampi_set_auto_run_workers(dynampi_config_t* config, int auto_run);
 
 // Work distribution functions
 int dynampi_is_manager(const dynampi_work_distributor_t* distributor);
-size_t dynampi_remaining_tasks_count(const dynampi_work_distributor_t* distributor);
-void dynampi_insert_task(dynampi_work_distributor_t* distributor, int64_t task);
-void dynampi_insert_task_with_priority(dynampi_work_distributor_t* distributor, int64_t task,
-                                       double priority);
-void dynampi_insert_tasks_array(dynampi_work_distributor_t* distributor, const int64_t* tasks,
-                                size_t count);
 void dynampi_run_worker(dynampi_work_distributor_t* distributor);
 
-// Task execution and result collection
-void** dynampi_finish_remaining_tasks(dynampi_work_distributor_t* distributor,
-                                      size_t* result_count);
+// Submit a task (arbitrary bytes)
+void dynampi_insert_task(dynampi_work_distributor_t* distributor, const unsigned char* data,
+                         size_t size);
 
-// Utility functions
-int dynampi_manager_worker_distribution(size_t n_tasks, dynampi_worker_function_t worker_function,
-                                        void*** results, size_t* result_count, MPI_Comm comm,
-                                        int manager_rank);
+// Task execution and result collection (manager only)
+typedef struct {
+  unsigned char* data;
+  size_t size;
+} dynampi_buffer_t;
 
-// Error handling
-const char* dynampi_get_last_error(void);
-void dynampi_clear_last_error(void);
+dynampi_buffer_t* dynampi_finish_remaining_tasks(dynampi_work_distributor_t* distributor,
+                                                 size_t* result_count);
+
+// Utility function: run a simple manager-worker pipeline for n_tasks where the input is the task
+// index
+int dynampi_manager_worker_distribution(size_t n_tasks, dynampi_worker_t worker_function,
+                                        dynampi_buffer_t** results, size_t* result_count,
+                                        MPI_Comm comm, int manager_rank);
 
 #ifdef __cplusplus
 }

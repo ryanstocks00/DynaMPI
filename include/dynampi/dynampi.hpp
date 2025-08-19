@@ -151,9 +151,7 @@ class NaiveMPIWorkDistributor {
       DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, task_type::value, &count));
       TaskT message;
       task_type::resize(message, count);
-
-      _communicator.recv(message, status.MPI_SOURCE, Tag::TASK);
-
+      _communicator.recv(message, _config.manager_rank, Tag::TASK);
       _tasks_sent++;
       ResultT result = _worker_function(message);
       _communicator.send(result, _config.manager_rank, Tag::RESULT);

@@ -6,25 +6,19 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "dynampi.h"
 
-// Simple worker function for testing
-void* test_worker_function(void* task) {
-  int64_t task_value = *(int64_t*)task;
-  printf("Processing task: %ld\n", task_value);
-
-  // Allocate result (just return the task value as a pointer)
-  int64_t* result = malloc(sizeof(int64_t));
-  *result = task_value * 2;  // Simple transformation
-  return result;
-}
-
-// Cleanup function for results
-void result_cleanup(void* result) {
-  if (result) {
-    free(result);
-  }
+// Bytes worker: doubles an int64 payload if present
+static void test_worker_function(const unsigned char* in_data, size_t in_size,
+                                 unsigned char** out_data, size_t* out_size) {
+  int64_t x = 0;
+  if (in_size >= sizeof(int64_t)) memcpy(&x, in_data, sizeof(int64_t));
+  int64_t y = x * 2;
+  *out_size = sizeof(int64_t);
+  *out_data = (unsigned char*)malloc(sizeof(int64_t));
+  if (*out_data) memcpy(*out_data, &y, sizeof(int64_t));
 }
 
 int main(int argc, char* argv[]) {
@@ -49,11 +43,11 @@ int main(int argc, char* argv[]) {
   printf("Process %d: Default config - comm: %p, manager_rank: %d, auto_run_workers: %d\n", rank,
          (void*)(uintptr_t)config.comm, config.manager_rank, config.auto_run_workers);
 
-  // Test manager-worker distribution - this is the main test that should work with multiple ranks
+  // Test manager-worker distribution - all ranks participate; manager collects results
   // ALL processes must call this function for proper coordination
   printf("Process %d: Running manager-worker distribution test\n", rank);
 
-  void** results;
+  dynampi_buffer_t* results;
   size_t result_count;
 
   int ret = dynampi_manager_worker_distribution(10,  // 10 tasks
@@ -67,13 +61,14 @@ int main(int argc, char* argv[]) {
 
       // Print results
       for (size_t i = 0; i < result_count; i++) {
-        int64_t* result = (int64_t*)results[i];
-        printf("Process %d: Result[%zu] = %ld\n", rank, i, *result);
+        int64_t val = 0;
+        if (results[i].size >= sizeof(int64_t)) memcpy(&val, results[i].data, sizeof(int64_t));
+        printf("Process %d: Result[%zu] = %ld\n", rank, i, val);
       }
 
       // Clean up results
       for (size_t i = 0; i < result_count; i++) {
-        result_cleanup(results[i]);
+        free(results[i].data);
       }
       free(results);
     } else {
@@ -82,10 +77,6 @@ int main(int argc, char* argv[]) {
     }
   } else {
     printf("Process %d: Manager-worker distribution failed\n", rank);
-    const char* error = dynampi_get_last_error();
-    if (error && *error) {
-      printf("Process %d: Error: %s\n", rank, error);
-    }
   }
 
   // Synchronize all processes before proceeding
@@ -100,37 +91,26 @@ int main(int argc, char* argv[]) {
   if (distributor) {
     printf("Process %d: Successfully created work distributor\n", rank);
 
-    // Test basic functions
+    // Manager inserts a few tasks; workers just run
     if (dynampi_is_manager(distributor)) {
-      printf("Process %d: Correctly identified as manager\n", rank);
-
-      // Insert some tasks (only manager can do this)
-      dynampi_insert_task(distributor, 100);
-      dynampi_insert_task(distributor, 200);
-      dynampi_insert_task_with_priority(distributor, 300, 1.5);
-
-      printf("Process %d: Inserted tasks, remaining: %zu\n", rank,
-             dynampi_remaining_tasks_count(distributor));
-    } else {
-      printf("Process %d: Correctly identified as worker\n", rank);
+      int64_t vals[] = {100, 200, 300};
+      for (size_t i = 0; i < 3; ++i) {
+        unsigned char buf[sizeof(int64_t)];
+        memcpy(buf, &vals[i], sizeof(int64_t));
+        dynampi_insert_task(distributor, buf, sizeof(int64_t));
+      }
     }
 
-    // ALL processes must call finish_remaining_tasks for proper coordination
-    printf("Process %d: Coordinating work distribution\n", rank);
-    size_t result_count;
-    void** results = dynampi_finish_remaining_tasks(distributor, &result_count);
-
-    if (results) {
-      // Manager gets results
-      printf("Process %d: Received %zu results from work distributor\n", rank, result_count);
-      // Clean up results
-      for (size_t i = 0; i < result_count; i++) {
-        result_cleanup(results[i]);
+    // Manager collects results; workers run the worker loop
+    if (dynampi_is_manager(distributor)) {
+      size_t rc = 0;
+      dynampi_buffer_t* bufs = dynampi_finish_remaining_tasks(distributor, &rc);
+      if (bufs) {
+        for (size_t i = 0; i < rc; ++i) free(bufs[i].data);
+        free(bufs);
       }
-      free(results);
     } else {
-      // Workers don't get results
-      printf("Process %d: Completed work distribution coordination\n", rank);
+      dynampi_run_worker(distributor);
     }
 
     // Clean up
@@ -138,10 +118,6 @@ int main(int argc, char* argv[]) {
     printf("Process %d: Work distributor destroyed\n", rank);
   } else {
     printf("Process %d: Failed to create work distributor\n", rank);
-    const char* error = dynampi_get_last_error();
-    if (error && *error) {
-      printf("Process %d: Error: %s\n", rank, error);
-    }
   }
 
   // Final synchronization
