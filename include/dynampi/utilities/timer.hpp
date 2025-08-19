@@ -7,6 +7,8 @@
 
 #include <cassert>
 #include <chrono>
+#include <optional>
+#include <ostream>
 
 namespace dynampi {
 
