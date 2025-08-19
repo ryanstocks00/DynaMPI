@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.14)
 project(
   DynaMPI
   VERSION 0.0.1
-  LANGUAGES CXX C)
+  LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -21,6 +21,7 @@ endif()
 option(DYNAMPI_BUILD_TESTS "Build tests for DynaMPI" ${IS_BASE_PROJECT})
 option(DYNAMPI_BUILD_BENCHMARKS "Build benchmarks for DynaMPI"
        ${IS_BASE_PROJECT})
+option(DYNAMPI_BUILD_C_INTERFACE "Build C interface for DynaMPI" ${IS_BASE_PROJECT})
 
 execute_process(
   COMMAND git rev-parse HEAD
@@ -78,5 +79,7 @@ if(DYNAMPI_BUILD_BENCHMARKS)
   add_subdirectory(benchmark)
 endif()
 
-# Add C interface
-add_subdirectory(interfaces/C)
+if(DYNAMPI_BUILD_C_INTERFACE)
+  # Add C interface
+  add_subdirectory(interfaces/c)
+endif()

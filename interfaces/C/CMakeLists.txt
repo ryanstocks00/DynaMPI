@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 QDX Technologies. Authored by Ryan Stocks <ryan.stocks00@gmail.com>
 # SPDX-License-Identifier: MIT
 
-cmake_minimum_required(VERSION 3.14)
+enable_language(C)
 
 # Create the C interface library
 add_library(dynampi_c SHARED
