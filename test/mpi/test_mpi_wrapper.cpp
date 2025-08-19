@@ -9,6 +9,7 @@
 #include <cmath>
 #include <dynampi/dynampi.hpp>
 
+#include "dynampi/mpi/mpi_communicator.hpp"
 #include "mpi_test_environment.hpp"
 
 TEST(MPI, PingPong) {
@@ -136,8 +137,9 @@ TEST(DynamicDistribution, Statistics) {
   using Result = int;
   auto worker_task = [](Task task) -> Result { return task * task; };
   {
-    dynampi::MPIDynamicWorkDistributor<Task, Result, dynampi::enable_statistics> work_distributer(
-        worker_task);
+    dynampi::MPIDynamicWorkDistributor<Task, Result,
+                                       dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>
+        work_distributer(worker_task);
     if (work_distributer.is_manager()) {
       work_distributer.insert_tasks({1, 2, 3, 4, 5});
       auto results = work_distributer.finish_remaining_tasks();
@@ -146,24 +148,27 @@ TEST(DynamicDistribution, Statistics) {
         expected_size = 0;
       }
       EXPECT_EQ(results, (std::vector<int>{1, 4, 9, 16, 25}));
-      EXPECT_EQ(work_distributer.get_statistics().total_messages_sent, expected_size);
-      EXPECT_EQ(work_distributer.get_statistics().total_bytes_sent, expected_size * sizeof(int));
-      EXPECT_EQ(work_distributer.get_statistics().total_messages_received,
+      EXPECT_EQ(work_distributer.get_statistics().comm_statistics.send_count, expected_size);
+      EXPECT_EQ(work_distributer.get_statistics().comm_statistics.bytes_sent,
+                expected_size * sizeof(int));
+      EXPECT_EQ(work_distributer.get_statistics().comm_statistics.recv_count,
                 expected_size + MPIEnvironment::world_comm_size() - 1);
-      EXPECT_EQ(work_distributer.get_statistics().total_bytes_received,
+      EXPECT_EQ(work_distributer.get_statistics().comm_statistics.bytes_received,
                 expected_size * sizeof(int));
       work_distributer.finalize();
-      EXPECT_EQ(work_distributer.get_statistics().total_messages_sent,
+      EXPECT_EQ(work_distributer.get_statistics().comm_statistics.send_count,
                 expected_size + MPIEnvironment::world_comm_size() - 1);
-      EXPECT_EQ(work_distributer.get_statistics().total_bytes_sent, expected_size * sizeof(int));
+      EXPECT_EQ(work_distributer.get_statistics().comm_statistics.bytes_sent,
+                expected_size * sizeof(int));
       double expected_num_bytes = 0;
       if (MPIEnvironment::world_comm_size() > 1) {
         expected_num_bytes = static_cast<double>(expected_size * sizeof(int)) /
                              (expected_size + MPIEnvironment::world_comm_size() - 1);
       }
-      EXPECT_DOUBLE_EQ(work_distributer.get_statistics().average_receive_size(),
+      EXPECT_DOUBLE_EQ(work_distributer.get_statistics().comm_statistics.average_receive_size(),
                        expected_num_bytes);
-      EXPECT_DOUBLE_EQ(work_distributer.get_statistics().average_send_size(), expected_num_bytes);
+      EXPECT_DOUBLE_EQ(work_distributer.get_statistics().comm_statistics.average_send_size(),
+                       expected_num_bytes);
     }
   }
 }

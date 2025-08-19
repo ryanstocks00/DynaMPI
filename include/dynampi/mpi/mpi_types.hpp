@@ -56,7 +56,7 @@ DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE(bool, MPI_CXX_BOOL);
 
 template <>
 struct MPI_Type<std::nullptr_t> {
-  inline static MPI_Datatype value = MPI_DATATYPE_NULL;
+  inline static MPI_Datatype value = MPI_PACKED;
 
   static int count(const std::nullptr_t&) noexcept { return 0; }
   static void resize(std::nullptr_t&, int new_size) noexcept {

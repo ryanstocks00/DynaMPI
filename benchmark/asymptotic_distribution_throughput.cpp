@@ -12,6 +12,8 @@
 #include <numeric>
 #include <ranges>
 
+#include "dynampi/mpi/mpi_communicator.hpp"
+
 int main(int argc, char** argv) {
   MPI_Init(&argc, &argv);
   int rank, size;
@@ -57,8 +59,9 @@ int main(int argc, char** argv) {
 
   dynampi::Timer dynamic_timer;
   {
-    dynampi::MPIDynamicWorkDistributor<Task, Result, dynampi::enable_statistics> work_distributer(
-        worker_task);
+    dynampi::MPIDynamicWorkDistributor<Task, Result,
+                                       dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>
+        work_distributer(worker_task);
     if (work_distributer.is_manager()) {
       // work_distributer.insert_tasks(std::views::iota(0ul, num_tasks));
       std::vector<Task> tasks(num_tasks);
@@ -76,19 +79,20 @@ int main(int argc, char** argv) {
         std::cout << "Rank " << i << ": "
                   << "Tasks: " << stats.worker_task_counts[i] << std::endl;
       }
-      std::cout << "Total messages sent: " << stats.total_messages_sent << std::endl;
-      std::cout << "Total messages received: " << stats.total_messages_received << std::endl;
-      std::cout << "Total bytes sent: " << stats.total_bytes_sent << std::endl;
-      std::cout << "Total bytes received: " << stats.total_bytes_received << std::endl;
-      std::cout << "Average send size: " << stats.average_send_size() << " bytes" << std::endl;
-      std::cout << "Average receive size: " << stats.average_receive_size() << " bytes"
+      std::cout << "Total messages sent: " << stats.comm_statistics.send_count << std::endl;
+      std::cout << "Total messages received: " << stats.comm_statistics.recv_count << std::endl;
+      std::cout << "Total bytes sent: " << stats.comm_statistics.bytes_sent << std::endl;
+      std::cout << "Total bytes received: " << stats.comm_statistics.bytes_received << std::endl;
+      std::cout << "Average send size: " << stats.comm_statistics.average_send_size() << " bytes"
                 << std::endl;
+      std::cout << "Average receive size: " << stats.comm_statistics.average_receive_size()
+                << " bytes" << std::endl;
       std::cout << "Average send bandwidth: "
-                << stats.total_bytes_sent / dynamic_timer.elapsed().count() << " bytes/second"
-                << std::endl;
+                << stats.comm_statistics.bytes_sent / dynamic_timer.elapsed().count()
+                << " bytes/second" << std::endl;
       std::cout << "Average receive bandwidth: "
-                << stats.total_bytes_received / dynamic_timer.elapsed().count() << " bytes/second"
-                << std::endl;
+                << stats.comm_statistics.bytes_received / dynamic_timer.elapsed().count()
+                << " bytes/second" << std::endl;
     }
   }
 

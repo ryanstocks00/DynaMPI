@@ -55,40 +55,12 @@ inline constexpr std::string_view string = DYNAMPI_VERSION_STRING;
 }  // namespace version
 
 struct prioritize_tasks_t {
-  using type = bool;
   static constexpr bool value = false;
 };
 
 struct enable_prioritization : public prioritize_tasks_t {
   static constexpr bool value = true;
 };
-
-struct track_statistics_t {
-  using type = bool;
-  static constexpr bool value = false;
-};
-
-struct enable_statistics : public track_statistics_t {
-  static constexpr bool value = true;
-};
-
-template <typename Option, typename... Options>
-struct option_value {
-  static constexpr typename Option::type value = Option::value;
-};
-
-// Specialization: if Head is derived from Option → use Head::value
-template <typename Option, typename Head, typename... Tail>
-struct option_value<Option, Head, Tail...> {
-  static constexpr typename Option::type value =
-      std::is_base_of_v<Option, Head> ? Head::value : option_value<Option, Tail...>::value;
-};
-
-// Convenience function
-template <typename Option, typename... Options>
-consteval typename Option::type get_option_value() {
-  return option_value<Option, Options...>::value;
-}
 
 template <typename TaskT, typename ResultT, typename... Options>
 class NaiveMPIWorkDistributor {
@@ -99,55 +71,10 @@ class NaiveMPIWorkDistributor {
     bool auto_run_workers = true;
   };
 
-  struct Statistics {
-    std::vector<size_t> worker_task_counts;
-    size_t total_bytes_sent = 0;
-    size_t total_bytes_received = 0;
-    size_t total_messages_sent = 0;
-    size_t total_messages_received = 0;
-
-    template <typename T>
-    void send_message(const T& message) {
-      using message_type = MPI_Type<T>;
-      if constexpr (!std::is_same_v<T, std::nullptr_t>) {
-        int count = message_type::count(message);
-        int size;
-        MPI_Type_size(message_type::value, &size);
-        total_bytes_sent += count * size;
-      }
-      total_messages_sent++;
-    }
-
-    template <typename T>
-    void receive_message(const T& message) {
-      using message_type = MPI_Type<T>;
-      if constexpr (!std::is_same_v<T, std::nullptr_t>) {
-        int count = message_type::count(message);
-        int size;
-        MPI_Type_size(message_type::value, &size);
-        total_bytes_received += count * size;
-      }
-      total_messages_received++;
-    }
-
-    double average_send_size() const {
-      if (total_messages_sent == 0) return 0.0;
-      return static_cast<double>(total_bytes_sent) / total_messages_sent;
-    }
-
-    double average_receive_size() const {
-      if (total_messages_received == 0) return 0.0;
-      return static_cast<double>(total_bytes_received) / total_messages_received;
-    }
-  };
-
  private:
   static constexpr bool prioritize_tasks = get_option_value<prioritize_tasks_t, Options...>();
   using QueueT = std::conditional_t<prioritize_tasks, std::priority_queue<std::pair<double, TaskT>>,
                                     std::deque<TaskT>>;
-
-  static constexpr bool track_statistics = get_option_value<track_statistics_t, Options...>();
-  using StatisticsT = std::conditional_t<track_statistics, Statistics, std::monostate>;
 
   QueueT _unallocated_task_queue;
   std::vector<int64_t> _worker_current_task_indices;
@@ -158,31 +85,52 @@ class NaiveMPIWorkDistributor {
   size_t _results_received = 0;
   bool _finalized = false;
 
+  static constexpr StatisticsMode statistics_mode =
+      get_option_value<track_statistics_t, Options...>();
+
+  using MPICommunicator = dynampi::MPICommunicator<track_statistics<statistics_mode>>;
   MPICommunicator _communicator;
   std::function<ResultT(TaskT)> _worker_function;
   Config _config;
 
   enum Tag : int { TASK = 0, DONE = 1, RESULT = 2, REQUEST = 3, ERROR = 4 };
 
+  struct Statistics {
+    const CommStatistics& comm_statistics;
+    std::vector<size_t> worker_task_counts;
+  };
+
+  using StatisticsT =
+      std::conditional_t<statistics_mode == StatisticsMode::Detailed, Statistics, std::monostate>;
+
   StatisticsT _statistics;
 
+  static StatisticsT create_statistics(const MPICommunicator& comm) {
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      return Statistics{comm.get_statistics(), {}};
+    } else {
+      return {};
+    }
+  }
+
  public:
-  NaiveMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
-                          Config runtime_config = Config{})
+  explicit NaiveMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
+                                   Config runtime_config = Config{})
       : _communicator(runtime_config.comm, MPICommunicator::Owned),
         _worker_function(worker_function),
-        _config(runtime_config) {
+        _config(runtime_config),
+        _statistics{create_statistics(_communicator)} {
     if (is_manager()) _worker_current_task_indices.resize(_communicator.size() - 1, -1);
     if (_config.auto_run_workers && _communicator.rank() != _config.manager_rank) {
       run_worker();
     }
-    if constexpr (track_statistics) {
+    if constexpr (statistics_mode >= StatisticsMode::Aggregated) {
       if (is_manager()) _statistics.worker_task_counts.resize(_communicator.size(), 0);
     }
   }
 
   const StatisticsT& get_statistics() const
-    requires(track_statistics)
+    requires(statistics_mode != StatisticsMode::None)
   {
     assert(is_manager() && "Only the manager can access statistics");
     return _statistics;
@@ -191,38 +139,24 @@ class NaiveMPIWorkDistributor {
   void run_worker() {
     assert(_communicator.rank() != _config.manager_rank && "Worker cannot run on the manager rank");
     using task_type = MPI_Type<TaskT>;
-    using result_type = MPI_Type<ResultT>;
-    if constexpr (track_statistics) {
-      _statistics.send_message(nullptr);
-    }
-    MPI_Send(nullptr, 0, task_type::value, _config.manager_rank, Tag::REQUEST, _communicator.get());
+    _communicator.send(nullptr, _config.manager_rank, Tag::REQUEST);
     while (true) {
       MPI_Status status;
       DYNAMPI_MPI_CHECK(MPI_Probe, (MPI_ANY_SOURCE, MPI_ANY_TAG, _communicator.get(), &status));
       if (status.MPI_TAG == Tag::DONE) {
-        if constexpr (track_statistics) {
-          _statistics.receive_message(nullptr);
-        }
-        MPI_Recv(nullptr, 0, task_type::value, _config.manager_rank, Tag::DONE, _communicator.get(),
-                 &status);
+        _communicator.recv_empty_message(_config.manager_rank, Tag::DONE);
         break;
       }
       int count;
       DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, task_type::value, &count));
       TaskT message;
       task_type::resize(message, count);
-      if constexpr (track_statistics) {
-        _statistics.receive_message(message);
-      }
-      MPI_Recv(task_type::ptr(message), 1, task_type::value, _config.manager_rank, Tag::TASK,
-               _communicator.get(), &status);
+
+      _communicator.recv(message, status.MPI_SOURCE, Tag::TASK);
+
       _tasks_sent++;
       ResultT result = _worker_function(message);
-      if constexpr (track_statistics) {
-        _statistics.send_message(result);
-      }
-      MPI_Send(result_type::ptr(result), result_type::count(result), result_type::value,
-               _config.manager_rank, Tag::RESULT, _communicator.get());
+      _communicator.send(result, _config.manager_rank, Tag::RESULT);
       _results_received++;
     }
   }
@@ -262,7 +196,6 @@ class NaiveMPIWorkDistributor {
   }
 
   [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() {
-    using task_type = MPI_Type<TaskT>;
     assert(_communicator.rank() == _config.manager_rank && "Only the manager can distribute tasks");
     while (!_unallocated_task_queue.empty()) {
       const TaskT task = get_next_task_to_send();
@@ -274,12 +207,10 @@ class NaiveMPIWorkDistributor {
         int worker = _free_worker_indices.top();
         _free_worker_indices.pop();
         _worker_current_task_indices[idx_for_worker(worker)] = _tasks_sent;
-        if constexpr (track_statistics) {
+        if constexpr (statistics_mode >= StatisticsMode::Aggregated) {
           _statistics.worker_task_counts[worker]++;
-          _statistics.send_message(task);
         }
-        DYNAMPI_MPI_CHECK(MPI_Send, (task_type::ptr(task), task_type::count(task), task_type::value,
-                                     worker, Tag::TASK, _communicator.get()));
+        _communicator.send(task, worker, Tag::TASK);
       } else {
         // If there's only one process, we just run the worker function directly
         _results.emplace_back(_worker_function(task));
@@ -331,12 +262,7 @@ class NaiveMPIWorkDistributor {
     assert(_free_worker_indices.size() + 1 == static_cast<size_t>(_communicator.size()) &&
            "All workers should be free before finalizing");
     for (int i = 0; i < _communicator.size() - 1; i++) {
-      using task_type = MPI_Type<TaskT>;
-      if constexpr (track_statistics) {
-        _statistics.send_message(nullptr);
-      }
-      DYNAMPI_MPI_CHECK(MPI_Send, (nullptr, 0, task_type::value, worker_for_idx(i), Tag::DONE,
-                                   _communicator.get()));
+      _communicator.send(nullptr, worker_for_idx(i), Tag::DONE);
     }
   }
 
@@ -372,19 +298,11 @@ class NaiveMPIWorkDistributor {
       int count;
       DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, result_type::value, &count));
       result_type::resize(_results[task_idx], count);
-      if constexpr (track_statistics) {
-        _statistics.receive_message(_results[task_idx]);
-      }
-      DYNAMPI_MPI_CHECK(MPI_Recv, (result_type::ptr(_results[task_idx]), count, result_type::value,
-                                   status.MPI_SOURCE, Tag::RESULT, _communicator.get(), &status));
+      _communicator.recv(_results[task_idx], status.MPI_SOURCE, Tag::RESULT);
       _results_received++;
     } else {
       assert(status.MPI_TAG == Tag::REQUEST && "Unexpected tag received in worker");
-      if constexpr (track_statistics) {
-        _statistics.receive_message(nullptr);
-      }
-      DYNAMPI_MPI_CHECK(MPI_Recv, (nullptr, 0, result_type::value, status.MPI_SOURCE, Tag::REQUEST,
-                                   _communicator.get(), &status));
+      _communicator.recv_empty_message(status.MPI_SOURCE, Tag::REQUEST);
     }
     _free_worker_indices.push(status.MPI_SOURCE);
   }
