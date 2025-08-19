@@ -24,13 +24,11 @@ TEST(MPI, PingPong) {
 
 TEST(MPI, ErrorCheck) {
   MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
+  EXPECT_THROW(DYNAMPI_MPI_CHECK(MPI_Comm_rank, (MPI_COMM_NULL, nullptr)), std::runtime_error);
   try {
     DYNAMPI_MPI_CHECK(MPI_Comm_rank, (MPI_COMM_NULL, nullptr));
-    FAIL() << "Expected std::runtime_error";
   } catch (const std::runtime_error& e) {
     EXPECT_TRUE(std::string(e.what()).find("MPI error in MPI_Comm_rank") != std::string::npos);
-  } catch (...) {
-    FAIL() << "Expected std::runtime_error";
   }
 }
 
