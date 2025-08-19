@@ -61,4 +61,5 @@ jobs:
           files: ${{ steps.strings.outputs.build-output-dir }}/coverage.info
           flags: unittests
           name: codecov-dynampi
+          gcov_ignore: './benchmark'
           fail_ci_if_error: true
