@@ -9,7 +9,7 @@
 #include <dynampi/dynampi.hpp>
 #include <dynampi/utilities/timer.hpp>
 #include <iostream>
-#include <numeric>
+#include <ranges>
 
 int main(int argc, char** argv) {
   MPI_Init(&argc, &argv);

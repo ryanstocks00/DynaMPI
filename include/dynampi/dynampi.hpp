@@ -7,8 +7,10 @@
 
 #include <mpi.h>
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <deque>
 #include <functional>
 #include <optional>
 #include <queue>
@@ -17,6 +19,7 @@
 #include <stack>
 #include <string_view>
 #include <tuple>
+#include <type_traits>
 #include <variant>
 #include <vector>
 
@@ -249,7 +252,7 @@ class NaiveMPIWorkDistributor {
     requires(!prioritize_tasks)
   {
     assert(_communicator.rank() == _config.manager_rank && "Only the manager can distribute tasks");
-    std::copy(tasks.begin(), tasks.end(), std::back_inserter(_unallocated_task_queue));
+    std::ranges::copy(tasks.begin(), tasks.end(), std::back_inserter(_unallocated_task_queue));
   }
   void insert_tasks(const std::vector<TaskT>& tasks)
     requires(!prioritize_tasks)
