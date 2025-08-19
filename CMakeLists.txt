@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.14)
 project(
   DynaMPI
   VERSION 0.0.1
-  LANGUAGES CXX)
+  LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -77,3 +77,6 @@ endif()
 if(DYNAMPI_BUILD_BENCHMARKS)
   add_subdirectory(benchmark)
 endif()
+
+# Add C interface
+add_subdirectory(interfaces/C)
