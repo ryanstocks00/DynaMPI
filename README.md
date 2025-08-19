@@ -6,7 +6,7 @@
 # DynaMPI
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![codecov](https://codecov.io/github/ryanstocks00/dynampi/graph/badge.svg?token=S65RFJ3FCX)](https://codecov.io/github/ryanstocks00/dynampi)
+[![codecov](https://codecov.io/github/ryanstocks00/dynampi/branch/main/graph/badge.svg?token=S65RFJ3FCX)](https://codecov.io/github/ryanstocks00/dynampi?branch=main)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/7bb14fa81aeb4bd5b59ca62cc3a80975)](https://app.codacy.com/gh/ryanstocks00/DynaMPI/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![C++ Standard](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://isocpp.org/std/the-standard)
 [![CMake](https://img.shields.io/badge/CMake-3.14%2B-green.svg)](https://cmake.org/)
@@ -17,14 +17,14 @@
 
 ## CI Status
 
-[![Linux GCC](https://github.com/ryanstocks00/DynaMPI/workflows/Linux%20GCC/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/linux-gcc.yml)
-[![Linux Clang](https://github.com/ryanstocks00/DynaMPI/workflows/Linux%20Clang/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/linux-clang.yml)
-[![Linux Intel](https://github.com/ryanstocks00/DynaMPI/workflows/Linux%20Intel/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/linux-intel.yml)
-[![Windows](https://github.com/ryanstocks00/DynaMPI/workflows/Windows/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/windows.yml)
-[![macOS](https://github.com/ryanstocks00/DynaMPI/workflows/macOS/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/macos.yml)
-[![SMPI](https://github.com/ryanstocks00/DynaMPI/workflows/SMPI/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/smpi.yml)
-[![Sanitizers](https://github.com/ryanstocks00/DynaMPI/workflows/Sanitizers/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/sanitizers.yml)
-[![Pre-commit](https://github.com/ryanstocks00/DynaMPI/workflows/Pre-commit/badge.svg)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/pre-commit.yml)
+[![Linux GCC](https://github.com/ryanstocks00/DynaMPI/actions/workflows/linux-gcc.yml/badge.svg?branch=main)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/linux-gcc.yml?query=branch%3Amain)
+[![Linux Clang](https://github.com/ryanstocks00/DynaMPI/actions/workflows/linux-clang.yml/badge.svg?branch=main)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/linux-clang.yml?query=branch%3Amain)
+[![Linux Intel](https://github.com/ryanstocks00/DynaMPI/actions/workflows/linux-intel.yml/badge.svg?branch=main)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/linux-intel.yml?query=branch%3Amain)
+[![Windows](https://github.com/ryanstocks00/DynaMPI/actions/workflows/windows.yml/badge.svg?branch=main)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/windows.yml?query=branch%3Amain)
+[![macOS](https://github.com/ryanstocks00/DynaMPI/actions/workflows/macos.yml/badge.svg?branch=main)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/macos.yml?query=branch%3Amain)
+[![SMPI](https://github.com/ryanstocks00/DynaMPI/actions/workflows/smpi.yml/badge.svg?branch=main)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/smpi.yml?query=branch%3Amain)
+[![Sanitizers](https://github.com/ryanstocks00/DynaMPI/actions/workflows/sanitizers.yml/badge.svg?branch=main)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/sanitizers.yml?query=branch%3Amain)
+[![Pre-commit](https://github.com/ryanstocks00/DynaMPI/actions/workflows/pre-commit.yml/badge.svg?branch=main)](https://github.com/ryanstocks00/DynaMPI/actions/workflows/pre-commit.yml?query=branch%3Amain)
 
 ---
 
