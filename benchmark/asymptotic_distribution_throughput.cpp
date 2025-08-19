@@ -9,6 +9,7 @@
 #include <dynampi/dynampi.hpp>
 #include <dynampi/utilities/timer.hpp>
 #include <iostream>
+#include <numeric>
 
 int main(int argc, char** argv) {
   MPI_Init(&argc, &argv);
@@ -55,7 +56,7 @@ int main(int argc, char** argv) {
 
   dynampi::Timer dynamic_timer;
   {
-    dynampi::MPIDynamicWorkDistributor<Task, Result, {.track_statistics = true}> work_distributer(
+    dynampi::MPIDynamicWorkDistributor<Task, Result, dynampi::enable_statistics> work_distributer(
         worker_task);
     if (work_distributer.is_manager()) {
       work_distributer.insert_tasks(std::views::iota(0ul, num_tasks));

@@ -10,6 +10,7 @@ project(
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(IS_BASE_PROJECT OFF)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
@@ -58,7 +59,7 @@ endif()
 if(MSVC)
   add_compile_options(/W4 /WX)
 else()
-  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+  add_compile_options(-Wall -Wextra -Wpedantic -Werror -fno-ms-extensions)
 endif()
 
 set(CMAKE_CXX_FLAGS_COVERAGE "-O0 -g -coverage -fprofile-arcs -ftest-coverage \

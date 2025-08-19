@@ -115,8 +115,8 @@ TEST(DynamicDistribution, PriorityQueue) {
   using Result = int;
   auto worker_task = [](Task task) -> Result { return task * task; };
   {
-    dynampi::MPIDynamicWorkDistributor<Task, Result, {.prioritize_tasks = true}> work_distributer(
-        worker_task);
+    dynampi::MPIDynamicWorkDistributor<Task, Result, dynampi::enable_prioritization>
+        work_distributer(worker_task);
     if (work_distributer.is_manager()) {
       work_distributer.insert_task(1, 1.0);
       work_distributer.insert_task(7, 7.0);

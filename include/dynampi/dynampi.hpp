@@ -50,27 +50,44 @@ inline constexpr std::string_view string = DYNAMPI_VERSION_STRING;
 
 }  // namespace version
 
-class MPIDynamicWorkDistributorInterface {
- public:
-  void run_worker();
-  bool is_manager() const;
-  size_t remaining_tasks_count() const;
-  void insert_task(int64_t task);
-  void insert_task(const int64_t& task, double priority);
-
-  template <std::ranges::input_range Range>
-  void insert_tasks(const Range& tasks);
-  std::vector<int64_t> finish_remaining_tasks();
+struct prioritize_tasks_t {
+  using type = bool;
+  static constexpr bool value = false;
 };
 
-struct DynamicDistributionTraits {
-  bool prioritize_tasks = false;
-  bool track_statistics = false;
+struct enable_prioritization : public prioritize_tasks_t {
+  static constexpr bool value = true;
 };
 
-template <typename TaskT, typename ResultT,
-          DynamicDistributionTraits Traits = DynamicDistributionTraits{}>
-class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
+struct track_statistics_t {
+  using type = bool;
+  static constexpr bool value = false;
+};
+
+struct enable_statistics : public track_statistics_t {
+  static constexpr bool value = true;
+};
+
+template <typename Option, typename... Options>
+struct option_value {
+  static constexpr typename Option::type value = Option::value;
+};
+
+// Specialization: if Head is derived from Option → use Head::value
+template <typename Option, typename Head, typename... Tail>
+struct option_value<Option, Head, Tail...> {
+  static constexpr typename Option::type value =
+      std::is_base_of_v<Option, Head> ? Head::value : option_value<Option, Tail...>::value;
+};
+
+// Convenience function
+template <typename Option, typename... Options>
+consteval typename Option::type get_option_value() {
+  return option_value<Option, Options...>::value;
+}
+
+template <typename TaskT, typename ResultT, typename... Options>
+class NaiveMPIWorkDistributor {
  public:
   struct Config {
     MPI_Comm comm = MPI_COMM_WORLD;
@@ -121,10 +138,12 @@ class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
   };
 
  private:
-  using QueueT =
-      std::conditional_t<Traits.prioritize_tasks, std::priority_queue<std::pair<double, TaskT>>,
-                         std::queue<TaskT>>;
-  using StatisticsT = std::conditional_t<Traits.track_statistics, Statistics, std::monostate>;
+  static constexpr bool prioritize_tasks = get_option_value<prioritize_tasks_t, Options...>();
+  using QueueT = std::conditional_t<prioritize_tasks, std::priority_queue<std::pair<double, TaskT>>,
+                                    std::deque<TaskT>>;
+
+  static constexpr bool track_statistics = get_option_value<track_statistics_t, Options...>();
+  using StatisticsT = std::conditional_t<track_statistics, Statistics, std::monostate>;
 
   QueueT _unallocated_task_queue;
   std::vector<int64_t> _worker_current_task_indices;
@@ -153,13 +172,13 @@ class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
     if (_config.auto_run_workers && _communicator.rank() != _config.manager_rank) {
       run_worker();
     }
-    if constexpr (Traits.track_statistics) {
+    if constexpr (track_statistics) {
       if (is_manager()) _statistics.worker_task_counts.resize(_communicator.size(), 0);
     }
   }
 
   const StatisticsT& get_statistics()
-    requires(Traits.track_statistics)
+    requires(track_statistics)
   {
     assert(is_manager() && "Only the manager can access statistics");
     return _statistics;
@@ -169,7 +188,7 @@ class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
     assert(_communicator.rank() != _config.manager_rank && "Worker cannot run on the manager rank");
     using task_type = MPI_Type<TaskT>;
     using result_type = MPI_Type<ResultT>;
-    if constexpr (Traits.track_statistics) {
+    if constexpr (track_statistics) {
       _statistics.send_message(nullptr);
     }
     MPI_Send(nullptr, 0, task_type::value, _config.manager_rank, Tag::REQUEST, _communicator.get());
@@ -177,7 +196,7 @@ class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
       MPI_Status status;
       DYNAMPI_MPI_CHECK(MPI_Probe, (MPI_ANY_SOURCE, MPI_ANY_TAG, _communicator.get(), &status));
       if (status.MPI_TAG == Tag::DONE) {
-        if constexpr (Traits.track_statistics) {
+        if constexpr (track_statistics) {
           _statistics.receive_message(nullptr);
         }
         MPI_Recv(nullptr, 0, task_type::value, _config.manager_rank, Tag::DONE, _communicator.get(),
@@ -188,14 +207,14 @@ class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
       DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, task_type::value, &count));
       TaskT message;
       task_type::resize(message, count);
-      if constexpr (Traits.track_statistics) {
+      if constexpr (track_statistics) {
         _statistics.receive_message(message);
       }
       MPI_Recv(task_type::ptr(message), 1, task_type::value, _config.manager_rank, Tag::TASK,
                _communicator.get(), &status);
       _tasks_sent++;
       ResultT result = _worker_function(message);
-      if constexpr (Traits.track_statistics) {
+      if constexpr (track_statistics) {
         _statistics.send_message(result);
       }
       MPI_Send(result_type::ptr(result), result_type::count(result), result_type::value,
@@ -212,28 +231,29 @@ class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
     return _unallocated_task_queue.size();
   }
 
-  void insert_task(TaskT task) {
+  void insert_task(TaskT task)
+    requires(!prioritize_tasks)
+  {
     assert(_communicator.rank() == _config.manager_rank && "Only the manager can distribute tasks");
-    _unallocated_task_queue.push(task);
+    _unallocated_task_queue.push_back(task);
   }
-  void insert_task(const TaskT& task, double priority) {
+  void insert_task(const TaskT& task, double priority)
+    requires(prioritize_tasks)
+  {
     assert(_communicator.rank() == _config.manager_rank && "Only the manager can distribute tasks");
-    if constexpr (std::is_same_v<QueueT, std::queue<TaskT>>) {
-      _unallocated_task_queue.push(task);
-    } else {
-      _unallocated_task_queue.emplace(priority, task);
-    }
+    _unallocated_task_queue.emplace(priority, task);
   }
 
   template <std::ranges::input_range Range>
-  void insert_tasks(const Range& tasks) {
+  void insert_tasks(const Range& tasks)
+    requires(!prioritize_tasks)
+  {
     assert(_communicator.rank() == _config.manager_rank && "Only the manager can distribute tasks");
-    for (const auto& task : tasks) {
-      _unallocated_task_queue.push(task);
-    }
-    // push_range
+    std::copy(tasks.begin(), tasks.end(), std::back_inserter(_unallocated_task_queue));
   }
-  void insert_tasks(const std::vector<TaskT>& tasks) {
+  void insert_tasks(const std::vector<TaskT>& tasks)
+    requires(!prioritize_tasks)
+  {
     insert_tasks(std::span<const TaskT>(tasks));
   }
 
@@ -250,7 +270,7 @@ class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
         int worker = _free_worker_indices.top();
         _free_worker_indices.pop();
         _worker_current_task_indices[idx_for_worker(worker)] = _tasks_sent;
-        if constexpr (Traits.track_statistics) {
+        if constexpr (track_statistics) {
           _statistics.worker_task_counts[worker]++;
           _statistics.send_message(task);
         }
@@ -291,12 +311,13 @@ class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
     assert(_communicator.rank() == _config.manager_rank && "Only the manager can get next task");
     assert(!_unallocated_task_queue.empty() && "There should be tasks available to send");
     TaskT task;
-    if constexpr (std::is_same_v<QueueT, std::queue<TaskT>>) {
+    if constexpr (std::is_same_v<QueueT, std::deque<TaskT>>) {
       task = _unallocated_task_queue.front();
+      _unallocated_task_queue.pop_front();
     } else {
       task = _unallocated_task_queue.top().second;
+      _unallocated_task_queue.pop();
     }
-    _unallocated_task_queue.pop();
     return task;
   }
 
@@ -307,7 +328,7 @@ class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
            "All workers should be free before finalizing");
     for (int i = 0; i < _communicator.size() - 1; i++) {
       using task_type = MPI_Type<TaskT>;
-      if constexpr (Traits.track_statistics) {
+      if constexpr (track_statistics) {
         _statistics.send_message(nullptr);
       }
       DYNAMPI_MPI_CHECK(MPI_Send, (nullptr, 0, task_type::value, worker_for_idx(i), Tag::DONE,
@@ -347,7 +368,7 @@ class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
       int count;
       DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, result_type::value, &count));
       result_type::resize(_results[task_idx], count);
-      if constexpr (Traits.track_statistics) {
+      if constexpr (track_statistics) {
         _statistics.receive_message(_results[task_idx]);
       }
       DYNAMPI_MPI_CHECK(MPI_Recv, (result_type::ptr(_results[task_idx]), count, result_type::value,
@@ -355,7 +376,7 @@ class NaiveMPIWorkDistributor : public MPIDynamicWorkDistributorInterface {
       _results_received++;
     } else {
       assert(status.MPI_TAG == Tag::REQUEST && "Unexpected tag received in worker");
-      if constexpr (Traits.track_statistics) {
+      if constexpr (track_statistics) {
         _statistics.receive_message(nullptr);
       }
       DYNAMPI_MPI_CHECK(MPI_Recv, (nullptr, 0, result_type::value, status.MPI_SOURCE, Tag::REQUEST,
@@ -380,8 +401,7 @@ std::optional<std::vector<ResultT>> mpi_manager_worker_distribution(
   return {};
 }
 
-template <typename TaskT, typename ResultT,
-          DynamicDistributionTraits Traits = DynamicDistributionTraits{}>
-using MPIDynamicWorkDistributor = NaiveMPIWorkDistributor<TaskT, ResultT, Traits>;
+template <typename TaskT, typename ResultT, typename... Options>
+using MPIDynamicWorkDistributor = NaiveMPIWorkDistributor<TaskT, ResultT, Options...>;
 
 }  // namespace dynampi
