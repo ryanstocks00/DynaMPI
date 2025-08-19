@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <iterator>
 #include <optional>
 #include <queue>
 #include <ranges>
@@ -251,7 +252,8 @@ class NaiveMPIWorkDistributor {
     requires std::ranges::input_range<Range> && (!prioritize_tasks)
   void insert_tasks(const Range& tasks) {
     assert(_communicator.rank() == _config.manager_rank && "Only the manager can distribute tasks");
-    std::ranges::copy(tasks, std::back_inserter(_unallocated_task_queue));
+    std::copy(std::ranges::begin(tasks), std::ranges::end(tasks),
+              std::back_inserter(_unallocated_task_queue));
   }
   void insert_tasks(const std::vector<TaskT>& tasks)
     requires(!prioritize_tasks)

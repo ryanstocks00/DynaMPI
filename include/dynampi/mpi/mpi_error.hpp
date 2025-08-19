@@ -11,10 +11,12 @@
 
 #if __has_include(<source_location>)
 #include <source_location>
+#if defined(__cpp_lib_source_location)
+#define DYNAMPI_HAS_SOURCE_LOCATION
+#endif
 #elif __has_include(<experimental/source_location>)
 #include <experimental/source_location>
-#else
-#define NO_SOURCE_LOCATION
+#define DYNAMPI_HAS_SOURCE_LOCATION
 #endif
 #include <stdexcept>
 
@@ -28,7 +30,7 @@
 
 namespace dynampi {
 inline void mpi_fail(int err, std::string_view command
-#ifndef NO_SOURCE_LOCATION
+#ifdef DYNAMPI_HAS_SOURCE_LOCATION
                      ,
                      std::source_location loc = std::source_location::current()
 #endif
@@ -38,7 +40,7 @@ inline void mpi_fail(int err, std::string_view command
   MPI_Error_string(err, error_string, &length_of_error_string);
   throw std::runtime_error(std::string("MPI error in ") + std::string(command) + ": " +
                            std::string(error_string, length_of_error_string)
-#ifndef NO_SOURCE_LOCATION
+#ifdef DYNAMPI_HAS_SOURCE_LOCATION
                            + " at " + loc.file_name() + ":" + std::to_string(loc.line())
 #endif
   );

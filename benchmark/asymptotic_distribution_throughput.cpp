@@ -9,6 +9,7 @@
 #include <dynampi/dynampi.hpp>
 #include <dynampi/utilities/timer.hpp>
 #include <iostream>
+#include <numeric>
 #include <ranges>
 
 int main(int argc, char** argv) {
@@ -59,7 +60,10 @@ int main(int argc, char** argv) {
     dynampi::MPIDynamicWorkDistributor<Task, Result, dynampi::enable_statistics> work_distributer(
         worker_task);
     if (work_distributer.is_manager()) {
-      work_distributer.insert_tasks(std::views::iota(0ul, num_tasks));
+      // work_distributer.insert_tasks(std::views::iota(0ul, num_tasks));
+      std::vector<Task> tasks(num_tasks);
+      std::iota(tasks.begin(), tasks.end(), 0);
+      work_distributer.insert_tasks(tasks);
       auto result = work_distributer.finish_remaining_tasks();
       work_distributer.finalize();
     }
