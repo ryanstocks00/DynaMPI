@@ -247,12 +247,11 @@ class NaiveMPIWorkDistributor {
     _unallocated_task_queue.emplace(priority, task);
   }
 
-  template <std::ranges::input_range Range>
-  void insert_tasks(const Range& tasks)
-    requires(!prioritize_tasks)
-  {
+  template <typename Range>
+    requires std::ranges::input_range<Range> && (!prioritize_tasks)
+  void insert_tasks(const Range& tasks) {
     assert(_communicator.rank() == _config.manager_rank && "Only the manager can distribute tasks");
-    std::ranges::copy(tasks.begin(), tasks.end(), std::back_inserter(_unallocated_task_queue));
+    std::ranges::copy(tasks, std::back_inserter(_unallocated_task_queue));
   }
   void insert_tasks(const std::vector<TaskT>& tasks)
     requires(!prioritize_tasks)

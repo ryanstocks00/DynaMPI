@@ -156,6 +156,14 @@ TEST(DynamicDistribution, Statistics) {
       EXPECT_EQ(work_distributer.get_statistics().total_messages_sent,
                 expected_size + MPIEnvironment::world_comm_size() - 1);
       EXPECT_EQ(work_distributer.get_statistics().total_bytes_sent, expected_size * sizeof(int));
+      double expected_num_bytes = 0;
+      if (MPIEnvironment::world_comm_size() > 1) {
+        expected_num_bytes = static_cast<double>(expected_size * sizeof(int)) /
+                             (expected_size + MPIEnvironment::world_comm_size() - 1);
+      }
+      EXPECT_DOUBLE_EQ(work_distributer.get_statistics().average_receive_size(),
+                       expected_num_bytes);
+      EXPECT_DOUBLE_EQ(work_distributer.get_statistics().average_send_size(), expected_num_bytes);
     }
   }
 }
