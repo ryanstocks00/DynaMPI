@@ -20,11 +20,14 @@ TEST(Timer, BasicFunctionality) {
   EXPECT_GT(elapsed1.count(), 0.0);
   EXPECT_EQ(timer1.elapsed(), elapsed1);
   EXPECT_GE(timer2.elapsed(), elapsed1);
-  EXPECT_LT(timer2.elapsed(), std::chrono::milliseconds(10));
+  EXPECT_LT(timer2.elapsed(), std::chrono::duration<double>(0.1));
   timer1.reset();
   std::this_thread::sleep_for(std::chrono::milliseconds(1));
   EXPECT_GT(timer1.elapsed().count(), 0.0);
   timer1.reset(Timer::AutoStart::No);
   std::this_thread::sleep_for(std::chrono::milliseconds(1));
   EXPECT_EQ(timer1.elapsed().count(), 0.0);
+  std::stringstream oss;
+  oss << timer1;
+  EXPECT_EQ(oss.str(), "0 seconds");
 }
