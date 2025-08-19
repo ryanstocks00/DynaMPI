@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
   dynampi::Timer timer;
 
   auto worker_task = [](size_t task) -> size_t { return task * task; };
-  auto result = dynampi::mpi_manager_worker_distribution<size_t>(1e6, worker_task);
+  auto result = dynampi::mpi_manager_worker_distribution<size_t>(1000ul, worker_task);
 
   if (rank == 0) {
     std::cout
