@@ -3,8 +3,7 @@
 
 enable_language(C)
 
-# Create the C interface library
-add_library(dynampi_c SHARED
+add_library(dynampi_c STATIC
     src/dynampi.cpp
 )
 
@@ -14,6 +13,7 @@ set_target_properties(dynampi_c PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
     PUBLIC_HEADER "include/dynampi.h"
+    LINKER_LANGUAGE CXX
 )
 
 # Include directories
@@ -26,15 +26,12 @@ target_include_directories(dynampi_c
         $<INSTALL_INTERFACE:include>
 )
 
-# Link against the main dynampi library and MPI
 target_link_libraries(dynampi_c
+    PUBLIC
+        MPI::MPI_CXX
     PRIVATE
         dynampi
-        MPI::MPI_CXX
 )
-
-# Set C++ standard
-target_compile_features(dynampi_c PRIVATE cxx_std_20)
 
 # Compiler flags
 if(MSVC)
@@ -70,39 +67,3 @@ if(DYNAMPI_BUILD_TESTS)
         add_mpi_test(mpi_c_interface_test_${rank}_rank ${rank})
     endforeach()
 endif()
-
-# Install rules
-install(TARGETS dynampi_c
-    EXPORT DynaMPICTargets
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin
-    PUBLIC_HEADER DESTINATION include
-)
-
-# Export targets
-install(EXPORT DynaMPICTargets
-    FILE DynaMPICTargets.cmake
-    NAMESPACE DynaMPI::
-    DESTINATION lib/cmake/DynaMPIC
-)
-
-# Create and install config file
-include(CMakePackageConfigHelpers)
-configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/DynaMPICConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/DynaMPICConfig.cmake"
-    INSTALL_DESTINATION lib/cmake/DynaMPIC
-)
-
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/DynaMPICConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
-
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/DynaMPICConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/DynaMPICConfigVersion.cmake"
-    DESTINATION lib/cmake/DynaMPIC
-)

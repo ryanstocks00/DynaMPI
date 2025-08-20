@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef DYNAMPI_C_H
-#define DYNAMPI_C_H
+#pragma once
 
 #include <mpi.h>
 #include <stddef.h>
@@ -15,12 +14,12 @@ extern "C" {
 #endif
 
 // Version information
-extern const char* dynampi_version_string(void);
-extern int dynampi_version_major(void);
-extern int dynampi_version_minor(void);
-extern int dynampi_version_patch(void);
-extern const char* dynampi_commit_hash(void);
-extern const char* dynampi_compile_date(void);
+const char* dynampi_version_string(void);
+int dynampi_version_major(void);
+int dynampi_version_minor(void);
+int dynampi_version_patch(void);
+const char* dynampi_commit_hash(void);
+const char* dynampi_compile_date(void);
 
 // Work distributor handle
 typedef struct dynampi_work_distributor dynampi_work_distributor_t;
@@ -72,5 +71,3 @@ int dynampi_manager_worker_distribution(size_t n_tasks, dynampi_worker_t worker_
 #ifdef __cplusplus
 }
 #endif
-
-#endif  // DYNAMPI_C_H
