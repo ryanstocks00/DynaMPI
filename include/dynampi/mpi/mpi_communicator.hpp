@@ -7,6 +7,7 @@
 
 #include <mpi.h>
 
+#include <optional>
 #include <variant>
 
 #include "dynampi/mpi/mpi_types.hpp"
@@ -33,6 +34,7 @@ struct track_statistics : public track_statistics_t {
 struct CommStatistics {
   int send_count = 0;
   int recv_count = 0;
+  int collective_count = 0;
   size_t bytes_sent = 0;
   size_t bytes_received = 0;
   double send_time = 0.0;
@@ -60,8 +62,9 @@ template <typename... Options>
 class MPICommunicator {
  public:
   enum Ownership {
-    NotOwned,  // The communicator is not owned by this class and should not be freed.
-    Owned,     // The communicator is owned by this class and will be freed in the destructor.
+    Reference,  // The communicator is not owned by this class and should not be freed.
+    Move,       // The communicator is moved into this class and will be freed in the destructor.
+    Duplicate,  // The communicator is duplicated by this class and will be freed in the destructor.
   };
 
  private:
@@ -76,18 +79,48 @@ class MPICommunicator {
   StatisticsT _statistics;
 
  public:
-  MPICommunicator(MPI_Comm comm, Ownership ownership = NotOwned)
+  MPICommunicator(MPI_Comm comm, Ownership ownership = Duplicate)
       : _comm(comm), _ownership(ownership) {
-    if (_ownership == Owned) {
+    if (_ownership == Duplicate) {
       DYNAMPI_MPI_CHECK(MPI_Comm_dup, (comm, &_comm));
     }
   }
 
+  MPICommunicator(const MPICommunicator& other) = delete;
+  MPICommunicator& operator=(const MPICommunicator& other) = delete;
+  MPICommunicator(MPICommunicator&& other) noexcept
+      : _comm(other._comm),
+        _ownership(other._ownership),
+        _statistics(std::move(other._statistics)) {
+    other._comm = MPI_COMM_NULL;
+    other._ownership = Reference;
+  }
+  MPICommunicator& operator=(MPICommunicator&& other) = delete;
+
   ~MPICommunicator() {
-    if (_ownership == Owned) {
+    if (_ownership != Reference) {
       MPI_Comm_free(&_comm);
     }
   }
+
+  MPICommunicator split_by_node() const {
+    MPI_Comm node_comm;
+    DYNAMPI_MPI_CHECK(MPI_Comm_split_type,
+                      (_comm, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &node_comm));
+    return MPICommunicator(node_comm, Move);
+  }
+
+  std::optional<MPICommunicator> split(int color, int key = 0) const {
+    MPI_Comm new_comm;
+    DYNAMPI_MPI_CHECK(MPI_Comm_split, (_comm, color, key, &new_comm));
+    if (new_comm == MPI_COMM_NULL) {
+      return std::nullopt;
+    }
+    assert(color != MPI_UNDEFINED && "Undefined color should not result in a valid communicator");
+    return MPICommunicator(new_comm, Move);
+  }
+
+  operator MPI_Comm() const { return _comm; }
 
   const CommStatistics& get_statistics() const
     requires(statistics_mode != StatisticsMode::None)
@@ -130,6 +163,23 @@ class MPICommunicator {
       int size;
       MPI_Type_size(mpi_type::value, &size);
       _statistics.bytes_received += mpi_type::count(data) * size;
+    }
+  }
+
+  template <typename T>
+  inline void broadcast(T& data, int root = 0) {
+    using mpi_type = MPI_Type<T>;
+    if constexpr (mpi_type::resize_required) {
+      int size = mpi_type::count(data);
+      broadcast(size, root);
+      if (rank() != root) {
+        mpi_type::resize(data, size);
+      }
+    }
+    DYNAMPI_MPI_CHECK(MPI_Bcast,
+                      (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value, root, _comm));
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.collective_count++;
     }
   }
 

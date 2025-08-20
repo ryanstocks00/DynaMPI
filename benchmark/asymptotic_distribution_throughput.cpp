@@ -10,7 +10,9 @@
 #include <dynampi/utilities/timer.hpp>
 #include <iostream>
 #include <numeric>
-#include <ranges>
+#if defined(__linux__)
+#include <sched.h>
+#endif
 
 #include "dynampi/mpi/mpi_communicator.hpp"
 
@@ -23,8 +25,11 @@ int main(int argc, char** argv) {
   cxxopts::Options options("asymptotic_distribution_throughput",
                            "Test dynamic MPI task distribution throughput");
   options.add_options()("n,n_tasks", "Number of tasks to distribute",
-                        cxxopts::value<size_t>()->default_value("1000000"))("h,help",
-                                                                            "Print usage");
+                        cxxopts::value<size_t>()->default_value("1000000"))(
+      "h,help", "Print usage")("r,rm_root", "Remove root node from task distribution")(
+      "m,message_size", "Size of each message in bytes",
+      cxxopts::value<size_t>()->default_value("1"));
+
   cxxopts::ParseResult args;
   try {
     args = options.parse(argc, argv);
@@ -50,58 +55,92 @@ int main(int argc, char** argv) {
   if (rank == 0) {
     std::cout << "Beginning testing dynamic MPI task distribution throughput" << std::endl;
   }
+
+#if defined(__linux__)
+  char name[MPI_MAX_PROCESSOR_NAME];
+  std::string hostname;
+  int resultlength;
+  MPI_Get_processor_name(name, &resultlength);
+  int hardware_thread = sched_getcpu();
+  printf("Rank %03d on Node %s, Hardware Thread %d\n", rank, name, hardware_thread);
+#endif
+
   MPI_Barrier(MPI_COMM_WORLD);
   dynampi::Timer total_timer;
 
-  using Task = size_t;
-  using Result = std::vector<size_t>;
-  auto worker_task = [](Task task) -> Result { return std::vector<size_t>(10, task); };
-
-  dynampi::Timer dynamic_timer;
   {
-    dynampi::MPIDynamicWorkDistributor<Task, Result,
-                                       dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>
-        work_distributer(worker_task);
-    if (work_distributer.is_manager()) {
-      // work_distributer.insert_tasks(std::views::iota(0ul, num_tasks));
-      std::vector<Task> tasks(num_tasks);
-      std::iota(tasks.begin(), tasks.end(), 0);
-      work_distributer.insert_tasks(tasks);
-      auto result = work_distributer.finish_remaining_tasks();
-      work_distributer.finalize();
-    }
-    dynamic_timer.stop();
-
-    if (work_distributer.is_manager()) {
-      std::cout << "Dynamic task distribution completed successfully." << std::endl;
-      const auto& stats = work_distributer.get_statistics();
-      for (size_t i = 0; i < stats.worker_task_counts.size(); i++) {
-        std::cout << "Rank " << i << ": "
-                  << "Tasks: " << stats.worker_task_counts[i] << std::endl;
+    std::optional<dynampi::MPICommunicator<>> dynamic_communicator;
+    if (args.count("rm_root")) {
+      dynampi::MPICommunicator<> world_communicator(MPI_COMM_WORLD);
+      dynampi::MPICommunicator<> node_communicator = world_communicator.split_by_node();
+      int is_root_node = world_communicator.rank() == 0;
+      node_communicator.broadcast(is_root_node, 0);
+      std::optional<dynampi::MPICommunicator<>> skip_manager_node_communicator =
+          node_communicator.split((world_communicator.rank() != 0 && is_root_node) ? MPI_UNDEFINED
+                                                                                   : 1);
+      if (skip_manager_node_communicator) {
+        dynamic_communicator.emplace(std::move(skip_manager_node_communicator.value()));
       }
-      std::cout << "Total messages sent: " << stats.comm_statistics.send_count << std::endl;
-      std::cout << "Total messages received: " << stats.comm_statistics.recv_count << std::endl;
-      std::cout << "Total bytes sent: " << stats.comm_statistics.bytes_sent << std::endl;
-      std::cout << "Total bytes received: " << stats.comm_statistics.bytes_received << std::endl;
-      std::cout << "Average send size: " << stats.comm_statistics.average_send_size() << " bytes"
-                << std::endl;
-      std::cout << "Average receive size: " << stats.comm_statistics.average_receive_size()
-                << " bytes" << std::endl;
-      std::cout << "Average send bandwidth: "
-                << stats.comm_statistics.bytes_sent / dynamic_timer.elapsed().count()
-                << " bytes/second" << std::endl;
-      std::cout << "Average receive bandwidth: "
-                << stats.comm_statistics.bytes_received / dynamic_timer.elapsed().count()
-                << " bytes/second" << std::endl;
+    } else {
+      dynamic_communicator.emplace(dynampi::MPICommunicator<>(MPI_COMM_WORLD));
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    using Task = size_t;
+    using Result = std::vector<std::byte>;
+    size_t message_size = args["message_size"].as<size_t>();
+    auto worker_task = [message_size](Task task) -> Result {
+      return std::vector<std::byte>(message_size, std::byte(task));
+    };
+
+    dynampi::Timer dynamic_timer;
+    if (dynamic_communicator.has_value()) {
+      dynampi::MPIDynamicWorkDistributor<
+          Task, Result, dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>
+          work_distributer(worker_task, {.comm = dynamic_communicator.value()});
+      if (work_distributer.is_manager()) {
+        // work_distributer.insert_tasks(std::views::iota(0ul, num_tasks));
+        std::vector<Task> tasks(num_tasks);
+        std::iota(tasks.begin(), tasks.end(), 0);
+        work_distributer.insert_tasks(tasks);
+        auto result = work_distributer.finish_remaining_tasks();
+        work_distributer.finalize();
+      }
+      dynamic_timer.stop();
+
+      if (work_distributer.is_manager()) {
+        std::cout << "Dynamic task distribution completed successfully." << std::endl;
+        const auto& stats = work_distributer.get_statistics();
+        for (size_t i = 0; i < stats.worker_task_counts.size(); i++) {
+          std::cout << "Rank " << i << ": " << "Tasks: " << stats.worker_task_counts[i]
+                    << std::endl;
+        }
+        std::cout << "Total messages sent: " << stats.comm_statistics.send_count << std::endl;
+        std::cout << "Total messages received: " << stats.comm_statistics.recv_count << std::endl;
+        std::cout << "Total bytes sent: " << stats.comm_statistics.bytes_sent << std::endl;
+        std::cout << "Total bytes received: " << stats.comm_statistics.bytes_received << std::endl;
+        std::cout << "Average send size: " << stats.comm_statistics.average_send_size() << " bytes"
+                  << std::endl;
+        std::cout << "Average receive size: " << stats.comm_statistics.average_receive_size()
+                  << " bytes" << std::endl;
+        std::cout << "Average send bandwidth: "
+                  << stats.comm_statistics.bytes_sent / dynamic_timer.elapsed().count()
+                  << " bytes/second" << std::endl;
+        std::cout << "Average receive bandwidth: "
+                  << stats.comm_statistics.bytes_received / dynamic_timer.elapsed().count()
+                  << " bytes/second" << std::endl;
+      }
+    }
+
+    if (rank == 0) {
+      std::cout << "Distributed " << num_tasks << " tasks to " << size << " MPI processes in "
+                << dynamic_timer << ". Throughput: "
+                << static_cast<double>(num_tasks) / dynamic_timer.elapsed().count()
+                << " tasks/second" << std::endl;
     }
   }
 
-  if (rank == 0) {
-    std::cout << "Distributed " << num_tasks << " tasks to " << size << " MPI processes in "
-              << dynamic_timer << ". Throughput: "
-              << static_cast<double>(num_tasks) / dynamic_timer.elapsed().count() << " tasks/second"
-              << std::endl;
-  }
   total_timer.stop();
   if (rank == 0) {
     std::cout
