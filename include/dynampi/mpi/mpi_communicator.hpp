@@ -169,6 +169,13 @@ class MPICommunicator {
   template <typename T>
   inline void broadcast(T& data, int root = 0) {
     using mpi_type = MPI_Type<T>;
+    if constexpr (mpi_type::resize_required) {
+      int size = mpi_type::count(data);
+      broadcast(size, root);
+      if (rank() != root) {
+        mpi_type::resize(data, size);
+      }
+    }
     DYNAMPI_MPI_CHECK(MPI_Bcast,
                       (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value, root, _comm));
     if constexpr (statistics_mode != StatisticsMode::None) {
