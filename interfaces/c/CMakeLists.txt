@@ -49,12 +49,15 @@ if(DYNAMPI_BUILD_TESTS)
     target_link_libraries(c_interface_test PRIVATE dynampi_c MPI::MPI_CXX)
     target_include_directories(c_interface_test PRIVATE include)
 
+    # Detect oversubscribe settings used for MPI tests
+    include(mpi_oversubscribe)
+
     # Add MPI test
-    add_test(NAME c_interface_test_1_rank COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 1 $<TARGET_FILE:c_interface_test>)
+    add_test(NAME c_interface_test_1_rank COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 1 ${MPI_OVERSUBSCRIBE_FLAG} $<TARGET_FILE:c_interface_test>)
     set_tests_properties(c_interface_test_1_rank PROPERTIES TIMEOUT 10)
-    add_test(NAME c_interface_test_2_rank COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 $<TARGET_FILE:c_interface_test>)
+    add_test(NAME c_interface_test_2_rank COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPI_OVERSUBSCRIBE_FLAG} $<TARGET_FILE:c_interface_test>)
     set_tests_properties(c_interface_test_2_rank PROPERTIES TIMEOUT 10)
-    add_test(NAME c_interface_test_4_rank COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 4 $<TARGET_FILE:c_interface_test>)
+    add_test(NAME c_interface_test_4_rank COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 4 ${MPI_OVERSUBSCRIBE_FLAG} $<TARGET_FILE:c_interface_test>)
     set_tests_properties(c_interface_test_4_rank PROPERTIES TIMEOUT 10)
 endif()
 
