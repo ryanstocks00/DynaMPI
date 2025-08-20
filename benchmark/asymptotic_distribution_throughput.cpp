@@ -11,6 +11,7 @@
 #include <iostream>
 #include <numeric>
 #include <ranges>
+#include <sched.h>
 
 #include "dynampi/mpi/mpi_communicator.hpp"
 
@@ -50,6 +51,15 @@ int main(int argc, char** argv) {
   if (rank == 0) {
     std::cout << "Beginning testing dynamic MPI task distribution throughput" << std::endl;
   }
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  char name[MPI_MAX_PROCESSOR_NAME];
+  int resultlength;
+  MPI_Get_processor_name(name, &resultlength);
+  int hwthread = sched_getcpu();
+
+  printf("MPI %03d - HWT %03d - Node %s\n", rank, hwthread, name);
+
   MPI_Barrier(MPI_COMM_WORLD);
   dynampi::Timer total_timer;
 
