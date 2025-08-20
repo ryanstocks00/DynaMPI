@@ -17,34 +17,37 @@
 template <template <typename...> class TT>
 struct DistributerTypeWrapper {
   template <typename... T>
-  using type = TT<T...>;
+  using apply = TT<T...>;
 };
+
+template <typename Wrapper, typename... T>
+using DistributerOf = typename Wrapper::template apply<T...>;
 
 // Test fixture
 template <typename T>
 class DynamicDistribution : public ::testing::Test {};
+
 using DistributerTypes =
     ::testing::Types<DistributerTypeWrapper<dynampi::HierarchicalMPIWorkDistributor>,
                      DistributerTypeWrapper<dynampi::NaiveMPIWorkDistributor>>;
+
 TYPED_TEST_SUITE(DynamicDistribution, DistributerTypes);
 
 TYPED_TEST(DynamicDistribution, Naive) {
   using TaskT = uint32_t;
-  using Distributer = TypeParam::template type<TaskT, double>;
-  auto worker_task = [](TaskT task) -> double {
-    // Simulate work
-    return sqrt(static_cast<double>(task));
-  };
+  using Distributer = DistributerOf<TypeParam, TaskT, double>;
+
+  auto worker_task = [](TaskT task) -> double { return sqrt(static_cast<double>(task)); };
+
   std::vector<TaskT> tasks(10);
-  for (size_t i = 0; i < tasks.size(); ++i) {
-    tasks[i] = static_cast<TaskT>(i);
-  }
+  for (size_t i = 0; i < tasks.size(); ++i) tasks[i] = static_cast<TaskT>(i);
+
   Distributer distributor(worker_task, {.comm = MPI_COMM_WORLD, .auto_run_workers = false});
+
   if (distributor.is_root_manager()) {
-    for (int i = 0; i < 10; ++i) {
-      distributor.insert_task(i);
-    }
+    for (int i = 0; i < 10; ++i) distributor.insert_task(i);
   }
+
   if (distributor.is_root_manager()) {
     auto results = distributor.finish_remaining_tasks();
     EXPECT_EQ(results.size(), 10);
@@ -58,9 +61,12 @@ TYPED_TEST(DynamicDistribution, Naive) {
 
 TYPED_TEST(DynamicDistribution, Naive2) {
   using DistributerWrapper = TypeParam;
+
   auto worker_task = [](size_t task) -> char { return "Hi"[task]; };
-  auto result = dynampi::mpi_manager_worker_distribution<char, DistributerWrapper::template type>(
+
+  auto result = dynampi::mpi_manager_worker_distribution<char, DistributerWrapper::template apply>(
       2, worker_task);
+
   if (MPIEnvironment::world_comm_rank() == 0) {
     EXPECT_TRUE(result.has_value());
     EXPECT_EQ(result->size(), 2);
@@ -70,13 +76,12 @@ TYPED_TEST(DynamicDistribution, Naive2) {
 }
 
 TYPED_TEST(DynamicDistribution, Example1) {
-  // Extract the template template
   using DistributerWrapper = TypeParam;
 
   for (int manager_rank : {0, MPIEnvironment::world_comm_size() - 1}) {
     auto worker_task = [](size_t task) -> size_t { return task * task; };
     auto result =
-        dynampi::mpi_manager_worker_distribution<size_t, DistributerWrapper::template type>(
+        dynampi::mpi_manager_worker_distribution<size_t, DistributerWrapper::template apply>(
             4, worker_task, MPI_COMM_WORLD, manager_rank);
     if (result.has_value()) {
       assert(result == std::vector<size_t>({0, 1, 4, 9}));
@@ -88,7 +93,7 @@ TYPED_TEST(DynamicDistribution, Example1) {
 TYPED_TEST(DynamicDistribution, Example2) {
   using Task = int;
   using Result = std::vector<int>;
-  using Distributer = TypeParam::template type<Task, Result>;
+  using Distributer = DistributerOf<TypeParam, Task, Result>;
   auto worker_task = [](Task task) -> Result {
     return Result{task, task * task, task * task * task};
   };
@@ -116,7 +121,7 @@ TYPED_TEST(DynamicDistribution, Example2) {
 TYPED_TEST(DynamicDistribution, PriorityQueue) {
   using Task = int;
   using Result = int;
-  using Distributer = TypeParam::template type<Task, Result, dynampi::enable_prioritization>;
+  using Distributer = DistributerOf<TypeParam, Task, Result, dynampi::enable_prioritization>;
   auto worker_task = [](Task task) -> Result { return task * task; };
   {
     Distributer work_distributer(worker_task);
@@ -137,9 +142,8 @@ TYPED_TEST(DynamicDistribution, PriorityQueue) {
 TYPED_TEST(DynamicDistribution, Statistics) {
   using Task = int;
   using Result = int;
-  using Distributer =
-      TypeParam::template type<Task, Result,
-                               dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>;
+  using Distributer = DistributerOf<TypeParam, Task, Result,
+                                    dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>;
   auto worker_task = [](Task task) -> Result { return task * task; };
   {
     Distributer work_distributer(worker_task);
