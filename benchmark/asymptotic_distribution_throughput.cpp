@@ -26,7 +26,9 @@ int main(int argc, char** argv) {
                            "Test dynamic MPI task distribution throughput");
   options.add_options()("n,n_tasks", "Number of tasks to distribute",
                         cxxopts::value<size_t>()->default_value("1000000"))(
-      "h,help", "Print usage")("r,rm_root", "Remove root node from task distribution");
+      "h,help", "Print usage")("r,rm_root", "Remove root node from task distribution")(
+      "m,message_size", "Size of each message in bytes",
+      cxxopts::value<size_t>()->default_value("1"));
 
   cxxopts::ParseResult args;
   try {
@@ -71,7 +73,7 @@ int main(int argc, char** argv) {
     if (args.count("rm_root")) {
       dynampi::MPICommunicator<> world_communicator(MPI_COMM_WORLD);
       dynampi::MPICommunicator<> node_communicator = world_communicator.split_by_node();
-      bool is_root_node = world_communicator.rank() == 0;
+      int is_root_node = world_communicator.rank() == 0;
       node_communicator.broadcast(is_root_node, 0);
       std::optional<dynampi::MPICommunicator<>> skip_manager_node_communicator =
           node_communicator.split((world_communicator.rank() != 0 && is_root_node) ? MPI_UNDEFINED
@@ -86,8 +88,11 @@ int main(int argc, char** argv) {
     MPI_Barrier(MPI_COMM_WORLD);
 
     using Task = size_t;
-    using Result = std::vector<size_t>;
-    auto worker_task = [](Task task) -> Result { return std::vector<size_t>(10, task); };
+    using Result = std::vector<std::byte>;
+    size_t message_size = args["message_size"].as<size_t>();
+    auto worker_task = [message_size](Task task) -> Result {
+      return std::vector<std::byte>(message_size, std::byte(task));
+    };
 
     dynampi::Timer dynamic_timer;
     if (dynamic_communicator.has_value()) {
