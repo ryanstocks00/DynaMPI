@@ -28,15 +28,15 @@ class CBytesDistributor
   dynampi_config_t config_;
 };
 
-// C interface implementations
-
-extern "C" {
 static std::vector<std::byte> make_bytes(const unsigned char* data, size_t size) {
   std::vector<std::byte> v;
   v.resize(size);
   if (size && data) std::memcpy(v.data(), data, size);
   return v;
 }
+
+// C interface implementations
+extern "C" {
 
 static void* malloc_or_null(size_t n) { return n ? std::malloc(n) : nullptr; }
 

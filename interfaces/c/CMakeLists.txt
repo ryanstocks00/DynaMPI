@@ -67,7 +67,7 @@ if(DYNAMPI_BUILD_TESTS)
     endfunction()
 
     foreach(rank 1 2 4)
-        add_mpi_test(mpi_test_${rank}_rank ${rank})
+        add_mpi_test(mpi_c_interface_test_${rank}_rank ${rank})
     endforeach()
 endif()
 
