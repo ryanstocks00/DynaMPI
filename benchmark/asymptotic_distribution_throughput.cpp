@@ -45,6 +45,8 @@ static void print_host_info_if_linux(int rank) {
   MPI_Get_processor_name(name, &resultlength);
   int hardware_thread = sched_getcpu();
   printf("Rank %03d on Node %s, Hardware Thread %d\n", rank, name, hardware_thread);
+#else
+  (void)rank;  // Avoid unused variable warning if not on Linux
 #endif
 }
 
@@ -87,7 +89,7 @@ static double run_single_benchmark(const BenchmarkOptions& opts) {
                                        dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>
         work_distributer(worker_task, {.comm = dynamic_communicator.value()});
 
-    if (work_distributer.is_manager()) {
+    if (work_distributer.is_root_manager()) {
       std::vector<Task> tasks(opts.num_tasks);
       std::iota(tasks.begin(), tasks.end(), 0);
       work_distributer.insert_tasks(tasks);
@@ -98,7 +100,7 @@ static double run_single_benchmark(const BenchmarkOptions& opts) {
 
     dynamic_timer.stop();
 
-    if (work_distributer.is_manager()) {
+    if (work_distributer.is_root_manager()) {
       std::cout << "Dynamic task distribution completed successfully." << std::endl;
       const auto& stats = work_distributer.get_statistics();
       for (size_t i = 0; i < stats.worker_task_counts.size(); i++) {
