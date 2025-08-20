@@ -5,24 +5,24 @@
  * Simple example demonstrating the DynaMPI C interface
  */
 
+#include <assert.h>
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "dynampi.h"
 
-// Worker function that processes a task
-void* process_task(void* task) {
-  int64_t task_value = *(int64_t*)task;
-
-  // Simulate some work
-  int64_t result = task_value * task_value;  // Square the task value
-
-  // Allocate result
-  int64_t* result_ptr = malloc(sizeof(int64_t));
-  *result_ptr = result;
-
-  return result_ptr;
+// Worker function that processes a task (bytes in -> bytes out)
+static void example_worker(const unsigned char* in_data, size_t in_size, unsigned char** out_data,
+                           size_t* out_size) {
+  assert(in_size == sizeof(int64_t));
+  (void)in_size;
+  int64_t x = *(int64_t*)(in_data);
+  int64_t y = x * x;  // square
+  *out_size = sizeof(int64_t);
+  *out_data = (unsigned char*)malloc(sizeof(int64_t));
+  if (*out_data) *(int64_t*)(*out_data) = y;
 }
 
 int main(int argc, char* argv[]) {
@@ -37,62 +37,49 @@ int main(int argc, char* argv[]) {
 
   // Create configuration
   dynampi_config_t config = dynampi_default_config();
-  config.manager_rank = 0;
-  config.auto_run_workers = 1;
 
-  if (rank == 0) {
-    // Manager process
+  // All ranks must create the distributor for coordination
+  dynampi_work_distributor_t* distributor =
+      dynampi_create_work_distributor(example_worker, &config);
+  if (!distributor) {
+    printf("Process %d: Failed to create work distributor\n", rank);
+    MPI_Abort(MPI_COMM_WORLD, 1);
+  }
+
+  if (dynampi_is_manager(distributor)) {
     printf("Process %d: Running as manager\n", rank);
 
-    // Create work distributor
-    dynampi_work_distributor_t* distributor =
-        dynampi_create_work_distributor(process_task, &config);
-
-    if (!distributor) {
-      printf("Process %d: Failed to create work distributor: %s\n", rank, dynampi_get_last_error());
-      MPI_Abort(MPI_COMM_WORLD, 1);
-    }
-
-    // Insert tasks
+    // Insert tasks (payload: int64 values 1..20)
     for (int64_t i = 1; i <= 20; i++) {
-      dynampi_insert_task(distributor, i);
+      dynampi_insert_task(distributor, (unsigned char*)&i, sizeof(int64_t));
     }
-
     printf("Process %d: Inserted 20 tasks\n", rank);
 
-    // Wait for all tasks to complete
-    size_t result_count;
-    void** results = dynampi_finish_remaining_tasks(distributor, &result_count);
-
+    // Collect results
+    size_t result_count = 0;
+    dynampi_buffer_t* results = dynampi_finish_remaining_tasks(distributor, &result_count);
     if (results) {
       printf("Process %d: Completed %zu tasks\n", rank, result_count);
-
-      // Print some results
       for (size_t i = 0; i < result_count && i < 5; i++) {
-        int64_t* result = (int64_t*)results[i];
-        printf("Process %d: Task %zu result = %ld\n", rank, i, *result);
+        int64_t val = 0;
+        if (results[i].size >= sizeof(int64_t)) memcpy(&val, results[i].data, sizeof(int64_t));
+        printf("Process %d: Task %zu result = %ld\n", rank, i, (long)val);
       }
-
       if (result_count > 5) {
         printf("Process %d: ... and %zu more results\n", rank, result_count - 5);
       }
-
-      // Clean up results
-      for (size_t i = 0; i < result_count; i++) {
-        free(results[i]);
-      }
+      for (size_t i = 0; i < result_count; i++) free(results[i].data);
       free(results);
     } else {
-      printf("Process %d: No results received\n", rank);
+      printf("Process %d: No results received (workers only)\n", rank);
     }
-
-    // Clean up
-    dynampi_destroy_work_distributor(distributor);
-
   } else {
-    // Worker processes will be handled automatically
     printf("Process %d: Running as worker\n", rank);
+    // dynampi_run_worker(distributor);
   }
+
+  // Clean up
+  dynampi_destroy_work_distributor(distributor);
 
   printf("Process %d: Example completed\n", rank);
 

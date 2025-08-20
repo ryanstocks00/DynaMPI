@@ -23,6 +23,8 @@ endif()
 option(DYNAMPI_BUILD_TESTS "Build tests for DynaMPI" ${IS_BASE_PROJECT})
 option(DYNAMPI_BUILD_BENCHMARKS "Build benchmarks for DynaMPI"
        ${IS_BASE_PROJECT})
+option(DYNAMPI_BUILD_EXAMPLES "Build DynaMPI examples"
+       ${IS_BASE_PROJECT})
 option(DYNAMPI_BUILD_C_INTERFACE "Build C interface for DynaMPI" ${IS_BASE_PROJECT})
 
 execute_process(
@@ -82,6 +84,5 @@ if(DYNAMPI_BUILD_BENCHMARKS)
 endif()
 
 if(DYNAMPI_BUILD_C_INTERFACE)
-  # Add C interface
   add_subdirectory(interfaces/c)
 endif()

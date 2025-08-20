@@ -32,14 +32,12 @@ typedef struct {
 } dynampi_config_t;
 
 // Worker: arbitrary bytes in -> bytes out. The implementation must allocate out_data (malloc) and
-// set size
+// set out_size
 typedef void (*dynampi_worker_t)(const unsigned char* in_data, size_t in_size,
                                  unsigned char** out_data, size_t* out_size);
 
-// Create and destroy work distributor
 dynampi_work_distributor_t* dynampi_create_work_distributor(dynampi_worker_t worker_function,
                                                             const dynampi_config_t* config);
-
 void dynampi_destroy_work_distributor(dynampi_work_distributor_t* distributor);
 
 // Configuration helpers
@@ -47,6 +45,7 @@ dynampi_config_t dynampi_default_config(void);
 
 // Work distribution functions
 int dynampi_is_manager(const dynampi_work_distributor_t* distributor);
+// Only call this if auto_run_workers is false
 void dynampi_run_worker(dynampi_work_distributor_t* distributor);
 
 // Submit a task (arbitrary bytes)

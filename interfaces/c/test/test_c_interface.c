@@ -89,42 +89,36 @@ int main(int argc, char* argv[]) {
   dynampi_work_distributor_t* distributor =
       dynampi_create_work_distributor(test_worker_function, &config);
 
-  if (distributor) {
-    printf("Process %d: Successfully created work distributor\n", rank);
+  printf("Process %d: Successfully created work distributor\n", rank);
 
-    // Manager inserts a few tasks; workers just run
-    if (dynampi_is_manager(distributor)) {
-      int64_t vals[] = {100, 200, 300};
-      for (size_t i = 0; i < 3; ++i) {
-        unsigned char buf[sizeof(int64_t)];
-        memcpy(buf, &vals[i], sizeof(int64_t));
-        dynampi_insert_task(distributor, buf, sizeof(int64_t));
-      }
+  // Manager inserts a few tasks; workers just run
+  if (dynampi_is_manager(distributor)) {
+    int64_t vals[] = {100, 200, 300};
+    for (size_t i = 0; i < 3; ++i) {
+      unsigned char buf[sizeof(int64_t)];
+      memcpy(buf, &vals[i], sizeof(int64_t));
+      dynampi_insert_task(distributor, buf, sizeof(int64_t));
     }
-
-    // Manager collects results; workers run the worker loop
-    if (dynampi_is_manager(distributor)) {
-      size_t rc = 0;
-      dynampi_buffer_t* bufs = dynampi_finish_remaining_tasks(distributor, &rc);
-      if (bufs) {
-        for (size_t i = 0; i < rc; ++i) free(bufs[i].data);
-        free(bufs);
-      }
-    } else {
-      dynampi_run_worker(distributor);
-    }
-
-    // Clean up
-    dynampi_destroy_work_distributor(distributor);
-    printf("Process %d: Work distributor destroyed\n", rank);
-  } else {
-    printf("Process %d: Failed to create work distributor\n", rank);
   }
+
+  // Manager collects results; workers run the worker loop
+  if (dynampi_is_manager(distributor)) {
+    size_t rc = 0;
+    dynampi_buffer_t* bufs = dynampi_finish_remaining_tasks(distributor, &rc);
+    if (bufs) {
+      for (size_t i = 0; i < rc; ++i) free(bufs[i].data);
+      free(bufs);
+    }
+  } else if (!config.auto_run_workers) {
+    dynampi_run_worker(distributor);
+  }
+
+  // Clean up
+  dynampi_destroy_work_distributor(distributor);
+  printf("Process %d: Work distributor destroyed\n", rank);
 
   // Final synchronization
   MPI_Barrier(MPI_COMM_WORLD);
-
-  printf("Process %d: C interface test completed\n", rank);
 
   MPI_Finalize();
   return 0;

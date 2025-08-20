@@ -3,6 +3,12 @@
 
 enable_language(C)
 
+set(CMAKE_C_FLAGS_COVERAGE "-O0 -g -coverage -fprofile-arcs -ftest-coverage ${CMAKE_C_FLAGS_COVERAGE}")
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  set(CMAKE_C_FLAGS_COVERAGE
+      "${CMAKE_C_FLAGS_COVERAGE} -fno-default-inline")
+endif()
+
 add_library(dynampi_c STATIC
     src/dynampi.cpp
 )
@@ -38,6 +44,13 @@ if(MSVC)
     target_compile_options(dynampi_c PRIVATE /W4 /WX)
 else()
     target_compile_options(dynampi_c PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+if(DYNAMPI_BUILD_EXAMPLES)
+    find_package(MPI)
+    add_executable(c_simple_example examples/simple_example.c)
+    target_link_libraries(c_simple_example PRIVATE dynampi_c MPI::MPI_C)
+    target_include_directories(c_simple_example PRIVATE include)
 endif()
 
 # Add test executable

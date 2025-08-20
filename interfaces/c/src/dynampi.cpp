@@ -20,8 +20,9 @@ class CDynamicDistributor
   using Base = dynampi::NaiveMPIWorkDistributor<std::vector<std::byte>, std::vector<std::byte>>;
   using WorkerFn = std::function<std::vector<std::byte>(std::vector<std::byte>)>;
   explicit CDynamicDistributor(WorkerFn worker, const dynampi_config_t& cfg)
-      : Base(worker,
-             {.comm = cfg.comm, .manager_rank = cfg.manager_rank, .auto_run_workers = false}),
+      : Base(worker, {.comm = cfg.comm,
+                      .manager_rank = cfg.manager_rank,
+                      .auto_run_workers = !!cfg.auto_run_workers}),
         config_(cfg) {}
 
   dynampi_config_t config_;
@@ -145,7 +146,7 @@ const char* dynampi_compile_date(void) {
   return d.c_str();
 }
 
-dynampi_config_t dynampi_default_config(void) {
+dynampi_config_t dynampi_default_config() {
   dynampi_config_t config;
   config.comm = MPI_COMM_WORLD;
   config.manager_rank = 0;
