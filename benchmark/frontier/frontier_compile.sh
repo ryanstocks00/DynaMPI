@@ -39,9 +39,9 @@ if [[ $CLEAN -eq 1 && -d "$BUILD_DIR" ]]; then
 fi
 
 echo "Configuring with CMake..."
-CXX=CC cmake -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -B $BUILD_DIR
+CXX=CC cmake -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -B "$BUILD_DIR"
 
 echo "Building..."
-cmake --build $BUILD_DIR -- -j"$(nproc)"
+cmake --build "$BUILD_DIR" -- -j"$(nproc)"
 
 echo "✅ Build finished in $BUILD_DIR ($BUILD_TYPE)"

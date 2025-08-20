@@ -151,9 +151,7 @@ class NaiveMPIWorkDistributor {
       DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, task_type::value, &count));
       TaskT message;
       task_type::resize(message, count);
-
-      _communicator.recv(message, status.MPI_SOURCE, Tag::TASK);
-
+      _communicator.recv(message, _config.manager_rank, Tag::TASK);
       _tasks_sent++;
       ResultT result = _worker_function(message);
       _communicator.send(result, _config.manager_rank, Tag::RESULT);
@@ -195,28 +193,32 @@ class NaiveMPIWorkDistributor {
     insert_tasks(std::span<const TaskT>(tasks));
   }
 
+  void get_task_and_allocate() {
+    const TaskT task = get_next_task_to_send();
+    if (_communicator.size() > 1) {
+      if (_free_worker_indices.empty()) {
+        // If no free workers, wait for a result to be received
+        receive_from_any_worker();
+      }
+      int worker = _free_worker_indices.top();
+      _free_worker_indices.pop();
+      _worker_current_task_indices[idx_for_worker(worker)] = _tasks_sent;
+      if constexpr (statistics_mode >= StatisticsMode::Aggregated) {
+        _statistics.worker_task_counts[worker]++;
+      }
+      _communicator.send(task, worker, Tag::TASK);
+    } else {
+      // If there's only one process, we just run the worker function directly
+      _results.emplace_back(_worker_function(task));
+      _results_received++;
+    }
+    _tasks_sent++;
+  }
+
   [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() {
     assert(_communicator.rank() == _config.manager_rank && "Only the manager can distribute tasks");
     while (!_unallocated_task_queue.empty()) {
-      const TaskT task = get_next_task_to_send();
-      if (_communicator.size() > 1) {
-        if (_free_worker_indices.empty()) {
-          // If no free workers, wait for a result to be received
-          receive_from_any_worker();
-        }
-        int worker = _free_worker_indices.top();
-        _free_worker_indices.pop();
-        _worker_current_task_indices[idx_for_worker(worker)] = _tasks_sent;
-        if constexpr (statistics_mode >= StatisticsMode::Aggregated) {
-          _statistics.worker_task_counts[worker]++;
-        }
-        _communicator.send(task, worker, Tag::TASK);
-      } else {
-        // If there's only one process, we just run the worker function directly
-        _results.emplace_back(_worker_function(task));
-        _results_received++;
-      }
-      _tasks_sent++;
+      get_task_and_allocate();
     }
     while (_free_worker_indices.size() + 1 < static_cast<size_t>(_communicator.size())) {
       receive_from_any_worker();
