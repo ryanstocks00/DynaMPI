@@ -45,37 +45,14 @@ endfunction()
 if(NOT CMAKE_CXX_COMPILER MATCHES "smpicxx")
   create_test(unit_test unit "GTest::gtest_main;dynampi")
   add_test(NAME unit_test COMMAND unit_test)
+  set_tests_properties(unit_test PROPERTIES TIMEOUT 10)
 endif()
 
 create_test(mpi_test mpi "GTest::gtest;dynampi")
 
 # --------------------------------------------------------------------
 # Detect MPI implementation and configure oversubscribe flags
-set(MPI_OVERSUBSCRIBE_FLAG "")
-if(MPIEXEC_EXECUTABLE)
-  execute_process(
-    COMMAND ${MPIEXEC_EXECUTABLE} --version
-    OUTPUT_VARIABLE MPI_VERSION_OUTPUT
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  string(REGEX MATCH "Open MPI|OpenRTE" IS_OPENMPI "${MPI_VERSION_OUTPUT}")
-  string(REGEX MATCH "HYDRA|MPICH" IS_MPICH "${MPI_VERSION_OUTPUT}")
-  string(REGEX MATCH "Intel.*MPI" IS_INTEL "${MPI_VERSION_OUTPUT}")
-  string(REGEX MATCH "Microsoft MPI" IS_MICROSOFT "${MPI_VERSION_OUTPUT}")
-
-  if(IS_OPENMPI)
-    set(MPI_OVERSUBSCRIBE_FLAG "--oversubscribe")
-    message(STATUS "Detected MPI implementation with oversubscribe support")
-  else()
-    message(
-      STATUS
-        "Detected MPI implementation without explicit oversubscribe requirement"
-    )
-  endif()
-
-  message(STATUS "MPI version output: ${MPI_VERSION_OUTPUT}")
-  message(STATUS "MPI oversubscribe flag: '${MPI_OVERSUBSCRIBE_FLAG}'")
-endif()
+include(mpi_oversubscribe)
 
 # --------------------------------------------------------------------
 # Add MPI tests with varying ranks
@@ -89,6 +66,7 @@ function(add_mpi_test test_name num_procs)
       $<TARGET_FILE:mpi_test>
       ${MPIEXEC_POSTFLAGS})
   add_test(NAME ${test_name} COMMAND ${command})
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endfunction()
 
 foreach(rank 1 2 3 4 8)

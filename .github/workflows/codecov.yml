@@ -6,7 +6,7 @@ on:
   push:
     branches: [main, develop]
   pull_request:
-    branches: [main, develop]
+    types: [opened, reopened, synchronize]
   workflow_dispatch:
 jobs:
   codecov:
@@ -61,5 +61,4 @@ jobs:
           files: ${{ steps.strings.outputs.build-output-dir }}/coverage.info
           flags: unittests
           name: codecov-dynampi
-          gcov_ignore: ${{ steps.strings.outputs.build-output-dir }}/benchmark/
           fail_ci_if_error: true

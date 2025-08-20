@@ -6,7 +6,7 @@ on:
   push:
     branches: [main, develop]
   pull_request:
-    branches: [main, develop]
+    types: [opened, reopened, synchronize]
   workflow_dispatch:
 jobs:
   smpi:
@@ -44,7 +44,7 @@ jobs:
             -DCMAKE_C_COMPILER=smpicc \
             -DCMAKE_CXX_COMPILER=smpicxx \
             -DMPIEXEC_EXECUTABLE=/usr/bin/smpirun \
-            -DMPIEXEC_PREFLAGS=-platform\;platform.xml \
+            -DMPIEXEC_PREFLAGS=-platform\;${{ steps.strings.outputs.build-output-dir }}/platform.xml \
             -DDYNAMPI_BUILD_TESTS=ON \
             -DDYNAMPI_BUILD_BENCHMARKS=OFF"
 
@@ -80,7 +80,6 @@ jobs:
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: |
           echo "Testing with $MPI_TYPE"
-          cp platform.xml ${{ steps.strings.outputs.build-output-dir }}/test
           ctest --output-on-failure --parallel
 
           echo "Additionally running MPI tests with 100 ranks..."
