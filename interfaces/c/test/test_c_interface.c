@@ -15,7 +15,7 @@
 static void test_worker_function(const unsigned char* in_data, size_t in_size,
                                  unsigned char** out_data, size_t* out_size) {
   int64_t x = 0;
-  if (in_size == sizeof(int64_t)) memcpy(&x, in_data, sizeof(int64_t));
+  if (in_size == sizeof(x)) memcpy(&x, in_data, sizeof(x));
   int64_t y = x * 2;
   *out_size = sizeof(int64_t);
   *out_data = (unsigned char*)malloc(sizeof(int64_t));
@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
       // Print results
       for (size_t i = 0; i < result_count; i++) {
         int64_t val = 0;
-        if (results[i].size == sizeof(int64_t)) memcpy(&val, results[i].data, sizeof(int64_t));
+        if (results[i].size == sizeof(val)) memcpy(&val, results[i].data, sizeof(val));
         printf("Process %d: Result[%zu] = %" PRId64 "\n", rank, i, val);
       }
 
