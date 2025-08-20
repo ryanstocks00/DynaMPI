@@ -61,8 +61,8 @@ int main(int argc, char* argv[]) {
     if (results) {
       printf("Process %d: Completed %zu tasks\n", rank, result_count);
       for (size_t i = 0; i < result_count && i < 5; i++) {
-        int64_t val = 0;
-        if (results[i].size == sizeof(val)) memcpy(&val, results[i].data, sizeof(val));
+        assert(results[i].size == sizeof(int64_t));
+        int64_t val = *(int64_t*)(results[i].data);
         printf("Process %d: Task %zu result = %ld\n", rank, i, (long)val);
       }
       if (result_count > 5) {
