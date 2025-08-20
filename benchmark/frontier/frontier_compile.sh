@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2025 QDX Technologies. Authored by Ryan Stocks <ryan.stocks00@gmail.com>
+# SPDX-License-Identifier: MIT
+
 set -euo pipefail
 
 module load PrgEnv-cray

@@ -116,7 +116,7 @@ class NaiveMPIWorkDistributor {
  public:
   explicit NaiveMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
                                    Config runtime_config = Config{})
-      : _communicator(runtime_config.comm, MPICommunicator::Owned),
+      : _communicator(runtime_config.comm, MPICommunicator::Duplicate),
         _worker_function(worker_function),
         _config(runtime_config),
         _statistics{create_statistics(_communicator)} {
