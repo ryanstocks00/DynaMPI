@@ -15,11 +15,11 @@
 static void test_worker_function(const unsigned char* in_data, size_t in_size,
                                  unsigned char** out_data, size_t* out_size) {
   int64_t x = 0;
-  if (in_size >= sizeof(int64_t)) memcpy(&x, in_data, sizeof(int64_t));
+  if (in_size == sizeof(int64_t)) memcpy(&x, in_data, sizeof(int64_t));
   int64_t y = x * 2;
   *out_size = sizeof(int64_t);
   *out_data = (unsigned char*)malloc(sizeof(int64_t));
-  if (*out_data) memcpy(*out_data, &y, sizeof(int64_t));
+  if (*out_data) *(int64_t*)(*out_data) = y;
 }
 
 int main(int argc, char* argv[]) {
@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
       // Print results
       for (size_t i = 0; i < result_count; i++) {
         int64_t val = 0;
-        if (results[i].size >= sizeof(int64_t)) memcpy(&val, results[i].data, sizeof(int64_t));
+        if (results[i].size == sizeof(int64_t)) memcpy(&val, results[i].data, sizeof(int64_t));
         printf("Process %d: Result[%zu] = %" PRId64 "\n", rank, i, val);
       }
 
@@ -95,9 +95,7 @@ int main(int argc, char* argv[]) {
   if (dynampi_is_manager(distributor)) {
     int64_t vals[] = {100, 200, 300};
     for (size_t i = 0; i < 3; ++i) {
-      unsigned char buf[sizeof(int64_t)];
-      memcpy(buf, &vals[i], sizeof(int64_t));
-      dynampi_insert_task(distributor, buf, sizeof(int64_t));
+      dynampi_insert_task(distributor, (unsigned char*)&vals[i], sizeof(int64_t));
     }
   }
 

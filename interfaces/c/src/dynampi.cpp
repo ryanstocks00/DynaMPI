@@ -31,7 +31,7 @@ class CDynamicDistributor
 static std::vector<std::byte> make_bytes(const unsigned char* data, size_t size) {
   std::vector<std::byte> v;
   v.resize(size);
-  if (size && data) std::memcpy(v.data(), data, size);
+  if (size && data) std::copy_n(reinterpret_cast<const std::byte*>(data), size, v.data());
   return v;
 }
 
@@ -47,7 +47,7 @@ inline CDynamicDistributor::WorkerFn make_worker_adapter(dynampi_worker_t worker
     std::vector<std::byte> out;
     if (out_data && out_size) {
       out.resize(out_size);
-      std::memcpy(out.data(), out_data, out_size);
+      std::copy_n(reinterpret_cast<const std::byte*>(out_data), out_size, out.data());
       std::free(out_data);
     }
     return out;
@@ -71,7 +71,8 @@ inline dynampi_buffer_t* copy_results_out(const std::vector<std::vector<std::byt
     const auto& v = results[i];
     out[i].size = v.size();
     out[i].data = static_cast<unsigned char*>(v.size() ? std::malloc(v.size()) : nullptr);
-    if (v.size() && out[i].data) std::memcpy(out[i].data, v.data(), v.size());
+    if (v.size() && out[i].data)
+      std::copy_n(reinterpret_cast<const unsigned char*>(v.data()), v.size(), out[i].data);
   }
   return out;
 }
@@ -79,7 +80,7 @@ inline dynampi_buffer_t* copy_results_out(const std::vector<std::vector<std::byt
 // Inserts a task consisting of a little-endian encoded size_t index
 inline void insert_task_index(CDynamicDistributor& distributor, size_t index_value) {
   unsigned char buf[sizeof(size_t)];
-  std::memcpy(buf, &index_value, sizeof(size_t));
+  std::copy_n(reinterpret_cast<const unsigned char*>(&index_value), sizeof(index_value), buf);
   distributor.insert_task(make_bytes(buf, sizeof(size_t)));
 }
 
