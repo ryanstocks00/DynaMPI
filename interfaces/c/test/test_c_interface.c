@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <inttypes.h>
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,7 +64,7 @@ int main(int argc, char* argv[]) {
       for (size_t i = 0; i < result_count; i++) {
         int64_t val = 0;
         if (results[i].size >= sizeof(int64_t)) memcpy(&val, results[i].data, sizeof(int64_t));
-        printf("Process %d: Result[%zu] = %ld\n", rank, i, val);
+        printf("Process %d: Result[%zu] = %" PRId64 "\n", rank, i, val);
       }
 
       // Clean up results

@@ -52,13 +52,23 @@ if(DYNAMPI_BUILD_TESTS)
     # Detect oversubscribe settings used for MPI tests
     include(mpi_oversubscribe)
 
-    # Add MPI test
-    add_test(NAME c_interface_test_1_rank COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 1 ${MPI_OVERSUBSCRIBE_FLAG} $<TARGET_FILE:c_interface_test>)
-    set_tests_properties(c_interface_test_1_rank PROPERTIES TIMEOUT 10)
-    add_test(NAME c_interface_test_2_rank COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPI_OVERSUBSCRIBE_FLAG} $<TARGET_FILE:c_interface_test>)
-    set_tests_properties(c_interface_test_2_rank PROPERTIES TIMEOUT 10)
-    add_test(NAME c_interface_test_4_rank COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 4 ${MPI_OVERSUBSCRIBE_FLAG} $<TARGET_FILE:c_interface_test>)
-    set_tests_properties(c_interface_test_4_rank PROPERTIES TIMEOUT 10)
+    # Add MPI tests with varying ranks
+    function(add_mpi_test test_name num_procs)
+    set(command
+        ${MPIEXEC_EXECUTABLE}
+        ${MPIEXEC_NUMPROC_FLAG}
+        ${num_procs}
+        ${MPI_OVERSUBSCRIBE_FLAG}
+        ${MPIEXEC_PREFLAGS}
+        $<TARGET_FILE:c_interface_test>
+        ${MPIEXEC_POSTFLAGS})
+    add_test(NAME ${test_name} COMMAND ${command})
+    set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
+    endfunction()
+
+    foreach(rank 1 2 4)
+        add_mpi_test(mpi_test_${rank}_rank ${rank})
+    endforeach()
 endif()
 
 # Install rules

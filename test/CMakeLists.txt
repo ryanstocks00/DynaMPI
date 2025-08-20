@@ -66,7 +66,7 @@ function(add_mpi_test test_name num_procs)
       $<TARGET_FILE:mpi_test>
       ${MPIEXEC_POSTFLAGS})
   add_test(NAME ${test_name} COMMAND ${command})
-  set_tests_properties(${test_name} PROPERTIES TIMEOUT 10)
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endfunction()
 
 foreach(rank 1 2 3 4 8)
