@@ -7,6 +7,7 @@
 #include <mpi.h>
 
 #include <cmath>
+#include <cstdint>
 #include <dynampi/dynampi.hpp>
 #include <vector>
 
@@ -14,14 +15,14 @@
 #include "dynampi/mpi/mpi_communicator.hpp"
 #include "mpi_test_environment.hpp"
 
-template <template <typename...> class TT>
+template <template <typename, typename, typename...> class TT>
 struct DistributerTypeWrapper {
-  template <typename... T>
-  using apply = TT<T...>;
+  template <typename TaskT, typename ResultT, typename... Options>
+  using type = TT<TaskT, ResultT, Options...>;
 };
 
 template <typename Wrapper, typename... T>
-using DistributerOf = typename Wrapper::template apply<T...>;
+using DistributerOf = typename Wrapper::template type<T...>;
 
 // Test fixture
 template <typename T>
@@ -64,7 +65,7 @@ TYPED_TEST(DynamicDistribution, Naive2) {
 
   auto worker_task = [](size_t task) -> char { return "Hi"[task]; };
 
-  auto result = dynampi::mpi_manager_worker_distribution<char, DistributerWrapper::template apply>(
+  auto result = dynampi::mpi_manager_worker_distribution<char, DistributerWrapper::template type>(
       2, worker_task);
 
   if (MPIEnvironment::world_comm_rank() == 0) {
@@ -81,7 +82,7 @@ TYPED_TEST(DynamicDistribution, Example1) {
   for (int manager_rank : {0, MPIEnvironment::world_comm_size() - 1}) {
     auto worker_task = [](size_t task) -> size_t { return task * task; };
     auto result =
-        dynampi::mpi_manager_worker_distribution<size_t, DistributerWrapper::template apply>(
+        dynampi::mpi_manager_worker_distribution<size_t, DistributerWrapper::template type>(
             4, worker_task, MPI_COMM_WORLD, manager_rank);
     if (result.has_value()) {
       assert(result == std::vector<size_t>({0, 1, 4, 9}));
