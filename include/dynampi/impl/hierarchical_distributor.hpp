@@ -11,6 +11,7 @@
 #include <functional>
 #include <iterator>
 #include <ranges>
+#include <span>
 #include <stack>
 #include <type_traits>
 #include <vector>
@@ -36,7 +37,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   static constexpr bool prioritize_tasks = Base::prioritize_tasks;
 
  private:
-  Base::QueueT _unallocated_task_queue;
+  typename Base::QueueT _unallocated_task_queue;
   std::vector<int64_t> _worker_current_task_indices;
   std::vector<ResultT> _results;
   std::stack<int, std::vector<int>> _free_worker_indices;
