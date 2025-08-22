@@ -265,7 +265,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
                       "Only the manager can distribute tasks");
     std::copy(std::ranges::begin(tasks), std::ranges::end(tasks),
               std::back_inserter(_unallocated_task_queue));
-    _tasks_received_from_parent += std::ranges::distance(tasks);
+    _tasks_received_from_parent +=
+        std::distance(std::ranges::begin(tasks), std::ranges::end(tasks));
   }
   void insert_tasks(const std::vector<TaskT>& tasks)
     requires(!prioritize_tasks)

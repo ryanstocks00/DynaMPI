@@ -117,27 +117,28 @@ TYPED_TEST(DynamicDistribution, Example2) {
   using Distributer = DistributerOf<TypeParam, Task, Result>;
   if constexpr (is_specialization_of<dynampi::HierarchicalMPIWorkDistributor, Distributer>::value) {
     GTEST_SKIP() << "This test is not applicable for HierarchicalMPIWorkDistributor.";
-  }
-  auto worker_task = [](Task task) -> Result {
-    return Result{task, task * task, task * task * task};
-  };
-  {
-    Distributer work_distributer(worker_task);
-    if (work_distributer.is_root_manager()) {
-      work_distributer.insert_tasks({1, 2, 3, 4, 5});
-      auto results = work_distributer.finish_remaining_tasks();
-      EXPECT_EQ(results, (std::vector<std::vector<int>>{
-                             {1, 1, 1}, {2, 4, 8}, {3, 9, 27}, {4, 16, 64}, {5, 25, 125}}));
-      work_distributer.insert_tasks({6, 7, 8});
-      results = work_distributer.finish_remaining_tasks();
-      EXPECT_EQ(results, (std::vector<std::vector<int>>{{1, 1, 1},
-                                                        {2, 4, 8},
-                                                        {3, 9, 27},
-                                                        {4, 16, 64},
-                                                        {5, 25, 125},
-                                                        {6, 36, 216},
-                                                        {7, 49, 343},
-                                                        {8, 64, 512}}));
+  } else {
+    auto worker_task = [](Task task) -> Result {
+      return Result{task, task * task, task * task * task};
+    };
+    {
+      Distributer work_distributer(worker_task);
+      if (work_distributer.is_root_manager()) {
+        work_distributer.insert_tasks({1, 2, 3, 4, 5});
+        auto results = work_distributer.finish_remaining_tasks();
+        EXPECT_EQ(results, (std::vector<std::vector<int>>{
+                               {1, 1, 1}, {2, 4, 8}, {3, 9, 27}, {4, 16, 64}, {5, 25, 125}}));
+        work_distributer.insert_tasks({6, 7, 8});
+        results = work_distributer.finish_remaining_tasks();
+        EXPECT_EQ(results, (std::vector<std::vector<int>>{{1, 1, 1},
+                                                          {2, 4, 8},
+                                                          {3, 9, 27},
+                                                          {4, 16, 64},
+                                                          {5, 25, 125},
+                                                          {6, 36, 216},
+                                                          {7, 49, 343},
+                                                          {8, 64, 512}}));
+      }
     }
   }
 }
