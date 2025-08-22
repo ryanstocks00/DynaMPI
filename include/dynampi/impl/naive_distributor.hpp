@@ -31,6 +31,7 @@ class NaiveMPIWorkDistributor {
     int manager_rank = 0;
     bool auto_run_workers = true;
   };
+  static const bool ordered = true;
 
  private:
   static constexpr bool prioritize_tasks = get_option_value<prioritize_tasks_t, Options...>();
