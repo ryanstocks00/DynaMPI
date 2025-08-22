@@ -402,43 +402,89 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   int worker_for_idx(int idx) const { return (idx < _config.manager_rank) ? idx : (idx + 1); }
 
+  using result_mpi_type = MPI_Type<ResultT>;
+  using task_mpi_type = MPI_Type<TaskT>;
+
+  void receive_result_from(MPI_Status status) {
+    _results.push_back(ResultT{});
+    if constexpr (result_mpi_type::resize_required) {
+      int count;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, result_mpi_type::value, &count));
+      result_mpi_type::resize(_results.back(), count);
+    }
+    _communicator.recv(_results.back(), status.MPI_SOURCE, Tag::RESULT);
+    _results_received_from_child++;
+    _free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
+  }
+
+  void receive_result_batch_from(MPI_Status status) {
+    using message_type = MPI_Type<std::vector<ResultT>>;
+    int count;
+    DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
+    std::cout << "Worker " << _communicator.rank() << " received batch of " << count
+              << " results from worker." << std::endl;
+    std::vector<ResultT> results;
+    message_type::resize(results, count);
+    _communicator.recv(results, status.MPI_SOURCE, Tag::RESULT_BATCH);
+    _free_worker_indices.push({.worker_rank = status.MPI_SOURCE,
+                               .num_tasks_requested = static_cast<int>(results.size())});
+    std::copy(results.begin(), results.end(), std::back_inserter(_results));
+    _results_received_from_child += results.size();
+  }
+
+  void receive_execute_return_task_from(MPI_Status status) {
+    int count;
+    DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, task_mpi_type::value, &count));
+    TaskT message;
+    task_mpi_type::resize(message, count);
+    _communicator.recv(message, status.MPI_SOURCE, Tag::TASK);
+    _tasks_received_from_parent++;
+    ResultT result = _worker_function(message);
+    _communicator.send(result, status.MPI_SOURCE, Tag::RESULT);
+    _results_sent_to_parent++;
+  }
+
+  void receive_task_batch_from(MPI_Status status) {
+    if constexpr (prioritize_tasks) {
+      DYNAMPI_UNIMPLEMENTED("Prioritized hierarchical distribution");
+    } else {
+      using message_type = MPI_Type<std::vector<TaskT>>;
+      int count;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
+      std::vector<TaskT> tasks;
+      message_type::resize(tasks, count);
+      _communicator.recv(tasks, parent_rank(), Tag::TASK_BATCH);
+      _tasks_received_from_parent += tasks.size();
+      std::cout << "Worker " << _communicator.rank() << " received batch of " << tasks.size()
+                << " tasks from manager." << std::endl;
+      for (const auto& task : tasks) {
+        _unallocated_task_queue.push_back(task);
+      }
+    }
+  }
+
   void receive_from_anyone() {
     DYNAMPI_ASSERT_GT(_communicator.size(), 1,
                       "There should be at least one worker to receive results from");
-    using result_type = MPI_Type<ResultT>;
-    MPI_Status status;
-    DYNAMPI_MPI_CHECK(MPI_Probe, (MPI_ANY_SOURCE, MPI_ANY_TAG, _communicator.get(), &status));
+    MPI_Status status = _communicator.probe();
     std::cout << "Rank " << _communicator.rank() << " received message with tag " << status.MPI_TAG
               << " from source " << status.MPI_SOURCE << std::endl;
     switch (status.MPI_TAG) {
+      case Tag::TASK: {
+        return receive_execute_return_task_from(status);
+      }
+      case Tag::TASK_BATCH: {
+        return receive_task_batch_from(status);
+      }
       case Tag::RESULT: {
-        int count;
-        DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, result_type::value, &count));
-        _results.push_back(ResultT{});
-        result_type::resize(_results.back(), count);
-        _communicator.recv(_results.back(), status.MPI_SOURCE, Tag::RESULT);
-        _results_received_from_child++;
-        _free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
-        return;
+        return receive_result_from(status);
+      }
+      case Tag::RESULT_BATCH: {
+        return receive_result_batch_from(status);
       }
       case Tag::REQUEST: {
         _communicator.recv_empty_message(status.MPI_SOURCE, Tag::REQUEST);
         _free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
-        return;
-      }
-      case Tag::RESULT_BATCH: {
-        using message_type = MPI_Type<std::vector<ResultT>>;
-        int count;
-        DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
-        std::cout << "Worker " << _communicator.rank() << " received batch of " << count
-                  << " results from worker." << std::endl;
-        std::vector<ResultT> results;
-        message_type::resize(results, count);
-        _communicator.recv(results, status.MPI_SOURCE, Tag::RESULT_BATCH);
-        _free_worker_indices.push({.worker_rank = status.MPI_SOURCE,
-                                   .num_tasks_requested = static_cast<int>(results.size())});
-        std::copy(results.begin(), results.end(), std::back_inserter(_results));
-        _results_received_from_child += results.size();
         return;
       }
       case Tag::REQUEST_BATCH: {
@@ -446,39 +492,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         _communicator.recv(request_count, status.MPI_SOURCE, Tag::REQUEST_BATCH);
         _free_worker_indices.push(
             TaskRequest{.worker_rank = status.MPI_SOURCE, .num_tasks_requested = request_count});
-        return;
-      }
-      case Tag::TASK: {
-        using task_type = MPI_Type<TaskT>;
-        int count;
-        DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, task_type::value, &count));
-        TaskT message;
-        task_type::resize(message, count);
-        _communicator.recv(message, status.MPI_SOURCE, Tag::TASK);
-        _tasks_received_from_parent++;
-        ResultT result = _worker_function(message);
-        _communicator.send(result, status.MPI_SOURCE, Tag::RESULT);
-        _results_sent_to_parent++;
-        return;
-      }
-      case Tag::TASK_BATCH: {
-        if constexpr (prioritize_tasks) {
-          std::cout << "Batch task distribution is not supported with prioritized tasks."
-                    << std::endl;
-        } else {
-          using message_type = MPI_Type<std::vector<TaskT>>;
-          int count;
-          DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
-          std::vector<TaskT> tasks;
-          message_type::resize(tasks, count);
-          _communicator.recv(tasks, parent_rank(), Tag::TASK_BATCH);
-          _tasks_received_from_parent += tasks.size();
-          std::cout << "Worker " << _communicator.rank() << " received batch of " << tasks.size()
-                    << " tasks from manager." << std::endl;
-          for (const auto& task : tasks) {
-            _unallocated_task_queue.push_back(task);
-          }
-        }
         return;
       }
       case Tag::DONE: {

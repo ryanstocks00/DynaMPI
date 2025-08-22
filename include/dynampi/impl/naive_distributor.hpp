@@ -103,8 +103,7 @@ class NaiveMPIWorkDistributor {
     using task_type = MPI_Type<TaskT>;
     _communicator.send(nullptr, _config.manager_rank, Tag::REQUEST);
     while (true) {
-      MPI_Status status;
-      DYNAMPI_MPI_CHECK(MPI_Probe, (MPI_ANY_SOURCE, MPI_ANY_TAG, _communicator.get(), &status));
+      MPI_Status status = _communicator.probe();
       if (status.MPI_TAG == Tag::DONE) {
         _communicator.recv_empty_message(_config.manager_rank, Tag::DONE);
         break;

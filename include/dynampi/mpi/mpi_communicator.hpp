@@ -153,6 +153,12 @@ class MPICommunicator {
     }
   }
 
+  inline MPI_Status probe(int source = MPI_ANY_SOURCE, int tag = MPI_ANY_TAG) {
+    MPI_Status status;
+    DYNAMPI_MPI_CHECK(MPI_Probe, (source, tag, _comm, &status));
+    return status;
+  }
+
   template <typename T>
   inline void recv(T& data, int source, int tag = 0) {
     using mpi_type = MPI_Type<T>;
