@@ -124,7 +124,7 @@ inline void _DYNAMPI_FAILBinOp(const A &a, const B &b, const std::string &a_str,
 
 #define DYNAMPI_FAIL(...)             \
   DYNAMPI_ASSERT(false, __VA_ARGS__); \
-  UNREACHABLE()  // LCOV_EXCL_LINE
+  DYNAMPI_UNREACHABLE()  // LCOV_EXCL_LINE
 
 #define DYNAMPI_UNIMPLEMENTED(...) DYNAMPI_FAIL("DYNAMPI_UNIMPLEMENTED")
 
@@ -136,9 +136,9 @@ inline void _DYNAMPI_FAILBinOp(const A &a, const B &b, const std::string &a_str,
 #define DYNAMPI_ASSERT_NE(expr, val, ...) DYNAMPI_ASSERT_BIN_OP(expr, val, !=, ==, __VA_ARGS__)
 
 #if defined(_MSC_VER) && !defined(__clang__)  // MSVC
-#define UNREACHABLE() __assume(false)
+#define DYNAMPI_UNREACHABLE() __assume(false)
 #else  // GCC, Clang
-#define UNREACHABLE() __builtin_unreachable()
+#define DYNAMPI_UNREACHABLE() __builtin_unreachable()
 #endif
 
 }  // namespace dynampi
