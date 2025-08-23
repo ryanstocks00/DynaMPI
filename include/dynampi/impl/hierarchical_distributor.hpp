@@ -10,6 +10,7 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <memory>
 #include <ranges>
 #include <span>
 #include <stack>
@@ -53,6 +54,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   size_t _results_received_from_child = 0;
   size_t _results_sent_to_parent = 0;
   size_t _tasks_received_from_parent = 0;
+  size_t _tasks_executed = 0;
 
   bool _finalized = false;
   bool _done = false;
@@ -127,6 +129,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   struct Statistics {
     const CommStatistics& comm_statistics;
+    std::optional<std::vector<size_t>> worker_task_counts = {};
   };
 
   using StatisticsT =
@@ -136,7 +139,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   static StatisticsT create_statistics(const MPICommunicator& comm) {
     if constexpr (statistics_mode != StatisticsMode::None) {
-      return Statistics{comm.get_statistics()};
+      return Statistics{.comm_statistics = comm.get_statistics()};
     } else {
       return {};
     }
@@ -302,6 +305,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       // If there's only one process, we just run the worker function directly
       const TaskT task = get_next_task_to_send();
       _results.emplace_back(_worker_function(task));
+      _tasks_executed++;
     }
   }
 
@@ -324,7 +328,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     DYNAMPI_ASSERT_EQ(_results_sent_to_parent, _tasks_received_from_parent,
                       "All results should have been sent to the parent before finalizing");
     if (_communicator.size() > 1)
-      DYNAMPI_ASSERT_EQ(_results_sent_to_parent, _results_received_from_child,
+      DYNAMPI_ASSERT_EQ(_results_sent_to_parent, _results_received_from_child + _tasks_executed,
                         "Manager should not send results to itself");
     if (is_root_manager() && _communicator.size() > 1)
       DYNAMPI_ASSERT_EQ(_results.size(), _results_received_from_child,
@@ -338,6 +342,16 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     if (is_root_manager()) {
       send_done_to_workers();
       _finalized = true;
+    }
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      if (is_root_manager()) {
+        _statistics.worker_task_counts = std::vector<size_t>(_communicator.size(), 0);
+      }
+      _communicator.gather(_tasks_executed,
+                           _statistics.worker_task_counts.has_value()
+                               ? &_statistics.worker_task_counts.value()
+                               : nullptr,
+                           _config.manager_rank);
     }
   }
 
@@ -353,7 +367,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       DYNAMPI_ASSERT_EQ(_results_received_from_child, 0,
                         "Leaf workers should not receive results from children");
     else if (_communicator.size() > 1)
-      DYNAMPI_ASSERT_EQ(_results_received_from_child, _results_sent_to_parent,
+      DYNAMPI_ASSERT_EQ(_results_received_from_child + _tasks_executed, _results_sent_to_parent,
                         "Results received from children should match results sent to parent");
   }
 
@@ -439,6 +453,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     _communicator.recv(message, status.MPI_SOURCE, Tag::TASK);
     _tasks_received_from_parent++;
     ResultT result = _worker_function(message);
+    _tasks_executed++;
     _communicator.send(result, status.MPI_SOURCE, Tag::RESULT);
     _results_sent_to_parent++;
   }

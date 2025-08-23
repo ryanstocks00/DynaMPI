@@ -103,9 +103,10 @@ static double run_single_benchmark(const BenchmarkOptions& opts) {
     if (work_distributer.is_root_manager()) {
       std::cout << "Dynamic task distribution completed successfully." << std::endl;
       const auto& stats = work_distributer.get_statistics();
-      // for (size_t i = 0; i < stats.worker_task_counts.size(); i++) {
-      // std::cout << "Rank " << i << ": " << "Tasks: " << stats.worker_task_counts[i] << std::endl;
-      //}
+      for (size_t i = 0; i < stats.worker_task_counts->size(); i++) {
+        std::cout << "Rank " << i << ": " << "Tasks: " << stats.worker_task_counts->at(i)
+                  << std::endl;
+      }
       std::cout << "Total messages sent: " << stats.comm_statistics.send_count << std::endl;
       std::cout << "Total messages received: " << stats.comm_statistics.recv_count << std::endl;
       std::cout << "Total bytes sent: " << stats.comm_statistics.bytes_sent << std::endl;

@@ -46,4 +46,4 @@ jobs:
           cd build
           echo "Testing with $MPI_TYPE and ${{ matrix.sanitizer }} sanitizer"
           export LSAN_OPTIONS=suppressions=${{ github.workspace }}/test/lsan.supp
-          ctest --output-on-failure --verbose --parallel -C Debug
+          ctest --output-on-failure --verbose -C Debug

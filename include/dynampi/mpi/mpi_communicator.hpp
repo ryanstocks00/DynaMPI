@@ -11,6 +11,7 @@
 #include <variant>
 
 #include "dynampi/mpi/mpi_types.hpp"
+#include "dynampi/utilities/assert.hpp"
 #include "dynampi/utilities/template_options.hpp"
 #include "mpi_error.hpp"
 
@@ -195,6 +196,19 @@ class MPICommunicator {
                                  _comm, MPI_STATUS_IGNORE));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
+    }
+  }
+
+  template <typename T>
+  inline void gather(const T& data, std::vector<T>* result, int root = 0) {
+    DYNAMPI_ASSERT_EQ(result != nullptr, root == rank(),
+                      "Gather result must be provided only on the root rank");
+    using mpi_type = MPI_Type<T>;
+    DYNAMPI_MPI_CHECK(MPI_Gather, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
+                                   result == nullptr ? nullptr : result->data(),
+                                   mpi_type::count(data), mpi_type::value, root, _comm));
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.collective_count++;
     }
   }
 
