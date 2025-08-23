@@ -421,7 +421,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   void receive_result_from(MPI_Status status) {
     m_results.push_back(ResultT{});
     if (result_mpi_type::resize_required) {
-      DYNAMPI_UNIMPLEMENTED(
+      DYNAMPI_UNIMPLEMENTED(  // LCOV_EXCL_LINE
           "Dynamic resizing of results is not supported in hierarchical distribution");
       // int count;
       // DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, result_mpi_type::value, &count));

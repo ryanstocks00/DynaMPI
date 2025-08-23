@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
+#include <stdexcept>
+
 #ifndef NDEBUG
 // Redirect calls to our stub function
 #define MPI_Comm_rank DYNAMPI_TEST_MPI_Comm_rank
@@ -60,6 +62,24 @@ TEST(DynaMPIAssert, TrueConditionDoesNotThrow) {
   EXPECT_NO_THROW({ DYNAMPI_ASSERT(1 == 1, "should not throw"); });
 #else
   EXPECT_NO_THROW({ DYNAMPI_ASSERT(false, "no-op in NDEBUG"); });
+#endif
+}
+
+TEST(DynaMPIAssert, NoAssertInDestructorDuringThrow) {
+#ifndef NDEBUG
+  class Test {
+   public:
+    ~Test() { DYNAMPI_ASSERT(false, "Destructor should not assert if already throwing"); }
+  };
+
+  EXPECT_THROW(
+      {
+        Test t;
+        throw std::logic_error("Test exception");
+      },
+      std::logic_error);
+#else
+  GTEST_SKIP() << "DYNAMPI_ASSERT in destructor is a no-op in NDEBUG builds.";
 #endif
 }
 
