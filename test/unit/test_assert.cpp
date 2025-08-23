@@ -6,6 +6,16 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
+#ifndef NDEBUG
+// Redirect calls to our stub function
+#define MPI_Comm_rank DYNAMPI_TEST_MPI_Comm_rank
+static inline int DYNAMPI_TEST_MPI_Comm_rank(MPI_Comm /*comm*/, int* rank) {
+  if (rank) *rank = 0;
+  return MPI_SUCCESS;
+}
+#endif
+
+// Include the header-under-test AFTER redefining MPI_Comm_rank.
 #include <dynampi/utilities/assert.hpp>
 
 using namespace dynampi;
