@@ -197,6 +197,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         while (!_done && _unallocated_task_queue.empty()) {
           receive_from_anyone();
         }
+        size_t tasks_received = _unallocated_task_queue.size();
         while (!_unallocated_task_queue.empty()) {
           allocate_task_to_child();
         }
@@ -208,6 +209,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
                     << " received done signal, finalizing." << std::endl;
           break;
         }
+        (void)tasks_received;
+        DYNAMPI_ASSERT_EQ(_results.size(), tasks_received);
         return_results_and_request_next_batch_from_manager();
       }
       for (int i = 0; i < _config.max_workers_per_coordinator; ++i) {
