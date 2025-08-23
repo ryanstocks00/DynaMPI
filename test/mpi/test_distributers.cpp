@@ -85,7 +85,6 @@ TYPED_TEST(DynamicDistribution, Naive2) {
     if constexpr (!DistributerWrapper::template type<int, int>::ordered) {
       std::sort(result->begin(), result->end());
     }
-    DYNAMPI_ASSERT_EQ(result, std::vector<char>({'H', 'i'}));
     EXPECT_EQ(result, std::vector<char>({'H', 'i'}));
   } else {
     EXPECT_FALSE(result.has_value());
@@ -199,7 +198,7 @@ TYPED_TEST(DynamicDistribution, Statistics) {
       work_distributer.finalize();
       EXPECT_EQ(work_distributer.get_statistics().comm_statistics.bytes_sent,
                 expected_size * sizeof(int));
-      if constexpr (std::is_same_v<Distributer, dynampi::NaiveMPIWorkDistributor<Task, Result>>) {
+      if constexpr (is_specialization_of<dynampi::NaiveMPIWorkDistributor, Distributer>::value) {
         EXPECT_EQ(work_distributer.get_statistics().comm_statistics.send_count,
                   expected_size + MPIEnvironment::world_comm_size() - 1);
         double expected_num_bytes = 0;

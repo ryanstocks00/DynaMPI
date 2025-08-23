@@ -190,8 +190,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         std::cout << child << " ";
       }
       std::cout << std::endl;
-      bool returned_empty_results = false;
-      (void)returned_empty_results;  // Suppress unused variable warning
       while (!_done) {
         while (!_done && _unallocated_task_queue.empty()) {
           receive_from_anyone();
@@ -207,7 +205,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
                     << " received done signal, finalizing." << std::endl;
           break;
         }
-        if (_results.empty()) returned_empty_results = true;
         return_results_and_request_next_batch_from_manager();
       }
       for (int i = 0; i < _config.max_workers_per_coordinator; ++i) {
