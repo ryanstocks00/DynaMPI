@@ -16,9 +16,27 @@
 
 namespace dynampi {
 
+template <typename T>
+inline std::ostream& operator<<(std::ostream& os, const std::set<T>& set);
+template <typename T>
+inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
+template <typename T, size_t N>
+inline std::ostream& operator<<(std::ostream& os, const std::array<T, N>& arr);
+template <typename T>
+inline std::ostream& operator<<(std::ostream& os, const std::span<T>& vec);
+template <typename T>
+inline std::ostream& operator<<(std::ostream& os, const std::optional<T>& op);
+template <typename... Args>
+inline std::ostream& operator<<(std::ostream& os, const std::tuple<Args...>& tup);
+template <typename T, typename U>
+inline std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& pair);
+inline std::ostream& operator<<(std::ostream& os, const std::byte& b);
+
+// --------------- IMPLEMENTATIONS ---------------
+
 inline std::ostream& operator<<(std::ostream& os, const std::byte& b) {
   return os << static_cast<uint32_t>(b);
-};
+}
 
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::span<T>& vec) {
@@ -52,8 +70,13 @@ inline std::ostream& operator<<(std::ostream& os, const std::array<T, N>& arr) {
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::set<T>& set) {
   os << "{";
-  for (const T& elem : set) {
-    os << elem << ", ";
+  auto it = set.begin();
+  while (it != set.end()) {
+    os << *it;
+    ++it;
+    if (it != set.end()) {
+      os << ", ";
+    }
   }
   return os << "}";
 }
@@ -73,7 +96,14 @@ inline std::ostream& operator<<(std::ostream& os, const std::optional<T>& op) {
 
 template <typename... Args>
 inline std::ostream& operator<<(std::ostream& os, const std::tuple<Args...>& tup) {
-  std::apply([&os](const Args&... args) { ((os << args << ", "), ...); }, tup);
-  return os;
+  os << "(";
+  std::apply(
+      [&os](const Args&... args) {
+        std::size_t i = 0;
+        ((os << args << (++i < sizeof...(Args) ? ", " : "")), ...);
+      },
+      tup);
+  return os << ")";
 }
+
 }  // namespace dynampi
