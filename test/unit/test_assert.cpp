@@ -59,7 +59,8 @@ TEST(OptionalString, ConcatsMultipleArgs) {
 
 TEST(DynaMPIAssert, TrueConditionDoesNotThrow) {
 #ifndef NDEBUG
-  EXPECT_NO_THROW({ DYNAMPI_ASSERT(1 == 1, "should not throw"); });
+  int a1 = 1, b1 = 1;
+  EXPECT_NO_THROW({ DYNAMPI_ASSERT(a1 == b1, "should not throw"); });
 #else
   EXPECT_NO_THROW({ DYNAMPI_ASSERT(false, "no-op in NDEBUG"); });
 #endif
@@ -85,10 +86,11 @@ TEST(DynaMPIAssert, NoAssertInDestructorDuringThrow) {
 
 TEST(DynaMPIAssert, FalseConditionThrowsAndPrints) {
 #ifndef NDEBUG
-  auto [msg, threw] = CaptureStderrAndDidThrow([] { DYNAMPI_ASSERT(1 == 2, "custom message"); });
+  int a1 = 1, b2 = 2;
+  auto [msg, threw] = CaptureStderrAndDidThrow([=] { DYNAMPI_ASSERT(a1 == b2, "custom message"); });
   EXPECT_TRUE(threw);
   EXPECT_NE(msg.find("DynaMPI assertion failed"), std::string::npos);
-  EXPECT_NE(msg.find("1 == 2"), std::string::npos);          // condition text
+  EXPECT_NE(msg.find("a1 == b2"), std::string::npos);        // condition text
   EXPECT_NE(msg.find("custom message"), std::string::npos);  // user message
   EXPECT_NE(msg.find("rank "), std::string::npos);           // our stub sets rank 0
 #else
@@ -99,7 +101,8 @@ TEST(DynaMPIAssert, FalseConditionThrowsAndPrints) {
 // ---------- Binary-op helpers ----------
 TEST(DynaMPIAssertBinOp, EqFailureShowsValuesAndNegatedOp) {
 #ifndef NDEBUG
-  auto [msg, threw] = CaptureStderrAndDidThrow([] { DYNAMPI_ASSERT_EQ(1, 2, "boom"); });
+  int a1 = 1, b2 = 2;
+  auto [msg, threw] = CaptureStderrAndDidThrow([=] { DYNAMPI_ASSERT_EQ(a1, b2, "boom"); });
   EXPECT_TRUE(threw);
   EXPECT_NE(msg.find("1 != 2"), std::string::npos);  // comes from _DYNAMPI_FAILBinOp
   EXPECT_NE(msg.find("boom"), std::string::npos);
@@ -111,10 +114,11 @@ TEST(DynaMPIAssertBinOp, EqFailureShowsValuesAndNegatedOp) {
 
 TEST(DynaMPIAssertBinOp, GeAndLtPassWithoutThrow) {
 #ifndef NDEBUG
-  EXPECT_NO_THROW({ DYNAMPI_ASSERT_GE(5, 5, "ok"); });
-  EXPECT_NO_THROW({ DYNAMPI_ASSERT_LT(4, 5, "ok"); });
+  int a5 = 5, b5 = 5, c4 = 4;
+  EXPECT_NO_THROW({ DYNAMPI_ASSERT_GE(a5, b5, "ok"); });
+  EXPECT_NO_THROW({ DYNAMPI_ASSERT_LT(c4, a5, "ok"); });
 #else
-  EXPECT_NO_THROW({ DYNAMPI_ASSERT_GE(0, 1, "no-op"); });
-  EXPECT_NO_THROW({ DYNAMPI_ASSERT_LT(1, 0, "no-op"); });
+  EXPECT_NO_THROW({ DYNAMPI_ASSERT_GE(c4, a5, "no-op"); });
+  EXPECT_NO_THROW({ DYNAMPI_ASSERT_LT(can write, anything here); });
 #endif
 }
