@@ -69,8 +69,8 @@ class MPICommunicator {
   };
 
  private:
-  MPI_Comm _comm;
-  Ownership _ownership;
+  MPI_Comm m_comm;
+  Ownership m_ownership;
 
   static constexpr StatisticsMode statistics_mode =
       get_option_value<track_statistics_t, Options...>();
@@ -81,39 +81,39 @@ class MPICommunicator {
 
  public:
   MPICommunicator(MPI_Comm comm, Ownership ownership = Duplicate)
-      : _comm(comm), _ownership(ownership) {
-    if (_ownership == Duplicate) {
-      DYNAMPI_MPI_CHECK(MPI_Comm_dup, (comm, &_comm));
+      : m_comm(comm), m_ownership(ownership) {
+    if (m_ownership == Duplicate) {
+      DYNAMPI_MPI_CHECK(MPI_Comm_dup, (comm, &m_comm));
     }
   }
 
   MPICommunicator(const MPICommunicator& other) = delete;
   MPICommunicator& operator=(const MPICommunicator& other) = delete;
   MPICommunicator(MPICommunicator&& other) noexcept
-      : _comm(other._comm),
-        _ownership(other._ownership),
+      : m_comm(other.m_comm),
+        m_ownership(other.m_ownership),
         _statistics(std::move(other._statistics)) {
-    other._comm = MPI_COMM_NULL;
-    other._ownership = Reference;
+    other.m_comm = MPI_COMM_NULL;
+    other.m_ownership = Reference;
   }
   MPICommunicator& operator=(MPICommunicator&& other) = delete;
 
   ~MPICommunicator() {
-    if (_ownership != Reference) {
-      MPI_Comm_free(&_comm);
+    if (m_ownership != Reference) {
+      MPI_Comm_free(&m_comm);
     }
   }
 
   MPICommunicator split_by_node() const {
     MPI_Comm node_comm;
     DYNAMPI_MPI_CHECK(MPI_Comm_split_type,
-                      (_comm, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &node_comm));
+                      (m_comm, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &node_comm));
     return MPICommunicator(node_comm, Move);
   }
 
   std::optional<MPICommunicator> split(int color, int key = 0) const {
     MPI_Comm new_comm;
-    DYNAMPI_MPI_CHECK(MPI_Comm_split, (_comm, color, key, &new_comm));
+    DYNAMPI_MPI_CHECK(MPI_Comm_split, (m_comm, color, key, &new_comm));
     if (new_comm == MPI_COMM_NULL) {
       return std::nullopt;
     }
@@ -121,7 +121,7 @@ class MPICommunicator {
     return MPICommunicator(new_comm, Move);
   }
 
-  operator MPI_Comm() const { return _comm; }
+  operator MPI_Comm() const { return m_comm; }
 
   const CommStatistics& get_statistics() const
     requires(statistics_mode != StatisticsMode::None)
@@ -131,13 +131,13 @@ class MPICommunicator {
 
   int rank() const {
     int rank;
-    DYNAMPI_MPI_CHECK(MPI_Comm_rank, (_comm, &rank));
+    DYNAMPI_MPI_CHECK(MPI_Comm_rank, (m_comm, &rank));
     return rank;
   }
 
   int size() const {
     int size;
-    DYNAMPI_MPI_CHECK(MPI_Comm_size, (_comm, &size));
+    DYNAMPI_MPI_CHECK(MPI_Comm_size, (m_comm, &size));
     return size;
   }
 
@@ -145,7 +145,7 @@ class MPICommunicator {
   inline void send(const T& data, int dest, int tag = 0) {
     using mpi_type = MPI_Type<T>;
     DYNAMPI_MPI_CHECK(
-        MPI_Send, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value, dest, tag, _comm));
+        MPI_Send, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value, dest, tag, m_comm));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.send_count++;
       int size;
@@ -156,7 +156,7 @@ class MPICommunicator {
 
   inline MPI_Status probe(int source = MPI_ANY_SOURCE, int tag = MPI_ANY_TAG) {
     MPI_Status status;
-    DYNAMPI_MPI_CHECK(MPI_Probe, (source, tag, _comm, &status));
+    DYNAMPI_MPI_CHECK(MPI_Probe, (source, tag, m_comm, &status));
     return status;
   }
 
@@ -164,7 +164,7 @@ class MPICommunicator {
   inline void recv(T& data, int source, int tag = 0) {
     using mpi_type = MPI_Type<T>;
     DYNAMPI_MPI_CHECK(MPI_Recv, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
-                                 source, tag, _comm, MPI_STATUS_IGNORE));
+                                 source, tag, m_comm, MPI_STATUS_IGNORE));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
       int size;
@@ -184,7 +184,7 @@ class MPICommunicator {
       }
     }
     DYNAMPI_MPI_CHECK(MPI_Bcast,
-                      (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value, root, _comm));
+                      (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value, root, m_comm));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.collective_count++;
     }
@@ -193,7 +193,7 @@ class MPICommunicator {
   inline void recv_empty_message(int source, int tag = 0) {
     using mpi_type = MPI_Type<std::nullptr_t>;
     DYNAMPI_MPI_CHECK(MPI_Recv, (nullptr, mpi_type::count(nullptr), mpi_type::value, source, tag,
-                                 _comm, MPI_STATUS_IGNORE));
+                                 m_comm, MPI_STATUS_IGNORE));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
     }
@@ -206,13 +206,13 @@ class MPICommunicator {
     using mpi_type = MPI_Type<T>;
     DYNAMPI_MPI_CHECK(MPI_Gather, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
                                    result == nullptr ? nullptr : result->data(),
-                                   mpi_type::count(data), mpi_type::value, root, _comm));
+                                   mpi_type::count(data), mpi_type::value, root, m_comm));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.collective_count++;
     }
   }
 
-  [[nodiscard]] MPI_Comm get() const { return _comm; }
+  [[nodiscard]] MPI_Comm get() const { return m_comm; }
 };
 
 }  // namespace dynampi
