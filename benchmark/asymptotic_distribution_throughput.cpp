@@ -74,10 +74,13 @@ static double run_single_benchmark(const BenchmarkOptions& opts) {
   MPI_Barrier(MPI_COMM_WORLD);
 
   using Task = size_t;
-  using Result = std::vector<std::byte>;
+  //using Result = std::vector<std::byte>;
+  using Result = size_t;
 
-  auto worker_task = [&opts](Task task) -> Result {
-    return std::vector<std::byte>(opts.message_size, std::byte(task));
+  //auto worker_task = [&opts](Task task) -> Result {
+    //return std::vector<std::byte>(opts.message_size, std::byte(task));
+  auto worker_task = [](Task task) -> Result {
+    return task;
   };
 
   dynampi::Timer dynamic_timer;

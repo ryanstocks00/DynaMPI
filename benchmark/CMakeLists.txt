@@ -9,11 +9,18 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cxxopts)
 
-add_executable(asymptotic_distribution_throughput
-    asymptotic_distribution_throughput.cpp
+set(benchmarks 
+    asymptotic_distribution_throughput
+    pingpong
 )
-target_link_libraries(asymptotic_distribution_throughput
-    PRIVATE
-    dynampi
-    cxxopts::cxxopts
-)
+
+foreach(benchmark IN LISTS benchmarks)
+    add_executable(${benchmark}
+        ${benchmark}.cpp
+    )
+    target_link_libraries(${benchmark}
+        PRIVATE
+        dynampi
+        cxxopts::cxxopts
+    )
+endforeach()
