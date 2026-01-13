@@ -1,5 +1,9 @@
+// SPDX-FileCopyrightText: 2025 QDX Technologies. Authored by Ryan Stocks <ryan.stocks00@gmail.com>
+// SPDX-License-Identifier: MIT
+
 // mpi_pair_bench.cpp
 #include <mpi.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
@@ -15,12 +19,12 @@ enum class Method { SEND, ISEND, BSEND, SSEND };
 
 struct Options {
   std::size_t min_bytes = 1;
-  std::size_t max_bytes = 1u << 25; // 32 MiB
-  int factor = 2;                   // geometric progression; use 1 for linear
+  std::size_t max_bytes = 1u << 25;  // 32 MiB
+  int factor = 2;                    // geometric progression; use 1 for linear
   int warmup = 10;
   int iters = 100;
-  int only_rank = -1;               // if >=0, test only pairs involving this rank
-  std::vector<Method> methods;      // default: all
+  int only_rank = -1;           // if >=0, test only pairs involving this rank
+  std::vector<Method> methods;  // default: all
   std::string outfile = "mpi_pair_bench.csv";
 };
 
@@ -36,19 +40,35 @@ static void die(int rank, const std::string &msg) {
 
 static std::string method_name(Method m) {
   switch (m) {
-    case Method::SEND:  return "send";
-    case Method::ISEND: return "isend";
-    case Method::BSEND: return "bsend";
-    case Method::SSEND: return "ssend";
+    case Method::SEND:
+      return "send";
+    case Method::ISEND:
+      return "isend";
+    case Method::BSEND:
+      return "bsend";
+    case Method::SSEND:
+      return "ssend";
   }
   return "?";
 }
 
 static bool parse_method(const std::string &s, Method &m) {
-  if (s == "send")  { m = Method::SEND;  return true; }
-  if (s == "isend") { m = Method::ISEND; return true; }
-  if (s == "bsend") { m = Method::BSEND; return true; }
-  if (s == "ssend") { m = Method::SSEND; return true; }
+  if (s == "send") {
+    m = Method::SEND;
+    return true;
+  }
+  if (s == "isend") {
+    m = Method::ISEND;
+    return true;
+  }
+  if (s == "bsend") {
+    m = Method::BSEND;
+    return true;
+  }
+  if (s == "ssend") {
+    m = Method::SSEND;
+    return true;
+  }
   return false;
 }
 
@@ -61,14 +81,28 @@ static Options parse_args(int argc, char **argv, int rank) {
     auto need = [&](const char *name) {
       if (i + 1 >= argc) die(rank, std::string("missing value for ") + name);
     };
-    if (a == "--min-bytes") { need("--min-bytes"); opt.min_bytes = std::stoull(argv[++i]); }
-    else if (a == "--max-bytes") { need("--max-bytes"); opt.max_bytes = std::stoull(argv[++i]); }
-    else if (a == "--factor") { need("--factor"); opt.factor = std::stoi(argv[++i]); }
-    else if (a == "--warmup") { need("--warmup"); opt.warmup = std::stoi(argv[++i]); }
-    else if (a == "--iters") { need("--iters"); opt.iters = std::stoi(argv[++i]); }
-    else if (a == "--outfile") { need("--outfile"); opt.outfile = argv[++i]; }
-    else if (a == "--only-rank") { need("--only-rank"); opt.only_rank = std::stoi(argv[++i]); }
-    else if (a == "--methods") {
+    if (a == "--min-bytes") {
+      need("--min-bytes");
+      opt.min_bytes = std::stoull(argv[++i]);
+    } else if (a == "--max-bytes") {
+      need("--max-bytes");
+      opt.max_bytes = std::stoull(argv[++i]);
+    } else if (a == "--factor") {
+      need("--factor");
+      opt.factor = std::stoi(argv[++i]);
+    } else if (a == "--warmup") {
+      need("--warmup");
+      opt.warmup = std::stoi(argv[++i]);
+    } else if (a == "--iters") {
+      need("--iters");
+      opt.iters = std::stoi(argv[++i]);
+    } else if (a == "--outfile") {
+      need("--outfile");
+      opt.outfile = argv[++i];
+    } else if (a == "--only-rank") {
+      need("--only-rank");
+      opt.only_rank = std::stoi(argv[++i]);
+    } else if (a == "--methods") {
       need("--methods");
       methods_specified = true;
       opt.methods.clear();
@@ -76,33 +110,32 @@ static Options parse_args(int argc, char **argv, int rank) {
       size_t start = 0;
       while (start <= list.size()) {
         size_t comma = list.find(',', start);
-        std::string tok = (comma == std::string::npos) ? list.substr(start) : list.substr(start, comma - start);
+        std::string tok =
+            (comma == std::string::npos) ? list.substr(start) : list.substr(start, comma - start);
         Method m;
         if (!parse_method(tok, m)) die(rank, "unknown method in --methods: " + tok);
         opt.methods.push_back(m);
         if (comma == std::string::npos) break;
         start = comma + 1;
       }
-    }
-    else if (a == "-h" || a == "--help") {
+    } else if (a == "-h" || a == "--help") {
       if (rank == 0) {
-        std::cout <<
-          "MPI pairwise bandwidth/latency benchmark\n\n"
-          "Usage: mpirun -n <P> ./mpi_pair_bench [options]\n\n"
-          "Options:\n"
-          "  --min-bytes N        starting message size (default 1)\n"
-          "  --max-bytes N        maximum message size (default 33554432 = 32 MiB)\n"
-          "  --factor K           size multiplier per step (default 2; use 1 for linear)\n"
-          "  --warmup W           warmup iterations per size (default 10)\n"
-          "  --iters I            timed iterations per size (default 100)\n"
-          "  --methods LIST       subset of: send,isend,bsend,ssend (default: all)\n"
-          "  --only-rank R        only test pairs involving rank R (default: all pairs)\n"
-          "  --outfile PATH       CSV output file (default mpi_pair_bench.csv)\n";
+        std::cout
+            << "MPI pairwise bandwidth/latency benchmark\n\n"
+               "Usage: mpirun -n <P> ./mpi_pair_bench [options]\n\n"
+               "Options:\n"
+               "  --min-bytes N        starting message size (default 1)\n"
+               "  --max-bytes N        maximum message size (default 33554432 = 32 MiB)\n"
+               "  --factor K           size multiplier per step (default 2; use 1 for linear)\n"
+               "  --warmup W           warmup iterations per size (default 10)\n"
+               "  --iters I            timed iterations per size (default 100)\n"
+               "  --methods LIST       subset of: send,isend,bsend,ssend (default: all)\n"
+               "  --only-rank R        only test pairs involving rank R (default: all pairs)\n"
+               "  --outfile PATH       CSV output file (default mpi_pair_bench.csv)\n";
       }
       MPI_Finalize();
       std::exit(0);
-    }
-    else {
+    } else {
       die(rank, "unknown argument: " + a);
     }
   }
@@ -120,37 +153,48 @@ static Options parse_args(int argc, char **argv, int rank) {
 // Measure one direction using the unified pattern:
 // sender:   for i: send(); recv();   then if isend -> Waitall
 // receiver: for i: recv(); send();   then if isend -> Waitall
-static PingResult ping_once(int sender, int receiver, int me, std::size_t bytes,
-                            int warmup, int iters, std::vector<char> &buf, Method method) {
+static PingResult ping_once(int sender, int receiver, int me, std::size_t bytes, int warmup,
+                            int iters, std::vector<char> &buf, Method method) {
   const int tag = 42424;
 
   // ---- Warmup (no timing) ----
   if (warmup > 0) {
     if (me == sender) {
-      std::vector<MPI_Request> sreq; sreq.reserve(method == Method::ISEND ? warmup : 0);
+      std::vector<MPI_Request> sreq;
+      sreq.reserve(method == Method::ISEND ? warmup : 0);
       for (int w = 0; w < warmup; ++w) {
         if (method == Method::ISEND) {
           MPI_Request r;
           MPI_Isend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD, &r);
           sreq.push_back(r);
-        } else if (method == Method::SEND)  { MPI_Send(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD); }
-        else if (method == Method::BSEND)   { MPI_Bsend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD); }
-        else /* SSEND */                    { MPI_Ssend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD); }
-        MPI_Recv(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        } else if (method == Method::SEND) {
+          MPI_Send(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
+        } else if (method == Method::BSEND) {
+          MPI_Bsend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
+        } else /* SSEND */ {
+          MPI_Ssend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
+        }
+        MPI_Recv(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD,
+                 MPI_STATUS_IGNORE);
       }
       if (method == Method::ISEND && !sreq.empty())
         MPI_Waitall((int)sreq.size(), sreq.data(), MPI_STATUSES_IGNORE);
     } else if (me == receiver) {
-      std::vector<MPI_Request> sreq; sreq.reserve(method == Method::ISEND ? warmup : 0);
+      std::vector<MPI_Request> sreq;
+      sreq.reserve(method == Method::ISEND ? warmup : 0);
       for (int w = 0; w < warmup; ++w) {
         MPI_Recv(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         if (method == Method::ISEND) {
           MPI_Request r;
           MPI_Isend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD, &r);
           sreq.push_back(r);
-        } else if (method == Method::SEND)  { MPI_Send(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD); }
-        else if (method == Method::BSEND)   { MPI_Bsend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD); }
-        else /* SSEND */                    { MPI_Ssend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD); }
+        } else if (method == Method::SEND) {
+          MPI_Send(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
+        } else if (method == Method::BSEND) {
+          MPI_Bsend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
+        } else /* SSEND */ {
+          MPI_Ssend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
+        }
       }
       if (method == Method::ISEND && !sreq.empty())
         MPI_Waitall((int)sreq.size(), sreq.data(), MPI_STATUSES_IGNORE);
@@ -160,7 +204,8 @@ static PingResult ping_once(int sender, int receiver, int me, std::size_t bytes,
   // ---- Timed phase ----
   PingResult res{-1.0, -1.0};
   if (me == sender) {
-    std::vector<MPI_Request> sreq; sreq.reserve(method == Method::ISEND ? iters : 0);
+    std::vector<MPI_Request> sreq;
+    sreq.reserve(method == Method::ISEND ? iters : 0);
     double send_call_total = 0.0;
 
     double t0 = MPI_Wtime();
@@ -174,9 +219,12 @@ static PingResult ping_once(int sender, int receiver, int me, std::size_t bytes,
         sreq.push_back(r);
       } else {
         double c0 = MPI_Wtime();
-        if (method == Method::SEND)  MPI_Send(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
-        else if (method == Method::BSEND) MPI_Bsend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
-        else /* SSEND */             MPI_Ssend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
+        if (method == Method::SEND)
+          MPI_Send(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
+        else if (method == Method::BSEND)
+          MPI_Bsend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
+        else /* SSEND */
+          MPI_Ssend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
         double c1 = MPI_Wtime();
         send_call_total += (c1 - c0);
       }
@@ -190,7 +238,8 @@ static PingResult ping_once(int sender, int receiver, int me, std::size_t bytes,
     res.avg_rtt_s = (t1 - t0) / (double)iters;
     res.send_call_total_s = send_call_total;
   } else if (me == receiver) {
-    std::vector<MPI_Request> sreq; sreq.reserve(method == Method::ISEND ? iters : 0);
+    std::vector<MPI_Request> sreq;
+    sreq.reserve(method == Method::ISEND ? iters : 0);
     for (int i = 0; i < iters; ++i) {
       MPI_Recv(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
@@ -199,9 +248,12 @@ static PingResult ping_once(int sender, int receiver, int me, std::size_t bytes,
         MPI_Isend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD, &r);
         sreq.push_back(r);
       } else {
-        if (method == Method::SEND)  MPI_Send(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
-        else if (method == Method::BSEND) MPI_Bsend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
-        else /* SSEND */             MPI_Ssend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
+        if (method == Method::SEND)
+          MPI_Send(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
+        else if (method == Method::BSEND)
+          MPI_Bsend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
+        else /* SSEND */
+          MPI_Ssend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
       }
     }
     if (method == Method::ISEND && !sreq.empty())
@@ -229,11 +281,11 @@ int main(int argc, char **argv) {
   int mylen = 0;
   MPI_Get_processor_name(myname, &mylen);
   std::vector<char> allnames(world * MPI_MAX_PROCESSOR_NAME, 0);
-  MPI_Allgather(myname, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
-                allnames.data(), MPI_MAX_PROCESSOR_NAME, MPI_CHAR, MPI_COMM_WORLD);
+  MPI_Allgather(myname, MPI_MAX_PROCESSOR_NAME, MPI_CHAR, allnames.data(), MPI_MAX_PROCESSOR_NAME,
+                MPI_CHAR, MPI_COMM_WORLD);
   auto rank_name = [&](int r) -> std::string {
-    const char* p = &allnames[r * MPI_MAX_PROCESSOR_NAME];
-    return std::string(p); // buffer is zero-padded
+    const char *p = &allnames[r * MPI_MAX_PROCESSOR_NAME];
+    return std::string(p);  // buffer is zero-padded
   };
 
   // Prepare message sizes
@@ -256,7 +308,8 @@ int main(int argc, char **argv) {
 
   // Attach a Bsend buffer if BSEND is in use (supports one outstanding bsend at a time)
   std::vector<char> bsend_storage;
-  bool have_bsend = std::find(opt.methods.begin(), opt.methods.end(), Method::BSEND) != opt.methods.end();
+  bool have_bsend =
+      std::find(opt.methods.begin(), opt.methods.end(), Method::BSEND) != opt.methods.end();
   if (have_bsend) {
     int pack_max = 0;
     MPI_Pack_size((int)opt.max_bytes, MPI_CHAR, MPI_COMM_WORLD, &pack_max);
@@ -272,14 +325,12 @@ int main(int argc, char **argv) {
   auto add_line = [&](int src, int dst, const char *direction, const char *locality,
                       std::size_t bytes, int iters, const PingResult &res, Method method) {
     double latency_s = res.avg_rtt_s / 2.0;
-    double bw_MBps   = (2.0 * (double)bytes / res.avg_rtt_s) / 1.0e6; // MB/s (1e6)
-    local_csv << src << ',' << dst << ',' << method_name(method) << ','
-              << direction << ',' << locality << ','
-              << bytes << ',' << iters << ','
-              << std::setprecision(12) << res.avg_rtt_s << ','
-              << std::setprecision(12) << latency_s << ','
-              << std::setprecision(12) << bw_MBps << ','
-              << std::setprecision(12) << res.send_call_total_s << '\n';
+    double bw_MBps = (2.0 * (double)bytes / res.avg_rtt_s) / 1.0e6;  // MB/s (1e6)
+    local_csv << src << ',' << dst << ',' << method_name(method) << ',' << direction << ','
+              << locality << ',' << bytes << ',' << iters << ',' << std::setprecision(12)
+              << res.avg_rtt_s << ',' << std::setprecision(12) << latency_s << ','
+              << std::setprecision(12) << bw_MBps << ',' << std::setprecision(12)
+              << res.send_call_total_s << '\n';
   };
 
   auto pair_is_enabled = [&](int a, int b) -> bool {
@@ -287,7 +338,7 @@ int main(int argc, char **argv) {
     return (a == opt.only_rank) || (b == opt.only_rank);
   };
 
-  const int TAG_BA_RESULT = 88001;
+  const int TAG_B_TO_A_RESULT = 88001;
 
   // Main sweep: pairs × sizes × methods
   for (int a = 0; a < world; ++a) {
@@ -305,20 +356,22 @@ int main(int argc, char **argv) {
 
           // b->a
           MPI_Barrier(MPI_COMM_WORLD);
-          PingResult rtt_ba = ping_once(b, a, me, bytes, opt.warmup, opt.iters, buffer, m);
+          PingResult rtt_b_to_a = ping_once(b, a, me, bytes, opt.warmup, opt.iters, buffer, m);
 
           // Ship b->a sender's measurement to logger (rank a)
           if (me == b) {
-            double payload[2] = { rtt_ba.avg_rtt_s, rtt_ba.send_call_total_s };
-            MPI_Send(payload, 2, MPI_DOUBLE, a, TAG_BA_RESULT, MPI_COMM_WORLD);
+            double payload[2] = {rtt_b_to_a.avg_rtt_s, rtt_b_to_a.send_call_total_s};
+            MPI_Send(payload, 2, MPI_DOUBLE, a, TAG_B_TO_A_RESULT, MPI_COMM_WORLD);
           }
 
           if (me == a) {
             double payload[2];
-            MPI_Recv(payload, 2, MPI_DOUBLE, b, TAG_BA_RESULT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            PingResult rtt_ba_from_b{ payload[0], payload[1] };
-            add_line(a, b, "a->b", locality, bytes, opt.iters, rtt_ab, m);        // measured by a
-            add_line(a, b, "b->a", locality, bytes, opt.iters, rtt_ba_from_b, m); // measured by b
+            MPI_Recv(payload, 2, MPI_DOUBLE, b, TAG_B_TO_A_RESULT, MPI_COMM_WORLD,
+                     MPI_STATUS_IGNORE);
+            PingResult rtt_b_to_a_from_b{payload[0], payload[1]};
+            add_line(a, b, "a->b", locality, bytes, opt.iters, rtt_ab, m);  // measured by a
+            add_line(a, b, "b->a", locality, bytes, opt.iters, rtt_b_to_a_from_b,
+                     m);  // measured by b
           }
 
           MPI_Barrier(MPI_COMM_WORLD);
@@ -328,7 +381,8 @@ int main(int argc, char **argv) {
   }
 
   if (have_bsend) {
-    void *bufptr = nullptr; int size = 0;
+    void *bufptr = nullptr;
+    int size = 0;
     MPI_Buffer_detach(&bufptr, &size);
   }
 
@@ -352,15 +406,18 @@ int main(int argc, char **argv) {
     recvbuf.resize(offset);
   }
 
-  MPI_Gatherv(chunk.data(), (int)local_len, MPI_CHAR,
-              recvbuf.data(), recvcounts.data(), displs.data(), MPI_CHAR,
-              0, MPI_COMM_WORLD);
+  MPI_Gatherv(chunk.data(), (int)local_len, MPI_CHAR, recvbuf.data(), recvcounts.data(),
+              displs.data(), MPI_CHAR, 0, MPI_COMM_WORLD);
 
   if (me == 0) {
     const char *header =
-      "src_rank,dst_rank,method,direction,locality,msg_bytes,iters,avg_rtt_seconds,latency_seconds,bandwidth_MBps,send_call_total_seconds\n";
+        "src_rank,dst_rank,method,direction,locality,msg_bytes,iters,avg_rtt_seconds,latency_"
+        "seconds,bandwidth_MBps,send_call_total_seconds\n";
     FILE *fp = std::fopen(opt.outfile.c_str(), "wb");
-    if (!fp) { std::cerr << "Failed to open output file: " << opt.outfile << std::endl; MPI_Abort(MPI_COMM_WORLD, 2); }
+    if (!fp) {
+      std::cerr << "Failed to open output file: " << opt.outfile << std::endl;
+      MPI_Abort(MPI_COMM_WORLD, 2);
+    }
     std::fwrite(header, 1, std::strlen(header), fp);
     if (!recvbuf.empty()) std::fwrite(recvbuf.data(), 1, recvbuf.size(), fp);
     std::fclose(fp);
@@ -370,4 +427,3 @@ int main(int argc, char **argv) {
   MPI_Finalize();
   return 0;
 }
-

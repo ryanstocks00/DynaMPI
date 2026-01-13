@@ -172,8 +172,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       m_communicator.send(nullptr, parent_rank(), Tag::REQUEST);
     } else {
       int num_children = num_direct_children();
-      m_communicator.send(num_children * m_config.batch_size_multiplier
-          , parent_rank(), Tag::REQUEST_BATCH);
+      m_communicator.send(num_children * m_config.batch_size_multiplier, parent_rank(),
+                          Tag::REQUEST_BATCH);
     }
     if (is_leaf_worker()) {
       while (!m_done) {

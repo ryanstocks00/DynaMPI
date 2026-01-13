@@ -9,7 +9,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cxxopts)
 
-set(benchmarks 
+set(benchmarks
     asymptotic_distribution_throughput
     pingpong
 )
