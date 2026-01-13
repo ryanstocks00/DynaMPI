@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
-#include <iostream>
 #include <iterator>
 #include <ranges>
 #include <span>

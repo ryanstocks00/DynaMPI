@@ -11,6 +11,7 @@
 #include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -52,24 +53,20 @@ static std::string method_name(Method m) {
   return "?";
 }
 
-static bool parse_method(const std::string &s, Method &m) {
+static std::optional<Method> parse_method(const std::string &s) {
   if (s == "send") {
-    m = Method::SEND;
-    return true;
+    return Method::SEND;
   }
   if (s == "isend") {
-    m = Method::ISEND;
-    return true;
+    return Method::ISEND;
   }
   if (s == "bsend") {
-    m = Method::BSEND;
-    return true;
+    return Method::BSEND;
   }
   if (s == "ssend") {
-    m = Method::SSEND;
-    return true;
+    return Method::SSEND;
   }
-  return false;
+  return std::nullopt;
 }
 
 static Options parse_args(int argc, char **argv, int rank) {
@@ -112,9 +109,9 @@ static Options parse_args(int argc, char **argv, int rank) {
         size_t comma = list.find(',', start);
         std::string tok =
             (comma == std::string::npos) ? list.substr(start) : list.substr(start, comma - start);
-        Method m;
-        if (!parse_method(tok, m)) die(rank, "unknown method in --methods: " + tok);
-        opt.methods.push_back(m);
+        auto m = parse_method(tok);
+        if (!m) die(rank, "unknown method in --methods: " + tok);
+        opt.methods.push_back(*m);
         if (comma == std::string::npos) break;
         start = comma + 1;
       }
