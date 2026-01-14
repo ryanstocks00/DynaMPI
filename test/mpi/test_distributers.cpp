@@ -257,14 +257,6 @@ TEST(HierarchicalDistributor, WorkerExceptionPropagation) {
         },
         std::runtime_error);
   } else {
-    // Workers run - errors propagate up through hierarchy
-    // Workers that encounter or propagate errors will throw at the end
-    try {
-      distributor.run_worker();
-    } catch (const std::runtime_error& e) {
-      // Workers involved in error propagation will throw
-      std::string error_msg = e.what();
-      EXPECT_NE(error_msg.find("Task failed: invalid input"), std::string::npos);
-    }
+    distributor.run_worker();
   }
 }

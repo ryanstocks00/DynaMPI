@@ -316,6 +316,11 @@ int main(int argc, char **argv) {
 
   Options opt = parse_args(argc, argv, me);
 
+  if (opt.only_rank >= world) {
+    die(me, "--only-rank " + std::to_string(opt.only_rank) + " is out of range for world size " +
+                std::to_string(world));
+  }
+
   // Gather processor names for locality classification
   char myname[MPI_MAX_PROCESSOR_NAME] = {};
   int mylen = 0;
@@ -437,16 +442,19 @@ int main(int argc, char **argv) {
   if (me == 0) {
     recvcounts.resize(world);
     displs.resize(world);
-    int offset = 0;
+    int64_t offset = 0;
     for (int r = 0; r < world; ++r) {
       if (all_lens[r] > INT_MAX) {
         die(0, "CSV output too large for MPI_Gatherv");
       }
-      recvcounts[r] = (int)all_lens[r];
-      displs[r] = offset;
+      recvcounts[r] = static_cast<int>(all_lens[r]);
+      displs[r] = static_cast<int>(offset);
       offset += recvcounts[r];
     }
-    recvbuf.resize(offset);
+    if (offset > INT_MAX) {
+      die(0, "CSV output too large for MPI_Gatherv");
+    }
+    recvbuf.resize(static_cast<size_t>(offset));
   }
 
   MPI_Gatherv(chunk.data(), (int)local_len, MPI_CHAR, recvbuf.data(), recvcounts.data(),

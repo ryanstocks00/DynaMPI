@@ -317,8 +317,13 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     while (!m_unallocated_task_queue.empty() && !m_stored_error) {
       allocate_task_to_child();
     }
-    // Wait for all workers to be done (either free or errored)
-    while (m_free_worker_indices.size() < static_cast<size_t>(num_direct_children())) {
+    // Wait for all tasks to be processed (results received == tasks sent)
+    while (!m_stored_error && m_results_received_from_child < m_tasks_sent_to_child) {
+      receive_from_anyone();
+    }
+    // Ensure all workers are free before finalizing (they may have sent multiple batches)
+    while (!m_stored_error &&
+           m_free_worker_indices.size() < static_cast<size_t>(num_direct_children())) {
       receive_from_anyone();
     }
     // If there was an error, send DONE to workers and throw
@@ -337,6 +342,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     if (is_root_manager() && m_communicator.size() > 1)
       DYNAMPI_ASSERT_EQ(m_results.size(), m_results_received_from_child,
                         "Results size should match tasks sent before finalizing");
+    // All workers are free and all results received - ready for finalize() to be called
+    // (either explicitly by caller or by destructor)
     // TODO(Change this so we don't return the same tasks multiple times)
     return m_results;
   }
