@@ -183,6 +183,7 @@ static Options parse_args(int argc, char **argv, int rank) {
   }
   if (opt.min_bytes == 0) die(rank, "--min-bytes must be >= 1");
   if (opt.max_bytes < opt.min_bytes) die(rank, "--max-bytes must be >= --min-bytes");
+  if (opt.max_bytes > INT_MAX) die(rank, "--max-bytes must be <= INT_MAX");
   if (opt.factor < 1) die(rank, "--factor must be >= 1");
   if (opt.iters <= 0 || opt.warmup < 0) die(rank, "iterations must be positive");
   return opt;

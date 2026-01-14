@@ -263,7 +263,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   void allocate_task_to_child() {
     if (m_communicator.size() > 1) {
-      if (m_free_worker_indices.empty()) {
+      while (m_free_worker_indices.empty()) {
         // If no free workers, wait for a result to be received
         receive_from_anyone();
       }
@@ -301,7 +301,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     while (!m_unallocated_task_queue.empty()) {
       allocate_task_to_child();
     }
-    while (m_free_worker_indices.size() < static_cast<size_t>(num_direct_children())) {
+    while (m_results_received_from_child < m_tasks_sent_to_child ||
+           m_free_worker_indices.size() < static_cast<size_t>(num_direct_children())) {
       receive_from_anyone();
     }
     m_results_sent_to_parent = m_results.size();
