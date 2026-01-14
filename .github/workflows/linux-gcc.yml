@@ -13,6 +13,7 @@ env:
 jobs:
   linux-gcc:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     strategy:
       matrix:
         gcc-version: [11, 12, 13, 14]
