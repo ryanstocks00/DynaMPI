@@ -1,6 +1,6 @@
 /*
  * SPDX-FileCopyrightText: 2025 QDX Technologies
- * SPDX-License-Identifier: MIT
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #pragma once
