@@ -185,7 +185,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         while (!m_done && m_unallocated_task_queue.empty()) {
           receive_from_anyone();
         }
-        size_t tasks_received = m_unallocated_task_queue.size();
+        size_t num_tasks_should_be_received = m_unallocated_task_queue.size();
         while (!m_stored_error && !m_unallocated_task_queue.empty()) {
           allocate_task_to_child();
         }
@@ -195,8 +195,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         if (m_done) {
           break;
         }
+        (void)num_tasks_should_be_received;
         if (!m_stored_error) {
-          DYNAMPI_ASSERT_EQ(m_results.size(), tasks_received);
+          DYNAMPI_ASSERT_EQ(m_results.size(), num_tasks_should_be_received);
         }
         return_results_and_request_next_batch_from_manager();
       }
