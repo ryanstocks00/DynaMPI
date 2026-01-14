@@ -59,6 +59,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   bool m_finalized = false;
   bool m_done = false;
+  std::optional<std::string> m_stored_error;  // Deferred error to throw after cleanup
 
   static constexpr StatisticsMode statistics_mode =
       get_option_value<track_statistics_t, Options...>();
@@ -208,6 +209,10 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         }
       }
     }
+    // If there was an error during task execution, throw it now after cleanup
+    if (m_stored_error) {
+      throw std::runtime_error(*m_stored_error);
+    }
   }
 
   void return_results_and_request_next_batch_from_manager() {
@@ -305,6 +310,12 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
            m_free_worker_indices.size() < static_cast<size_t>(num_direct_children())) {
       receive_from_anyone();
     }
+    // If there was an error, send DONE to workers first so they can exit cleanly
+    if (m_stored_error) {
+      send_done_to_workers();
+      m_finalized = true;
+      throw std::runtime_error(*m_stored_error);
+    }
     m_results_sent_to_parent = m_results.size();
     DYNAMPI_ASSERT_EQ(m_results_received_from_child, m_tasks_sent_to_child,
                       "All tasks should have been processed by workers before finalizing");
@@ -339,6 +350,10 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   }
 
   ~HierarchicalMPIWorkDistributor() {
+    // Skip finalize and assertions if in error state - cleanup is best-effort
+    if (m_stored_error) {
+      return;
+    }
     if (!m_finalized) {
       finalize();
     }
@@ -433,10 +448,21 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     task_mpi_type::resize(message, count);
     m_communicator.recv(message, status.MPI_SOURCE, Tag::TASK);
     m_tasks_received_from_parent++;
-    ResultT result = m_worker_function(message);
-    m_tasks_executed++;
-    m_communicator.send(result, status.MPI_SOURCE, Tag::RESULT);
-    m_results_sent_to_parent++;
+    try {
+      ResultT result = m_worker_function(message);
+      m_tasks_executed++;
+      m_communicator.send(result, status.MPI_SOURCE, Tag::RESULT);
+      m_results_sent_to_parent++;
+    } catch (const std::exception& e) {
+      // Send error message to parent, store error, but continue to receive DONE
+      std::string error_message = e.what();
+      m_communicator.send(error_message, status.MPI_SOURCE, Tag::ERROR);
+      // Store error to throw after cleanup, count as "sent" for bookkeeping
+      if (!m_stored_error) {
+        m_stored_error = error_message;
+      }
+      m_results_sent_to_parent++;
+    }
   }
 
   void receive_task_batch_from(MPI_Status status) {
@@ -460,7 +486,12 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     DYNAMPI_ASSERT_GT(m_communicator.size(), 1,
                       "There should be at least one worker to receive results from");
     MPI_Status status = m_communicator.probe();
-    switch (status.MPI_TAG) {
+    // Assert that the tag is a valid Tag enum value before casting
+    DYNAMPI_ASSERT(status.MPI_TAG >= static_cast<int>(Tag::TASK) &&
+                       status.MPI_TAG <= static_cast<int>(Tag::REQUEST_BATCH),
+                   "Received invalid MPI tag: " + std::to_string(status.MPI_TAG));
+    Tag tag = static_cast<Tag>(status.MPI_TAG);
+    switch (tag) {
       case Tag::TASK: {
         return receive_execute_return_task_from(status);
       }
@@ -492,32 +523,25 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       }
       case Tag::ERROR: {
         // Receive the error payload from m_communicator
+        // String requires resizing, so get count from status first
+        using string_mpi_type = MPI_Type<std::string>;
+        int count;
+        DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, string_mpi_type::value, &count));
         std::string error_message;
+        string_mpi_type::resize(error_message, count);
         m_communicator.recv(error_message, status.MPI_SOURCE, Tag::ERROR);
-        // Log and propagate the error
+        // Log the error
         std::cerr << "Error received from source " << status.MPI_SOURCE
                   << " in receive_from_anyone: " << error_message << std::endl;
-        // Set error state and throw to propagate the error
-        m_done = true;  // Mark as done to prevent further processing
-        throw std::runtime_error("MPI error from source " + std::to_string(status.MPI_SOURCE) +
-                                 ": " + error_message);
-      }
-      default: {
-        // Read/acknowledge the message to clear it from the buffer
-        int count;
-        DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, MPI_BYTE, &count));
-        if (count > 0) {
-          std::vector<std::byte> buffer(count);
-          m_communicator.recv(buffer, status.MPI_SOURCE, status.MPI_TAG);
-        } else {
-          m_communicator.recv_empty_message(status.MPI_SOURCE, status.MPI_TAG);
+        // Store error to throw later (after cleanup), continue normal flow to avoid deadlock
+        if (!m_stored_error) {
+          m_stored_error =
+              "MPI error from source " + std::to_string(status.MPI_SOURCE) + ": " + error_message;
         }
-        // Emit error message and fail-fast for unknown tags
-        std::cerr << "Error: Received unknown MPI tag " << status.MPI_TAG << " from source "
-                  << status.MPI_SOURCE << " in receive_from_anyone" << std::endl;
-        throw std::runtime_error(
-            "Unknown MPI tag received in receive_from_anyone: " + std::to_string(status.MPI_TAG) +
-            " from source " + std::to_string(status.MPI_SOURCE));
+        // Count this as a "result" for bookkeeping so we can finish cleanly
+        m_results_received_from_child++;
+        m_free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
+        return;
       }
     }
   }

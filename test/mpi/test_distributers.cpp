@@ -214,3 +214,54 @@ TYPED_TEST(DynamicDistribution, Statistics) {
     }
   }
 }
+
+// Test that exceptions thrown in worker tasks are propagated to the manager
+TEST(HierarchicalDistributor, WorkerExceptionPropagation) {
+  using TaskT = int;
+  using ResultT = int;
+  using Distributer = dynampi::HierarchicalMPIWorkDistributor<TaskT, ResultT>;
+
+  if (MPIEnvironment::world_comm_size() < 2) {
+    GTEST_SKIP() << "This test requires at least 2 ranks";
+  }
+
+  // Worker function that throws on task value -1
+  auto worker_task = [](TaskT task) -> ResultT {
+    if (task == -1) {
+      throw std::runtime_error("Task failed: invalid input");
+    }
+    return task * task;
+  };
+
+  Distributer distributor(worker_task, {.comm = MPI_COMM_WORLD, .auto_run_workers = false});
+
+  if (distributor.is_root_manager()) {
+    // Insert a task that will cause a worker to throw
+    distributor.insert_task(-1);
+
+    // Expect the error to propagate back to the manager after all workers finish cleanly
+    EXPECT_THROW(
+        {
+          try {
+            auto _ = distributor.finish_remaining_tasks();
+          } catch (const std::runtime_error& e) {
+            // Verify the error message contains expected content
+            std::string error_msg = e.what();
+            EXPECT_NE(error_msg.find("MPI error from source"), std::string::npos);
+            EXPECT_NE(error_msg.find("Task failed: invalid input"), std::string::npos);
+            throw;
+          }
+        },
+        std::runtime_error);
+  } else {
+    // Workers run - one will encounter the error but all will finish cleanly
+    // The worker that processed -1 will throw at the end after receiving DONE
+    try {
+      distributor.run_worker();
+    } catch (const std::runtime_error& e) {
+      // Only the worker that processed -1 will throw
+      std::string error_msg = e.what();
+      EXPECT_NE(error_msg.find("Task failed: invalid input"), std::string::npos);
+    }
+  }
+}

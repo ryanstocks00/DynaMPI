@@ -19,6 +19,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 enum class Method { SEND, ISEND, BSEND, SSEND };
@@ -452,7 +453,7 @@ int main(int argc, char **argv) {
               displs.data(), MPI_CHAR, 0, MPI_COMM_WORLD);
 
   if (me == 0) {
-    const char *header =
+    std::string_view header =
         "src_rank,dst_rank,method,direction,locality,msg_bytes,iters,avg_rtt_seconds,latency_"
         "seconds,bandwidth_MBps,send_call_total_seconds\n";
     FILE *fp = std::fopen(opt.outfile.c_str(), "wb");
@@ -460,7 +461,7 @@ int main(int argc, char **argv) {
       std::cerr << "Failed to open output file: " << opt.outfile << std::endl;
       MPI_Abort(MPI_COMM_WORLD, 2);
     }
-    std::fwrite(header, 1, std::strlen(header), fp);
+    std::fwrite(header.data(), 1, header.size(), fp);
     if (!recvbuf.empty()) std::fwrite(recvbuf.data(), 1, recvbuf.size(), fp);
     std::fclose(fp);
     std::cout << "Wrote results to " << opt.outfile << std::endl;
