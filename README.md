@@ -1,11 +1,11 @@
 <!--
   SPDX-FileCopyrightText: 2025 QDX Technologies. Authored by Ryan Stocks <ryan.stocks00@gmail.com>
-  SPDX-License-Identifier: MIT
+  SPDX-License-Identifier: Apache-2.0
  -->
 
 # DynaMPI
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![codecov](https://codecov.io/github/ryanstocks00/dynampi/graph/badge.svg?token=S65RFJ3FCX)](https://codecov.io/github/ryanstocks00/dynampi)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/7bb14fa81aeb4bd5b59ca62cc3a80975)](https://app.codacy.com/gh/ryanstocks00/DynaMPI/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![C++ Standard](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://isocpp.org/std/the-standard)
@@ -30,7 +30,7 @@
 
 Library for efficient manager-worker dynamic load distribution using MPI
 
-This project is licensed under the terms of the MIT license.
+This project is licensed under the terms of the Apache License 2.0.
 
 ## Usage
 
