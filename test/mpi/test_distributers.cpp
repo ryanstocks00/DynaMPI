@@ -85,7 +85,7 @@ TYPED_TEST(DynamicDistribution, Naive2) {
     if constexpr (!DistributerWrapper::template type<int, int>::ordered) {
       std::sort(result->begin(), result->end());
     }
-    EXPECT_EQ(result, std::vector<char>({'H', 'i'}));
+    EXPECT_EQ(result.value(), std::vector<char>({'H', 'i'}));
   } else {
     EXPECT_FALSE(result.has_value());
   }

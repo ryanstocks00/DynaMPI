@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: MIT
 
 // mpi_pair_bench.cpp
+#ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 #include <mpi.h>
 
 #include <algorithm>
+#include <climits>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -13,6 +17,7 @@
 #include <iostream>
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -80,25 +85,61 @@ static Options parse_args(int argc, char **argv, int rank) {
     };
     if (a == "--min-bytes") {
       need("--min-bytes");
-      opt.min_bytes = std::stoull(argv[++i]);
+      try {
+        opt.min_bytes = std::stoull(argv[++i]);
+      } catch (const std::invalid_argument &e) {
+        die(rank, "invalid value for --min-bytes: " + std::string(argv[i]) + ": " + e.what());
+      } catch (const std::out_of_range &e) {
+        die(rank, "invalid value for --min-bytes: " + std::string(argv[i]) + ": " + e.what());
+      }
     } else if (a == "--max-bytes") {
       need("--max-bytes");
-      opt.max_bytes = std::stoull(argv[++i]);
+      try {
+        opt.max_bytes = std::stoull(argv[++i]);
+      } catch (const std::invalid_argument &e) {
+        die(rank, "invalid value for --max-bytes: " + std::string(argv[i]) + ": " + e.what());
+      } catch (const std::out_of_range &e) {
+        die(rank, "invalid value for --max-bytes: " + std::string(argv[i]) + ": " + e.what());
+      }
     } else if (a == "--factor") {
       need("--factor");
-      opt.factor = std::stoi(argv[++i]);
+      try {
+        opt.factor = std::stoi(argv[++i]);
+      } catch (const std::invalid_argument &e) {
+        die(rank, "invalid value for --factor: " + std::string(argv[i]) + ": " + e.what());
+      } catch (const std::out_of_range &e) {
+        die(rank, "invalid value for --factor: " + std::string(argv[i]) + ": " + e.what());
+      }
     } else if (a == "--warmup") {
       need("--warmup");
-      opt.warmup = std::stoi(argv[++i]);
+      try {
+        opt.warmup = std::stoi(argv[++i]);
+      } catch (const std::invalid_argument &e) {
+        die(rank, "invalid value for --warmup: " + std::string(argv[i]) + ": " + e.what());
+      } catch (const std::out_of_range &e) {
+        die(rank, "invalid value for --warmup: " + std::string(argv[i]) + ": " + e.what());
+      }
     } else if (a == "--iters") {
       need("--iters");
-      opt.iters = std::stoi(argv[++i]);
+      try {
+        opt.iters = std::stoi(argv[++i]);
+      } catch (const std::invalid_argument &e) {
+        die(rank, "invalid value for --iters: " + std::string(argv[i]) + ": " + e.what());
+      } catch (const std::out_of_range &e) {
+        die(rank, "invalid value for --iters: " + std::string(argv[i]) + ": " + e.what());
+      }
     } else if (a == "--outfile") {
       need("--outfile");
       opt.outfile = argv[++i];
     } else if (a == "--only-rank") {
       need("--only-rank");
-      opt.only_rank = std::stoi(argv[++i]);
+      try {
+        opt.only_rank = std::stoi(argv[++i]);
+      } catch (const std::invalid_argument &e) {
+        die(rank, "invalid value for --only-rank: " + std::string(argv[i]) + ": " + e.what());
+      } catch (const std::out_of_range &e) {
+        die(rank, "invalid value for --only-rank: " + std::string(argv[i]) + ": " + e.what());
+      }
     } else if (a == "--methods") {
       need("--methods");
       methods_specified = true;
@@ -396,6 +437,9 @@ int main(int argc, char **argv) {
     displs.resize(world);
     int offset = 0;
     for (int r = 0; r < world; ++r) {
+      if (all_lens[r] > INT_MAX) {
+        die(0, "CSV output too large for MPI_Gatherv");
+      }
       recvcounts[r] = (int)all_lens[r];
       displs[r] = offset;
       offset += recvcounts[r];

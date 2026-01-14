@@ -6,6 +6,7 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <optional>
@@ -20,7 +21,7 @@ template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::set<T>& set);
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
-template <typename T, size_t N>
+template <typename T, std::size_t N>
 inline std::ostream& operator<<(std::ostream& os, const std::array<T, N>& arr);
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::span<T>& vec);
@@ -41,7 +42,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::byte& b) {
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::span<T>& vec) {
   os << "[";
-  for (size_t i = 0; i < vec.size(); i++) {
+  for (std::size_t i = 0; i < vec.size(); i++) {
     os << vec[i];
     if (i < vec.size() - 1) {
       os << ", ";
@@ -55,10 +56,10 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
   return os << std::span<const T>(vec);
 }
 
-template <typename T, size_t N>
+template <typename T, std::size_t N>
 inline std::ostream& operator<<(std::ostream& os, const std::array<T, N>& arr) {
   os << "[";
-  for (size_t i = 0; i < arr.size(); i++) {
+  for (std::size_t i = 0; i < arr.size(); i++) {
     os << arr[i];
     if (i < arr.size() - 1) {
       os << ", ";

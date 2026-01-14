@@ -8,10 +8,12 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <ranges>
 #include <span>
 #include <stack>
+#include <stdexcept>
 #include <type_traits>
 #include <vector>
 
@@ -318,9 +320,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   void finalize() {
     DYNAMPI_ASSERT(!m_finalized, "Work distribution already finalized");
+    m_finalized = true;  // Set for all managers immediately to prevent double-finalize
     if (is_root_manager()) {
       send_done_to_workers();
-      m_finalized = true;
     }
     if constexpr (statistics_mode != StatisticsMode::None) {
       if (is_root_manager()) {
@@ -485,6 +487,35 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         m_communicator.recv_empty_message(status.MPI_SOURCE, Tag::DONE);
         m_done = true;
         return;
+      }
+      case Tag::ERROR: {
+        // Receive the error payload from m_communicator
+        std::string error_message;
+        m_communicator.recv(error_message, status.MPI_SOURCE, Tag::ERROR);
+        // Log and propagate the error
+        std::cerr << "Error received from source " << status.MPI_SOURCE
+                  << " in receive_from_anyone: " << error_message << std::endl;
+        // Set error state and throw to propagate the error
+        m_done = true;  // Mark as done to prevent further processing
+        throw std::runtime_error("MPI error from source " + std::to_string(status.MPI_SOURCE) +
+                                 ": " + error_message);
+      }
+      default: {
+        // Read/acknowledge the message to clear it from the buffer
+        int count;
+        DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, MPI_BYTE, &count));
+        if (count > 0) {
+          std::vector<std::byte> buffer(count);
+          m_communicator.recv(buffer, status.MPI_SOURCE, status.MPI_TAG);
+        } else {
+          m_communicator.recv_empty_message(status.MPI_SOURCE, status.MPI_TAG);
+        }
+        // Emit error message and fail-fast for unknown tags
+        std::cerr << "Error: Received unknown MPI tag " << status.MPI_TAG << " from source "
+                  << status.MPI_SOURCE << " in receive_from_anyone" << std::endl;
+        throw std::runtime_error(
+            "Unknown MPI tag received in receive_from_anyone: " + std::to_string(status.MPI_TAG) +
+            " from source " + std::to_string(status.MPI_SOURCE));
       }
     }
   }
