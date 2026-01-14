@@ -272,8 +272,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       m_free_worker_indices.pop();
       if (request.num_tasks_requested.has_value()) {
         std::vector<TaskT> tasks;
-        tasks.reserve(request.num_tasks_requested.value());
-        for (int i = 0; i < request.num_tasks_requested; ++i) {
+        int num_tasks = request.num_tasks_requested.value();
+        tasks.reserve(num_tasks);
+        for (int i = 0; i < num_tasks; ++i) {
           if (m_unallocated_task_queue.empty()) {
             break;  // No more tasks to allocate
           }
@@ -446,7 +447,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
       std::vector<TaskT> tasks;
       message_type::resize(tasks, count);
-      m_communicator.recv(tasks, parent_rank(), Tag::TASK_BATCH);
+      m_communicator.recv(tasks, status.MPI_SOURCE, Tag::TASK_BATCH);
       m_tasks_received_from_parent += tasks.size();
       for (const auto& task : tasks) {
         m_unallocated_task_queue.push_back(task);
