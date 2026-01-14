@@ -13,6 +13,7 @@ env:
 jobs:
   macos-clang:
     runs-on: macos-latest
+    timeout-minutes: 5
     strategy:
       matrix:
         build-type: [Debug, Release]

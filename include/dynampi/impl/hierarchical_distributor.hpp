@@ -156,7 +156,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         _statistics{create_statistics(m_communicator)} {
     if (m_config.auto_run_workers && m_communicator.rank() != m_config.manager_rank) {
       run_worker();
-    } else {
     }
   }
 
@@ -187,17 +186,15 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
           receive_from_anyone();
         }
         size_t tasks_received = m_unallocated_task_queue.size();
-        while (!m_unallocated_task_queue.empty()) {
+        while (!m_stored_error && !m_unallocated_task_queue.empty()) {
           allocate_task_to_child();
         }
-        while (m_tasks_sent_to_child > m_results_received_from_child) {
+        while (!m_stored_error && m_tasks_sent_to_child > m_results_received_from_child) {
           receive_from_anyone();
         }
         if (m_done) {
           break;
         }
-        (void)tasks_received;
-        // Results may not match if there was an error
         if (!m_stored_error) {
           DYNAMPI_ASSERT_EQ(m_results.size(), tasks_received);
         }
@@ -212,10 +209,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         }
       }
     }
-    // If there was an error during task execution, throw it now after cleanup
-    if (m_stored_error) {
-      throw std::runtime_error(*m_stored_error);
-    }
   }
 
   void return_results_and_request_next_batch_from_manager() {
@@ -223,9 +216,12 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     DYNAMPI_ASSERT_NE(m_communicator.rank(), m_config.manager_rank,
                       "Manager should not request tasks from itself");
     // If there was an error from a child, propagate it up instead of results
+    std::cout << "Returning results and requesting next batch from manager on rank "
+              << m_communicator.rank() << std::endl;
     if (m_stored_error) {
+      std::cerr << "Error propagating up from rank " << m_communicator.rank() << " to parent "
+                << parent_rank() << ": " << *m_stored_error << std::endl;
       m_communicator.send(*m_stored_error, parent_rank(), Tag::ERROR);
-      m_results_sent_to_parent += m_results.size();  // Count for bookkeeping
       m_results.clear();
       return;
     }
@@ -282,6 +278,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         // If no free workers, wait for a result to be received
         receive_from_anyone();
       }
+      if (m_stored_error) {
+        return;  // Don't send more tasks after an error
+      }
       TaskRequest request = m_free_worker_indices.top();
       int worker = request.worker_rank;
       m_free_worker_indices.pop();
@@ -313,17 +312,17 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() {
     DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
                       "Only the manager can finish remaining tasks");
-    while (!m_unallocated_task_queue.empty()) {
+    // Distribute tasks until queue is empty or we get an error
+    while (!m_unallocated_task_queue.empty() && !m_stored_error) {
       allocate_task_to_child();
     }
-    while (m_results_received_from_child < m_tasks_sent_to_child ||
-           m_free_worker_indices.size() < static_cast<size_t>(num_direct_children())) {
+    // Wait for all workers to be done (either free or errored)
+    while (m_free_worker_indices.size() < static_cast<size_t>(num_direct_children())) {
       receive_from_anyone();
     }
-    // If there was an error, send DONE to workers first so they can exit cleanly
+    // If there was an error, send DONE to workers and throw
     if (m_stored_error) {
-      send_done_to_workers();
-      m_finalized = true;
+      finalize();
       throw std::runtime_error(*m_stored_error);
     }
     m_results_sent_to_parent = m_results.size();
@@ -343,10 +342,10 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   void finalize() {
     DYNAMPI_ASSERT(!m_finalized, "Work distribution already finalized");
-    m_finalized = true;  // Set for all managers immediately to prevent double-finalize
     if (is_root_manager()) {
       send_done_to_workers();
     }
+    m_finalized = true;  // Set for all managers immediately to prevent double-finalize
     if constexpr (statistics_mode != StatisticsMode::None) {
       if (is_root_manager()) {
         _statistics.worker_task_counts = std::vector<size_t>(m_communicator.size(), 0);
@@ -360,21 +359,19 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   }
 
   ~HierarchicalMPIWorkDistributor() {
-    // Skip finalize and assertions if in error state - cleanup is best-effort
-    if (m_stored_error) {
-      return;
-    }
     if (!m_finalized) {
       finalize();
     }
-    DYNAMPI_ASSERT_EQ(m_results_received_from_child, m_tasks_sent_to_child,
-                      "All tasks should have been processed by workers before finalizing");
-    DYNAMPI_ASSERT_EQ(m_results_sent_to_parent, m_tasks_received_from_parent,
-                      "All results should have been sent to the parent before finalizing");
+    if (!m_stored_error) {
+      DYNAMPI_ASSERT_EQ(m_results_received_from_child, m_tasks_sent_to_child,
+                        "All tasks should have been processed by workers before finalizing");
+      DYNAMPI_ASSERT_EQ(m_results_sent_to_parent, m_tasks_received_from_parent,
+                        "All results should have been sent to the parent before finalizing");
+    }
     if (is_leaf_worker())
       DYNAMPI_ASSERT_EQ(m_results_received_from_child, 0,
                         "Leaf workers should not receive results from children");
-    else if (m_communicator.size() > 1)
+    else if (!m_stored_error && m_communicator.size() > 1)
       DYNAMPI_ASSERT_EQ(m_results_received_from_child + m_tasks_executed, m_results_sent_to_parent,
                         "Results received from children should match results sent to parent");
   }
@@ -399,7 +396,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
                       "Only the manager can send done messages to workers");
     DYNAMPI_ASSERT_EQ(m_free_worker_indices.size(), static_cast<size_t>(num_direct_children()),
-                      "All workers should be free before finalizing");
+                      "All workers should be free or errored before finalizing");
     for (int i = 0; i < m_config.max_workers_per_coordinator; ++i) {
       int child = child_rank(m_communicator.rank(), i);
       if (child == -1) {
@@ -464,14 +461,10 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       m_communicator.send(result, status.MPI_SOURCE, Tag::RESULT);
       m_results_sent_to_parent++;
     } catch (const std::exception& e) {
-      // Send error message to parent, store error, but continue to receive DONE
       std::string error_message = e.what();
+      std::cerr << "Error executing task on rank " << m_communicator.rank() << std::endl;
       m_communicator.send(error_message, status.MPI_SOURCE, Tag::ERROR);
-      // Store error to throw after cleanup, count as "sent" for bookkeeping
-      if (!m_stored_error) {
-        m_stored_error = error_message;
-      }
-      m_results_sent_to_parent++;
+      m_stored_error = error_message;
     }
   }
 
@@ -518,15 +511,13 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     string_mpi_type::resize(error_message, count);
     m_communicator.recv(error_message, status.MPI_SOURCE, Tag::ERROR);
     // Log the error
-    std::cerr << "Error received from source " << status.MPI_SOURCE << ": " << error_message
-              << std::endl;
+    std::cerr << "Error received on rank " << m_communicator.rank() << " from source "
+              << status.MPI_SOURCE << ": " << error_message << std::endl;
     // Store error to throw later (after cleanup), continue normal flow to avoid deadlock
     if (!m_stored_error) {
       m_stored_error =
           "MPI error from source " + std::to_string(status.MPI_SOURCE) + ": " + error_message;
     }
-    // Count this as a "result" for bookkeeping so we can finish cleanly
-    m_results_received_from_child++;
     m_free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
   }
 

@@ -13,6 +13,7 @@ env:
 jobs:
   linux-intel:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     strategy:
       matrix:
         build-type: [Debug, Release]
