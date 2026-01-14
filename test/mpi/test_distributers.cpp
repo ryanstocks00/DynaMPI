@@ -236,8 +236,11 @@ TEST(HierarchicalDistributor, WorkerExceptionPropagation) {
   Distributer distributor(worker_task, {.comm = MPI_COMM_WORLD, .auto_run_workers = false});
 
   if (distributor.is_root_manager()) {
-    // Insert a task that will cause a worker to throw
-    distributor.insert_task(-1);
+    // Insert a mix of valid tasks and one invalid task to cover both paths
+    distributor.insert_task(1);   // valid: returns 1
+    distributor.insert_task(2);   // valid: returns 4
+    distributor.insert_task(-1);  // invalid: throws
+    distributor.insert_task(3);   // valid: returns 9
 
     // Expect the error to propagate back to the manager after all workers finish cleanly
     EXPECT_THROW(
@@ -254,12 +257,12 @@ TEST(HierarchicalDistributor, WorkerExceptionPropagation) {
         },
         std::runtime_error);
   } else {
-    // Workers run - one will encounter the error but all will finish cleanly
-    // The worker that processed -1 will throw at the end after receiving DONE
+    // Workers run - errors propagate up through hierarchy
+    // Workers that encounter or propagate errors will throw at the end
     try {
       distributor.run_worker();
     } catch (const std::runtime_error& e) {
-      // Only the worker that processed -1 will throw
+      // Workers involved in error propagation will throw
       std::string error_msg = e.what();
       EXPECT_NE(error_msg.find("Task failed: invalid input"), std::string::npos);
     }

@@ -461,9 +461,28 @@ int main(int argc, char **argv) {
       std::cerr << "Failed to open output file: " << opt.outfile << std::endl;
       MPI_Abort(MPI_COMM_WORLD, 2);
     }
-    std::fwrite(header.data(), 1, header.size(), fp);
-    if (!recvbuf.empty()) std::fwrite(recvbuf.data(), 1, recvbuf.size(), fp);
-    std::fclose(fp);
+    bool write_error = false;
+    if (std::fwrite(header.data(), 1, header.size(), fp) != header.size()) {
+      std::cerr << "Failed to write header to " << opt.outfile << std::endl;
+      write_error = true;
+    }
+    if (!write_error && !recvbuf.empty()) {
+      if (std::fwrite(recvbuf.data(), 1, recvbuf.size(), fp) != recvbuf.size()) {
+        std::cerr << "Failed to write data to " << opt.outfile << std::endl;
+        write_error = true;
+      }
+    }
+    if (!write_error && std::fflush(fp) != 0) {
+      std::cerr << "Failed to flush " << opt.outfile << std::endl;
+      write_error = true;
+    }
+    if (std::fclose(fp) != 0) {
+      std::cerr << "Failed to close " << opt.outfile << std::endl;
+      write_error = true;
+    }
+    if (write_error) {
+      MPI_Abort(MPI_COMM_WORLD, 2);
+    }
     std::cout << "Wrote results to " << opt.outfile << std::endl;
   }
 

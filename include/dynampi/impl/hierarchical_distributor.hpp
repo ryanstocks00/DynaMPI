@@ -197,7 +197,10 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
           break;
         }
         (void)tasks_received;
-        DYNAMPI_ASSERT_EQ(m_results.size(), tasks_received);
+        // Results may not match if there was an error
+        if (!m_stored_error) {
+          DYNAMPI_ASSERT_EQ(m_results.size(), tasks_received);
+        }
         return_results_and_request_next_batch_from_manager();
       }
       for (int i = 0; i < m_config.max_workers_per_coordinator; ++i) {
@@ -219,6 +222,13 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     DYNAMPI_ASSERT(!is_leaf_worker(), "Leaf workers should not return results directly");
     DYNAMPI_ASSERT_NE(m_communicator.rank(), m_config.manager_rank,
                       "Manager should not request tasks from itself");
+    // If there was an error from a child, propagate it up instead of results
+    if (m_stored_error) {
+      m_communicator.send(*m_stored_error, parent_rank(), Tag::ERROR);
+      m_results_sent_to_parent += m_results.size();  // Count for bookkeeping
+      m_results.clear();
+      return;
+    }
     std::vector<ResultT> results = m_results;
     m_results.clear();
     m_communicator.send(results, parent_rank(), Tag::RESULT_BATCH);
@@ -482,6 +492,44 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     }
   }
 
+  void receive_request_from(MPI_Status status) {
+    m_communicator.recv_empty_message(status.MPI_SOURCE, Tag::REQUEST);
+    m_free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
+  }
+
+  void receive_request_batch_from(MPI_Status status) {
+    int request_count;
+    m_communicator.recv(request_count, status.MPI_SOURCE, Tag::REQUEST_BATCH);
+    m_free_worker_indices.push(
+        TaskRequest{.worker_rank = status.MPI_SOURCE, .num_tasks_requested = request_count});
+  }
+
+  void receive_done_from(MPI_Status status) {
+    m_communicator.recv_empty_message(status.MPI_SOURCE, Tag::DONE);
+    m_done = true;
+  }
+
+  void receive_error_from(MPI_Status status) {
+    // String requires resizing, so get count from status first
+    using string_mpi_type = MPI_Type<std::string>;
+    int count;
+    DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, string_mpi_type::value, &count));
+    std::string error_message;
+    string_mpi_type::resize(error_message, count);
+    m_communicator.recv(error_message, status.MPI_SOURCE, Tag::ERROR);
+    // Log the error
+    std::cerr << "Error received from source " << status.MPI_SOURCE << ": " << error_message
+              << std::endl;
+    // Store error to throw later (after cleanup), continue normal flow to avoid deadlock
+    if (!m_stored_error) {
+      m_stored_error =
+          "MPI error from source " + std::to_string(status.MPI_SOURCE) + ": " + error_message;
+    }
+    // Count this as a "result" for bookkeeping so we can finish cleanly
+    m_results_received_from_child++;
+    m_free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
+  }
+
   void receive_from_anyone() {
     DYNAMPI_ASSERT_GT(m_communicator.size(), 1,
                       "There should be at least one worker to receive results from");
@@ -492,57 +540,22 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
                    "Received invalid MPI tag: " + std::to_string(status.MPI_TAG));
     Tag tag = static_cast<Tag>(status.MPI_TAG);
     switch (tag) {
-      case Tag::TASK: {
+      case Tag::TASK:
         return receive_execute_return_task_from(status);
-      }
-      case Tag::TASK_BATCH: {
+      case Tag::TASK_BATCH:
         return receive_task_batch_from(status);
-      }
-      case Tag::RESULT: {
+      case Tag::RESULT:
         return receive_result_from(status);
-      }
-      case Tag::RESULT_BATCH: {
+      case Tag::RESULT_BATCH:
         return receive_result_batch_from(status);
-      }
-      case Tag::REQUEST: {
-        m_communicator.recv_empty_message(status.MPI_SOURCE, Tag::REQUEST);
-        m_free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
-        return;
-      }
-      case Tag::REQUEST_BATCH: {
-        int request_count;
-        m_communicator.recv(request_count, status.MPI_SOURCE, Tag::REQUEST_BATCH);
-        m_free_worker_indices.push(
-            TaskRequest{.worker_rank = status.MPI_SOURCE, .num_tasks_requested = request_count});
-        return;
-      }
-      case Tag::DONE: {
-        m_communicator.recv_empty_message(status.MPI_SOURCE, Tag::DONE);
-        m_done = true;
-        return;
-      }
-      case Tag::ERROR: {
-        // Receive the error payload from m_communicator
-        // String requires resizing, so get count from status first
-        using string_mpi_type = MPI_Type<std::string>;
-        int count;
-        DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, string_mpi_type::value, &count));
-        std::string error_message;
-        string_mpi_type::resize(error_message, count);
-        m_communicator.recv(error_message, status.MPI_SOURCE, Tag::ERROR);
-        // Log the error
-        std::cerr << "Error received from source " << status.MPI_SOURCE
-                  << " in receive_from_anyone: " << error_message << std::endl;
-        // Store error to throw later (after cleanup), continue normal flow to avoid deadlock
-        if (!m_stored_error) {
-          m_stored_error =
-              "MPI error from source " + std::to_string(status.MPI_SOURCE) + ": " + error_message;
-        }
-        // Count this as a "result" for bookkeeping so we can finish cleanly
-        m_results_received_from_child++;
-        m_free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
-        return;
-      }
+      case Tag::REQUEST:
+        return receive_request_from(status);
+      case Tag::REQUEST_BATCH:
+        return receive_request_batch_from(status);
+      case Tag::DONE:
+        return receive_done_from(status);
+      case Tag::ERROR:
+        return receive_error_from(status);
     }
   }
 };
