@@ -25,12 +25,49 @@ inline std::ostream& get_debug_log() {
   static std::map<int, std::unique_ptr<std::ofstream>> rank_files;
   static std::mutex files_mutex;
   static std::map<int, bool> use_cerr_fallback;
+  static int cached_rank = -1;  // Cache rank to avoid calling MPI after finalization
+  static bool rank_cached = false;
 
   int rank = 0;
-  int mpi_initialized = 0;
-  MPI_Initialized(&mpi_initialized);
-  if (mpi_initialized) {
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  // Use cached rank if available - this avoids calling MPI_Comm_rank after finalization
+  if (rank_cached && cached_rank >= 0) {
+    rank = cached_rank;
+  } else {
+    // Try to get and cache rank only once, early in execution
+    // After this, we never call MPI_Comm_rank again to avoid issues after finalization
+    int mpi_initialized = 0;
+    MPI_Initialized(&mpi_initialized);
+    if (!mpi_initialized) {
+      // MPI not initialized, use stderr
+      return std::cerr;
+    }
+
+    int mpi_finalized = 0;
+    MPI_Finalized(&mpi_finalized);
+    if (mpi_finalized) {
+      // MPI is finalized, use stderr
+      return std::cerr;
+    }
+
+    // Only try to get rank if MPI is initialized and not finalized
+    // Use error handler to avoid fatal errors
+    MPI_Errhandler old_handler;
+    MPI_Comm_get_errhandler(MPI_COMM_WORLD, &old_handler);
+    MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
+
+    rank = 0;  // Default
+    int result = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    MPI_Comm_set_errhandler(MPI_COMM_WORLD, old_handler);
+
+    if (result == MPI_SUCCESS) {
+      cached_rank = rank;
+      rank_cached = true;
+    } else {
+      // Failed to get rank, use stderr and don't cache
+      return std::cerr;
+    }
   }
 
   std::lock_guard<std::mutex> lock(files_mutex);

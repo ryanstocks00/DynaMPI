@@ -12,6 +12,7 @@
 
 #include "dynampi/mpi/mpi_types.hpp"
 #include "dynampi/utilities/assert.hpp"
+#include "dynampi/utilities/debug_log.hpp"
 #include "dynampi/utilities/template_options.hpp"
 #include "mpi_error.hpp"
 
@@ -98,12 +99,84 @@ class MPICommunicator {
   }
   MPICommunicator& operator=(MPICommunicator&& other) = delete;
 
+  // Explicitly free the communicator (collective operation - all ranks must call together)
+  void free() {
+    int rank = -1;
+    int mpi_initialized = 0;
+    MPI_Initialized(&mpi_initialized);
+    if (mpi_initialized && m_comm != MPI_COMM_NULL) {
+      MPI_Comm_rank(m_comm, &rank);
+    }
+    if (mpi_initialized) {
+      dynampi::get_debug_log() << "[MPI_COMM] free(): ENTRY rank=" << rank << " ownership="
+                               << (m_ownership == Reference ? "Reference"
+                                   : m_ownership == Move    ? "Move"
+                                                            : "Duplicate")
+                               << std::endl;
+    }
+    if (m_ownership != Reference && m_comm != MPI_COMM_NULL) {
+      if (mpi_initialized) {
+        if (mpi_initialized) {
+          dynampi::get_debug_log()
+              << "[MPI_COMM] free(): Calling MPI_Comm_free on rank " << rank << std::endl;
+          dynampi::get_debug_log().flush();
+        }
+        DYNAMPI_MPI_CHECK(MPI_Comm_free, (&m_comm));
+        m_comm = MPI_COMM_NULL;   // Mark as freed
+        m_ownership = Reference;  // Mark as no longer owned
+        if (mpi_initialized) {
+          dynampi::get_debug_log()
+              << "[MPI_COMM] free(): MPI_Comm_free completed on rank " << rank << std::endl;
+        }
+      }
+    }
+    if (mpi_initialized) {
+      dynampi::get_debug_log() << "[MPI_COMM] free(): EXIT rank=" << rank << std::endl;
+    }
+  }
+
   ~MPICommunicator() {
+    int rank = -1;
+    int mpi_initialized = 0;
+    MPI_Initialized(&mpi_initialized);
+    if (mpi_initialized && m_comm != MPI_COMM_NULL) {
+      // Only try to get rank if MPI is still initialized and communicator is valid
+      MPI_Comm_rank(m_comm, &rank);
+    }
+    if (mpi_initialized) {
+      dynampi::get_debug_log() << "[MPI_COMM] ~MPICommunicator(): ENTRY rank=" << rank
+                               << " ownership="
+                               << (m_ownership == Reference ? "Reference"
+                                   : m_ownership == Move    ? "Move"
+                                                            : "Duplicate")
+                               << " comm_null=" << (m_comm == MPI_COMM_NULL) << std::endl;
+    }
+    // Only free in destructor if not already freed via free()
+    // This allows explicit synchronization in finalize() before destruction
     if (m_ownership != Reference && m_comm != MPI_COMM_NULL) {
       // MPI_Comm_free is a collective operation - all ranks must call it together
-      // Use a barrier to ensure all ranks reach this point before freeing
-      MPI_Barrier(m_comm);
-      MPI_Comm_free(&m_comm);
+      // If we reach here, free() was not called, so we try to free it
+      // This is a fallback but may deadlock if ranks reach destructor at different times
+      if (mpi_initialized) {
+        if (mpi_initialized) {
+          dynampi::get_debug_log()
+              << "[MPI_COMM] ~MPICommunicator(): MPI initialized=" << mpi_initialized << " on rank "
+              << rank << ", about to call MPI_Comm_free" << std::endl;
+          dynampi::get_debug_log().flush();
+        }
+        // Ignore errors in destructor to avoid throwing exceptions during cleanup
+        int free_result = MPI_Comm_free(&m_comm);
+        (void)free_result;       // Suppress unused variable warning
+        m_comm = MPI_COMM_NULL;  // Mark as freed
+        if (mpi_initialized) {
+          dynampi::get_debug_log()
+              << "[MPI_COMM] ~MPICommunicator(): MPI_Comm_free completed on rank " << rank
+              << std::endl;
+        }
+      }
+    }
+    if (mpi_initialized) {
+      dynampi::get_debug_log() << "[MPI_COMM] ~MPICommunicator(): EXIT rank=" << rank << std::endl;
     }
   }
 

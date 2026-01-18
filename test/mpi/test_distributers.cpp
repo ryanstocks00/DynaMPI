@@ -14,6 +14,7 @@
 
 #include "dynampi/impl/hierarchical_distributor.hpp"
 #include "dynampi/mpi/mpi_communicator.hpp"
+#include "dynampi/utilities/debug_log.hpp"
 #include "mpi_test_environment.hpp"
 
 template <template <typename...> class Template, typename T>
@@ -33,7 +34,33 @@ using DistributerOf = typename Wrapper::template type<T...>;
 
 // Test fixture
 template <typename T>
-class DynamicDistribution : public ::testing::Test {};
+class DynamicDistribution : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    int rank = 0;
+    int mpi_finalized = 0;
+    MPI_Finalized(&mpi_finalized);
+    if (!mpi_finalized) {
+      int result = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+      if (result == MPI_SUCCESS) {
+        dynampi::get_debug_log() << "[TEST] SetUp: Starting test on rank " << rank << std::endl;
+      }
+    }
+  }
+
+  void TearDown() override {
+    int rank = 0;
+    int mpi_finalized = 0;
+    MPI_Finalized(&mpi_finalized);
+    if (!mpi_finalized) {
+      int result = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+      if (result == MPI_SUCCESS) {
+        dynampi::get_debug_log() << "[TEST] TearDown: Test completed on rank " << rank << std::endl;
+        dynampi::get_debug_log().flush();
+      }
+    }
+  }
+};
 
 using DistributerTypes =
     ::testing::Types<DistributerTypeWrapper<dynampi::NaiveMPIWorkDistributor>,
@@ -42,6 +69,16 @@ using DistributerTypes =
 TYPED_TEST_SUITE(DynamicDistribution, DistributerTypes);
 
 TYPED_TEST(DynamicDistribution, Naive) {
+  int rank = 0;
+  int mpi_finalized = 0;
+  MPI_Finalized(&mpi_finalized);
+  if (!mpi_finalized) {
+    int result = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (result == MPI_SUCCESS) {
+      dynampi::get_debug_log() << "[TEST] DynamicDistribution.Naive: START on rank " << rank
+                               << std::endl;
+    }
+  }
   using TaskT = uint32_t;
   using Distributer = DistributerOf<TypeParam, TaskT, double>;
 
