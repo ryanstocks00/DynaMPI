@@ -48,8 +48,20 @@ inline std::ostream& get_debug_log() {
     // Check if file opened successfully
     if (!file->is_open() || !file->good()) {
       // Fallback to stderr if file can't be opened
+      // Use a cross-platform way to get error message
+      std::string error_msg;
+#ifdef _WIN32
+      char buffer[256];
+      if (strerror_s(buffer, sizeof(buffer), errno) == 0) {
+        error_msg = buffer;
+      } else {
+        error_msg = "Unknown error";
+      }
+#else
+      error_msg = std::strerror(errno);
+#endif
       std::cerr << "[RANK " << rank << "] WARNING: Failed to open debug log file '" << filename
-                << "': " << std::strerror(errno) << " (falling back to stderr)" << std::endl;
+                << "': " << error_msg << " (falling back to stderr)" << std::endl;
       use_cerr_fallback[rank] = true;
       return std::cerr;
     }
