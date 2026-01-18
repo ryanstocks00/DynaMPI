@@ -11,6 +11,7 @@
 #include <iostream>
 #include <iterator>
 #include <ranges>
+#include <set>
 #include <span>
 #include <stack>
 #include <stdexcept>
@@ -21,8 +22,13 @@
 #include "../mpi/mpi_types.hpp"
 #include "dynampi/impl/base_distributor.hpp"
 #include "dynampi/utilities/assert.hpp"
+#include "dynampi/utilities/debug_log.hpp"
 
 namespace dynampi {
+
+// Debug logging macro
+#define LOG_DEBUG(msg) \
+  get_debug_log() << "[RANK " << m_communicator.rank() << "] " << msg << std::endl
 
 template <typename TaskT, typename ResultT, typename... Options>
 class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, ResultT, Options...> {
@@ -154,7 +160,12 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         m_worker_function(worker_function),
         m_config(runtime_config),
         _statistics{create_statistics(m_communicator)} {
+    LOG_DEBUG("Constructor: rank=" << m_communicator.rank()
+                                   << " manager_rank=" << m_config.manager_rank
+                                   << " auto_run_workers=" << m_config.auto_run_workers
+                                   << " size=" << m_communicator.size());
     if (m_config.auto_run_workers && m_communicator.rank() != m_config.manager_rank) {
+      LOG_DEBUG("Constructor: auto-running worker");
       run_worker();
     }
   }
@@ -167,65 +178,105 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   }
 
   void run_worker() {
+    LOG_DEBUG("run_worker: ENTRY");
     DYNAMPI_ASSERT(m_communicator.rank() != m_config.manager_rank,
                    "Worker cannot run on the manager rank");
+    int parent = parent_rank();
+    LOG_DEBUG("run_worker: parent_rank=" << parent << " is_leaf=" << is_leaf_worker());
     if (is_leaf_worker()) {
-      m_communicator.send(nullptr, parent_rank(), Tag::REQUEST);
+      LOG_DEBUG("run_worker: SENDING REQUEST to parent " << parent);
+      m_communicator.send(nullptr, parent, Tag::REQUEST);
+      LOG_DEBUG("run_worker: SENT REQUEST to parent " << parent);
     } else {
       int num_children = num_direct_children();
-      m_communicator.send(num_children * m_config.batch_size_multiplier, parent_rank(),
-                          Tag::REQUEST_BATCH);
+      int request_size = num_children * m_config.batch_size_multiplier;
+      LOG_DEBUG("run_worker: SENDING REQUEST_BATCH to parent " << parent
+                                                               << " size=" << request_size);
+      m_communicator.send(request_size, parent, Tag::REQUEST_BATCH);
+      LOG_DEBUG("run_worker: SENT REQUEST_BATCH to parent " << parent);
     }
     if (is_leaf_worker()) {
+      LOG_DEBUG("run_worker: Entering leaf worker loop");
       while (!m_done) {
+        LOG_DEBUG("run_worker: Leaf worker loop iteration, m_done=" << m_done);
         receive_from_anyone();
       }
+      LOG_DEBUG("run_worker: Leaf worker loop exited, m_done=" << m_done);
     } else {
+      LOG_DEBUG("run_worker: Entering coordinator loop");
       while (!m_done) {
+        LOG_DEBUG("run_worker: Coordinator loop iteration, m_done="
+                  << m_done << " queue_size=" << m_unallocated_task_queue.size());
         while (!m_done && m_unallocated_task_queue.empty()) {
+          LOG_DEBUG("run_worker: Waiting for tasks, queue empty");
           receive_from_anyone();
         }
         size_t num_tasks_should_be_received = m_unallocated_task_queue.size();
+        LOG_DEBUG("run_worker: Allocating " << num_tasks_should_be_received
+                                            << " tasks to children");
         while (!m_stored_error && !m_unallocated_task_queue.empty()) {
           allocate_task_to_child();
         }
+        LOG_DEBUG("run_worker: Waiting for results, sent=" << m_tasks_sent_to_child << " received="
+                                                           << m_results_received_from_child);
         while (!m_stored_error && m_tasks_sent_to_child > m_results_received_from_child) {
           receive_from_anyone();
         }
         if (m_done) {
+          LOG_DEBUG("run_worker: m_done=true, breaking");
           break;
         }
         (void)num_tasks_should_be_received;
         if (!m_stored_error) {
           DYNAMPI_ASSERT_EQ(m_results.size(), num_tasks_should_be_received);
         }
+        LOG_DEBUG("run_worker: Returning results and requesting next batch");
         return_results_and_request_next_batch_from_manager();
       }
+      LOG_DEBUG("run_worker: Sending DONE to children");
       for (int i = 0; i < m_config.max_workers_per_coordinator; ++i) {
         int child = child_rank(m_communicator.rank(), i);
         if (child != -1) {
+          LOG_DEBUG("run_worker: SENDING DONE to child " << child);
           m_communicator.send(nullptr, child, Tag::DONE);
+          LOG_DEBUG("run_worker: SENT DONE to child " << child);
         } else {
           break;
         }
       }
+      LOG_DEBUG("run_worker: Finished sending DONE to all children");
     }
+    LOG_DEBUG("run_worker: EXIT");
   }
 
   void return_results_and_request_next_batch_from_manager() {
+    LOG_DEBUG("return_results_and_request_next_batch_from_manager: ENTRY");
     DYNAMPI_ASSERT(!is_leaf_worker(), "Leaf workers should not return results directly");
     DYNAMPI_ASSERT_NE(m_communicator.rank(), m_config.manager_rank,
                       "Manager should not request tasks from itself");
+    int parent = parent_rank();
+    LOG_DEBUG("return_results_and_request_next_batch_from_manager: parent="
+              << parent << " results_size=" << m_results.size()
+              << " stored_error=" << (m_stored_error.has_value() ? "yes" : "no"));
     // If there was an error from a child, propagate it up instead of results
     if (m_stored_error) {
-      m_communicator.send(*m_stored_error, parent_rank(), Tag::ERROR);
+      LOG_DEBUG("return_results_and_request_next_batch_from_manager: SENDING ERROR to parent "
+                << parent);
+      m_communicator.send(*m_stored_error, parent, Tag::ERROR);
+      LOG_DEBUG("return_results_and_request_next_batch_from_manager: SENT ERROR to parent "
+                << parent);
       m_results.clear();
       return;
     }
     std::vector<ResultT> results = m_results;
     m_results.clear();
-    m_communicator.send(results, parent_rank(), Tag::RESULT_BATCH);
+    LOG_DEBUG("return_results_and_request_next_batch_from_manager: SENDING RESULT_BATCH to parent "
+              << parent << " size=" << results.size());
+    m_communicator.send(results, parent, Tag::RESULT_BATCH);
+    LOG_DEBUG("return_results_and_request_next_batch_from_manager: SENT RESULT_BATCH to parent "
+              << parent);
     m_results_sent_to_parent += results.size();
+    LOG_DEBUG("return_results_and_request_next_batch_from_manager: EXIT");
   }
 
   bool is_root_manager() const { return m_communicator.rank() == m_config.manager_rank; }
@@ -270,60 +321,94 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   }
 
   void allocate_task_to_child() {
+    LOG_DEBUG("allocate_task_to_child: ENTRY queue_size=" << m_unallocated_task_queue.size()
+                                                          << " free_workers="
+                                                          << m_free_worker_indices.size());
     if (m_communicator.size() > 1) {
       while (m_free_worker_indices.empty()) {
+        LOG_DEBUG("allocate_task_to_child: No free workers, waiting...");
         // If no free workers, wait for a result to be received
         receive_from_anyone();
       }
       if (m_stored_error) {
+        LOG_DEBUG("allocate_task_to_child: Error stored, returning early");
         return;  // Don't send more tasks after an error
       }
       TaskRequest request = m_free_worker_indices.top();
       int worker = request.worker_rank;
       m_free_worker_indices.pop();
+      LOG_DEBUG("allocate_task_to_child: Allocating to worker "
+                << worker << " batch_requested="
+                << (request.num_tasks_requested.has_value()
+                        ? std::to_string(request.num_tasks_requested.value())
+                        : "none"));
       if (request.num_tasks_requested.has_value()) {
         std::vector<TaskT> tasks;
         int num_tasks = request.num_tasks_requested.value();
         tasks.reserve(num_tasks);
         for (int i = 0; i < num_tasks; ++i) {
           if (m_unallocated_task_queue.empty()) {
+            LOG_DEBUG("allocate_task_to_child: Queue empty, breaking batch");
             break;  // No more tasks to allocate
           }
           tasks.push_back(get_next_task_to_send());
         }
+        LOG_DEBUG("allocate_task_to_child: SENDING TASK_BATCH to worker "
+                  << worker << " size=" << tasks.size());
         m_communicator.send(tasks, worker, Tag::TASK_BATCH);
+        LOG_DEBUG("allocate_task_to_child: SENT TASK_BATCH to worker " << worker);
         m_tasks_sent_to_child += tasks.size();
       } else {
         const TaskT task = get_next_task_to_send();
+        LOG_DEBUG("allocate_task_to_child: SENDING TASK to worker " << worker);
         m_communicator.send(task, worker, Tag::TASK);
+        LOG_DEBUG("allocate_task_to_child: SENT TASK to worker " << worker);
         m_tasks_sent_to_child++;
       }
     } else {
       // If there's only one process, we just run the worker function directly
+      LOG_DEBUG("allocate_task_to_child: Single process, executing directly");
       const TaskT task = get_next_task_to_send();
       m_results.emplace_back(m_worker_function(task));
       m_tasks_executed++;
     }
+    LOG_DEBUG("allocate_task_to_child: EXIT tasks_sent=" << m_tasks_sent_to_child);
   }
 
   [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() {
+    LOG_DEBUG("finish_remaining_tasks: ENTRY queue_size=" << m_unallocated_task_queue.size());
     DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
                       "Only the manager can finish remaining tasks");
     // Distribute tasks until queue is empty or we get an error
+    LOG_DEBUG("finish_remaining_tasks: Distributing tasks");
     while (!m_unallocated_task_queue.empty() && !m_stored_error) {
+      LOG_DEBUG(
+          "finish_remaining_tasks: Loop iteration, queue_size=" << m_unallocated_task_queue.size());
       allocate_task_to_child();
     }
+    LOG_DEBUG("finish_remaining_tasks: Distribution done, sent="
+              << m_tasks_sent_to_child << " received=" << m_results_received_from_child);
     // Wait for all tasks to be processed (results received == tasks sent)
+    LOG_DEBUG("finish_remaining_tasks: Waiting for all results");
     while (!m_stored_error && m_results_received_from_child < m_tasks_sent_to_child) {
+      LOG_DEBUG("finish_remaining_tasks: Waiting loop, sent="
+                << m_tasks_sent_to_child << " received=" << m_results_received_from_child);
       receive_from_anyone();
     }
+    LOG_DEBUG("finish_remaining_tasks: All results received, free_workers="
+              << m_free_worker_indices.size() << " num_children=" << num_direct_children());
     // Ensure all workers are free before finalizing (they may have sent multiple batches)
     // Continue waiting even if there's an error, to process all pending REQUESTTs
     while (m_free_worker_indices.size() < static_cast<size_t>(num_direct_children())) {
+      LOG_DEBUG("finish_remaining_tasks: Waiting for free workers, free="
+                << m_free_worker_indices.size() << " needed=" << num_direct_children()
+                << " stored_error=" << (m_stored_error.has_value() ? "yes" : "no"));
       receive_from_anyone();
     }
+    LOG_DEBUG("finish_remaining_tasks: All workers free");
     // If there was an error, send DONE to workers and throw
     if (m_stored_error) {
+      LOG_DEBUG("finish_remaining_tasks: Error detected, finalizing and throwing");
       finalize();
       throw std::runtime_error(*m_stored_error);
     }
@@ -339,15 +424,19 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       DYNAMPI_ASSERT_EQ(m_results.size(), m_results_received_from_child,
                         "Results size should match tasks sent before finalizing");
     // TODO(Change this so we don't return the same tasks multiple times)
+    LOG_DEBUG("finish_remaining_tasks: EXIT returning " << m_results.size() << " results");
     return m_results;
   }
 
   void finalize() {
+    LOG_DEBUG("finalize: ENTRY finalized=" << m_finalized << " is_root=" << is_root_manager());
     DYNAMPI_ASSERT(!m_finalized, "Work distribution already finalized");
     if (is_root_manager()) {
+      LOG_DEBUG("finalize: Calling send_done_to_workers");
       send_done_to_workers();
     }
     m_finalized = true;  // Set for all managers immediately to prevent double-finalize
+    LOG_DEBUG("finalize: EXIT");
     if constexpr (statistics_mode != StatisticsMode::None) {
       if (is_root_manager()) {
         _statistics.worker_task_counts = std::vector<size_t>(m_communicator.size(), 0);
@@ -395,8 +484,59 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   }
 
   void send_done_to_workers() {
+    LOG_DEBUG("send_done_to_workers: ENTRY free_workers="
+              << m_free_worker_indices.size() << " num_children=" << num_direct_children());
     DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
                       "Only the manager can send done messages to workers");
+
+    // Debug: Print all free workers
+    get_debug_log() << "[RANK " << m_communicator.rank()
+                    << "] send_done_to_workers: Free workers: ";
+    auto temp_stack = m_free_worker_indices;
+    std::vector<int> free_ranks;
+    while (!temp_stack.empty()) {
+      free_ranks.push_back(temp_stack.top().worker_rank);
+      temp_stack.pop();
+    }
+    std::sort(free_ranks.begin(), free_ranks.end());
+    for (size_t i = 0; i < free_ranks.size(); ++i) {
+      if (i > 0) get_debug_log() << ", ";
+      get_debug_log() << free_ranks[i];
+    }
+    get_debug_log() << std::endl;
+
+    // Debug: Print all direct children
+    get_debug_log() << "[RANK " << m_communicator.rank()
+                    << "] send_done_to_workers: Direct children: ";
+    std::vector<int> child_ranks;
+    for (int i = 0; i < m_config.max_workers_per_coordinator; ++i) {
+      int child = child_rank(m_communicator.rank(), i);
+      if (child != -1) {
+        child_ranks.push_back(child);
+      }
+    }
+    for (size_t i = 0; i < child_ranks.size(); ++i) {
+      if (i > 0) get_debug_log() << ", ";
+      get_debug_log() << child_ranks[i];
+    }
+    get_debug_log() << std::endl;
+
+    // Find missing workers
+    std::set<int> free_set(free_ranks.begin(), free_ranks.end());
+    std::set<int> child_set(child_ranks.begin(), child_ranks.end());
+    std::vector<int> missing;
+    std::set_difference(child_set.begin(), child_set.end(), free_set.begin(), free_set.end(),
+                        std::back_inserter(missing));
+    if (!missing.empty()) {
+      get_debug_log() << "[RANK " << m_communicator.rank()
+                      << "] send_done_to_workers: MISSING workers: ";
+      for (size_t i = 0; i < missing.size(); ++i) {
+        if (i > 0) get_debug_log() << ", ";
+        get_debug_log() << missing[i];
+      }
+      get_debug_log() << std::endl;
+    }
+
     DYNAMPI_ASSERT_EQ(m_free_worker_indices.size(), static_cast<size_t>(num_direct_children()),
                       "All workers should be free or errored before finalizing");
     for (int i = 0; i < m_config.max_workers_per_coordinator; ++i) {
@@ -404,8 +544,11 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       if (child == -1) {
         break;
       }
+      LOG_DEBUG("send_done_to_workers: SENDING DONE to child " << child);
       m_communicator.send(nullptr, child, Tag::DONE);
+      LOG_DEBUG("send_done_to_workers: SENT DONE to child " << child);
     }
+    LOG_DEBUG("send_done_to_workers: EXIT");
   }
 
   int idx_for_worker(int worker_rank) const {
@@ -424,6 +567,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   using task_mpi_type = MPI_Type<TaskT>;
 
   void receive_result_from(MPI_Status status) {
+    LOG_DEBUG("receive_result_from: ENTRY from source " << status.MPI_SOURCE);
     m_results.push_back(ResultT{});
     if (result_mpi_type::resize_required) {
       DYNAMPI_UNIMPLEMENTED(  // LCOV_EXCL_LINE
@@ -432,106 +576,159 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       // DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, result_mpi_type::value, &count));
       // result_mpi_type::resize(_results.back(), count);
     }
+    LOG_DEBUG("receive_result_from: RECEIVING RESULT from source " << status.MPI_SOURCE);
     m_communicator.recv(m_results.back(), status.MPI_SOURCE, Tag::RESULT);
+    LOG_DEBUG("receive_result_from: RECEIVED RESULT from source " << status.MPI_SOURCE);
     m_results_received_from_child++;
     m_free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
+    LOG_DEBUG("receive_result_from: EXIT results_received="
+              << m_results_received_from_child << " free_workers=" << m_free_worker_indices.size());
   }
 
   void receive_result_batch_from(MPI_Status status) {
+    LOG_DEBUG("receive_result_batch_from: ENTRY from source " << status.MPI_SOURCE);
     using message_type = MPI_Type<std::vector<ResultT>>;
     int count;
     DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
+    LOG_DEBUG("receive_result_batch_from: Count=" << count << " from source " << status.MPI_SOURCE);
     std::vector<ResultT> results;
     message_type::resize(results, count);
+    LOG_DEBUG("receive_result_batch_from: RECEIVING RESULT_BATCH from source "
+              << status.MPI_SOURCE);
     m_communicator.recv(results, status.MPI_SOURCE, Tag::RESULT_BATCH);
+    LOG_DEBUG("receive_result_batch_from: RECEIVED RESULT_BATCH from source "
+              << status.MPI_SOURCE << " size=" << results.size());
     m_free_worker_indices.push({.worker_rank = status.MPI_SOURCE,
                                 .num_tasks_requested = static_cast<int>(results.size())});
     std::copy(results.begin(), results.end(), std::back_inserter(m_results));
     m_results_received_from_child += results.size();
+    LOG_DEBUG("receive_result_batch_from: EXIT results_received="
+              << m_results_received_from_child << " free_workers=" << m_free_worker_indices.size());
   }
 
   void receive_execute_return_task_from(MPI_Status status) {
+    LOG_DEBUG("receive_execute_return_task_from: ENTRY from source " << status.MPI_SOURCE);
     int count;
     DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, task_mpi_type::value, &count));
     TaskT message;
     task_mpi_type::resize(message, count);
+    LOG_DEBUG("receive_execute_return_task_from: RECEIVING TASK from source " << status.MPI_SOURCE);
     m_communicator.recv(message, status.MPI_SOURCE, Tag::TASK);
+    LOG_DEBUG("receive_execute_return_task_from: RECEIVED TASK from source " << status.MPI_SOURCE);
     m_tasks_received_from_parent++;
     try {
+      LOG_DEBUG("receive_execute_return_task_from: Executing task");
       ResultT result = m_worker_function(message);
       m_tasks_executed++;
+      LOG_DEBUG("receive_execute_return_task_from: SENDING RESULT to source " << status.MPI_SOURCE);
       m_communicator.send(result, status.MPI_SOURCE, Tag::RESULT);
+      LOG_DEBUG("receive_execute_return_task_from: SENT RESULT to source " << status.MPI_SOURCE);
       m_results_sent_to_parent++;
     } catch (const std::exception& e) {
       std::string error_message = e.what();
-      std::cerr << "Error executing task on rank " << m_communicator.rank() << std::endl;
+      LOG_DEBUG("receive_execute_return_task_from: ERROR executing task: " << error_message);
+      get_debug_log() << "Error executing task on rank " << m_communicator.rank() << std::endl;
+      LOG_DEBUG("receive_execute_return_task_from: SENDING ERROR to source " << status.MPI_SOURCE);
       m_communicator.send(error_message, status.MPI_SOURCE, Tag::ERROR);
+      LOG_DEBUG("receive_execute_return_task_from: SENT ERROR to source " << status.MPI_SOURCE);
       m_stored_error = error_message;
     }
+    LOG_DEBUG("receive_execute_return_task_from: EXIT");
   }
 
   void receive_task_batch_from(MPI_Status status) {
+    LOG_DEBUG("receive_task_batch_from: ENTRY from source " << status.MPI_SOURCE);
     if constexpr (prioritize_tasks) {
       DYNAMPI_UNIMPLEMENTED("Prioritized hierarchical distribution");
     } else {
       using message_type = MPI_Type<std::vector<TaskT>>;
       int count;
       DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
+      LOG_DEBUG("receive_task_batch_from: Count=" << count << " from source " << status.MPI_SOURCE);
       std::vector<TaskT> tasks;
       message_type::resize(tasks, count);
+      LOG_DEBUG("receive_task_batch_from: RECEIVING TASK_BATCH from source " << status.MPI_SOURCE);
       m_communicator.recv(tasks, status.MPI_SOURCE, Tag::TASK_BATCH);
+      LOG_DEBUG("receive_task_batch_from: RECEIVED TASK_BATCH from source "
+                << status.MPI_SOURCE << " size=" << tasks.size());
       m_tasks_received_from_parent += tasks.size();
       for (const auto& task : tasks) {
         m_unallocated_task_queue.push_back(task);
       }
+      LOG_DEBUG("receive_task_batch_from: EXIT queue_size=" << m_unallocated_task_queue.size());
     }
   }
 
   void receive_request_from(MPI_Status status) {
+    LOG_DEBUG("receive_request_from: ENTRY from source " << status.MPI_SOURCE);
+    LOG_DEBUG("receive_request_from: RECEIVING REQUEST from source " << status.MPI_SOURCE);
     m_communicator.recv_empty_message(status.MPI_SOURCE, Tag::REQUEST);
+    LOG_DEBUG("receive_request_from: RECEIVED REQUEST from source " << status.MPI_SOURCE);
     m_free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
+    LOG_DEBUG("receive_request_from: EXIT free_workers=" << m_free_worker_indices.size());
   }
 
   void receive_request_batch_from(MPI_Status status) {
+    LOG_DEBUG("receive_request_batch_from: ENTRY from source " << status.MPI_SOURCE);
+    LOG_DEBUG("receive_request_batch_from: RECEIVING REQUEST_BATCH from source "
+              << status.MPI_SOURCE);
     int request_count;
     m_communicator.recv(request_count, status.MPI_SOURCE, Tag::REQUEST_BATCH);
+    LOG_DEBUG("receive_request_batch_from: RECEIVED REQUEST_BATCH from source "
+              << status.MPI_SOURCE << " count=" << request_count);
     m_free_worker_indices.push(
         TaskRequest{.worker_rank = status.MPI_SOURCE, .num_tasks_requested = request_count});
+    LOG_DEBUG("receive_request_batch_from: EXIT free_workers=" << m_free_worker_indices.size());
   }
 
   void receive_done_from(MPI_Status status) {
+    LOG_DEBUG("receive_done_from: ENTRY from source " << status.MPI_SOURCE);
+    LOG_DEBUG("receive_done_from: RECEIVING DONE from source " << status.MPI_SOURCE);
     m_communicator.recv_empty_message(status.MPI_SOURCE, Tag::DONE);
+    LOG_DEBUG("receive_done_from: RECEIVED DONE from source " << status.MPI_SOURCE);
     m_done = true;
+    LOG_DEBUG("receive_done_from: EXIT m_done=true");
   }
 
   void receive_error_from(MPI_Status status) {
+    LOG_DEBUG("receive_error_from: ENTRY from source " << status.MPI_SOURCE);
     // String requires resizing, so get count from status first
     using string_mpi_type = MPI_Type<std::string>;
     int count;
     DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, string_mpi_type::value, &count));
+    LOG_DEBUG("receive_error_from: Count=" << count << " from source " << status.MPI_SOURCE);
     std::string error_message;
     string_mpi_type::resize(error_message, count);
+    LOG_DEBUG("receive_error_from: RECEIVING ERROR from source " << status.MPI_SOURCE);
     m_communicator.recv(error_message, status.MPI_SOURCE, Tag::ERROR);
+    LOG_DEBUG("receive_error_from: RECEIVED ERROR from source " << status.MPI_SOURCE << ": "
+                                                                << error_message);
     // Log the error
-    std::cerr << "Error received on rank " << m_communicator.rank() << " from source "
-              << status.MPI_SOURCE << ": " << error_message << std::endl;
+    get_debug_log() << "Error received on rank " << m_communicator.rank() << " from source "
+                    << status.MPI_SOURCE << ": " << error_message << std::endl;
     // Store error to throw later (after cleanup), continue normal flow to avoid deadlock
     if (!m_stored_error) {
       m_stored_error =
           "MPI error from source " + std::to_string(status.MPI_SOURCE) + ": " + error_message;
     }
     m_free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
+    LOG_DEBUG("receive_error_from: EXIT free_workers=" << m_free_worker_indices.size());
   }
 
   void receive_from_anyone() {
+    LOG_DEBUG("receive_from_anyone: ENTRY - probing for message");
     DYNAMPI_ASSERT_GT(m_communicator.size(), 1,
                       "There should be at least one worker to receive results from");
     MPI_Status status = m_communicator.probe();
+    LOG_DEBUG("receive_from_anyone: PROBED message from source " << status.MPI_SOURCE
+                                                                 << " tag=" << status.MPI_TAG);
     // Assert that the tag is a valid Tag enum value before casting
     DYNAMPI_ASSERT(status.MPI_TAG >= static_cast<int>(Tag::TASK) &&
                        status.MPI_TAG <= static_cast<int>(Tag::REQUEST_BATCH),
                    "Received invalid MPI tag: " + std::to_string(status.MPI_TAG));
     Tag tag = static_cast<Tag>(status.MPI_TAG);
+    LOG_DEBUG("receive_from_anyone: Dispatching tag=" << static_cast<int>(tag) << " from source "
+                                                      << status.MPI_SOURCE);
     switch (tag) {
       case Tag::TASK:
         return receive_execute_return_task_from(status);
@@ -550,6 +747,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       case Tag::ERROR:
         return receive_error_from(status);
     }
+    LOG_DEBUG("receive_from_anyone: EXIT");
   }
 };
 

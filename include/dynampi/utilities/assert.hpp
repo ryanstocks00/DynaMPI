@@ -34,6 +34,7 @@ using source_location = std::experimental::source_location;
 #include <sstream>
 #include <string>
 
+#include "debug_log.hpp"
 #include "printing.hpp"
 #endif
 
@@ -79,7 +80,7 @@ inline void _DYNAMPI_FAIL_ASSERT(const std::string &condition_str,
        << "\n in " << loc.function_name() << " at " << filename << ":" << loc.line()
 #endif
        << std::endl;
-    std::cerr << ss.str();
+    get_debug_log() << ss.str();
     throw std::runtime_error(ss.str());
   }
 }

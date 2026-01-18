@@ -99,7 +99,10 @@ class MPICommunicator {
   MPICommunicator& operator=(MPICommunicator&& other) = delete;
 
   ~MPICommunicator() {
-    if (m_ownership != Reference) {
+    if (m_ownership != Reference && m_comm != MPI_COMM_NULL) {
+      // MPI_Comm_free is a collective operation - all ranks must call it together
+      // Use a barrier to ensure all ranks reach this point before freeing
+      MPI_Barrier(m_comm);
       MPI_Comm_free(&m_comm);
     }
   }
