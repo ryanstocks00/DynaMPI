@@ -80,7 +80,18 @@ inline void _DYNAMPI_FAIL_ASSERT(const std::string &condition_str,
        << "\n in " << loc.function_name() << " at " << filename << ":" << loc.line()
 #endif
        << std::endl;
-    get_debug_log() << ss.str();
+    // Write to both stderr (for immediate visibility and test compatibility) and debug log
+    std::cerr << ss.str();
+    // Try to write to debug log, but don't fail if MPI isn't initialized (e.g., in unit tests)
+    try {
+      int mpi_initialized = 0;
+      MPI_Initialized(&mpi_initialized);
+      if (mpi_initialized) {
+        get_debug_log() << ss.str();
+      }
+    } catch (...) {
+      // Ignore errors writing to debug log (e.g., in unit tests without MPI)
+    }
     throw std::runtime_error(ss.str());
   }
 }
