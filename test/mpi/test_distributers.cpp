@@ -293,7 +293,10 @@ TEST(HierarchicalDistributor, WorkerExceptionPropagation) {
           }
         },
         std::runtime_error);
+    // finish_remaining_tasks() calls finalize() when an error occurs, so it's already finalized
   } else {
     distributor.run_worker();
+    // Workers need to finalize explicitly since they don't call finish_remaining_tasks
+    distributor.finalize();
   }
 }

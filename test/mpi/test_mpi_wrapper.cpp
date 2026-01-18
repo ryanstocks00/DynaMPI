@@ -23,7 +23,7 @@ TEST(MPI, ErrorCheck) {
 }
 
 TEST(MPICommunicatorWrapper, RankAndSizeCastGet) {
-  dynampi::MPICommunicator<> comm(MPI_COMM_WORLD);
+  dynampi::MPICommunicator<> comm(MPI_COMM_WORLD, dynampi::MPICommunicator<>::Reference);
   int r1 = comm.rank();
   int s1 = comm.size();
   int r2, s2;
@@ -42,7 +42,7 @@ TEST(MPICommunicatorWrapper, RankAndSizeCastGet) {
 TEST(MPICommunicatorWrapper, SendRecvAndStatistics) {
   using TrackedComm =
       dynampi::MPICommunicator<dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>;
-  TrackedComm comm(MPI_COMM_WORLD);
+  TrackedComm comm(MPI_COMM_WORLD, TrackedComm::Reference);
   int rank = comm.rank();
   int size = comm.size();
   constexpr int tag = 7;
@@ -82,7 +82,7 @@ TEST(MPICommunicatorWrapper, SendRecvAndStatistics) {
 }
 
 TEST(MPICommunicatorWrapper, BroadcastVector) {
-  dynampi::MPICommunicator<> comm(MPI_COMM_WORLD);
+  dynampi::MPICommunicator<> comm(MPI_COMM_WORLD, dynampi::MPICommunicator<>::Reference);
   int rank = comm.rank();
 
   int n = 6;
@@ -105,7 +105,7 @@ TEST(MPICommunicatorWrapper, BroadcastVector) {
 }
 
 TEST(MPICommunicatorWrapper, SplitByColor) {
-  dynampi::MPICommunicator<> comm(MPI_COMM_WORLD);
+  dynampi::MPICommunicator<> comm(MPI_COMM_WORLD, dynampi::MPICommunicator<>::Reference);
   int world_rank = comm.rank();
   int world_size = comm.size();
   int color = world_rank % 2;
@@ -121,7 +121,7 @@ TEST(MPICommunicatorWrapper, SplitByColor) {
 }
 
 TEST(MPICommunicatorWrapper, SplitUndefinedColor) {
-  dynampi::MPICommunicator<> comm(MPI_COMM_WORLD);
+  dynampi::MPICommunicator<> comm(MPI_COMM_WORLD, dynampi::MPICommunicator<>::Reference);
   int world_rank = comm.rank();
   int color = (world_rank == 0) ? 0 : MPI_UNDEFINED;
 
@@ -136,7 +136,7 @@ TEST(MPICommunicatorWrapper, SplitUndefinedColor) {
 }
 
 TEST(MPICommunicatorWrapper, SplitByNode) {
-  dynampi::MPICommunicator<> comm(MPI_COMM_WORLD);
+  dynampi::MPICommunicator<> comm(MPI_COMM_WORLD, dynampi::MPICommunicator<>::Reference);
   auto node = comm.split_by_node();
   int node_size = node.size();
   EXPECT_GE(node_size, 1);

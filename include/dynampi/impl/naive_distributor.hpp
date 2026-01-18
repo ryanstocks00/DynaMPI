@@ -46,6 +46,8 @@ class NaiveMPIWorkDistributor {
   size_t m_tasks_sent = 0;
   size_t m_results_received = 0;
   bool m_finalized = false;
+  int m_cached_rank = -1;  // Cache rank for use after communicator is freed
+  int m_cached_size = -1;  // Cache size for use after communicator is freed
 
   static constexpr StatisticsMode statistics_mode =
       get_option_value<track_statistics_t, Options...>();
@@ -82,12 +84,14 @@ class NaiveMPIWorkDistributor {
         m_worker_function(worker_function),
         m_config(runtime_config),
         m_statistics{create_statistics(m_communicator)} {
-    if (is_root_manager()) m_worker_current_task_indices.resize(m_communicator.size() - 1, -1);
-    if (m_config.auto_run_workers && m_communicator.rank() != m_config.manager_rank) {
+    m_cached_rank = m_communicator.rank();  // Cache rank for use after communicator is freed
+    m_cached_size = m_communicator.size();  // Cache size for use after communicator is freed
+    if (is_root_manager()) m_worker_current_task_indices.resize(m_cached_size - 1, -1);
+    if (m_config.auto_run_workers && m_cached_rank != m_config.manager_rank) {
       run_worker();
     }
     if constexpr (statistics_mode >= StatisticsMode::Aggregated) {
-      if (is_root_manager()) m_statistics.worker_task_counts.resize(m_communicator.size(), 0);
+      if (is_root_manager()) m_statistics.worker_task_counts.resize(m_cached_size, 0);
     }
   }
 
@@ -99,8 +103,7 @@ class NaiveMPIWorkDistributor {
   }
 
   void run_worker() {
-    assert(m_communicator.rank() != m_config.manager_rank &&
-           "Worker cannot run on the manager rank");
+    assert(m_cached_rank != m_config.manager_rank && "Worker cannot run on the manager rank");
     using task_type = MPI_Type<TaskT>;
     m_communicator.send(nullptr, m_config.manager_rank, Tag::REQUEST);
     while (true) {
@@ -121,7 +124,7 @@ class NaiveMPIWorkDistributor {
     }
   }
 
-  bool is_root_manager() const { return m_communicator.rank() == m_config.manager_rank; }
+  bool is_root_manager() const { return m_cached_rank == m_config.manager_rank; }
 
   size_t remaining_tasks_count() const {
     assert(m_communicator.rank() == m_config.manager_rank &&
@@ -160,7 +163,7 @@ class NaiveMPIWorkDistributor {
 
   void get_task_and_allocate() {
     const TaskT task = get_next_task_to_send();
-    if (m_communicator.size() > 1) {
+    if (m_cached_size > 1) {
       if (m_free_worker_indices.empty()) {
         // If no free workers, wait for a result to be received
         receive_from_any_worker();
@@ -186,7 +189,7 @@ class NaiveMPIWorkDistributor {
     while (!m_unallocated_task_queue.empty()) {
       get_task_and_allocate();
     }
-    while (m_free_worker_indices.size() + 1 < static_cast<size_t>(m_communicator.size())) {
+    while (m_free_worker_indices.size() + 1 < static_cast<size_t>(m_cached_size)) {
       receive_from_any_worker();
     }
     assert(m_results_received == m_tasks_sent && "Not all tasks were processed by workers");
@@ -198,7 +201,15 @@ class NaiveMPIWorkDistributor {
     assert(!m_finalized && "Work distribution already finalized");
     if (is_root_manager()) {
       send_done_to_workers();
-      m_finalized = true;
+    }
+    m_finalized = true;  // Set for all ranks to prevent double-finalize
+    // Free the communicator - all ranks must participate in this collective operation
+    int mpi_finalized = 0;
+    MPI_Finalized(&mpi_finalized);
+    if (m_communicator.get() != MPI_COMM_NULL && !mpi_finalized) {
+      // Synchronize all ranks before freeing the communicator to avoid deadlock
+      m_communicator.barrier();
+      m_communicator.free();
     }
   }
 
@@ -227,9 +238,9 @@ class NaiveMPIWorkDistributor {
   void send_done_to_workers() {
     assert(m_communicator.rank() == m_config.manager_rank &&
            "Only the manager can finalize the work distribution");
-    assert(m_free_worker_indices.size() + 1 == static_cast<size_t>(m_communicator.size()) &&
+    assert(m_free_worker_indices.size() + 1 == static_cast<size_t>(m_cached_size) &&
            "All workers should be free before finalizing");
-    for (int i = 0; i < m_communicator.size() - 1; i++) {
+    for (int i = 0; i < m_cached_size - 1; i++) {
       m_communicator.send(nullptr, worker_for_idx(i), Tag::DONE);
     }
   }
@@ -249,8 +260,7 @@ class NaiveMPIWorkDistributor {
   void receive_from_any_worker() {
     assert(m_communicator.rank() == m_config.manager_rank &&
            "Only the manager can receive results and send tasks");
-    assert(m_communicator.size() > 1 &&
-           "There should be at least one worker to receive results from");
+    assert(m_cached_size > 1 && "There should be at least one worker to receive results from");
     using result_type = MPI_Type<ResultT>;
     MPI_Status status;
     DYNAMPI_MPI_CHECK(MPI_Probe, (MPI_ANY_SOURCE, MPI_ANY_TAG, m_communicator.get(), &status));
