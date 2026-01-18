@@ -455,8 +455,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       // Synchronize all ranks before freeing the communicator to avoid deadlock in destructor
       // MPI_Comm_free is a collective operation, so all ranks must call it together
       LOG_DEBUG("finalize: Synchronizing before freeing communicator");
-      int sync_value = 0;
-      m_communicator.broadcast(sync_value, m_config.manager_rank);  // Barrier-like synchronization
+      m_communicator.barrier();  // Barrier synchronization - all ranks must participate
       LOG_DEBUG("finalize: Freeing communicator");
       m_communicator.free();
       // Use cached rank for logging after communicator is freed

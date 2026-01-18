@@ -151,28 +151,23 @@ class MPICommunicator {
                                                             : "Duplicate")
                                << " comm_null=" << (m_comm == MPI_COMM_NULL) << std::endl;
     }
-    // Only free in destructor if not already freed via free()
-    // This allows explicit synchronization in finalize() before destruction
+    // NEVER call MPI_Comm_free in destructor!
+    // MPI_Comm_free is a collective operation that requires ALL ranks to call it together.
+    // Destructors run asynchronously, so calling MPI_Comm_free here causes deadlocks.
+    // Communicators must be explicitly freed via free() before destruction.
     if (m_ownership != Reference && m_comm != MPI_COMM_NULL) {
-      // MPI_Comm_free is a collective operation - all ranks must call it together
-      // If we reach here, free() was not called, so we try to free it
-      // This is a fallback but may deadlock if ranks reach destructor at different times
       if (mpi_initialized) {
-        if (mpi_initialized) {
-          dynampi::get_debug_log()
-              << "[MPI_COMM] ~MPICommunicator(): MPI initialized=" << mpi_initialized << " on rank "
-              << rank << ", about to call MPI_Comm_free" << std::endl;
-          dynampi::get_debug_log().flush();
-        }
-        // Ignore errors in destructor to avoid throwing exceptions during cleanup
-        int free_result = MPI_Comm_free(&m_comm);
-        (void)free_result;       // Suppress unused variable warning
-        m_comm = MPI_COMM_NULL;  // Mark as freed
-        if (mpi_initialized) {
-          dynampi::get_debug_log()
-              << "[MPI_COMM] ~MPICommunicator(): MPI_Comm_free completed on rank " << rank
-              << std::endl;
-        }
+        dynampi::get_debug_log()
+            << "[MPI_COMM] ~MPICommunicator(): WARNING: Communicator not freed via free() before "
+               "destruction on rank "
+            << rank
+            << ". This may leak the communicator, but calling MPI_Comm_free here would "
+               "deadlock."
+            << std::endl;
+        dynampi::get_debug_log().flush();
+        // Mark as invalid but don't free - freeing must be done explicitly via free()
+        // We can't safely call MPI_Comm_free here because destructors run asynchronously
+        m_comm = MPI_COMM_NULL;
       }
     }
     if (mpi_initialized) {
@@ -261,6 +256,13 @@ class MPICommunicator {
     }
     DYNAMPI_MPI_CHECK(MPI_Bcast,
                       (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value, root, m_comm));
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.collective_count++;
+    }
+  }
+
+  void barrier() {
+    DYNAMPI_MPI_CHECK(MPI_Barrier, (m_comm));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.collective_count++;
     }
