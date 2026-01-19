@@ -12,6 +12,7 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <limits>
 #include <ranges>
 #include <span>
 #include <stack>
@@ -65,6 +66,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   size_t m_tasks_received_from_parent = 0;
   size_t m_tasks_executed = 0;
   size_t m_results_returned = 0;
+  std::optional<size_t> m_run_tasks_remaining_limit = std::nullopt;
 
   bool m_finalized = false;
   bool m_done = false;
@@ -296,6 +298,10 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       if (request.num_tasks_requested.has_value()) {
         std::vector<TaskT> tasks;
         int num_tasks = request.num_tasks_requested.value();
+        if (m_run_tasks_remaining_limit.has_value()) {
+          num_tasks =
+              std::min<int>(num_tasks, static_cast<int>(m_run_tasks_remaining_limit.value()));
+        }
         tasks.reserve(num_tasks);
         for (int i = 0; i < num_tasks; ++i) {
           if (m_unallocated_task_queue.empty()) {
@@ -305,16 +311,28 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         }
         m_communicator.send(tasks, worker, Tag::TASK_BATCH);
         m_tasks_sent_to_child += tasks.size();
+        if (m_run_tasks_remaining_limit.has_value()) {
+          m_run_tasks_remaining_limit = m_run_tasks_remaining_limit.value() - tasks.size();
+        }
       } else {
+        if (m_run_tasks_remaining_limit.has_value() && m_run_tasks_remaining_limit.value() == 0) {
+          return;
+        }
         const TaskT task = get_next_task_to_send();
         m_communicator.send(task, worker, Tag::TASK);
         m_tasks_sent_to_child++;
+        if (m_run_tasks_remaining_limit.has_value()) {
+          m_run_tasks_remaining_limit = m_run_tasks_remaining_limit.value() - 1;
+        }
       }
     } else {
       // If there's only one process, we just run the worker function directly
       const TaskT task = get_next_task_to_send();
       m_results.emplace_back(m_worker_function(task));
       m_tasks_executed++;
+      if (m_run_tasks_remaining_limit.has_value()) {
+        m_run_tasks_remaining_limit = m_run_tasks_remaining_limit.value() - 1;
+      }
     }
   }
 
@@ -322,7 +340,19 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
                       "Only the manager can finish remaining tasks");
     const auto start_time = std::chrono::steady_clock::now();
+    const size_t results_received_before = m_results_received_from_child;
+    const size_t tasks_executed_before = m_tasks_executed;
     size_t tasks_sent_this_call = 0;
+    const bool bounded_run = config.max_tasks.has_value() || config.max_seconds.has_value();
+    if (m_config.return_new_results_only) {
+      m_results.clear();
+      m_results_returned = 0;
+    }
+    if (config.max_tasks.has_value()) {
+      m_run_tasks_remaining_limit = config.max_tasks.value();
+    } else {
+      m_run_tasks_remaining_limit = std::nullopt;
+    }
     auto should_stop = [&](double elapsed_s) {
       if (config.max_tasks && tasks_sent_this_call >= config.max_tasks.value()) {
         return true;
@@ -340,9 +370,13 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       if (should_stop(elapsed_s)) {
         break;
       }
+      const size_t tasks_sent_before_loop = m_tasks_sent_to_child;
+      const size_t tasks_executed_before_loop = m_tasks_executed;
       allocate_task_to_child();
-      tasks_sent_this_call++;
+      tasks_sent_this_call += (m_tasks_sent_to_child - tasks_sent_before_loop) +
+                              (m_tasks_executed - tasks_executed_before_loop);
     }
+    m_run_tasks_remaining_limit = std::nullopt;
     // Continue until all task results are received
     while (m_results_received_from_child < m_tasks_sent_to_child && !m_stored_error) {
       receive_from_anyone();
@@ -351,17 +385,28 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     if (m_stored_error) {
       throw std::runtime_error(*m_stored_error);
     }
-    m_results_sent_to_parent = m_results.size();
-    DYNAMPI_ASSERT_EQ(m_results_received_from_child, m_tasks_sent_to_child,
-                      "All tasks should have been processed by workers before finalizing");
-    DYNAMPI_ASSERT_EQ(m_results_sent_to_parent, m_tasks_received_from_parent,
-                      "All results should have been sent to the parent before finalizing");
-    if (m_communicator.size() > 1)
-      DYNAMPI_ASSERT_EQ(m_results_sent_to_parent, m_results_received_from_child + m_tasks_executed,
-                        "Manager should not send results to itself");
-    if (is_root_manager() && m_communicator.size() > 1)
-      DYNAMPI_ASSERT_EQ(m_results.size(), m_results_received_from_child,
-                        "Results size should match tasks sent before finalizing");
+    const size_t results_received_delta = m_results_received_from_child - results_received_before;
+    const size_t tasks_executed_delta = m_tasks_executed - tasks_executed_before;
+    DYNAMPI_ASSERT_EQ(results_received_delta + tasks_executed_delta, tasks_sent_this_call,
+                      "All tasks should have been processed by workers before returning");
+    if (m_config.return_new_results_only) {
+      m_results_sent_to_parent += m_results.size();
+    } else {
+      m_results_sent_to_parent = m_results.size();
+    }
+    if (!bounded_run && m_unallocated_task_queue.empty()) {
+      DYNAMPI_ASSERT_EQ(m_results_received_from_child, m_tasks_sent_to_child,
+                        "All tasks should have been processed by workers before finalizing");
+      DYNAMPI_ASSERT_EQ(m_results_sent_to_parent, m_tasks_received_from_parent,
+                        "All results should have been sent to the parent before finalizing");
+      if (m_communicator.size() > 1)
+        DYNAMPI_ASSERT_EQ(m_results_sent_to_parent,
+                          m_results_received_from_child + m_tasks_executed,
+                          "Manager should not send results to itself");
+      if (!m_config.return_new_results_only && is_root_manager() && m_communicator.size() > 1)
+        DYNAMPI_ASSERT_EQ(m_results.size(), m_results_received_from_child,
+                          "Results size should match tasks sent before finalizing");
+    }
     if (m_config.return_new_results_only) {
       std::vector<ResultT> new_results(m_results.begin() + m_results_returned, m_results.end());
       m_results.clear();

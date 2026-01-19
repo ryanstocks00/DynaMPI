@@ -120,7 +120,9 @@ TYPED_TEST(DynamicDistribution, Example2) {
       return Result{task, task * task, task * task * task};
     };
     {
-      Distributer work_distributer(worker_task);
+      typename Distributer::Config config;
+      config.return_new_results_only = false;
+      Distributer work_distributer(worker_task, config);
       if (work_distributer.is_root_manager()) {
         work_distributer.insert_tasks({1, 2, 3, 4, 5});
         auto results = work_distributer.finish_remaining_tasks();
@@ -138,6 +140,61 @@ TYPED_TEST(DynamicDistribution, Example2) {
                                                           {8, 64, 512}}));
       }
     }
+  }
+}
+
+TYPED_TEST(DynamicDistribution, RunTasksMaxTasks) {
+  using Task = int;
+  using Result = int;
+  using Distributer = DistributerOf<TypeParam, Task, Result>;
+
+  auto worker_task = [](Task task) -> Result { return task * 2; };
+
+  Distributer work_distributer(worker_task);
+  if (work_distributer.is_root_manager()) {
+    work_distributer.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+
+    typename Distributer::RunConfig config;
+    config.max_tasks = 3;
+    auto results = work_distributer.run_tasks(config);
+    EXPECT_EQ(results.size(), 3u);
+
+    config.max_tasks = 4;
+    auto more_results = work_distributer.run_tasks(config);
+    EXPECT_EQ(more_results.size(), 4u);
+
+    auto remaining_results = work_distributer.run_tasks();
+    EXPECT_EQ(remaining_results.size(), 3u);
+
+    std::vector<int> all_results;
+    all_results.insert(all_results.end(), results.begin(), results.end());
+    all_results.insert(all_results.end(), more_results.begin(), more_results.end());
+    all_results.insert(all_results.end(), remaining_results.begin(), remaining_results.end());
+    std::sort(all_results.begin(), all_results.end());
+    EXPECT_EQ(all_results, (std::vector<int>{2, 4, 6, 8, 10, 12, 14, 16, 18, 20}));
+  }
+}
+
+TYPED_TEST(DynamicDistribution, RunTasksMinTasksWithTimeLimit) {
+  using Task = int;
+  using Result = int;
+  using Distributer = DistributerOf<TypeParam, Task, Result>;
+
+  auto worker_task = [](Task task) -> Result { return task * 3; };
+
+  Distributer work_distributer(worker_task);
+  if (work_distributer.is_root_manager()) {
+    work_distributer.insert_tasks({1, 2, 3, 4, 5});
+
+    typename Distributer::RunConfig config;
+    config.min_tasks = 2;
+    config.max_seconds = 0.0;
+    auto results = work_distributer.run_tasks(config);
+    EXPECT_GE(results.size(), 2u);
+    EXPECT_LE(results.size(), 5u);
+
+    auto remaining_results = work_distributer.run_tasks();
+    EXPECT_EQ(results.size() + remaining_results.size(), 5u);
   }
 }
 

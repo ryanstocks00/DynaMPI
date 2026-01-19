@@ -269,51 +269,53 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  auto dynamic_comm = make_dynamic_communicator(opts.remove_root_from_distribution);
-  if (!dynamic_comm.has_value()) {
-    MPI_Finalize();
-    return 0;
-  }
+  {
+    auto dynamic_comm = make_dynamic_communicator(opts.remove_root_from_distribution);
+    if (!dynamic_comm.has_value()) {
+      MPI_Finalize();
+      return 0;
+    }
 
-  MPI_Comm comm = dynamic_comm.value().get();
-  int rank = 0;
-  int size = 0;
-  MPI_Comm_rank(comm, &rank);
-  MPI_Comm_size(comm, &size);
-  if (opts.nodes == 0) {
-    opts.nodes = static_cast<uint64_t>(size);
-  }
+    MPI_Comm comm = dynamic_comm.value().get();
+    int rank = 0;
+    int size = 0;
+    MPI_Comm_rank(comm, &rank);
+    MPI_Comm_size(comm, &size);
+    if (opts.nodes == 0) {
+      opts.nodes = static_cast<uint64_t>(size);
+    }
 
-  BenchmarkResult result;
-  if (opts.distributor == DistributorKind::Naive) {
-    result = run_benchmark<dynampi::NaiveMPIWorkDistributor<Task, uint32_t>>(opts, comm);
-  } else {
-    result = run_benchmark<dynampi::HierarchicalMPIWorkDistributor<Task, uint32_t>>(opts, comm);
-  }
+    BenchmarkResult result;
+    if (opts.distributor == DistributorKind::Naive) {
+      result = run_benchmark<dynampi::NaiveMPIWorkDistributor<Task, uint32_t>>(opts, comm);
+    } else {
+      result = run_benchmark<dynampi::HierarchicalMPIWorkDistributor<Task, uint32_t>>(opts, comm);
+    }
 
-  if (rank == 0) {
-    const double throughput = result.elapsed_s > 0.0
-                                  ? static_cast<double>(result.total_subtasks) / result.elapsed_s
-                                  : 0.0;
-    std::cout << "RESULT"
-              << " distributor=" << to_string(opts.distributor)
-              << " mode=" << to_string(opts.duration_mode) << " expected_ns=" << opts.expected_ns
-              << " repetitions=" << result.repetitions << " nodes=" << opts.nodes
-              << " world_size=" << result.world_size << " total_subtasks=" << result.total_subtasks
-              << " elapsed_s=" << result.elapsed_s << " throughput_tasks_per_s=" << throughput
-              << std::endl;
-    if (!opts.output_path.empty()) {
-      std::ifstream check(opts.output_path);
-      const bool needs_header = !check.good() || check.peek() == std::ifstream::traits_type::eof();
-      check.close();
-      std::ofstream out(opts.output_path, std::ios::app);
-      if (needs_header) {
-        write_csv_header(out);
+    if (rank == 0) {
+      const double throughput = result.elapsed_s > 0.0
+                                    ? static_cast<double>(result.total_subtasks) / result.elapsed_s
+                                    : 0.0;
+      std::cout << "RESULT"
+                << " distributor=" << to_string(opts.distributor)
+                << " mode=" << to_string(opts.duration_mode) << " expected_ns=" << opts.expected_ns
+                << " repetitions=" << result.repetitions << " nodes=" << opts.nodes
+                << " world_size=" << result.world_size
+                << " total_subtasks=" << result.total_subtasks << " elapsed_s=" << result.elapsed_s
+                << " throughput_tasks_per_s=" << throughput << std::endl;
+      if (!opts.output_path.empty()) {
+        std::ifstream check(opts.output_path);
+        const bool needs_header =
+            !check.good() || check.peek() == std::ifstream::traits_type::eof();
+        check.close();
+        std::ofstream out(opts.output_path, std::ios::app);
+        if (needs_header) {
+          write_csv_header(out);
+        }
+        write_csv_row(out, opts, result);
       }
-      write_csv_row(out, opts, result);
     }
   }
-
   MPI_Finalize();
   return 0;
 }

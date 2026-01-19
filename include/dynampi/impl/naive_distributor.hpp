@@ -55,6 +55,8 @@ class NaiveMPIWorkDistributor {
   size_t m_results_received = 0;
   bool m_finalized = false;
   size_t m_results_returned = 0;
+  size_t m_tasks_sent_in_current_run = 0;
+  bool m_use_local_result_indices = false;
 
   static constexpr StatisticsMode statistics_mode =
       get_option_value<track_statistics_t, Options...>();
@@ -176,7 +178,10 @@ class NaiveMPIWorkDistributor {
       }
       int worker = m_free_worker_indices.top();
       m_free_worker_indices.pop();
-      m_worker_current_task_indices[idx_for_worker(worker)] = m_tasks_sent;
+      int64_t task_idx = m_use_local_result_indices
+                             ? static_cast<int64_t>(m_tasks_sent_in_current_run)
+                             : static_cast<int64_t>(m_tasks_sent);
+      m_worker_current_task_indices[idx_for_worker(worker)] = task_idx;
       if constexpr (statistics_mode >= StatisticsMode::Aggregated) {
         m_statistics.worker_task_counts[worker]++;
       }
@@ -186,6 +191,9 @@ class NaiveMPIWorkDistributor {
       m_results.emplace_back(m_worker_function(task));
       m_results_received++;
     }
+    if (m_use_local_result_indices) {
+      m_tasks_sent_in_current_run++;
+    }
     m_tasks_sent++;
   }
 
@@ -193,7 +201,17 @@ class NaiveMPIWorkDistributor {
     assert(m_communicator.rank() == m_config.manager_rank &&
            "Only the manager can distribute tasks");
     const auto start_time = std::chrono::steady_clock::now();
+    const size_t tasks_sent_before = m_tasks_sent;
+    const size_t results_received_before = m_results_received;
     size_t tasks_sent_this_call = 0;
+    if (m_config.return_new_results_only) {
+      m_results.clear();
+      m_results_returned = 0;
+      m_tasks_sent_in_current_run = 0;
+      m_use_local_result_indices = true;
+    } else {
+      m_use_local_result_indices = false;
+    }
     auto should_stop = [&](double elapsed_s) {
       if (config.max_tasks && tasks_sent_this_call >= config.max_tasks.value()) {
         return true;
@@ -217,13 +235,18 @@ class NaiveMPIWorkDistributor {
     while (m_free_worker_indices.size() + 1 < static_cast<size_t>(m_communicator.size())) {
       receive_from_any_worker();
     }
-    assert(m_results_received == m_tasks_sent && "Not all tasks were processed by workers");
-    assert(m_results.size() == m_tasks_sent && "Results size should match tasks sent");
+    const size_t tasks_sent_delta = m_tasks_sent - tasks_sent_before;
+    const size_t results_received_delta = m_results_received - results_received_before;
+    assert(results_received_delta == tasks_sent_delta && "Not all tasks were processed by workers");
+    if (m_use_local_result_indices) {
+      assert(m_results.size() == tasks_sent_delta && "Results size should match tasks sent");
+    } else {
+      assert(m_results.size() == m_tasks_sent && "Results size should match tasks sent");
+    }
+    m_use_local_result_indices = false;
     if (m_config.return_new_results_only) {
-      std::vector<ResultT> new_results(m_results.begin() + m_results_returned, m_results.end());
-      m_results.clear();
       m_results_returned = 0;
-      return new_results;
+      return std::move(m_results);
     }
     return m_results;
   }
