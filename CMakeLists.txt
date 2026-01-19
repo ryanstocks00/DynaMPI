@@ -62,7 +62,7 @@ else()
   add_compile_options(-Wall -Wextra -Wpedantic -Werror -fno-ms-extensions)
 endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
-  add_compile_options(-diag-disable=10430)
+  add_compile_options(-diag-disable=10430 -Wno-unknown-warning-option)
 endif()
 
 set(CMAKE_CXX_FLAGS_COVERAGE "-O0 -g -coverage -fprofile-arcs -ftest-coverage \

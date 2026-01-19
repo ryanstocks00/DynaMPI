@@ -17,13 +17,15 @@ IFS=' ' read -r -a SBATCH_ARGS <<< "${SBATCH_ARGS:-}"
 WALLTIME="${WALLTIME:-00:05:00}"
 LAUNCHER="${LAUNCHER:-}"
 LAUNCHER_ARGS="${LAUNCHER_ARGS:-}"
+OUTPUT_BASE="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 
 for nodes in "${NODE_LIST[@]}"; do
   job_name="dynampi_ss_${SYSTEM}_${nodes}"
+  output_dir="${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${SLURM_JOB_ID:-manual}"
   sbatch "${SBATCH_ARGS[@]}" \
     --job-name="${job_name}" \
     --nodes="${nodes}" \
     --time="${WALLTIME}" \
-    --export=ALL,NODE_LIST="${nodes}",LAUNCHER="${LAUNCHER}",LAUNCHER_ARGS="${LAUNCHER_ARGS}" \
-    --wrap="cd ${ROOT_DIR} && ${SCRIPT}"
+    --export=ALL,NODE_LIST="${nodes}",LAUNCHER="${LAUNCHER}",LAUNCHER_ARGS="${LAUNCHER_ARGS}",OUTPUT_DIR="${output_dir}" \
+    --wrap="cd ${ROOT_DIR} && OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${SLURM_JOB_ID:-manual}\" ${SCRIPT}"
 done
