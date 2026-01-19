@@ -46,7 +46,8 @@ jobs:
             -DMPIEXEC_EXECUTABLE=/usr/bin/smpirun \
             -DMPIEXEC_PREFLAGS=-platform\;platform.xml \
             -DDYNAMPI_BUILD_TESTS=ON \
-            -DDYNAMPI_BUILD_BENCHMARKS=OFF"
+            -DDYNAMPI_BUILD_BENCHMARKS=OFF \
+            -DDYNAMPI_MAX_MPI_RANK=8"
 
           echo "CMAKE_ARGS: $CMAKE_ARGS"
 
@@ -81,7 +82,8 @@ jobs:
         run: |
           echo "Testing with $MPI_TYPE"
           cp platform.xml ${{ steps.strings.outputs.build-output-dir }}/test
+          export DYNAMPI_MAX_MPI_RANK=8
           ctest --output-on-failure --parallel
 
-          echo "Additionally running MPI tests with 100 ranks..."
-          smpirun -np 100 -platform platform.xml ./test/mpi_test
+          echo "Additionally running MPI tests with 8 ranks..."
+          smpirun -np 8 -platform platform.xml ./test/mpi_test

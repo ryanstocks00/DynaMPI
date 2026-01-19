@@ -30,7 +30,8 @@ jobs:
           cmake -B build \
             -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
             -DDYNAMPI_BUILD_TESTS=ON \
-            -DDYNAMPI_BUILD_BENCHMARKS=ON
+            -DDYNAMPI_BUILD_BENCHMARKS=ON \
+            -DDYNAMPI_MAX_MPI_RANK=8
       - name: Build on macOS
         shell: bash
         run: cmake --build build --config ${{ matrix.build-type }} --parallel
@@ -39,4 +40,5 @@ jobs:
         run: |
           cd build
           echo "Testing with $MPI_TYPE"
+          export DYNAMPI_MAX_MPI_RANK=8
           ctest --output-on-failure --parallel -C ${{ matrix.build-type }}

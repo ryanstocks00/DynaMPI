@@ -34,6 +34,7 @@ jobs:
             -DCMAKE_CXX_COMPILER=g++-14 \
             -DDYNAMPI_BUILD_TESTS=ON \
             -DDYNAMPI_BUILD_BENCHMARKS=ON \
+            -DDYNAMPI_MAX_MPI_RANK=8 \
             -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.sanitizer }} -fno-omit-frame-pointer" \
             -DCMAKE_C_FLAGS="-fsanitize=${{ matrix.sanitizer }} -fno-omit-frame-pointer" \
             -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=${{ matrix.sanitizer }}" \
@@ -47,4 +48,5 @@ jobs:
           cd build
           echo "Testing with $MPI_TYPE and ${{ matrix.sanitizer }} sanitizer"
           export LSAN_OPTIONS=suppressions=${{ github.workspace }}/test/lsan.supp
+          export DYNAMPI_MAX_MPI_RANK=8
           ctest --output-on-failure --verbose -C Debug

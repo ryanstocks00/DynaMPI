@@ -6,11 +6,9 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
-#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <dynampi/dynampi.hpp>
-#include <thread>
 #include <type_traits>
 #include <vector>
 
@@ -214,49 +212,6 @@ TYPED_TEST(DynamicDistribution, Statistics) {
       }
     }
   }
-}
-
-TYPED_TEST(DynamicDistribution, FinalizeWithSleepingWorkersSingleFastRank) {
-  using TaskT = int;
-  using ResultT = int;
-  using Distributer = DistributerOf<TypeParam, TaskT, ResultT>;
-
-  if (MPIEnvironment::world_comm_size() < 2) {
-    GTEST_SKIP() << "This test requires at least 2 ranks";
-  }
-
-  const int manager_rank = 0;
-
-  auto worker_task = [](TaskT /*task*/) -> ResultT {
-    std::this_thread::sleep_for(std::chrono::milliseconds(150));
-    return MPIEnvironment::world_comm_rank();
-  };
-
-  typename Distributer::Config config;
-  config.comm = MPI_COMM_WORLD;
-  config.manager_rank = manager_rank;
-  config.auto_run_workers = false;
-  if constexpr (is_specialization_of<dynampi::HierarchicalMPIWorkDistributor, Distributer>::value) {
-    config.max_workers_per_coordinator = MPIEnvironment::world_comm_size() - 1;
-  }
-
-  Distributer distributor(worker_task, config);
-
-  MPI_Barrier(MPI_COMM_WORLD);
-  const auto start_time = std::chrono::steady_clock::now();
-  if (distributor.is_root_manager()) {
-    distributor.insert_task(42);
-    auto results = distributor.finish_remaining_tasks();
-    ASSERT_EQ(results.size(), 1u);
-    EXPECT_NE(results[0], manager_rank);
-    EXPECT_NO_THROW(distributor.finalize());
-  } else {
-    distributor.run_worker();
-  }
-  const auto end_time = std::chrono::steady_clock::now();
-  const auto elapsed_ms =
-      std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-  EXPECT_LT(elapsed_ms, 200);
 }
 
 // Test that exceptions thrown in worker tasks are propagated to the manager

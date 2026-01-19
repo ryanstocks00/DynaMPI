@@ -38,7 +38,8 @@ jobs:
             -DCMAKE_C_COMPILER=icx \
             -DCMAKE_CXX_COMPILER=icpx \
             -DDYNAMPI_BUILD_TESTS=ON \
-            -DDYNAMPI_BUILD_BENCHMARKS=ON
+            -DDYNAMPI_BUILD_BENCHMARKS=ON \
+            -DDYNAMPI_MAX_MPI_RANK=8
       - name: Build with Intel
         shell: bash
         run: |
