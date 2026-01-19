@@ -50,7 +50,12 @@ CSV="${OUTPUT_DIR}/strong_scaling_${SYSTEM}.csv"
 for nodes in "${NODE_LIST[@]}"; do
   for rpn in "${RANKS_PER_NODE_LIST[@]}"; do
     if [[ "${rpn}" == "core" || "${rpn}" == "cores" ]]; then
-      ranks_per_node="${CORES_PER_NODE:-60}"
+      if [[ -n "${SLURM_JOB_CPUS_PER_NODE:-}" ]]; then
+        ranks_per_node="${SLURM_JOB_CPUS_PER_NODE%%(*}"
+        ranks_per_node="${ranks_per_node%%,*}"
+      else
+        ranks_per_node="${CORES_PER_NODE:-56}"
+      fi
     else
       ranks_per_node="${rpn}"
     fi
