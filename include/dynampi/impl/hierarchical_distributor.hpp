@@ -72,8 +72,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   Config m_config;
 
   inline int max_workers_per_coordinator() const {
-    return m_config.max_workers_per_coordinator.value_or(
-        std::max(2, static_cast<int>(std::sqrt(m_communicator.size()))));
+    const int default_value = std::max(2, static_cast<int>(std::sqrt(m_communicator.size())));
+    const int configured = m_config.max_workers_per_coordinator.value_or(default_value);
+    return std::max(1, configured);
   }
 
   inline int parent_rank() const {
@@ -93,7 +94,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     for (int i = 0; i < max_children; ++i) {
       int child = virtual_rank * max_children + i + 1;
       if (child >= m_communicator.size()) break;  // No more children
-      num_children += total_num_children(worker_for_idx(child - 1));
+      num_children += 1 + total_num_children(worker_for_idx(child - 1));
     }
     return num_children;
   }
