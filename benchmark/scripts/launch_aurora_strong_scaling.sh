@@ -50,7 +50,7 @@ CSV="${OUTPUT_DIR}/strong_scaling_${SYSTEM}.csv"
 for nodes in "${NODE_LIST[@]}"; do
   for rpn in "${RANKS_PER_NODE_LIST[@]}"; do
     if [[ "${rpn}" == "core" || "${rpn}" == "cores" ]]; then
-      ranks_per_node="$(nproc)"
+      ranks_per_node="${CORES_PER_NODE:-102}"
     else
       ranks_per_node="${rpn}"
     fi

@@ -7,10 +7,12 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cstdint>
 #include <deque>
 #include <functional>
 #include <iterator>
+#include <optional>
 #include <queue>
 #include <ranges>
 #include <stack>
@@ -30,6 +32,12 @@ class NaiveMPIWorkDistributor {
     MPI_Comm comm = MPI_COMM_WORLD;
     int manager_rank = 0;
     bool auto_run_workers = true;
+    bool return_new_results_only = true;
+  };
+  struct RunConfig {
+    std::optional<size_t> min_tasks = std::nullopt;
+    std::optional<size_t> max_tasks = std::nullopt;
+    std::optional<double> max_seconds = std::nullopt;
   };
   static const bool ordered = true;
 
@@ -46,6 +54,7 @@ class NaiveMPIWorkDistributor {
   size_t m_tasks_sent = 0;
   size_t m_results_received = 0;
   bool m_finalized = false;
+  size_t m_results_returned = 0;
 
   static constexpr StatisticsMode statistics_mode =
       get_option_value<track_statistics_t, Options...>();
@@ -180,19 +189,46 @@ class NaiveMPIWorkDistributor {
     m_tasks_sent++;
   }
 
-  [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() {
+  [[nodiscard]] std::vector<ResultT> run_tasks(const RunConfig& config = RunConfig{}) {
     assert(m_communicator.rank() == m_config.manager_rank &&
            "Only the manager can distribute tasks");
+    const auto start_time = std::chrono::steady_clock::now();
+    size_t tasks_sent_this_call = 0;
+    auto should_stop = [&](double elapsed_s) {
+      if (config.max_tasks && tasks_sent_this_call >= config.max_tasks.value()) {
+        return true;
+      }
+      if (config.max_seconds && elapsed_s >= config.max_seconds.value()) {
+        if (!config.min_tasks || tasks_sent_this_call >= config.min_tasks.value()) {
+          return true;
+        }
+      }
+      return false;
+    };
     while (!m_unallocated_task_queue.empty()) {
+      const double elapsed_s =
+          std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
+      if (should_stop(elapsed_s)) {
+        break;
+      }
       get_task_and_allocate();
+      tasks_sent_this_call++;
     }
     while (m_free_worker_indices.size() + 1 < static_cast<size_t>(m_communicator.size())) {
       receive_from_any_worker();
     }
     assert(m_results_received == m_tasks_sent && "Not all tasks were processed by workers");
     assert(m_results.size() == m_tasks_sent && "Results size should match tasks sent");
+    if (m_config.return_new_results_only) {
+      std::vector<ResultT> new_results(m_results.begin() + m_results_returned, m_results.end());
+      m_results.clear();
+      m_results_returned = 0;
+      return new_results;
+    }
     return m_results;
   }
+
+  [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() { return run_tasks(); }
 
   void finalize() {
     assert(!m_finalized && "Work distribution already finalized");

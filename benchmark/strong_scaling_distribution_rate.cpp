@@ -169,40 +169,22 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
   uint64_t total_tasks = 0;
   uint64_t total_subtasks = 0;
 
-  if (rank == 0) {
+  Distributor distributor(worker_function, {.comm = comm, .manager_rank = 0});
+
+  if (distributor.is_root_manager()) {
     timer.start();
-  }
-
-  while (true) {
-    int continue_round = 0;
-    if (rank == 0) {
-      continue_round = timer.elapsed().count() < opts.duration_s ? 1 : 0;
-    }
-    MPI_Bcast(&continue_round, 1, MPI_INT, 0, comm);
-    if (continue_round == 0) {
-      break;
-    }
-
-    Distributor distributor(worker_function,
-                            {.comm = comm, .manager_rank = 0, .auto_run_workers = false});
-
-    if (distributor.is_root_manager()) {
-      const uint64_t round_tasks = tasks_per_round * workers;
+    const uint64_t round_tasks = tasks_per_round * workers;
+    while (timer.elapsed().count() < opts.duration_s) {
       for (uint64_t i = 0; i < round_tasks; ++i) {
         distributor.insert_task(static_cast<Task>(repetitions));
       }
       auto results = distributor.finish_remaining_tasks();
       (void)results;
-      distributor.finalize();
       total_tasks += round_tasks;
       total_subtasks += round_tasks * repetitions;
-    } else {
-      distributor.run_worker();
     }
-  }
-
-  if (rank == 0) {
     timer.stop();
+    distributor.finalize();
   }
 
   return BenchmarkResult{total_tasks,
@@ -228,7 +210,7 @@ int main(int argc, char** argv) {
       "b,bundle_target_ms", "Target bundle duration in milliseconds",
       cxxopts::value<uint64_t>()->default_value("10"))("r,rm_root",
                                                        "Remove root node from task distribution")(
-      "round_target_ms", "Target per-round duration in milliseconds",
+      "round_target_ms", "Target per-batch duration in milliseconds",
       cxxopts::value<uint64_t>()->default_value("200"))(
       "D,distribution", "Distribution strategy: naive or hierarchical",
       cxxopts::value<std::string>()->default_value("hierarchical"))(

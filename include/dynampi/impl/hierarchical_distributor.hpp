@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cmath>
 #include <functional>
 #include <iostream>
@@ -37,6 +38,12 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     std::optional<size_t> message_batch_size = std::nullopt;
     std::optional<int> max_workers_per_coordinator = std::nullopt;
     int batch_size_multiplier = 1000;
+    bool return_new_results_only = true;
+  };
+  struct RunConfig {
+    std::optional<size_t> min_tasks = std::nullopt;
+    std::optional<size_t> max_tasks = std::nullopt;
+    std::optional<double> max_seconds = std::nullopt;
   };
 
   static constexpr bool prioritize_tasks = Base::prioritize_tasks;
@@ -57,6 +64,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   size_t m_results_sent_to_parent = 0;
   size_t m_tasks_received_from_parent = 0;
   size_t m_tasks_executed = 0;
+  size_t m_results_returned = 0;
 
   bool m_finalized = false;
   bool m_done = false;
@@ -310,11 +318,30 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     }
   }
 
-  [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() {
+  [[nodiscard]] std::vector<ResultT> run_tasks(const RunConfig& config = RunConfig{}) {
     DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
                       "Only the manager can finish remaining tasks");
+    const auto start_time = std::chrono::steady_clock::now();
+    size_t tasks_sent_this_call = 0;
+    auto should_stop = [&](double elapsed_s) {
+      if (config.max_tasks && tasks_sent_this_call >= config.max_tasks.value()) {
+        return true;
+      }
+      if (config.max_seconds && elapsed_s >= config.max_seconds.value()) {
+        if (!config.min_tasks || tasks_sent_this_call >= config.min_tasks.value()) {
+          return true;
+        }
+      }
+      return false;
+    };
     while (!m_unallocated_task_queue.empty() && !m_stored_error) {
+      const double elapsed_s =
+          std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
+      if (should_stop(elapsed_s)) {
+        break;
+      }
       allocate_task_to_child();
+      tasks_sent_this_call++;
     }
     // Continue until all task results are received
     while (m_results_received_from_child < m_tasks_sent_to_child && !m_stored_error) {
@@ -335,9 +362,16 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     if (is_root_manager() && m_communicator.size() > 1)
       DYNAMPI_ASSERT_EQ(m_results.size(), m_results_received_from_child,
                         "Results size should match tasks sent before finalizing");
-    // TODO(Change this so we don't return the same tasks multiple times)
+    if (m_config.return_new_results_only) {
+      std::vector<ResultT> new_results(m_results.begin() + m_results_returned, m_results.end());
+      m_results.clear();
+      m_results_returned = 0;
+      return new_results;
+    }
     return m_results;
   }
+
+  [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() { return run_tasks(); }
 
   void finalize() {
     DYNAMPI_ASSERT(!m_finalized, "Work distribution already finalized");
