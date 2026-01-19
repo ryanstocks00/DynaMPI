@@ -17,8 +17,20 @@ IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
 IFS=' ' read -r -a MODES <<< "${MODES:-fixed poisson}"
 DURATION_S="${DURATION_S:-60}"
 BUNDLE_TARGET_MS="${BUNDLE_TARGET_MS:-10}"
-LAUNCHER="${LAUNCHER:-srun}"
+LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
+if [[ -z "${LAUNCHER}" ]]; then
+  if command -v srun >/dev/null 2>&1; then
+    LAUNCHER="srun"
+  elif command -v mpiexec >/dev/null 2>&1; then
+    LAUNCHER="mpiexec"
+  elif command -v mpirun >/dev/null 2>&1; then
+    LAUNCHER="mpirun"
+  else
+    echo "No launcher found. Install srun, mpiexec, or mpirun." >&2
+    exit 1
+  fi
+fi
 
 mkdir -p "${OUTPUT_DIR}"
 CSV="${OUTPUT_DIR}/strong_scaling_${SYSTEM}.csv"

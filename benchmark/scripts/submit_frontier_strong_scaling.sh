@@ -14,8 +14,8 @@ SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_frontier_strong_scaling.sh"
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32}"
 IFS=' ' read -r -a SBATCH_ARGS <<< "${SBATCH_ARGS:-}"
 
-WALLTIME="${WALLTIME:-01:00:00}"
-LAUNCHER="${LAUNCHER:-srun}"
+WALLTIME="${WALLTIME:-00:05:00}"
+LAUNCHER="${LAUNCHER:-}"
 LAUNCHER_ARGS="${LAUNCHER_ARGS:-}"
 
 for nodes in "${NODE_LIST[@]}"; do
