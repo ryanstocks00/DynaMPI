@@ -1,0 +1,11 @@
+system,distributor,mode,expected_us,bundle_repetitions,bundle_target_ms,round_target_ms,duration_s,nodes,world_size,workers,total_tasks,total_subtasks,elapsed_s,throughput_tasks_per_s
+aurora,naive,fixed,1,10000,10,200,30,4,4,3,8700,87000000,30.0138,2.89866e+06
+aurora,naive,fixed,10,1000,10,200,30,4,4,3,9000,9000000,30.1539,298468
+aurora,naive,fixed,100,100,10,200,30,4,4,3,9000,900000,30.0634,29936.8
+aurora,naive,fixed,1000,10,10,200,30,4,4,3,9000,90000,30.0538,2994.63
+aurora,naive,fixed,10000,1,10,200,30,4,4,3,9000,9000,30.0531,299.47
+aurora,naive,fixed,100000,1,10,200,30,4,4,3,900,900,30.0128,29.9872
+aurora,naive,fixed,1000000,1,10,200,30,4,4,3,90,90,30.0022,2.99978
+aurora,naive,poisson,1,10000,10,200,30,4,4,3,6300,63000000,30.0496,2.09654e+06
+aurora,naive,poisson,10,1000,10,200,30,4,4,3,8880,8880000,30.0924,295091
+aurora,naive,poisson,100,100,10,200,30,4,4,3,9000,900000,30.1269,29873.7
