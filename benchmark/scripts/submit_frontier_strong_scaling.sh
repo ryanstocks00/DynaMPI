@@ -13,6 +13,7 @@ SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_frontier_strong_scaling.sh"
 
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512}"
 IFS=' ' read -r -a SBATCH_ARGS <<< "${SBATCH_ARGS:-}"
+ACCOUNT="${ACCOUNT:-chm213}"
 
 WALLTIME="${WALLTIME:-00:15:00}"
 LAUNCHER="${LAUNCHER:-}"
@@ -22,7 +23,11 @@ OUTPUT_BASE="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 for nodes in "${NODE_LIST[@]}"; do
   job_name="dynampi_ss_${SYSTEM}_${nodes}"
   output_dir="${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${SLURM_JOB_ID:-manual}"
-  sbatch "${SBATCH_ARGS[@]}" \
+  submit_args=("${SBATCH_ARGS[@]}")
+  if [[ -n "${ACCOUNT}" ]]; then
+    submit_args+=(--account="${ACCOUNT}")
+  fi
+  sbatch "${submit_args[@]}" \
     --job-name="${job_name}" \
     --nodes="${nodes}" \
     --time="${WALLTIME}" \
