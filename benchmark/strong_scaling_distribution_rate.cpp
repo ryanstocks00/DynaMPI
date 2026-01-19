@@ -148,7 +148,7 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
                      : opts.seed;
   auto worker_function = [=]() {
     std::mt19937_64 rng(base_seed + static_cast<uint64_t>(rank));
-    std::poisson_distribution<uint64_t> poisson(opts.expected_us);
+    std::poisson_distribution<uint64_t> poisson(static_cast<double>(opts.expected_us));
     return [=](Task task) mutable -> uint32_t {
       for (uint32_t i = 0; i < task; ++i) {
         uint64_t duration_us = opts.expected_us;
