@@ -366,7 +366,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     }
     if (m_communicator.size() > 1) {
       // Why is this required
-      MPI_Barrier(m_communicator.get());
+      // MPI_Barrier(m_communicator.get());
     }
   }
 
