@@ -11,6 +11,7 @@ FetchContent_MakeAvailable(cxxopts)
 
 set(benchmarks
     asymptotic_distribution_throughput
+    strong_scaling_distribution_rate
     pingpong
 )
 

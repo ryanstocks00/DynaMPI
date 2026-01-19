@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <iterator>
@@ -34,7 +35,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     int manager_rank = 0;
     bool auto_run_workers = true;
     std::optional<size_t> message_batch_size = std::nullopt;
-    int max_workers_per_coordinator = 10;
+    std::optional<int> max_workers_per_coordinator = std::nullopt;
     int batch_size_multiplier = 1000;
   };
 
@@ -69,11 +70,16 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   std::function<ResultT(TaskT)> m_worker_function;
   Config m_config;
 
+  inline int max_workers_per_coordinator() const {
+    return m_config.max_workers_per_coordinator.value_or(
+        std::max(2, static_cast<int>(std::sqrt(m_communicator.size()))));
+  }
+
   inline int parent_rank() const {
     int rank = m_communicator.rank();
     int virtual_rank = rank == m_config.manager_rank ? 0 : idx_for_worker(rank) + 1;
     if (virtual_rank == 0) return -1;  // Root has no parent
-    int virtual_parent = (virtual_rank - 1) / m_config.max_workers_per_coordinator;
+    int virtual_parent = (virtual_rank - 1) / max_workers_per_coordinator();
     int parent_rank =
         virtual_parent == 0 ? m_config.manager_rank : worker_for_idx(virtual_parent - 1);
     return parent_rank;
@@ -82,8 +88,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   inline int total_num_children(int rank) const {
     int virtual_rank = rank == m_config.manager_rank ? 0 : idx_for_worker(rank) + 1;
     int num_children = 0;
-    for (int i = 0; i < m_config.max_workers_per_coordinator; ++i) {
-      int child = virtual_rank * m_config.max_workers_per_coordinator + i + 1;
+    int max_children = max_workers_per_coordinator();
+    for (int i = 0; i < max_children; ++i) {
+      int child = virtual_rank * max_children + i + 1;
       if (child >= m_communicator.size()) break;  // No more children
       num_children += total_num_children(worker_for_idx(child - 1));
     }
@@ -91,10 +98,11 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   }
 
   inline int child_rank(int rank, int child_index) const {
-    DYNAMPI_ASSERT_LT(child_index, m_config.max_workers_per_coordinator,
+    int max_children = max_workers_per_coordinator();
+    DYNAMPI_ASSERT_LT(child_index, max_children,
                       "Child index must be less than max workers per coordinator");
     int virtual_rank = rank == m_config.manager_rank ? 0 : idx_for_worker(rank) + 1;
-    int virtual_child = virtual_rank * m_config.max_workers_per_coordinator + child_index + 1;
+    int virtual_child = virtual_rank * max_children + child_index + 1;
     if (virtual_child >= m_communicator.size()) {
       return -1;  // No child exists
     }
@@ -105,7 +113,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   inline int num_direct_children() const {
     int rank = m_communicator.rank();
     int num_children = 0;
-    for (int i = 0; i < m_config.max_workers_per_coordinator; ++i) {
+    int max_children = max_workers_per_coordinator();
+    for (int i = 0; i < max_children; ++i) {
       if (child_rank(rank, i) != -1) {
         num_children++;
       }
