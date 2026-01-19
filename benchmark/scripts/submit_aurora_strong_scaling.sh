@@ -13,7 +13,8 @@ SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_aurora_strong_scaling.sh"
 
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32}"
 IFS=' ' read -r -a QSUB_ARGS <<< "${QSUB_ARGS:-}"
-ACCOUNT="${ACCOUNT:-14869}"
+ACCOUNT="${ACCOUNT:-DynaMPI}"
+FILESYSTEMS="${FILESYSTEMS:-flare}"
 
 WALLTIME="${WALLTIME:-00:05:00}"
 LAUNCHER="${LAUNCHER:-}"
@@ -25,7 +26,8 @@ for nodes in "${NODE_LIST[@]}"; do
   if [[ -n "${ACCOUNT}" ]]; then
     submit_args+=(-A "${ACCOUNT}")
   fi
-  qsub "${submit_args[@]}" -N "${job_name}" -l "select=${nodes}" -l "walltime=${WALLTIME}" <<EOF
+  qsub "${submit_args[@]}" -N "${job_name}" -l "select=${nodes}" -l "walltime=${WALLTIME}" \
+    -l "filesystems=${FILESYSTEMS}" <<EOF
 #!/usr/bin/env bash
 #PBS -j oe
 set -euo pipefail
