@@ -12,7 +12,7 @@ BUILD_DIR="build"
 BUILD_TYPE="Release"
 
 usage() {
-    echo "Usage: $0 [-d build_dir] [-t build_type] [-- clean]"
+    echo "Usage: $0 [-d build_dir] [-t build_type] [--clean]"
     echo
     echo "Options:"
     echo "  -d DIR    Build directory (default: build)"

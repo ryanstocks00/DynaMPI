@@ -19,9 +19,11 @@ FILESYSTEMS="${FILESYSTEMS:-flare}"
 WALLTIME="${WALLTIME:-00:05:00}"
 LAUNCHER="${LAUNCHER:-}"
 LAUNCHER_ARGS="${LAUNCHER_ARGS:-}"
+OUTPUT_BASE="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 
 for nodes in "${NODE_LIST[@]}"; do
   job_name="dynampi_ss_${SYSTEM}_${nodes}"
+  output_dir="${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-${PBS_JOBID:-manual}"
   submit_args=("${QSUB_ARGS[@]}")
   if [[ -n "${ACCOUNT}" ]]; then
     submit_args+=(-A "${ACCOUNT}")
@@ -33,8 +35,9 @@ for nodes in "${NODE_LIST[@]}"; do
 set -euo pipefail
 cd "${ROOT_DIR}"
 export NODE_LIST="${nodes}"
-  export LAUNCHER="${LAUNCHER}"
+export LAUNCHER="${LAUNCHER}"
 export LAUNCHER_ARGS="${LAUNCHER_ARGS}"
+export OUTPUT_DIR="${output_dir}"
 ${SCRIPT}
 EOF
 done
