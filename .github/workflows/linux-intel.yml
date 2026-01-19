@@ -13,7 +13,7 @@ env:
 jobs:
   linux-intel:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     strategy:
       matrix:
         build-type: [Debug, Release]
@@ -50,4 +50,4 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           cd build
           echo "Testing with $MPI_TYPE"
-          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
+          ctest --output-on-failure -j 1 --timeout 180 -C ${{ matrix.build-type }}

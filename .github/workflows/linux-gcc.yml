@@ -13,7 +13,7 @@ env:
 jobs:
   linux-gcc:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     strategy:
       matrix:
         gcc-version: [11, 12, 13, 14]
@@ -98,4 +98,4 @@ jobs:
           fi
           cd build
           echo "Testing with $MPI_TYPE"
-          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
+          ctest --output-on-failure -j 1 --timeout 180 -C ${{ matrix.build-type }}
