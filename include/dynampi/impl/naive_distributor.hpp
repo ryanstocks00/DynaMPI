@@ -238,6 +238,8 @@ class NaiveMPIWorkDistributor {
     const size_t tasks_sent_delta = m_tasks_sent - tasks_sent_before;
     const size_t results_received_delta = m_results_received - results_received_before;
     assert(results_received_delta == tasks_sent_delta && "Not all tasks were processed by workers");
+    (void)tasks_sent_delta;
+    (void)results_received_delta;
     if (m_use_local_result_indices) {
       assert(m_results.size() == tasks_sent_delta && "Results size should match tasks sent");
     } else {

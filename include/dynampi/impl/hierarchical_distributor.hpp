@@ -389,6 +389,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     const size_t tasks_executed_delta = m_tasks_executed - tasks_executed_before;
     DYNAMPI_ASSERT_EQ(results_received_delta + tasks_executed_delta, tasks_sent_this_call,
                       "All tasks should have been processed by workers before returning");
+    (void)results_received_delta;
+    (void)tasks_executed_delta;
     if (m_config.return_new_results_only) {
       m_results_sent_to_parent += m_results.size();
     } else {
