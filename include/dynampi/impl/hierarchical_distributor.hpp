@@ -193,10 +193,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
           receive_from_anyone();
         }
         if (m_stored_error) {
-          if (!m_error_sent_to_parent) {
-            return_results_and_request_next_batch_from_manager();
-            m_error_sent_to_parent = true;
-          }
           m_unallocated_task_queue = {};
           continue;
         }
@@ -215,10 +211,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
           DYNAMPI_ASSERT_EQ(m_results.size(), num_tasks_should_be_received);
         }
         return_results_and_request_next_batch_from_manager();
-      }
-      // Drain any in-flight results so children aren't blocked on sends, then shut down.
-      while (!m_stored_error && m_tasks_sent_to_child > m_results_received_from_child) {
-        receive_from_anyone();
       }
       send_done_to_children_when_free();
     }
