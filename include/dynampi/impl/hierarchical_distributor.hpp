@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <ranges>
 #include <span>
@@ -177,20 +178,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       int num_children = num_direct_children();
       m_communicator.send(num_children * m_config.batch_size_multiplier, parent_rank(),
                           Tag::REQUEST_BATCH);
-      while (true) {
-        if (m_done) {
-          // Drain any in-flight results so children aren't blocked on sends.
-          while (!m_stored_error && m_tasks_sent_to_child > m_results_received_from_child) {
-            receive_from_anyone();
-          }
-          send_done_to_children_when_free();
-          break;
-        }
+      while (!m_done) {
         while (!m_done && m_unallocated_task_queue.empty()) {
           receive_from_anyone();
-        }
-        if (m_done) {
-          continue;
         }
         size_t num_tasks_should_be_received = m_unallocated_task_queue.size();
         while (!m_stored_error && !m_unallocated_task_queue.empty()) {
@@ -200,7 +190,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
           receive_from_anyone();
         }
         if (m_done) {
-          continue;
+          break;
         }
         (void)num_tasks_should_be_received;
         if (!m_stored_error) {
@@ -208,6 +198,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         }
         return_results_and_request_next_batch_from_manager();
       }
+      send_done_to_children_when_free();
     }
   }
 
