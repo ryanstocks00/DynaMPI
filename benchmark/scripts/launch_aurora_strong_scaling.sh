@@ -18,6 +18,7 @@ IFS=' ' read -r -a MODES <<< "${MODES:-fixed poisson}"
 DURATION_S="${DURATION_S:-60}"
 BUNDLE_TARGET_MS="${BUNDLE_TARGET_MS:-10}"
 LAUNCHER="${LAUNCHER:-srun}"
+IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
 
 mkdir -p "${OUTPUT_DIR}"
 CSV="${OUTPUT_DIR}/strong_scaling_${SYSTEM}.csv"
@@ -27,16 +28,30 @@ for nodes in "${NODE_LIST[@]}"; do
     for mode in "${MODES[@]}"; do
       for expected_us in "${TASK_US_LIST[@]}"; do
         echo "Running ${SYSTEM} nodes=${nodes} dist=${dist} mode=${mode} expected_us=${expected_us}"
-        "${LAUNCHER}" -N "${nodes}" -n "${nodes}" --ntasks-per-node=1 \
-          "${APP}" \
-          --distribution "${dist}" \
-          --mode "${mode}" \
-          --expected_us "${expected_us}" \
-          --duration_s "${DURATION_S}" \
-          --bundle_target_ms "${BUNDLE_TARGET_MS}" \
-          --nodes "${nodes}" \
-          --system "${SYSTEM}" \
-          --output "${CSV}"
+        launcher_base="$(basename "${LAUNCHER}")"
+        if [[ "${launcher_base}" == mpiexec || "${launcher_base}" == mpirun ]]; then
+          "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -n "${nodes}" --ppn 1 \
+            "${APP}" \
+            --distribution "${dist}" \
+            --mode "${mode}" \
+            --expected_us "${expected_us}" \
+            --duration_s "${DURATION_S}" \
+            --bundle_target_ms "${BUNDLE_TARGET_MS}" \
+            --nodes "${nodes}" \
+            --system "${SYSTEM}" \
+            --output "${CSV}"
+        else
+          "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -N "${nodes}" -n "${nodes}" --ntasks-per-node=1 \
+            "${APP}" \
+            --distribution "${dist}" \
+            --mode "${mode}" \
+            --expected_us "${expected_us}" \
+            --duration_s "${DURATION_S}" \
+            --bundle_target_ms "${BUNDLE_TARGET_MS}" \
+            --nodes "${nodes}" \
+            --system "${SYSTEM}" \
+            --output "${CSV}"
+        fi
       done
     done
   done
