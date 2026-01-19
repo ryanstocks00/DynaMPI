@@ -15,8 +15,10 @@ IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512 1024
 IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-1 10 100 1000 10000 100000 1000000}"
 IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
 IFS=' ' read -r -a MODES <<< "${MODES:-fixed poisson}"
-DURATION_S="${DURATION_S:-60}"
+DURATION_S="${DURATION_S:-30}"
 BUNDLE_TARGET_MS="${BUNDLE_TARGET_MS:-10}"
+ROUND_TARGET_MS="${ROUND_TARGET_MS:-200}"
+IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-1 core}"
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
 if [[ -z "${LAUNCHER}" ]]; then
@@ -36,34 +38,45 @@ mkdir -p "${OUTPUT_DIR}"
 CSV="${OUTPUT_DIR}/strong_scaling_${SYSTEM}.csv"
 
 for nodes in "${NODE_LIST[@]}"; do
-  for dist in "${DISTRIBUTIONS[@]}"; do
-    for mode in "${MODES[@]}"; do
-      for expected_us in "${TASK_US_LIST[@]}"; do
-        echo "Running ${SYSTEM} nodes=${nodes} dist=${dist} mode=${mode} expected_us=${expected_us}"
+  for rpn in "${RANKS_PER_NODE_LIST[@]}"; do
+    if [[ "${rpn}" == "core" || "${rpn}" == "cores" ]]; then
+      ranks_per_node="$(nproc)"
+    else
+      ranks_per_node="${rpn}"
+    fi
+    total_ranks=$((nodes * ranks_per_node))
+    for dist in "${DISTRIBUTIONS[@]}"; do
+      for mode in "${MODES[@]}"; do
+        for expected_us in "${TASK_US_LIST[@]}"; do
+          echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist} mode=${mode} expected_us=${expected_us}"
         launcher_base="$(basename "${LAUNCHER}")"
         if [[ "${launcher_base}" == mpiexec || "${launcher_base}" == mpirun ]]; then
-          "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -n "${nodes}" --ppn 1 \
+          "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -n "${total_ranks}" --ppn "${ranks_per_node}" \
             "${APP}" \
             --distribution "${dist}" \
             --mode "${mode}" \
             --expected_us "${expected_us}" \
             --duration_s "${DURATION_S}" \
             --bundle_target_ms "${BUNDLE_TARGET_MS}" \
+            --round_target_ms "${ROUND_TARGET_MS}" \
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
             --output "${CSV}"
         else
-          "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -N "${nodes}" -n "${nodes}" --ntasks-per-node=1 \
+          "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -N "${nodes}" -n "${total_ranks}" \
+            --ntasks-per-node="${ranks_per_node}" \
             "${APP}" \
             --distribution "${dist}" \
             --mode "${mode}" \
             --expected_us "${expected_us}" \
             --duration_s "${DURATION_S}" \
             --bundle_target_ms "${BUNDLE_TARGET_MS}" \
+            --round_target_ms "${ROUND_TARGET_MS}" \
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
             --output "${CSV}"
         fi
+        done
       done
     done
   done

@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <chrono>
-#include <cmath>
 #include <cstdint>
 #include <cxxopts.hpp>
 #include <dynampi/impl/hierarchical_distributor.hpp>
@@ -28,8 +27,9 @@ enum class DurationMode { Fixed, Poisson };
 
 struct BenchmarkOptions {
   uint64_t expected_us = 1;
-  double duration_s = 60.0;
+  double duration_s = 30.0;
   uint64_t bundle_target_ms = 10;
+  uint64_t round_target_ms = 200;
   bool remove_root_from_distribution = false;
   DistributorKind distributor = DistributorKind::Hierarchical;
   DurationMode duration_mode = DurationMode::Fixed;
@@ -100,16 +100,18 @@ static uint64_t compute_repetitions(uint64_t expected_us, uint64_t bundle_target
   return std::max<uint64_t>(1, repetitions);
 }
 
-static uint64_t compute_tasks_per_worker(double duration_s, uint64_t expected_us,
-                                         uint64_t repetitions) {
-  const double task_duration_s = static_cast<double>(expected_us * repetitions) / 1'000'000.0;
-  const double tasks = duration_s / task_duration_s;
-  return std::max<uint64_t>(1, static_cast<uint64_t>(std::ceil(tasks)));
+static uint64_t compute_tasks_per_round(uint64_t expected_us, uint64_t repetitions,
+                                        uint64_t round_target_ms) {
+  const uint64_t task_duration_us = expected_us * repetitions;
+  if (task_duration_us == 0) return 1;
+  const uint64_t target_us = round_target_ms * 1000;
+  const uint64_t tasks = (target_us + task_duration_us - 1) / task_duration_us;
+  return std::max<uint64_t>(1, tasks);
 }
 
 static void write_csv_header(std::ostream& os) {
-  os << "system,distributor,mode,expected_us,bundle_repetitions,bundle_target_ms,duration_s,"
-        "nodes,world_size,workers,total_tasks,total_subtasks,elapsed_s,"
+  os << "system,distributor,mode,expected_us,bundle_repetitions,bundle_target_ms,round_target_ms,"
+        "duration_s,nodes,world_size,workers,total_tasks,total_subtasks,elapsed_s,"
         "throughput_tasks_per_s\n";
 }
 
@@ -119,9 +121,9 @@ static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts,
       result.elapsed_s > 0.0 ? static_cast<double>(result.total_subtasks) / result.elapsed_s : 0.0;
   os << opts.system << "," << to_string(opts.distributor) << "," << to_string(opts.duration_mode)
      << "," << opts.expected_us << "," << result.repetitions << "," << opts.bundle_target_ms << ","
-     << opts.duration_s << "," << opts.nodes << "," << result.world_size << "," << result.workers
-     << "," << result.total_tasks << "," << result.total_subtasks << "," << result.elapsed_s << ","
-     << throughput << "\n";
+     << opts.round_target_ms << "," << opts.duration_s << "," << opts.nodes << ","
+     << result.world_size << "," << result.workers << "," << result.total_tasks << ","
+     << result.total_subtasks << "," << result.elapsed_s << "," << throughput << "\n";
 }
 
 template <typename Distributor>
@@ -136,10 +138,8 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
     throw std::runtime_error("Bundle repetitions exceed uint32_t maximum");
   }
   const uint64_t workers = (size == 1) ? 1 : static_cast<uint64_t>(size - 1);
-  const uint64_t tasks_per_worker =
-      compute_tasks_per_worker(opts.duration_s, opts.expected_us, repetitions);
-  const uint64_t total_tasks = tasks_per_worker * workers;
-  const uint64_t total_subtasks = total_tasks * repetitions;
+  const uint64_t tasks_per_round =
+      compute_tasks_per_round(opts.expected_us, repetitions, opts.round_target_ms);
 
   const uint64_t cap_us = opts.expected_us * 10;
   const uint64_t base_seed =
@@ -165,18 +165,44 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
   }();
 
   MPI_Barrier(comm);
-  Distributor distributor(worker_function, {.comm = comm, .manager_rank = 0});
   dynampi::Timer timer(dynampi::Timer::AutoStart::No);
+  uint64_t total_tasks = 0;
+  uint64_t total_subtasks = 0;
 
-  if (distributor.is_root_manager()) {
+  if (rank == 0) {
     timer.start();
-    for (uint64_t i = 0; i < total_tasks; ++i) {
-      distributor.insert_task(static_cast<Task>(repetitions));
+  }
+
+  while (true) {
+    int continue_round = 0;
+    if (rank == 0) {
+      continue_round = timer.elapsed().count() < opts.duration_s ? 1 : 0;
     }
-    auto results = distributor.finish_remaining_tasks();
-    (void)results;
+    MPI_Bcast(&continue_round, 1, MPI_INT, 0, comm);
+    if (continue_round == 0) {
+      break;
+    }
+
+    Distributor distributor(worker_function,
+                            {.comm = comm, .manager_rank = 0, .auto_run_workers = false});
+
+    if (distributor.is_root_manager()) {
+      const uint64_t round_tasks = tasks_per_round * workers;
+      for (uint64_t i = 0; i < round_tasks; ++i) {
+        distributor.insert_task(static_cast<Task>(repetitions));
+      }
+      auto results = distributor.finish_remaining_tasks();
+      (void)results;
+      distributor.finalize();
+      total_tasks += round_tasks;
+      total_subtasks += round_tasks * repetitions;
+    } else {
+      distributor.run_worker();
+    }
+  }
+
+  if (rank == 0) {
     timer.stop();
-    distributor.finalize();
   }
 
   return BenchmarkResult{total_tasks,
@@ -196,10 +222,12 @@ int main(int argc, char** argv) {
                            "Benchmark strong scaling task distribution throughput");
   options.add_options()("t,expected_us", "Expected task duration in microseconds",
                         cxxopts::value<uint64_t>()->default_value("1"))(
-      "d,duration_s", "Target duration in seconds", cxxopts::value<double>()->default_value("60"))(
+      "d,duration_s", "Target duration in seconds", cxxopts::value<double>()->default_value("30"))(
       "b,bundle_target_ms", "Target bundle duration in milliseconds",
       cxxopts::value<uint64_t>()->default_value("10"))("r,rm_root",
                                                        "Remove root node from task distribution")(
+      "round_target_ms", "Target per-round duration in milliseconds",
+      cxxopts::value<uint64_t>()->default_value("200"))(
       "D,distribution", "Distribution strategy: naive or hierarchical",
       cxxopts::value<std::string>()->default_value("hierarchical"))(
       "m,mode", "Duration mode: fixed or poisson",
@@ -236,6 +264,7 @@ int main(int argc, char** argv) {
   opts.expected_us = args["expected_us"].as<uint64_t>();
   opts.duration_s = args["duration_s"].as<double>();
   opts.bundle_target_ms = args["bundle_target_ms"].as<uint64_t>();
+  opts.round_target_ms = args["round_target_ms"].as<uint64_t>();
   opts.remove_root_from_distribution = args.count("rm_root") > 0;
   opts.distributor = parse_distributor(args["distribution"].as<std::string>());
   opts.duration_mode = parse_duration_mode(args["mode"].as<std::string>());

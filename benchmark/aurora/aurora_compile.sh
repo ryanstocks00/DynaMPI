@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # SPDX-FileCopyrightText: 2025 QDX Technologies. Authored by Ryan Stocks <ryan.stocks00@gmail.com>
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 set -euo pipefail
 
