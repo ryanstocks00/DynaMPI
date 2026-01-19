@@ -60,7 +60,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   bool m_finalized = false;
   bool m_done = false;
-  bool m_error_sent_to_parent = false;
   std::optional<std::string> m_stored_error;  // Deferred error to throw after cleanup
 
   static constexpr StatisticsMode statistics_mode =
@@ -224,7 +223,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     // If there was an error from a child, propagate it up instead of results
     if (m_stored_error) {
       m_communicator.send(*m_stored_error, parent_rank(), Tag::ERROR);
-      m_error_sent_to_parent = true;
       m_results.clear();
       return;
     }
@@ -323,11 +321,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     while (!m_stored_error && m_results_received_from_child < m_tasks_sent_to_child) {
       receive_from_anyone();
     }
-    // Ensure all workers are free before finalizing (they may have sent multiple batches)
-    while (!m_stored_error &&
-           m_free_worker_indices.size() < static_cast<size_t>(num_direct_children())) {
-      receive_from_anyone();
-    }
     // If there was an error, send DONE to workers and throw
     if (m_stored_error) {
       finalize();
@@ -353,7 +346,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     if (is_root_manager()) {
       send_done_to_children_when_free();
     }
-    m_finalized = true;  // Set for all managers immediately to prevent double-finalize
+    m_finalized = true;
     if constexpr (statistics_mode != StatisticsMode::None) {
       if (is_root_manager()) {
         _statistics.worker_task_counts = std::vector<size_t>(m_communicator.size(), 0);
@@ -363,10 +356,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
                                 ? &_statistics.worker_task_counts.value()
                                 : nullptr,
                             m_config.manager_rank);
-    }
-    if (m_communicator.size() > 1) {
-      // Why is this required
-      // MPI_Barrier(m_communicator.get());
     }
   }
 
