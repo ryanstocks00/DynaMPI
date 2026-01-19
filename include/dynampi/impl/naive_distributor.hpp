@@ -252,8 +252,7 @@ class NaiveMPIWorkDistributor {
     assert(m_communicator.size() > 1 &&
            "There should be at least one worker to receive results from");
     using result_type = MPI_Type<ResultT>;
-    MPI_Status status;
-    DYNAMPI_MPI_CHECK(MPI_Probe, (MPI_ANY_SOURCE, MPI_ANY_TAG, m_communicator.get(), &status));
+    MPI_Status status = m_communicator.probe(MPI_ANY_SOURCE, MPI_ANY_TAG);
     if (status.MPI_TAG == Tag::RESULT) {
       int64_t task_idx = m_worker_current_task_indices[status.MPI_SOURCE -
                                                        (status.MPI_SOURCE > m_config.manager_rank)];

@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
-#include <iostream>
 #include <iterator>
 #include <ranges>
 #include <span>
@@ -171,19 +170,27 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
                    "Worker cannot run on the manager rank");
     if (is_leaf_worker()) {
       m_communicator.send(nullptr, parent_rank(), Tag::REQUEST);
-    } else {
-      int num_children = num_direct_children();
-      m_communicator.send(num_children * m_config.batch_size_multiplier, parent_rank(),
-                          Tag::REQUEST_BATCH);
-    }
-    if (is_leaf_worker()) {
       while (!m_done) {
         receive_from_anyone();
       }
     } else {
-      while (!m_done) {
+      int num_children = num_direct_children();
+      m_communicator.send(num_children * m_config.batch_size_multiplier, parent_rank(),
+                          Tag::REQUEST_BATCH);
+      while (true) {
+        if (m_done) {
+          // Drain any in-flight results so children aren't blocked on sends.
+          while (!m_stored_error && m_tasks_sent_to_child > m_results_received_from_child) {
+            receive_from_anyone();
+          }
+          send_done_to_children_when_free();
+          break;
+        }
         while (!m_done && m_unallocated_task_queue.empty()) {
           receive_from_anyone();
+        }
+        if (m_done) {
+          continue;
         }
         size_t num_tasks_should_be_received = m_unallocated_task_queue.size();
         while (!m_stored_error && !m_unallocated_task_queue.empty()) {
@@ -193,21 +200,13 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
           receive_from_anyone();
         }
         if (m_done) {
-          break;
+          continue;
         }
         (void)num_tasks_should_be_received;
         if (!m_stored_error) {
           DYNAMPI_ASSERT_EQ(m_results.size(), num_tasks_should_be_received);
         }
         return_results_and_request_next_batch_from_manager();
-      }
-      for (int i = 0; i < m_config.max_workers_per_coordinator; ++i) {
-        int child = child_rank(m_communicator.rank(), i);
-        if (child != -1) {
-          m_communicator.send(nullptr, child, Tag::DONE);
-        } else {
-          break;
-        }
       }
     }
   }
@@ -345,7 +344,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   void finalize() {
     DYNAMPI_ASSERT(!m_finalized, "Work distribution already finalized");
     if (is_root_manager()) {
-      send_done_to_workers();
+      send_done_to_children_when_free();
     }
     m_finalized = true;  // Set for all managers immediately to prevent double-finalize
     if constexpr (statistics_mode != StatisticsMode::None) {
@@ -394,20 +393,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     return task;
   }
 
-  void send_done_to_workers() {
-    DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
-                      "Only the manager can send done messages to workers");
-    DYNAMPI_ASSERT_EQ(m_free_worker_indices.size(), static_cast<size_t>(num_direct_children()),
-                      "All workers should be free or errored before finalizing");
-    for (int i = 0; i < m_config.max_workers_per_coordinator; ++i) {
-      int child = child_rank(m_communicator.rank(), i);
-      if (child == -1) {
-        break;
-      }
-      m_communicator.send(nullptr, child, Tag::DONE);
-    }
-  }
-
   int idx_for_worker(int worker_rank) const {
     DYNAMPI_ASSERT_NE(worker_rank, m_config.manager_rank,
                       "Manager rank should not be used as a worker rank");
@@ -419,6 +404,21 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   }
 
   int worker_for_idx(int idx) const { return (idx < m_config.manager_rank) ? idx : (idx + 1); }
+
+  void send_done_to_children_when_free() {
+    const int direct_children = num_direct_children();
+    int done_sent_count = 0;
+    while (done_sent_count < direct_children) {
+      if (m_free_worker_indices.empty()) {
+        receive_from_anyone();
+        continue;
+      }
+      const int child = m_free_worker_indices.top().worker_rank;
+      m_free_worker_indices.pop();
+      m_communicator.send(nullptr, child, Tag::DONE);
+      done_sent_count++;
+    }
+  }
 
   using result_mpi_type = MPI_Type<ResultT>;
   using task_mpi_type = MPI_Type<TaskT>;

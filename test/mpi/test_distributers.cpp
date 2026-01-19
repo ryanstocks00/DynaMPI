@@ -104,7 +104,6 @@ TYPED_TEST(DynamicDistribution, Example1) {
         std::sort(result->begin(), result->end());
       }
       EXPECT_EQ(MPIEnvironment::world_comm_rank(), manager_rank);
-      assert(result == std::vector<size_t>({0, 1, 4, 9}));
       EXPECT_EQ(result, std::vector<size_t>({0, 1, 4, 9}));
     }
   }

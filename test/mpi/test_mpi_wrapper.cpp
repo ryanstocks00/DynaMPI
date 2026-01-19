@@ -13,12 +13,17 @@
 #include "dynampi/mpi/mpi_communicator.hpp"
 
 TEST(MPI, ErrorCheck) {
+  MPI_Errhandler previous_handler = MPI_ERRHANDLER_NULL;
+  MPI_Comm_get_errhandler(MPI_COMM_WORLD, &previous_handler);
   MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
   EXPECT_THROW(DYNAMPI_MPI_CHECK(MPI_Comm_rank, (MPI_COMM_NULL, nullptr)), std::runtime_error);
   try {
     DYNAMPI_MPI_CHECK(MPI_Comm_rank, (MPI_COMM_NULL, nullptr));
   } catch (const std::runtime_error &e) {
     EXPECT_TRUE(std::string(e.what()).find("MPI error in MPI_Comm_rank") != std::string::npos);
+  }
+  if (previous_handler != MPI_ERRHANDLER_NULL) {
+    MPI_Comm_set_errhandler(MPI_COMM_WORLD, previous_handler);
   }
 }
 
@@ -153,6 +158,7 @@ TEST(MPICommunicatorWrapper, SplitByNode) {
   }
   node.broadcast(root_node_name, 0);
   EXPECT_EQ(root_node_name, node_name);
+  MPI_Barrier(MPI_COMM_WORLD);
 }
 
 TEST(MPICommunicatorWrapper, RecvEmptyMessage) {
