@@ -313,17 +313,15 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() {
     DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
                       "Only the manager can finish remaining tasks");
-    // Distribute tasks until queue is empty or we get an error
     while (!m_unallocated_task_queue.empty() && !m_stored_error) {
       allocate_task_to_child();
     }
-    // Wait for all tasks to be processed (results received == tasks sent)
-    while (!m_stored_error && m_results_received_from_child < m_tasks_sent_to_child) {
+    // Continue until all task results are received
+    while (m_results_received_from_child < m_tasks_sent_to_child && !m_stored_error) {
       receive_from_anyone();
     }
-    // If there was an error, send DONE to workers and throw
+    // If there was an error, throw
     if (m_stored_error) {
-      finalize();
       throw std::runtime_error(*m_stored_error);
     }
     m_results_sent_to_parent = m_results.size();
