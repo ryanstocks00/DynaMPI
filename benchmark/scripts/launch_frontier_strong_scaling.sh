@@ -11,14 +11,24 @@ APP="${APP:-${ROOT_DIR}/build/benchmark/strong_scaling_distribution_rate}"
 OUTPUT_DIR="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 SYSTEM="frontier"
 
-IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512 1024 2048 4096 8096}"
-IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-1 10 100 1000 10000 100000 1000000}"
+IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512}"
+TASK_NS_LIST=()
+if [[ -n "${TASK_NS_LIST:-}" ]]; then
+  IFS=' ' read -r -a TASK_NS_LIST <<< "${TASK_NS_LIST}"
+elif [[ -n "${TASK_US_LIST:-}" ]]; then
+  IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST}"
+  for us in "${TASK_US_LIST[@]}"; do
+    TASK_NS_LIST+=("$((us * 1000))")
+  done
+else
+  IFS=' ' read -r -a TASK_NS_LIST <<< "10 100 1000 10000 100000 1000000 10000000 100000000 1000000000"
+fi
 IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
 IFS=' ' read -r -a MODES <<< "${MODES:-fixed poisson}"
-DURATION_S="${DURATION_S:-30}"
+DURATION_S="${DURATION_S:-10}"
 BUNDLE_TARGET_MS="${BUNDLE_TARGET_MS:-10}"
 ROUND_TARGET_MS="${ROUND_TARGET_MS:-200}"
-IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-1 core}"
+IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-core}"
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
 if [[ -z "${LAUNCHER}" ]]; then
@@ -47,15 +57,15 @@ for nodes in "${NODE_LIST[@]}"; do
     total_ranks=$((nodes * ranks_per_node))
     for dist in "${DISTRIBUTIONS[@]}"; do
       for mode in "${MODES[@]}"; do
-        for expected_us in "${TASK_US_LIST[@]}"; do
-          echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist} mode=${mode} expected_us=${expected_us}"
+      for expected_ns in "${TASK_NS_LIST[@]}"; do
+        echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist} mode=${mode} expected_ns=${expected_ns}"
         launcher_base="$(basename "${LAUNCHER}")"
         if [[ "${launcher_base}" == mpiexec || "${launcher_base}" == mpirun ]]; then
           "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -n "${total_ranks}" --ppn "${ranks_per_node}" \
             "${APP}" \
             --distribution "${dist}" \
             --mode "${mode}" \
-            --expected_us "${expected_us}" \
+            --expected_ns "${expected_ns}" \
             --duration_s "${DURATION_S}" \
             --bundle_target_ms "${BUNDLE_TARGET_MS}" \
             --round_target_ms "${ROUND_TARGET_MS}" \
@@ -68,7 +78,7 @@ for nodes in "${NODE_LIST[@]}"; do
             "${APP}" \
             --distribution "${dist}" \
             --mode "${mode}" \
-            --expected_us "${expected_us}" \
+            --expected_ns "${expected_ns}" \
             --duration_s "${DURATION_S}" \
             --bundle_target_ms "${BUNDLE_TARGET_MS}" \
             --round_target_ms "${ROUND_TARGET_MS}" \

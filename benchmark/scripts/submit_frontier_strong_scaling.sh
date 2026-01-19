@@ -11,10 +11,10 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SYSTEM="frontier"
 SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_frontier_strong_scaling.sh"
 
-IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32}"
+IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512}"
 IFS=' ' read -r -a SBATCH_ARGS <<< "${SBATCH_ARGS:-}"
 
-WALLTIME="${WALLTIME:-00:05:00}"
+WALLTIME="${WALLTIME:-00:15:00}"
 LAUNCHER="${LAUNCHER:-}"
 LAUNCHER_ARGS="${LAUNCHER_ARGS:-}"
 OUTPUT_BASE="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
