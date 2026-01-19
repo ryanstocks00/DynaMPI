@@ -87,7 +87,7 @@ static std::string to_string(DurationMode mode) {
   return mode == DurationMode::Fixed ? "fixed" : "poisson";
 }
 
-static void spin_wait(std::chrono::microseconds duration) {
+static void spin_wait(std::chrono::nanoseconds duration) {
   auto start = std::chrono::steady_clock::now();
   while (std::chrono::steady_clock::now() - start < duration) {
   }
