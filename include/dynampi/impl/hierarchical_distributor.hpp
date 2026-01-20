@@ -302,12 +302,19 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
           num_tasks =
               std::min<int>(num_tasks, static_cast<int>(m_run_tasks_remaining_limit.value()));
         }
-        tasks.reserve(num_tasks);
-        for (int i = 0; i < num_tasks; ++i) {
-          if (m_unallocated_task_queue.empty()) {
-            break;  // No more tasks to allocate
+        const int actual_num_tasks =
+            std::min<int>(num_tasks, static_cast<int>(m_unallocated_task_queue.size()));
+        tasks.reserve(actual_num_tasks);
+        if constexpr (std::is_same_v<decltype(m_unallocated_task_queue), std::deque<TaskT>>) {
+          tasks.assign(m_unallocated_task_queue.begin(),
+                       m_unallocated_task_queue.begin() + actual_num_tasks);
+          m_unallocated_task_queue.erase(m_unallocated_task_queue.begin(),
+                                         m_unallocated_task_queue.begin() + actual_num_tasks);
+        } else {
+          for (int i = 0; i < actual_num_tasks; ++i) {
+            tasks.push_back(std::move(m_unallocated_task_queue.top().second));
+            m_unallocated_task_queue.pop();
           }
-          tasks.push_back(get_next_task_to_send());
         }
         m_communicator.send(tasks, worker, Tag::TASK_BATCH);
         m_tasks_sent_to_child += tasks.size();
@@ -315,9 +322,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
           m_run_tasks_remaining_limit = m_run_tasks_remaining_limit.value() - tasks.size();
         }
       } else {
-        if (m_run_tasks_remaining_limit.has_value() && m_run_tasks_remaining_limit.value() == 0) {
-          return;
-        }
         const TaskT task = get_next_task_to_send();
         m_communicator.send(task, worker, Tag::TASK);
         m_tasks_sent_to_child++;

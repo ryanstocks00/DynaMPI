@@ -204,14 +204,8 @@ class NaiveMPIWorkDistributor {
     const size_t tasks_sent_before = m_tasks_sent;
     const size_t results_received_before = m_results_received;
     size_t tasks_sent_this_call = 0;
-    if (m_config.return_new_results_only) {
-      m_results.clear();
-      m_results_returned = 0;
-      m_tasks_sent_in_current_run = 0;
-      m_use_local_result_indices = true;
-    } else {
-      m_use_local_result_indices = false;
-    }
+    // Always use cumulative indices to preserve the invariant m_results.size() == m_tasks_sent
+    m_use_local_result_indices = false;
     auto should_stop = [&](double elapsed_s) {
       if (config.max_tasks && tasks_sent_this_call >= config.max_tasks.value()) {
         return true;
@@ -240,15 +234,14 @@ class NaiveMPIWorkDistributor {
     assert(results_received_delta == tasks_sent_delta && "Not all tasks were processed by workers");
     (void)tasks_sent_delta;
     (void)results_received_delta;
-    if (m_use_local_result_indices) {
-      assert(m_results.size() == tasks_sent_delta && "Results size should match tasks sent");
-    } else {
-      assert(m_results.size() == m_tasks_sent && "Results size should match tasks sent");
-    }
-    m_use_local_result_indices = false;
+    assert(m_results.size() == m_tasks_sent && "Results size should match tasks sent");
     if (m_config.return_new_results_only) {
-      m_results_returned = 0;
-      return std::move(m_results);
+      // Create new_results as a slice from m_results_returned to end
+      std::vector<ResultT> new_results(
+          m_results.begin() + static_cast<ptrdiff_t>(m_results_returned), m_results.end());
+      // Advance the cursor by the number of new results
+      m_results_returned += new_results.size();
+      return new_results;
     }
     return m_results;
   }

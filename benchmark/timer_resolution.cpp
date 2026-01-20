@@ -29,6 +29,10 @@ void test_clock_resolution(const char* name) {
   for (int i = 0; i < iterations; ++i) {
     auto t1 = Clock::now();
     auto t2 = Clock::now();
+    // Wait for clock to advance
+    while (t2 <= t1) {
+      t2 = Clock::now();
+    }
     auto delta = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
     if (delta > 0) {
       deltas.push_back(static_cast<double>(delta));
@@ -67,11 +71,15 @@ void test_timer_resolution() {
   for (int i = 0; i < iterations; ++i) {
     dynampi::Timer timer(dynampi::Timer::AutoStart::No);
     timer.start();
-    auto elapsed1 = timer.elapsed().count();
-    auto elapsed2 = timer.elapsed().count();
-    double delta = (elapsed2 - elapsed1) * 1e9;  // Convert to nanoseconds
+    std::chrono::duration<double> elapsed1 = timer.elapsed();
+    std::chrono::duration<double> elapsed2 = timer.elapsed();
+    // Wait for elapsed time to advance
+    while (elapsed2 <= elapsed1) {
+      elapsed2 = timer.elapsed();
+    }
+    auto delta = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed2 - elapsed1).count();
     if (delta > 0) {
-      deltas.push_back(delta);
+      deltas.push_back(static_cast<double>(delta));
     }
   }
 

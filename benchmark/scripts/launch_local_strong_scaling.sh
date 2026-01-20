@@ -40,7 +40,7 @@ for ranks in "${RANK_LIST[@]}"; do
         echo "Running ${SYSTEM} ranks=${ranks} dist=${dist} mode=${mode} expected_us=${expected_us}"
         launcher_base="$(basename "${LAUNCHER}")"
         if [[ "${launcher_base}" == mpiexec ]]; then
-          "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -n "${ranks}" \
+          "${LAUNCHER}" ${LAUNCHER_ARGS[@]+"${LAUNCHER_ARGS[@]}"} -n "${ranks}" \
             "${APP}" \
             --distribution "${dist}" \
             --mode "${mode}" \
@@ -50,7 +50,7 @@ for ranks in "${RANK_LIST[@]}"; do
             --system "${SYSTEM}" \
             --output "${CSV}"
         else
-          "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -np "${ranks}" \
+          "${LAUNCHER}" ${LAUNCHER_ARGS[@]+"${LAUNCHER_ARGS[@]}"} -np "${ranks}" \
             "${APP}" \
             --distribution "${dist}" \
             --mode "${mode}" \

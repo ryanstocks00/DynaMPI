@@ -145,21 +145,28 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
     const uint64_t target_queue_size = num_workers * 4;
     while (timer.elapsed().count() < opts.duration_s) {
       const uint64_t remaining = distributor.remaining_tasks_count();
-      uint64_t to_insert = (remaining < target_queue_size) ? (target_queue_size - remaining) : 0;
+      uint64_t to_insert = 0;
+      if (remaining < target_queue_size) {
+        to_insert = target_queue_size - remaining;
+      }
       if (timer.elapsed().count() > opts.duration_s / 2.0 && total_tasks > 0) {
         double current_rate = static_cast<double>(total_tasks) / timer.elapsed().count();
         double estimated_total_tasks = current_rate * opts.duration_s;
         if (estimated_total_tasks > static_cast<double>(total_tasks) && current_rate > 0.0) {
-          uint64_t can_complete_remaining_time =
-              static_cast<uint64_t>((estimated_total_tasks - total_tasks) / current_rate);
-          if (can_complete_remaining_time > remaining) {
-            to_insert = std::min(to_insert, can_complete_remaining_time - remaining);
+          double remaining_time = opts.duration_s - timer.elapsed().count();
+          uint64_t can_complete_tasks_remaining =
+              static_cast<uint64_t>(current_rate * remaining_time);
+          if (can_complete_tasks_remaining > remaining) {
+            uint64_t max_to_insert = can_complete_tasks_remaining - remaining;
+            to_insert = std::min(to_insert, max_to_insert);
           } else {
             // Already have more tasks queued than can be completed, don't insert more
             to_insert = 0;
           }
         }
       }
+      // Clamp to_insert to be non-negative and <= target_queue_size
+      to_insert = std::min(to_insert, target_queue_size);
 
       if (to_insert > 0) {
         std::vector<Task> tasks;

@@ -22,7 +22,6 @@ OUTPUT_BASE="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 
 for nodes in "${NODE_LIST[@]}"; do
   job_name="dynampi_ss_${SYSTEM}_${nodes}"
-  output_dir="${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${SLURM_JOB_ID:-manual}"
   submit_args=("${SBATCH_ARGS[@]}")
   if [[ -n "${ACCOUNT}" ]]; then
     submit_args+=(--account="${ACCOUNT}")
@@ -31,6 +30,6 @@ for nodes in "${NODE_LIST[@]}"; do
     --job-name="${job_name}" \
     --nodes="${nodes}" \
     --time="${WALLTIME}" \
-    --export=ALL,NODE_LIST="${nodes}",LAUNCHER="${LAUNCHER}",LAUNCHER_ARGS="${LAUNCHER_ARGS}",OUTPUT_DIR="${output_dir}" \
-    --wrap="cd ${ROOT_DIR} && OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${SLURM_JOB_ID:-manual}\" ${SCRIPT}"
+    --export=ALL,NODE_LIST="${nodes}",LAUNCHER="${LAUNCHER}",LAUNCHER_ARGS="${LAUNCHER_ARGS}" \
+    --wrap="cd ${ROOT_DIR} && OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-${SLURM_JOB_ID:-manual}\" ${SCRIPT}"
 done
