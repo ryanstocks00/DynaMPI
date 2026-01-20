@@ -38,7 +38,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     bool auto_run_workers = true;
     std::optional<size_t> message_batch_size = std::nullopt;
     std::optional<int> max_workers_per_coordinator = std::nullopt;
-    int batch_size_multiplier = 1000;
+    int batch_size_multiplier = 2;
     bool return_new_results_only = true;
   };
   struct RunConfig {

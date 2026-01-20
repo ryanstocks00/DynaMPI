@@ -84,7 +84,7 @@ def group_rows(rows):
 
 
 def plot_distributor(system, distributor, grouped, output_dir, image_format):
-    modes = ["fixed", "poisson"]
+    modes = ["fixed", "random"]
     fig, axes = plt.subplots(1, 2, figsize=(14, 6), sharey=True)
     fig.suptitle(f"Strong Scaling Distribution Rate ({distributor}) - {system}")
 
@@ -98,7 +98,9 @@ def plot_distributor(system, distributor, grouped, output_dir, image_format):
             expected_ns,
             ranks_per_node,
         ), points in grouped.items():
-            if sys_name != system or dist != distributor or mode_name != mode:
+            # Handle backward compatibility: treat "poisson" as "random"
+            normalized_mode = "random" if mode_name == "poisson" else mode_name
+            if sys_name != system or dist != distributor or normalized_mode != mode:
                 continue
             points_sorted = sorted(points, key=lambda x: x[0])
             nodes = [p[0] for p in points_sorted]
