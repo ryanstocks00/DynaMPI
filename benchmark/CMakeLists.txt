@@ -13,6 +13,7 @@ set(benchmarks
     asymptotic_distribution_throughput
     strong_scaling_distribution_rate
     pingpong
+    timer_resolution
 )
 
 foreach(benchmark IN LISTS benchmarks)

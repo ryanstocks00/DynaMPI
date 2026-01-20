@@ -14,9 +14,8 @@ SYSTEM="frontier"
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512}"
 IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-1 10 100 1000 10000 100000 1000000}"
 IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
-IFS=' ' read -r -a MODES <<< "${MODES:-fixed poisson}"
+IFS=' ' read -r -a MODES <<< "${MODES:-fixed random}"
 DURATION_S="${DURATION_S:-10}"
-ROUND_TARGET_MS="${ROUND_TARGET_MS:-200}"
 IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-core}"
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
@@ -61,7 +60,6 @@ for nodes in "${NODE_LIST[@]}"; do
             --mode "${mode}" \
             --expected_us "${expected_us}" \
             --duration_s "${DURATION_S}" \
-            --round_target_ms "${ROUND_TARGET_MS}" \
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
             --output "${CSV}"
@@ -73,7 +71,6 @@ for nodes in "${NODE_LIST[@]}"; do
             --mode "${mode}" \
             --expected_us "${expected_us}" \
             --duration_s "${DURATION_S}" \
-            --round_target_ms "${ROUND_TARGET_MS}" \
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
             --output "${CSV}"
