@@ -51,6 +51,8 @@ get_allocated_cores_per_node() {
 ALLOC_CORES_PER_NODE="$(get_allocated_cores_per_node)"
 echo "Allocated cores per node: ${ALLOC_CORES_PER_NODE}"
 
+export FI_CXI_RX_MATCH_MODE=software
+
 mkdir -p "${OUTPUT_DIR}"
 CSV="${OUTPUT_DIR}/strong_scaling_${SYSTEM}.csv"
 
