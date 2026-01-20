@@ -75,72 +75,50 @@ static std::optional<Method> parse_method(const std::string &s) {
   return std::nullopt;
 }
 
+static void parse_unsigned_arg(int rank, int &i, int argc, char **argv, const char *name,
+                               std::size_t &out) {
+  if (i + 1 >= argc) die(rank, std::string("missing value for ") + name);
+  try {
+    out = std::stoull(argv[++i]);
+  } catch (const std::invalid_argument &e) {
+    die(rank, std::string("invalid value for ") + name + ": " + argv[i] + ": " + e.what());
+  } catch (const std::out_of_range &e) {
+    die(rank, std::string("invalid value for ") + name + ": " + argv[i] + ": " + e.what());
+  }
+}
+
+static void parse_int_arg(int rank, int &i, int argc, char **argv, const char *name, int &out) {
+  if (i + 1 >= argc) die(rank, std::string("missing value for ") + name);
+  try {
+    out = std::stoi(argv[++i]);
+  } catch (const std::invalid_argument &e) {
+    die(rank, std::string("invalid value for ") + name + ": " + argv[i] + ": " + e.what());
+  } catch (const std::out_of_range &e) {
+    die(rank, std::string("invalid value for ") + name + ": " + argv[i] + ": " + e.what());
+  }
+}
+
 static Options parse_args(int argc, char **argv, int rank) {
   Options opt;
   bool methods_specified = false;
 
   for (int i = 1; i < argc; ++i) {
     std::string a = argv[i];
-    auto need = [&](const char *name) {
-      if (i + 1 >= argc) die(rank, std::string("missing value for ") + name);
-    };
     if (a == "--min-bytes") {
-      need("--min-bytes");
-      try {
-        opt.min_bytes = std::stoull(argv[++i]);
-      } catch (const std::invalid_argument &e) {
-        die(rank, "invalid value for --min-bytes: " + std::string(argv[i]) + ": " + e.what());
-      } catch (const std::out_of_range &e) {
-        die(rank, "invalid value for --min-bytes: " + std::string(argv[i]) + ": " + e.what());
-      }
+      parse_unsigned_arg(rank, i, argc, argv, "--min-bytes", opt.min_bytes);
     } else if (a == "--max-bytes") {
-      need("--max-bytes");
-      try {
-        opt.max_bytes = std::stoull(argv[++i]);
-      } catch (const std::invalid_argument &e) {
-        die(rank, "invalid value for --max-bytes: " + std::string(argv[i]) + ": " + e.what());
-      } catch (const std::out_of_range &e) {
-        die(rank, "invalid value for --max-bytes: " + std::string(argv[i]) + ": " + e.what());
-      }
+      parse_unsigned_arg(rank, i, argc, argv, "--max-bytes", opt.max_bytes);
     } else if (a == "--factor") {
-      need("--factor");
-      try {
-        opt.factor = std::stoi(argv[++i]);
-      } catch (const std::invalid_argument &e) {
-        die(rank, "invalid value for --factor: " + std::string(argv[i]) + ": " + e.what());
-      } catch (const std::out_of_range &e) {
-        die(rank, "invalid value for --factor: " + std::string(argv[i]) + ": " + e.what());
-      }
+      parse_int_arg(rank, i, argc, argv, "--factor", opt.factor);
     } else if (a == "--warmup") {
-      need("--warmup");
-      try {
-        opt.warmup = std::stoi(argv[++i]);
-      } catch (const std::invalid_argument &e) {
-        die(rank, "invalid value for --warmup: " + std::string(argv[i]) + ": " + e.what());
-      } catch (const std::out_of_range &e) {
-        die(rank, "invalid value for --warmup: " + std::string(argv[i]) + ": " + e.what());
-      }
+      parse_int_arg(rank, i, argc, argv, "--warmup", opt.warmup);
     } else if (a == "--iters") {
-      need("--iters");
-      try {
-        opt.iters = std::stoi(argv[++i]);
-      } catch (const std::invalid_argument &e) {
-        die(rank, "invalid value for --iters: " + std::string(argv[i]) + ": " + e.what());
-      } catch (const std::out_of_range &e) {
-        die(rank, "invalid value for --iters: " + std::string(argv[i]) + ": " + e.what());
-      }
+      parse_int_arg(rank, i, argc, argv, "--iters", opt.iters);
     } else if (a == "--outfile") {
-      need("--outfile");
+      if (i + 1 >= argc) die(rank, "missing value for --outfile");
       opt.outfile = argv[++i];
     } else if (a == "--only-rank") {
-      need("--only-rank");
-      try {
-        opt.only_rank = std::stoi(argv[++i]);
-      } catch (const std::invalid_argument &e) {
-        die(rank, "invalid value for --only-rank: " + std::string(argv[i]) + ": " + e.what());
-      } catch (const std::out_of_range &e) {
-        die(rank, "invalid value for --only-rank: " + std::string(argv[i]) + ": " + e.what());
-      }
+      parse_int_arg(rank, i, argc, argv, "--only-rank", opt.only_rank);
     } else if (a == "--methods") {
       need("--methods");
       methods_specified = true;
@@ -190,6 +168,33 @@ static Options parse_args(int argc, char **argv, int rank) {
   return opt;
 }
 
+// Helper to perform MPI send based on method, optionally tracking time
+struct SendResult {
+  MPI_Request request;
+  double elapsed_time;
+};
+
+static SendResult do_send(Method method, const void *buf, int count, MPI_Datatype datatype,
+                          int dest, int tag, MPI_Comm comm, bool track_time) {
+  SendResult res{MPI_REQUEST_NULL, 0.0};
+  double t0 = track_time ? MPI_Wtime() : 0.0;
+
+  if (method == Method::ISEND) {
+    MPI_Isend(buf, count, datatype, dest, tag, comm, &res.request);
+  } else if (method == Method::SEND) {
+    MPI_Send(buf, count, datatype, dest, tag, comm);
+  } else if (method == Method::BSEND) {
+    MPI_Bsend(buf, count, datatype, dest, tag, comm);
+  } else /* SSEND */ {
+    MPI_Ssend(buf, count, datatype, dest, tag, comm);
+  }
+
+  if (track_time) {
+    res.elapsed_time = MPI_Wtime() - t0;
+  }
+  return res;
+}
+
 // Measure one direction using the unified pattern:
 // sender:   for i: send(); recv();   then if isend -> Waitall
 // receiver: for i: recv(); send();   then if isend -> Waitall
@@ -203,16 +208,10 @@ static PingResult ping_once(int sender, int receiver, int me, std::size_t bytes,
       std::vector<MPI_Request> sreq;
       sreq.reserve(method == Method::ISEND ? warmup : 0);
       for (int w = 0; w < warmup; ++w) {
+        auto send_res =
+            do_send(method, buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD, false);
         if (method == Method::ISEND) {
-          MPI_Request r;
-          MPI_Isend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD, &r);
-          sreq.push_back(r);
-        } else if (method == Method::SEND) {
-          MPI_Send(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
-        } else if (method == Method::BSEND) {
-          MPI_Bsend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
-        } else /* SSEND */ {
-          MPI_Ssend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
+          sreq.push_back(send_res.request);
         }
         MPI_Recv(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD,
                  MPI_STATUS_IGNORE);
@@ -224,16 +223,10 @@ static PingResult ping_once(int sender, int receiver, int me, std::size_t bytes,
       sreq.reserve(method == Method::ISEND ? warmup : 0);
       for (int w = 0; w < warmup; ++w) {
         MPI_Recv(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        auto send_res =
+            do_send(method, buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD, false);
         if (method == Method::ISEND) {
-          MPI_Request r;
-          MPI_Isend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD, &r);
-          sreq.push_back(r);
-        } else if (method == Method::SEND) {
-          MPI_Send(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
-        } else if (method == Method::BSEND) {
-          MPI_Bsend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
-        } else /* SSEND */ {
-          MPI_Ssend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
+          sreq.push_back(send_res.request);
         }
       }
       if (method == Method::ISEND && !sreq.empty())
@@ -250,23 +243,11 @@ static PingResult ping_once(int sender, int receiver, int me, std::size_t bytes,
 
     double t0 = MPI_Wtime();
     for (int i = 0; i < iters; ++i) {
+      auto send_res =
+          do_send(method, buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD, true);
+      send_call_total += send_res.elapsed_time;
       if (method == Method::ISEND) {
-        double c0 = MPI_Wtime();
-        MPI_Request r;
-        MPI_Isend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD, &r);
-        double c1 = MPI_Wtime();
-        send_call_total += (c1 - c0);
-        sreq.push_back(r);
-      } else {
-        double c0 = MPI_Wtime();
-        if (method == Method::SEND)
-          MPI_Send(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
-        else if (method == Method::BSEND)
-          MPI_Bsend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
-        else /* SSEND */
-          MPI_Ssend(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD);
-        double c1 = MPI_Wtime();
-        send_call_total += (c1 - c0);
+        sreq.push_back(send_res.request);
       }
 
       MPI_Recv(buf.data(), (int)bytes, MPI_CHAR, receiver, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -283,17 +264,10 @@ static PingResult ping_once(int sender, int receiver, int me, std::size_t bytes,
     for (int i = 0; i < iters; ++i) {
       MPI_Recv(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
+      auto send_res =
+          do_send(method, buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD, false);
       if (method == Method::ISEND) {
-        MPI_Request r;
-        MPI_Isend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD, &r);
-        sreq.push_back(r);
-      } else {
-        if (method == Method::SEND)
-          MPI_Send(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
-        else if (method == Method::BSEND)
-          MPI_Bsend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
-        else /* SSEND */
-          MPI_Ssend(buf.data(), (int)bytes, MPI_CHAR, sender, tag, MPI_COMM_WORLD);
+        sreq.push_back(send_res.request);
       }
     }
     if (method == Method::ISEND && !sreq.empty())

@@ -10,6 +10,45 @@
 #include <numeric>
 #include <vector>
 
+void print_resolution_stats(const std::vector<double>& deltas, int iterations) {
+  if (deltas.empty()) {
+    std::cout << "  Measured resolution: < 1 ns (no measurable difference in " << iterations
+              << " iterations)\n";
+  } else {
+    std::sort(deltas.begin(), deltas.end());
+    double min_delta = deltas[0];
+    double median_delta = deltas.size() % 2 == 0
+                              ? (deltas[deltas.size() / 2 - 1] + deltas[deltas.size() / 2]) / 2.0
+                              : deltas[deltas.size() / 2];
+    double mean_delta = std::accumulate(deltas.begin(), deltas.end(), 0.0) / deltas.size();
+
+    std::cout << "  Measured resolution (min): " << min_delta << " ns\n";
+    std::cout << "  Measured resolution (median): " << median_delta << " ns\n";
+    std::cout << "  Measured resolution (mean): " << mean_delta << " ns\n";
+    std::cout << "  Non-zero measurements: " << deltas.size() << "/" << iterations << "\n";
+  }
+}
+
+template <typename GetTimePoint>
+std::vector<double> measure_resolution(GetTimePoint&& get_time_point, int iterations) {
+  std::vector<double> deltas;
+
+  for (int i = 0; i < iterations; ++i) {
+    auto t1 = get_time_point();
+    auto t2 = get_time_point();
+    // Wait for time to advance
+    while (t2 <= t1) {
+      t2 = get_time_point();
+    }
+    auto delta = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+    if (delta > 0) {
+      deltas.push_back(static_cast<double>(delta));
+    }
+  }
+
+  return deltas;
+}
+
 template <typename Clock>
 void test_clock_resolution(const char* name) {
   using Duration = typename Clock::duration;
@@ -22,39 +61,9 @@ void test_clock_resolution(const char* name) {
   }
   std::cout << " seconds\n";
 
-  // Test actual resolution by measuring smallest non-zero difference
-  std::vector<double> deltas;
   const int iterations = 10000;
-
-  for (int i = 0; i < iterations; ++i) {
-    auto t1 = Clock::now();
-    auto t2 = Clock::now();
-    // Wait for clock to advance
-    while (t2 <= t1) {
-      t2 = Clock::now();
-    }
-    auto delta = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
-    if (delta > 0) {
-      deltas.push_back(static_cast<double>(delta));
-    }
-  }
-
-  if (deltas.empty()) {
-    std::cout << "  Measured resolution: < 1 ns (no measurable difference in " << iterations
-              << " iterations)\n";
-  } else {
-    std::sort(deltas.begin(), deltas.end());
-    double min_delta = deltas[0];
-    double median_delta = deltas.size() % 2 == 0
-                              ? (deltas[deltas.size() / 2 - 1] + deltas[deltas.size() / 2]) / 2.0
-                              : deltas[deltas.size() / 2];
-    double mean_delta = std::accumulate(deltas.begin(), deltas.end(), 0.0) / deltas.size();
-
-    std::cout << "  Measured resolution (min): " << min_delta << " ns\n";
-    std::cout << "  Measured resolution (median): " << median_delta << " ns\n";
-    std::cout << "  Measured resolution (mean): " << mean_delta << " ns\n";
-    std::cout << "  Non-zero measurements: " << deltas.size() << "/" << iterations << "\n";
-  }
+  auto deltas = measure_resolution([]() { return Clock::now(); }, iterations);
+  print_resolution_stats(deltas, iterations);
 
   // Test if clock is steady
   bool is_steady = Clock::is_steady;
@@ -64,41 +73,11 @@ void test_clock_resolution(const char* name) {
 void test_timer_resolution() {
   std::cout << "\nDynaMPI Timer:\n";
 
-  // Test Timer class resolution
-  std::vector<double> deltas;
   const int iterations = 10000;
-
-  for (int i = 0; i < iterations; ++i) {
-    dynampi::Timer timer(dynampi::Timer::AutoStart::No);
-    timer.start();
-    std::chrono::duration<double> elapsed1 = timer.elapsed();
-    std::chrono::duration<double> elapsed2 = timer.elapsed();
-    // Wait for elapsed time to advance
-    while (elapsed2 <= elapsed1) {
-      elapsed2 = timer.elapsed();
-    }
-    auto delta = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed2 - elapsed1).count();
-    if (delta > 0) {
-      deltas.push_back(static_cast<double>(delta));
-    }
-  }
-
-  if (deltas.empty()) {
-    std::cout << "  Measured resolution: < 1 ns (no measurable difference in " << iterations
-              << " iterations)\n";
-  } else {
-    std::sort(deltas.begin(), deltas.end());
-    double min_delta = deltas[0];
-    double median_delta = deltas.size() % 2 == 0
-                              ? (deltas[deltas.size() / 2 - 1] + deltas[deltas.size() / 2]) / 2.0
-                              : deltas[deltas.size() / 2];
-    double mean_delta = std::accumulate(deltas.begin(), deltas.end(), 0.0) / deltas.size();
-
-    std::cout << "  Measured resolution (min): " << min_delta << " ns\n";
-    std::cout << "  Measured resolution (median): " << median_delta << " ns\n";
-    std::cout << "  Measured resolution (mean): " << mean_delta << " ns\n";
-    std::cout << "  Non-zero measurements: " << deltas.size() << "/" << iterations << "\n";
-  }
+  dynampi::Timer timer(dynampi::Timer::AutoStart::No);
+  timer.start();
+  auto deltas = measure_resolution([&timer]() { return timer.elapsed(); }, iterations);
+  print_resolution_stats(deltas, iterations);
 }
 
 int main() {
