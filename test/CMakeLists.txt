@@ -83,7 +83,6 @@ set(DYNAMPI_MAX_MPI_RANK 64 CACHE STRING "Max MPI ranks for ctest MPI runs")
 if(DEFINED ENV{DYNAMPI_MAX_MPI_RANK})
   set(DYNAMPI_MAX_MPI_RANK "$ENV{DYNAMPI_MAX_MPI_RANK}")
 endif()
-message(STATUS "DYNAMPI_MAX_MPI_RANK: ${DYNAMPI_MAX_MPI_RANK}")
 
 function(add_mpi_test test_name num_procs)
   set(command

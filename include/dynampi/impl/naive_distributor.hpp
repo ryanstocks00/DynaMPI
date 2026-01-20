@@ -7,10 +7,10 @@
 
 #include <algorithm>
 #include <cassert>
-#include <chrono>
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <limits>
 #include <map>
 #include <optional>
 #include <queue>
@@ -22,6 +22,7 @@
 #include "../mpi/mpi_communicator.hpp"
 #include "../mpi/mpi_types.hpp"
 #include "dynampi/impl/base_distributor.hpp"
+#include "dynampi/utilities/timer.hpp"
 
 namespace dynampi {
 
@@ -35,11 +36,15 @@ class NaiveMPIWorkDistributor {
   };
 
   struct RunConfig {
-    std::optional<size_t> min_tasks = std::nullopt;
-    std::optional<size_t> max_tasks = std::nullopt;
+    // Stop once we have at least this many contiguous results ready to return.
+    size_t target_num_tasks = std::numeric_limits<size_t>::max();
+
+    // If false, strictly clips the return vector to `target_num_tasks`.
+    // Excess results remain in the internal buffer for the next call.
+    bool allow_more_than_target_tasks = true;
+
+    // Stop if this much time has passed.
     std::optional<double> max_seconds = std::nullopt;
-    // If true, waits for all active tasks to finish even if the queue is empty.
-    bool wait_for_all_active = true;
   };
 
   static const bool ordered = true;
@@ -117,86 +122,57 @@ class NaiveMPIWorkDistributor {
   [[nodiscard]] std::vector<ResultT> run_tasks(RunConfig config = RunConfig{}) {
     assert(is_root_manager() && "Only the manager can distribute tasks");
 
-    const auto start_time = std::chrono::steady_clock::now();
-    size_t tasks_sent_this_call = 0;
+    Timer timer;
 
-    // --- 1. Sending Phase ---
-    while (!m_unallocated_task_queue.empty()) {
-      const double elapsed_s =
-          std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
+    // We loop until one of the exit conditions is met.
+    while (true) {
+      // --- 1. Check Exit Conditions ---
 
-      if (should_stop_sending(config, tasks_sent_this_call, elapsed_s)) {
+      // A. Have we collected enough contiguous results?
+      if (count_contiguous_ready_results() >= config.target_num_tasks) {
         break;
       }
 
-      // If no workers are free, wait (blocking) for a message to free one
-      if (m_free_worker_ranks.empty()) {
-        if (num_workers() > 0) {
-          process_incoming_message(true);
-        } else {
-          run_task_locally();
-          tasks_sent_this_call++;
-          continue;
-        }
+      // B. Time limit check
+      if (config.max_seconds && timer.elapsed().count() >= *config.max_seconds) {
+        break;
       }
 
-      // Send task to the now-free worker
-      if (!m_free_worker_ranks.empty()) {
+      // C. Total exhaustion check
+      if (m_unallocated_task_queue.empty() && active_worker_count() == 0) {
+        break;
+      }
+
+      // --- 2. Action Logic (Send vs Receive) ---
+
+      // Priority: Keep workers busy
+      if (!m_unallocated_task_queue.empty() && !m_free_worker_ranks.empty()) {
         send_next_task_to_worker(m_free_worker_ranks.top());
         m_free_worker_ranks.pop();
-        tasks_sent_this_call++;
-      }
-    }
-
-    // --- 2. Result Waiting Phase ---
-    // Calculate how many results we MUST wait for based on config
-    size_t target_results_count = 0;
-
-    if (config.min_tasks) {
-      // User strictly requested at least N tasks
-      target_results_count = *config.min_tasks;
-    } else if (config.max_tasks && !config.max_seconds) {
-      // "Batch mode": User asked for N tasks and gave no time limit.
-      // Implies they want the results for those N tasks.
-      target_results_count = std::min(*config.max_tasks, tasks_sent_this_call);
-    }
-
-    // We block until we have enough contiguous results ready to satisfy the target
-    while (true) {
-      // How many new results are ready to be returned right now?
-      // (This is efficient: we check m_next_return_idx against the map)
-      size_t ready_count = count_contiguous_ready_results();
-
-      // 1. Have we met the user's quota?
-      if (ready_count >= target_results_count) break;
-
-      // 2. Are we out of work? (Sent everything, received everything)
-      if (m_unallocated_task_queue.empty() && active_worker_count() == 0) break;
-
-      // 3. Safety: if we have received all results for the tasks sent *in this call*
-      // (and queue is empty), we shouldn't wait forever.
-      if (ready_count >= tasks_sent_this_call && m_unallocated_task_queue.empty()) break;
-
-      // Still waiting: block and process one message
-      if (num_workers() > 0) {
-        process_incoming_message(true);
       } else {
-        break;  // Should not happen in single-process mode
+        // Single process mode fallback
+        if (num_workers() == 0 && !m_unallocated_task_queue.empty()) {
+          run_task_locally();
+        }
+        // Standard MPI wait
+        else if (active_worker_count() > 0) {
+          process_incoming_message(true);  // Blocking wait
+        }
       }
     }
 
-    // --- 3. Draining Phase ---
-    // If the queue is empty and the user requested a full wait
-    if (m_unallocated_task_queue.empty() && config.wait_for_all_active) {
-      wait_for_all_active_workers();
+    // --- 3. Return Logic ---
+    size_t limit = std::numeric_limits<size_t>::max();
+    if (!config.allow_more_than_target_tasks) {
+      limit = config.target_num_tasks;
     }
 
-    return collect_available_results();
+    return collect_available_results(limit);
   }
 
   [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() {
     RunConfig cfg;
-    cfg.wait_for_all_active = true;
+    cfg.target_num_tasks = std::numeric_limits<size_t>::max();
     return run_tasks(cfg);
   }
 
@@ -292,14 +268,6 @@ class NaiveMPIWorkDistributor {
 
   int worker_idx_to_rank(int idx) const { return (idx < m_config.manager_rank) ? idx : (idx + 1); }
 
-  bool should_stop_sending(const RunConfig& config, size_t sent_count, double elapsed) {
-    if (config.max_tasks && sent_count >= *config.max_tasks) return true;
-    if (config.max_seconds && elapsed >= *config.max_seconds) {
-      if (!config.min_tasks || sent_count >= *config.min_tasks) return true;
-    }
-    return false;
-  }
-
   TaskT pop_next_task() {
     TaskT task;
     if constexpr (prioritize_tasks) {
@@ -388,13 +356,13 @@ class NaiveMPIWorkDistributor {
     return count;
   }
 
-  std::vector<ResultT> collect_available_results() {
+  std::vector<ResultT> collect_available_results(size_t limit) {
     std::vector<ResultT> batch;
 
-    // Extract contiguous results from the map.
+    // Extract contiguous results from the map up to the limit.
     // Logic: Look for m_next_return_idx. If found, move it to batch,
     // erase from map (saving memory), increment index.
-    while (true) {
+    while (batch.size() < limit) {
       auto it = m_pending_results.find(static_cast<int64_t>(m_next_return_idx));
       if (it == m_pending_results.end()) {
         break;  // Gap detected or no more results

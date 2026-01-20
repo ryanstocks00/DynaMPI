@@ -176,7 +176,8 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
         }
         distributor.insert_tasks(tasks);
       }
-      auto results = distributor.run_tasks({.max_tasks = num_workers * 2, .max_seconds = 0.1});
+      auto results =
+          distributor.run_tasks({.target_num_tasks = num_workers * 2, .max_seconds = 0.1});
       total_tasks += results.size();
     }
     {

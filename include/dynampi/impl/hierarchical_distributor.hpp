@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <chrono>
 #include <cmath>
 #include <functional>
 #include <iterator>
@@ -22,6 +21,7 @@
 #include "../mpi/mpi_types.hpp"
 #include "dynampi/impl/base_distributor.hpp"
 #include "dynampi/utilities/assert.hpp"
+#include "dynampi/utilities/timer.hpp"
 
 namespace dynampi {
 
@@ -39,9 +39,17 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     int batch_size_multiplier = 2;
     bool return_new_results_only = true;
   };
+
   struct RunConfig {
-    std::optional<size_t> min_tasks = std::nullopt;
-    std::optional<size_t> max_tasks = std::nullopt;
+    // Stop once we have at least this many results ready to return.
+    size_t target_num_tasks = std::numeric_limits<size_t>::max();
+
+    // If false, strictly clips the return vector to `target_num_tasks`.
+    // Excess results are buffered for the next call.
+    // MOVED: Placed before max_seconds to prevent implicit bool->double conversion bugs.
+    bool allow_more_than_target_tasks = true;
+
+    // Stop if this much time has passed.
     std::optional<double> max_seconds = std::nullopt;
   };
 
@@ -64,7 +72,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   size_t m_tasks_received_from_parent = 0;
   size_t m_tasks_executed = 0;
   size_t m_results_returned = 0;
-  std::optional<size_t> m_run_tasks_remaining_limit = std::nullopt;
 
   bool m_finalized = false;
   bool m_done = false;
@@ -198,16 +205,25 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         while (!m_done && m_unallocated_task_queue.empty()) {
           receive_from_anyone();
         }
+
         size_t num_tasks_should_be_received = m_unallocated_task_queue.size();
+
         while (!m_unallocated_task_queue.empty()) {
-          allocate_task_to_child();
+          if (m_done) break;
+          // Intermediate nodes must respect worker availability
+          if (m_free_worker_indices.empty()) {
+            receive_from_anyone();
+          } else {
+            allocate_task_to_child();
+          }
         }
+
         while (m_tasks_sent_to_child > m_results_received_from_child) {
           receive_from_anyone();
         }
-        if (m_done) {
-          break;
-        }
+
+        if (m_done) break;
+
         (void)num_tasks_should_be_received;
         DYNAMPI_ASSERT_EQ(m_results.size(), num_tasks_should_be_received);
         return_results_and_request_next_batch_from_manager();
@@ -269,20 +285,15 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   void allocate_task_to_child() {
     if (m_communicator.size() > 1) {
-      while (m_free_worker_indices.empty()) {
-        // If no free workers, wait for a result to be received
-        receive_from_anyone();
-      }
+      DYNAMPI_ASSERT(!m_free_worker_indices.empty(), "Cannot allocate task with no free workers");
+
       TaskRequest request = m_free_worker_indices.top();
       int worker = request.worker_rank;
       m_free_worker_indices.pop();
       if (request.num_tasks_requested.has_value()) {
         std::vector<TaskT> tasks;
         int num_tasks = request.num_tasks_requested.value();
-        if (m_run_tasks_remaining_limit.has_value()) {
-          num_tasks =
-              std::min<int>(num_tasks, static_cast<int>(m_run_tasks_remaining_limit.value()));
-        }
+
         const int actual_num_tasks =
             std::min<int>(num_tasks, static_cast<int>(m_unallocated_task_queue.size()));
         tasks.reserve(actual_num_tasks);
@@ -299,107 +310,105 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         }
         m_communicator.send(tasks, worker, Tag::TASK_BATCH);
         m_tasks_sent_to_child += tasks.size();
-        if (m_run_tasks_remaining_limit.has_value()) {
-          m_run_tasks_remaining_limit = m_run_tasks_remaining_limit.value() - tasks.size();
-        }
       } else {
         const TaskT task = get_next_task_to_send();
         m_communicator.send(task, worker, Tag::TASK);
         m_tasks_sent_to_child++;
-        if (m_run_tasks_remaining_limit.has_value()) {
-          m_run_tasks_remaining_limit = m_run_tasks_remaining_limit.value() - 1;
-        }
       }
     } else {
-      // If there's only one process, we just run the worker function directly
       const TaskT task = get_next_task_to_send();
       m_results.emplace_back(m_worker_function(task));
       m_tasks_executed++;
-      if (m_run_tasks_remaining_limit.has_value()) {
-        m_run_tasks_remaining_limit = m_run_tasks_remaining_limit.value() - 1;
-      }
     }
   }
 
   [[nodiscard]] std::vector<ResultT> run_tasks(const RunConfig& config = RunConfig{}) {
     DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
                       "Only the manager can finish remaining tasks");
-    const auto start_time = std::chrono::steady_clock::now();
-    const size_t results_received_before = m_results_received_from_child;
-    const size_t tasks_executed_before = m_tasks_executed;
-    size_t tasks_sent_this_call = 0;
-    const bool bounded_run = config.max_tasks.has_value() || config.max_seconds.has_value();
-    if (m_config.return_new_results_only) {
-      m_results.clear();
-      m_results_returned = 0;
-    }
-    if (config.max_tasks.has_value()) {
-      m_run_tasks_remaining_limit = config.max_tasks.value();
-    } else {
-      m_run_tasks_remaining_limit = std::nullopt;
-    }
-    auto should_stop = [&](double elapsed_s) {
-      if (config.max_tasks && tasks_sent_this_call >= config.max_tasks.value()) {
-        return true;
-      }
-      if (config.max_seconds && elapsed_s >= config.max_seconds.value()) {
-        if (!config.min_tasks || tasks_sent_this_call >= config.min_tasks.value()) {
-          return true;
-        }
-      }
-      return false;
-    };
-    while (!m_unallocated_task_queue.empty()) {
-      const double elapsed_s =
-          std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
-      if (should_stop(elapsed_s)) {
+    Timer timer;
+
+    // In accumulating mode, if current size >= target, we might return early.
+    // However, if the user set "allow_more=false", they might expect a slice of existing data.
+
+    while (true) {
+      size_t current_results_count = m_results.size();
+      size_t effective_count =
+          m_config.return_new_results_only ? current_results_count : current_results_count;
+
+      // A. Target reached
+      // For new_results_only: target applies to size of m_results (since it was cleared before or
+      // returned). For accumulating: target applies to TOTAL size.
+      if (effective_count >= config.target_num_tasks) {
         break;
       }
-      const size_t tasks_sent_before_loop = m_tasks_sent_to_child;
-      const size_t tasks_executed_before_loop = m_tasks_executed;
-      allocate_task_to_child();
-      tasks_sent_this_call += (m_tasks_sent_to_child - tasks_sent_before_loop) +
-                              (m_tasks_executed - tasks_executed_before_loop);
+
+      // B. Time limit
+      if (config.max_seconds && timer.elapsed().count() >= *config.max_seconds) {
+        break;
+      }
+
+      // C. Exhaustion
+      size_t active_tasks = m_tasks_sent_to_child - m_results_received_from_child;
+      if (m_unallocated_task_queue.empty() && active_tasks == 0) {
+        break;
+      }
+
+      bool tasks_available = !m_unallocated_task_queue.empty();
+      bool workers_available = !m_free_worker_indices.empty();
+      bool is_single_proc = (m_communicator.size() == 1);
+
+      if (tasks_available && (is_single_proc || workers_available)) {
+        allocate_task_to_child();
+      } else {
+        if (is_single_proc) {
+          break;
+        } else if (active_tasks > 0 || (tasks_available && !workers_available)) {
+          receive_from_anyone();
+        }
+      }
     }
-    m_run_tasks_remaining_limit = std::nullopt;
-    // Continue until all task results are received
-    while (m_results_received_from_child < m_tasks_sent_to_child) {
-      receive_from_anyone();
-    }
-    const size_t results_received_delta = m_results_received_from_child - results_received_before;
-    const size_t tasks_executed_delta = m_tasks_executed - tasks_executed_before;
-    DYNAMPI_ASSERT_EQ(results_received_delta + tasks_executed_delta, tasks_sent_this_call,
-                      "All tasks should have been processed by workers before returning");
-    (void)results_received_delta;
-    (void)tasks_executed_delta;
+
+    // --- Return Logic ---
+
     if (m_config.return_new_results_only) {
-      m_results_sent_to_parent += m_results.size();
+      size_t available = m_results.size();
+      size_t count_to_return = available;
+
+      if (!config.allow_more_than_target_tasks) {
+        count_to_return = std::min(available, config.target_num_tasks);
+      }
+
+      std::vector<ResultT> batch;
+      batch.reserve(count_to_return);
+      auto end_it = m_results.begin() + count_to_return;
+      std::move(m_results.begin(), end_it, std::back_inserter(batch));
+      m_results.erase(m_results.begin(), end_it);
+
+      m_results_sent_to_parent += batch.size();
+      return batch;
     } else {
-      m_results_sent_to_parent = m_results.size();
+      // Accumulating Mode
+      size_t available = m_results.size();
+      size_t count_to_return = available;
+
+      if (!config.allow_more_than_target_tasks) {
+        count_to_return = std::min(available, config.target_num_tasks);
+      }
+
+      m_results_sent_to_parent = count_to_return;
+      if (count_to_return == available) {
+        return m_results;
+      } else {
+        return std::vector<ResultT>(m_results.begin(), m_results.begin() + count_to_return);
+      }
     }
-    if (!bounded_run && m_unallocated_task_queue.empty()) {
-      DYNAMPI_ASSERT_EQ(m_results_received_from_child, m_tasks_sent_to_child,
-                        "All tasks should have been processed by workers before finalizing");
-      DYNAMPI_ASSERT_EQ(m_results_sent_to_parent, m_tasks_received_from_parent,
-                        "All results should have been sent to the parent before finalizing");
-      if (m_communicator.size() > 1)
-        DYNAMPI_ASSERT_EQ(m_results_sent_to_parent,
-                          m_results_received_from_child + m_tasks_executed,
-                          "Manager should not send results to itself");
-      if (!m_config.return_new_results_only && is_root_manager() && m_communicator.size() > 1)
-        DYNAMPI_ASSERT_EQ(m_results.size(), m_results_received_from_child,
-                          "Results size should match tasks sent before finalizing");
-    }
-    if (m_config.return_new_results_only) {
-      std::vector<ResultT> new_results(m_results.begin() + m_results_returned, m_results.end());
-      m_results.clear();
-      m_results_returned = 0;
-      return new_results;
-    }
-    return m_results;
   }
 
-  [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() { return run_tasks(); }
+  [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() {
+    RunConfig cfg;
+    cfg.target_num_tasks = std::numeric_limits<size_t>::max();
+    return run_tasks(cfg);
+  }
 
   void finalize() {
     DYNAMPI_ASSERT(!m_finalized, "Work distribution already finalized");
