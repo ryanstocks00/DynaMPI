@@ -15,7 +15,6 @@
 #include <dynampi/utilities/timer.hpp>
 #include <fstream>
 #include <iostream>
-#include <limits>
 #include <optional>
 #include <random>
 #include <string>
@@ -28,9 +27,9 @@ enum class DurationMode { Fixed, Poisson };
 struct BenchmarkOptions {
   uint64_t expected_ns = 1000;
   double duration_s = 10.0;
-  uint64_t bundle_target_ms = 10;
   uint64_t round_target_ms = 200;
-  bool remove_root_from_distribution = false;
+  uint64_t run_slice_ms = 50;
+  bool root_not_in_worker_pool = false;
   DistributorKind distributor = DistributorKind::Hierarchical;
   DurationMode duration_mode = DurationMode::Fixed;
   uint64_t seed = 0;
@@ -42,15 +41,14 @@ struct BenchmarkOptions {
 struct BenchmarkResult {
   uint64_t total_tasks = 0;
   uint64_t total_subtasks = 0;
-  uint64_t repetitions = 1;
   uint64_t workers = 0;
   uint64_t world_size = 0;
   double elapsed_s = 0.0;
 };
 
 static std::optional<dynampi::MPICommunicator<>> make_dynamic_communicator(
-    bool remove_root_from_distribution) {
-  if (remove_root_from_distribution) {
+    bool root_not_in_worker_pool) {
+  if (root_not_in_worker_pool) {
     dynampi::MPICommunicator<> world_communicator(MPI_COMM_WORLD);
     dynampi::MPICommunicator<> node_communicator = world_communicator.split_by_node();
     int is_root_node = world_communicator.rank() == 0;
@@ -88,21 +86,13 @@ static std::string to_string(DurationMode mode) {
 }
 
 static void spin_wait(std::chrono::nanoseconds duration) {
-  auto start = std::chrono::steady_clock::now();
-  while (std::chrono::steady_clock::now() - start < duration) {
+  auto start = std::chrono::high_resolution_clock::now();
+  while (std::chrono::high_resolution_clock::now() - start < duration) {
   }
 }
 
-static uint64_t compute_repetitions(uint64_t expected_ns, uint64_t bundle_target_ms) {
-  if (expected_ns == 0) return 1;
-  const uint64_t target_ns = bundle_target_ms * 1'000'000;
-  const uint64_t repetitions = (target_ns + expected_ns - 1) / expected_ns;
-  return std::max<uint64_t>(1, repetitions);
-}
-
-static uint64_t compute_tasks_per_round(uint64_t expected_ns, uint64_t repetitions,
-                                        uint64_t round_target_ms) {
-  const uint64_t task_duration_ns = expected_ns * repetitions;
+static uint64_t compute_tasks_per_round(uint64_t expected_ns, uint64_t round_target_ms) {
+  const uint64_t task_duration_ns = expected_ns;
   if (task_duration_ns == 0) return 1;
   const uint64_t target_ns = round_target_ms * 1'000'000;
   const uint64_t tasks = (target_ns + task_duration_ns - 1) / task_duration_ns;
@@ -110,7 +100,7 @@ static uint64_t compute_tasks_per_round(uint64_t expected_ns, uint64_t repetitio
 }
 
 static void write_csv_header(std::ostream& os) {
-  os << "system,distributor,mode,expected_ns,bundle_repetitions,bundle_target_ms,round_target_ms,"
+  os << "system,distributor,mode,expected_ns,round_target_ms,"
         "duration_s,nodes,world_size,workers,total_tasks,total_subtasks,elapsed_s,"
         "throughput_tasks_per_s\n";
 }
@@ -120,10 +110,9 @@ static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts,
   const double throughput =
       result.elapsed_s > 0.0 ? static_cast<double>(result.total_subtasks) / result.elapsed_s : 0.0;
   os << opts.system << "," << to_string(opts.distributor) << "," << to_string(opts.duration_mode)
-     << "," << opts.expected_ns << "," << result.repetitions << "," << opts.bundle_target_ms << ","
-     << opts.round_target_ms << "," << opts.duration_s << "," << opts.nodes << ","
-     << result.world_size << "," << result.workers << "," << result.total_tasks << ","
-     << result.total_subtasks << "," << result.elapsed_s << "," << throughput << "\n";
+     << "," << opts.expected_ns << "," << opts.round_target_ms << "," << opts.duration_s << ","
+     << opts.nodes << "," << result.world_size << "," << result.workers << "," << result.total_tasks
+     << "," << result.total_subtasks << "," << result.elapsed_s << "," << throughput << "\n";
 }
 
 template <typename Distributor>
@@ -133,13 +122,8 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
   MPI_Comm_rank(comm, &rank);
   MPI_Comm_size(comm, &size);
 
-  const uint64_t repetitions = compute_repetitions(opts.expected_ns, opts.bundle_target_ms);
-  if (repetitions > std::numeric_limits<uint32_t>::max()) {
-    throw std::runtime_error("Bundle repetitions exceed uint32_t maximum");
-  }
   const uint64_t workers = (size == 1) ? 1 : static_cast<uint64_t>(size - 1);
-  const uint64_t tasks_per_round =
-      compute_tasks_per_round(opts.expected_ns, repetitions, opts.round_target_ms);
+  const uint64_t tasks_per_round = compute_tasks_per_round(opts.expected_ns, opts.round_target_ms);
 
   const uint64_t cap_ns = opts.expected_ns * 10;
   const uint64_t base_seed =
@@ -150,17 +134,17 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
     std::mt19937_64 rng(base_seed + static_cast<uint64_t>(rank));
     std::poisson_distribution<uint64_t> poisson(static_cast<double>(opts.expected_ns));
     return [=](Task task) mutable -> uint32_t {
-      for (uint32_t i = 0; i < task; ++i) {
-        uint64_t duration_ns = opts.expected_ns;
-        if (opts.duration_mode == DurationMode::Poisson) {
-          uint64_t sample = poisson(rng);
-          if (sample == 0) sample = 1;
-          if (sample > cap_ns) sample = cap_ns;
-          duration_ns = sample;
-        }
-        spin_wait(std::chrono::nanoseconds(duration_ns));
+      uint32_t value = task + 1;
+      uint64_t duration_ns = opts.expected_ns;
+      if (opts.duration_mode == DurationMode::Poisson) {
+        uint64_t sample = poisson(rng);
+        if (sample == 0) sample = 1;
+        if (sample > cap_ns) sample = cap_ns;
+        duration_ns = sample;
       }
-      return task;
+      spin_wait(std::chrono::nanoseconds(duration_ns));
+      const uint64_t squared = static_cast<uint64_t>(value) * static_cast<uint64_t>(value);
+      return static_cast<uint32_t>(squared);
     };
   }();
 
@@ -173,25 +157,36 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
 
   if (distributor.is_root_manager()) {
     timer.start();
-    const uint64_t round_tasks = tasks_per_round * workers;
+    const uint64_t target_queue_tasks = tasks_per_round * workers;
     while (timer.elapsed().count() < opts.duration_s) {
-      for (uint64_t i = 0; i < round_tasks; ++i) {
-        distributor.insert_task(static_cast<Task>(repetitions));
+      const uint64_t remaining = distributor.remaining_tasks_count();
+      if (remaining < target_queue_tasks) {
+        const uint64_t to_add = target_queue_tasks - remaining;
+        std::vector<Task> tasks;
+        tasks.reserve(to_add);
+        for (uint64_t i = 0; i < to_add; ++i) {
+          tasks.push_back(static_cast<Task>(total_tasks + i));
+        }
+        distributor.insert_tasks(tasks);
       }
+      typename Distributor::RunConfig config;
+      config.max_seconds = static_cast<double>(opts.run_slice_ms) / 1000.0;
+      auto results = distributor.run_tasks(config);
+      const uint64_t completed = results.size();
+      total_tasks += completed;
+      total_subtasks += completed;
+    }
+    {
       auto results = distributor.finish_remaining_tasks();
-      (void)results;
-      total_tasks += round_tasks;
-      total_subtasks += round_tasks * repetitions;
+      const uint64_t completed = results.size();
+      total_tasks += completed;
+      total_subtasks += completed;
     }
     timer.stop();
     distributor.finalize();
   }
 
-  return BenchmarkResult{total_tasks,
-                         total_subtasks,
-                         repetitions,
-                         workers,
-                         static_cast<uint64_t>(size),
+  return BenchmarkResult{total_tasks, total_subtasks, workers, static_cast<uint64_t>(size),
                          timer.elapsed().count()};
 }
 
@@ -207,11 +202,11 @@ int main(int argc, char** argv) {
       "t,expected_ns", "Expected task duration in nanoseconds",
       cxxopts::value<uint64_t>()->default_value("1000"))(
       "d,duration_s", "Target duration in seconds", cxxopts::value<double>()->default_value("10"))(
-      "b,bundle_target_ms", "Target bundle duration in milliseconds",
-      cxxopts::value<uint64_t>()->default_value("10"))("r,rm_root",
-                                                       "Remove root node from task distribution")(
+      "r,rm_root", "Remove root node from task distribution")(
       "round_target_ms", "Target per-batch duration in milliseconds",
       cxxopts::value<uint64_t>()->default_value("200"))(
+      "run_slice_ms", "run_tasks time slice in milliseconds",
+      cxxopts::value<uint64_t>()->default_value("50"))(
       "D,distribution", "Distribution strategy: naive or hierarchical",
       cxxopts::value<std::string>()->default_value("hierarchical"))(
       "m,mode", "Duration mode: fixed or poisson",
@@ -251,9 +246,9 @@ int main(int argc, char** argv) {
     opts.expected_ns = expected_us * 1000;
   }
   opts.duration_s = args["duration_s"].as<double>();
-  opts.bundle_target_ms = args["bundle_target_ms"].as<uint64_t>();
   opts.round_target_ms = args["round_target_ms"].as<uint64_t>();
-  opts.remove_root_from_distribution = args.count("rm_root") > 0;
+  opts.run_slice_ms = args["run_slice_ms"].as<uint64_t>();
+  opts.root_not_in_worker_pool = args.count("rm_root") > 0;
   opts.distributor = parse_distributor(args["distribution"].as<std::string>());
   opts.duration_mode = parse_duration_mode(args["mode"].as<std::string>());
   opts.seed = args["seed"].as<uint64_t>();
@@ -270,7 +265,7 @@ int main(int argc, char** argv) {
   }
 
   {
-    auto dynamic_comm = make_dynamic_communicator(opts.remove_root_from_distribution);
+    auto dynamic_comm = make_dynamic_communicator(opts.root_not_in_worker_pool);
     if (!dynamic_comm.has_value()) {
       MPI_Finalize();
       return 0;
@@ -299,8 +294,7 @@ int main(int argc, char** argv) {
       std::cout << "RESULT"
                 << " distributor=" << to_string(opts.distributor)
                 << " mode=" << to_string(opts.duration_mode) << " expected_ns=" << opts.expected_ns
-                << " repetitions=" << result.repetitions << " nodes=" << opts.nodes
-                << " world_size=" << result.world_size
+                << " nodes=" << opts.nodes << " world_size=" << result.world_size
                 << " total_subtasks=" << result.total_subtasks << " elapsed_s=" << result.elapsed_s
                 << " throughput_tasks_per_s=" << throughput << std::endl;
       if (!opts.output_path.empty()) {

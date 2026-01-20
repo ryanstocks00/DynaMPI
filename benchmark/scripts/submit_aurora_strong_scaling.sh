@@ -15,6 +15,7 @@ IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512}"
 IFS=' ' read -r -a QSUB_ARGS <<< "${QSUB_ARGS:-}"
 ACCOUNT="${ACCOUNT:-DynaMPI}"
 FILESYSTEMS="${FILESYSTEMS:-flare}"
+NCPUS_PER_NODE="${NCPUS_PER_NODE:-102}"
 
 WALLTIME="${WALLTIME:-00:15:00}"
 LAUNCHER="${LAUNCHER:-}"
@@ -28,7 +29,7 @@ for nodes in "${NODE_LIST[@]}"; do
   if [[ -n "${ACCOUNT}" ]]; then
     submit_args+=(-A "${ACCOUNT}")
   fi
-  qsub "${submit_args[@]}" -N "${job_name}" -l "select=${nodes}" -l "walltime=${WALLTIME}" \
+  qsub "${submit_args[@]}" -N "${job_name}" -l "select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}" -l "walltime=${WALLTIME}" \
     -l "filesystems=${FILESYSTEMS}" <<EOF
 #!/usr/bin/env bash
 #PBS -j oe
@@ -37,6 +38,7 @@ cd "${ROOT_DIR}"
 export NODE_LIST="${nodes}"
 export LAUNCHER="${LAUNCHER}"
 export LAUNCHER_ARGS="${LAUNCHER_ARGS}"
+export CORES_PER_NODE="${NCPUS_PER_NODE}"
 export OUTPUT_DIR="${output_dir}"
 ${SCRIPT}
 EOF
