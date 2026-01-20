@@ -160,6 +160,16 @@ class MPICommunicator {
     return status;
   }
 
+  inline std::optional<MPI_Status> iprobe(int source = MPI_ANY_SOURCE, int tag = MPI_ANY_TAG) {
+    MPI_Status status;
+    int flag;
+    DYNAMPI_MPI_CHECK(MPI_Iprobe, (source, tag, m_comm, &flag, &status));
+    if (flag) {
+      return status;
+    }
+    return std::nullopt;
+  }
+
   template <typename T>
   inline void recv(T& data, int source, int tag = 0) {
     using mpi_type = MPI_Type<T>;

@@ -10,13 +10,11 @@
 #include <chrono>
 #include <cmath>
 #include <functional>
-#include <iostream>
 #include <iterator>
 #include <limits>
 #include <ranges>
 #include <span>
 #include <stack>
-#include <stdexcept>
 #include <type_traits>
 #include <vector>
 
@@ -70,7 +68,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   bool m_finalized = false;
   bool m_done = false;
-  std::optional<std::string> m_stored_error;  // Deferred error to throw after cleanup
 
   static constexpr StatisticsMode statistics_mode =
       get_option_value<track_statistics_t, Options...>();
@@ -143,10 +140,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     DONE = 1,
     RESULT = 2,
     REQUEST = 3,
-    ERROR = 4,
-    TASK_BATCH = 5,
-    RESULT_BATCH = 6,
-    REQUEST_BATCH = 7
+    TASK_BATCH = 4,
+    RESULT_BATCH = 5,
+    REQUEST_BATCH = 6
   };
 
   struct Statistics {
@@ -202,24 +198,18 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         while (!m_done && m_unallocated_task_queue.empty()) {
           receive_from_anyone();
         }
-        if (m_stored_error) {
-          m_unallocated_task_queue = {};
-          continue;
-        }
         size_t num_tasks_should_be_received = m_unallocated_task_queue.size();
-        while (!m_stored_error && !m_unallocated_task_queue.empty()) {
+        while (!m_unallocated_task_queue.empty()) {
           allocate_task_to_child();
         }
-        while (!m_stored_error && m_tasks_sent_to_child > m_results_received_from_child) {
+        while (m_tasks_sent_to_child > m_results_received_from_child) {
           receive_from_anyone();
         }
         if (m_done) {
           break;
         }
         (void)num_tasks_should_be_received;
-        if (!m_stored_error) {
-          DYNAMPI_ASSERT_EQ(m_results.size(), num_tasks_should_be_received);
-        }
+        DYNAMPI_ASSERT_EQ(m_results.size(), num_tasks_should_be_received);
         return_results_and_request_next_batch_from_manager();
       }
       send_done_to_children_when_free();
@@ -230,12 +220,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     DYNAMPI_ASSERT(!is_leaf_worker(), "Leaf workers should not return results directly");
     DYNAMPI_ASSERT_NE(m_communicator.rank(), m_config.manager_rank,
                       "Manager should not request tasks from itself");
-    // If there was an error from a child, propagate it up instead of results
-    if (m_stored_error) {
-      m_communicator.send(*m_stored_error, parent_rank(), Tag::ERROR);
-      m_results.clear();
-      return;
-    }
     std::vector<ResultT> results = m_results;
     m_results.clear();
     m_communicator.send(results, parent_rank(), Tag::RESULT_BATCH);
@@ -288,9 +272,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       while (m_free_worker_indices.empty()) {
         // If no free workers, wait for a result to be received
         receive_from_anyone();
-      }
-      if (m_stored_error) {
-        return;  // Don't send more tasks after an error
       }
       TaskRequest request = m_free_worker_indices.top();
       int worker = request.worker_rank;
@@ -368,7 +349,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       }
       return false;
     };
-    while (!m_unallocated_task_queue.empty() && !m_stored_error) {
+    while (!m_unallocated_task_queue.empty()) {
       const double elapsed_s =
           std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
       if (should_stop(elapsed_s)) {
@@ -382,12 +363,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     }
     m_run_tasks_remaining_limit = std::nullopt;
     // Continue until all task results are received
-    while (m_results_received_from_child < m_tasks_sent_to_child && !m_stored_error) {
+    while (m_results_received_from_child < m_tasks_sent_to_child) {
       receive_from_anyone();
-    }
-    // If there was an error, throw
-    if (m_stored_error) {
-      throw std::runtime_error(*m_stored_error);
     }
     const size_t results_received_delta = m_results_received_from_child - results_received_before;
     const size_t tasks_executed_delta = m_tasks_executed - tasks_executed_before;
@@ -446,16 +423,14 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     if (!m_finalized) {
       finalize();
     }
-    if (!m_stored_error) {
-      DYNAMPI_ASSERT_EQ(m_results_received_from_child, m_tasks_sent_to_child,
-                        "All tasks should have been processed by workers before finalizing");
-      DYNAMPI_ASSERT_EQ(m_results_sent_to_parent, m_tasks_received_from_parent,
-                        "All results should have been sent to the parent before finalizing");
-    }
+    DYNAMPI_ASSERT_EQ(m_results_received_from_child, m_tasks_sent_to_child,
+                      "All tasks should have been processed by workers before finalizing");
+    DYNAMPI_ASSERT_EQ(m_results_sent_to_parent, m_tasks_received_from_parent,
+                      "All results should have been sent to the parent before finalizing");
     if (is_leaf_worker())
       DYNAMPI_ASSERT_EQ(m_results_received_from_child, 0,
                         "Leaf workers should not receive results from children");
-    else if (!m_stored_error && m_communicator.size() > 1)
+    else if (m_communicator.size() > 1)
       DYNAMPI_ASSERT_EQ(m_results_received_from_child + m_tasks_executed, m_results_sent_to_parent,
                         "Results received from children should match results sent to parent");
   }
@@ -540,17 +515,10 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     task_mpi_type::resize(message, count);
     m_communicator.recv(message, status.MPI_SOURCE, Tag::TASK);
     m_tasks_received_from_parent++;
-    try {
-      ResultT result = m_worker_function(message);
-      m_tasks_executed++;
-      m_communicator.send(result, status.MPI_SOURCE, Tag::RESULT);
-      m_results_sent_to_parent++;
-    } catch (const std::exception& e) {
-      std::string error_message = e.what();
-      std::cerr << "Error executing task on rank " << m_communicator.rank() << std::endl;
-      m_communicator.send(error_message, status.MPI_SOURCE, Tag::ERROR);
-      m_stored_error = error_message;
-    }
+    ResultT result = m_worker_function(message);
+    m_tasks_executed++;
+    m_communicator.send(result, status.MPI_SOURCE, Tag::RESULT);
+    m_results_sent_to_parent++;
   }
 
   void receive_task_batch_from(MPI_Status status) {
@@ -587,25 +555,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     m_done = true;
   }
 
-  void receive_error_from(MPI_Status status) {
-    // String requires resizing, so get count from status first
-    using string_mpi_type = MPI_Type<std::string>;
-    int count;
-    DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, string_mpi_type::value, &count));
-    std::string error_message;
-    string_mpi_type::resize(error_message, count);
-    m_communicator.recv(error_message, status.MPI_SOURCE, Tag::ERROR);
-    // Store error to throw later (after cleanup), continue normal flow to avoid deadlock.
-    // Only log the first error to avoid flooding stdout when multiple tasks fail.
-    if (!m_stored_error) {
-      std::cerr << "Error received on rank " << m_communicator.rank() << " from source "
-                << status.MPI_SOURCE << ": " << error_message << std::endl;
-      m_stored_error =
-          "MPI error from source " + std::to_string(status.MPI_SOURCE) + ": " + error_message;
-    }
-    m_free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE});
-  }
-
   void receive_from_anyone() {
     DYNAMPI_ASSERT_GT(m_communicator.size(), 1,
                       "There should be at least one worker to receive results from");
@@ -630,8 +579,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         return receive_request_batch_from(status);
       case Tag::DONE:
         return receive_done_from(status);
-      case Tag::ERROR:
-        return receive_error_from(status);
     }
   }
 };
