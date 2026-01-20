@@ -149,7 +149,8 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
       if (timer.elapsed().count() > opts.duration_s / 2.0 && total_tasks > 0) {
         double current_rate = static_cast<double>(total_tasks) / timer.elapsed().count();
         double estimated_total_tasks = current_rate * opts.duration_s;
-        size_t can_complete_remaining_time = (estimated_total_tasks - total_tasks) / current_rate;
+        size_t can_complete_remaining_time =
+            static_cast<size_t>((estimated_total_tasks - total_tasks) / current_rate);
         to_insert = std::min(to_insert, can_complete_remaining_time - remaining);
       }
 

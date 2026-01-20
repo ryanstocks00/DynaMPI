@@ -59,8 +59,13 @@ TYPED_TEST(DynamicDistribution, Naive) {
   }
 
   if (distributor.is_root_manager()) {
-    auto results = distributor.finish_remaining_tasks();
-    EXPECT_EQ(results.size(), 10);
+    auto results = distributor.run_tasks({.max_tasks = 5});
+    EXPECT_EQ(results.size(), 5);
+    EXPECT_LE(distributor.remaining_tasks_count(), 5);
+    auto second_results = distributor.finish_remaining_tasks();
+    EXPECT_EQ(second_results.size(), 5);
+    EXPECT_EQ(distributor.remaining_tasks_count(), 0);
+    results.insert(results.end(), second_results.begin(), second_results.end());
     if (!Distributer::ordered) {
       std::sort(results.begin(), results.end());
     }

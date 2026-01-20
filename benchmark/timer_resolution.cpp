@@ -17,7 +17,7 @@ void test_clock_resolution(const char* name) {
 
   std::cout << "\n" << name << ":\n";
   std::cout << "  Period: " << Period::num;
-  if (Period::den != 1) {
+  if constexpr (Period::den != 1) {
     std::cout << "/" << Period::den;
   }
   std::cout << " seconds\n";
@@ -31,7 +31,7 @@ void test_clock_resolution(const char* name) {
     auto t2 = Clock::now();
     auto delta = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
     if (delta > 0) {
-      deltas.push_back(delta);
+      deltas.push_back(static_cast<double>(delta));
     }
   }
 

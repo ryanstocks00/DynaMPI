@@ -14,7 +14,7 @@ namespace dynampi {
 
 class Timer {
   std::optional<std::chrono::time_point<std::chrono::high_resolution_clock>> _start_time;
-  std::chrono::duration<double> _elapsed_time{0.0};
+  std::chrono::nanoseconds _elapsed_time{0};
 
  public:
   enum class AutoStart { Yes, No };
@@ -33,14 +33,15 @@ class Timer {
   std::chrono::duration<double> stop() {
     assert(_start_time.has_value() && "Timer not started");
     auto end_time = std::chrono::high_resolution_clock::now();
-    _elapsed_time += end_time - _start_time.value();
+    _elapsed_time +=
+        std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - _start_time.value());
     _start_time.reset();
-    return _elapsed_time;
+    return std::chrono::duration<double>(_elapsed_time);
   }
 
   void reset(AutoStart auto_start = AutoStart::Yes) {
     _start_time.reset();
-    _elapsed_time = std::chrono::duration<double>(0.0);
+    _elapsed_time = std::chrono::nanoseconds{0};
     if (auto_start == AutoStart::Yes) {
       start();
     }
@@ -48,9 +49,12 @@ class Timer {
 
   [[nodiscard]] std::chrono::duration<double> elapsed() const {
     if (_start_time.has_value()) {
-      return _elapsed_time + (std::chrono::high_resolution_clock::now() - _start_time.value());
+      auto current_elapsed =
+          _elapsed_time + std::chrono::duration_cast<std::chrono::nanoseconds>(
+                              std::chrono::high_resolution_clock::now() - _start_time.value());
+      return std::chrono::duration<double>(current_elapsed);
     }
-    return _elapsed_time;
+    return std::chrono::duration<double>(_elapsed_time);
   }
 
   friend std::ostream& operator<<(std::ostream& os, const Timer& timer) {
