@@ -11,7 +11,6 @@
 #include <deque>
 #include <functional>
 #include <limits>
-#include <map>
 #include <optional>
 #include <queue>
 #include <stack>
@@ -70,13 +69,16 @@ class NaiveMPIWorkDistributor {
   std::stack<int> m_free_worker_ranks;
 
   // Transient Storage:
-  // We use a map to handle out-of-order completions efficiently.
-  // Items are removed from here as soon as they become contiguous and ready to return.
-  std::map<int64_t, ResultT> m_pending_results;
+  // We use a vector to store results by task ID, with a bitmap to track validity.
+  // Items are marked invalid as soon as they become contiguous and ready to return.
+  std::vector<ResultT> m_pending_results;
+  std::vector<bool> m_pending_results_valid;
 
   // Counters
-  size_t m_tasks_sent = 0;       // Total tasks ever sent (acts as the unique ID for the next task)
-  size_t m_next_return_idx = 0;  // The unique ID of the next result the user expects
+  size_t m_tasks_sent = 0;        // Total tasks ever sent (acts as the unique ID for the next task)
+  size_t m_front_result_idx = 0;  // The task ID of the result at the front of the vector (index 0)
+  size_t m_known_contiguous_results =
+      0;  // Number of contiguous valid results starting from m_front_result_idx
   bool m_finalized = false;
 
   enum Tag : int { TASK = 0, DONE = 1, RESULT = 2, REQUEST = 3, ERROR = 4 };
@@ -129,7 +131,7 @@ class NaiveMPIWorkDistributor {
       // --- 1. Check Exit Conditions ---
 
       // A. Have we collected enough contiguous results?
-      if (count_contiguous_ready_results() >= config.target_num_tasks) {
+      if (m_known_contiguous_results >= config.target_num_tasks) {
         break;
       }
 
@@ -282,9 +284,14 @@ class NaiveMPIWorkDistributor {
 
   void run_task_locally() {
     TaskT task = pop_next_task();
-    // Store result directly in map
-    m_pending_results[static_cast<int64_t>(m_tasks_sent)] = m_worker_function(std::move(task));
+    // Store result directly in vector (using relative indexing)
+    int64_t task_id = static_cast<int64_t>(m_tasks_sent);
+    ensure_result_capacity(task_id - m_front_result_idx + 1);
+    size_t vector_idx = task_id - m_front_result_idx;
+    m_pending_results[vector_idx] = m_worker_function(std::move(task));
+    m_pending_results_valid[vector_idx] = true;
     m_tasks_sent++;
+    update_contiguous_results_count(task_id);
   }
 
   void send_next_task_to_worker(int worker_rank) {
@@ -329,8 +336,17 @@ class NaiveMPIWorkDistributor {
     result_type::resize(result_data, count);
     m_communicator.recv(result_data, source, Tag::RESULT);
 
-    // Store in map
-    m_pending_results[task_id] = std::move(result_data);
+    // Skip results that are already too old (shouldn't happen in practice)
+    if (task_id < static_cast<int64_t>(m_front_result_idx)) {
+      return;  // This result was already returned
+    }
+
+    // Store in vector (using relative indexing)
+    size_t vector_idx = task_id - m_front_result_idx;
+    ensure_result_capacity(vector_idx + 1);
+    m_pending_results[vector_idx] = std::move(result_data);
+    m_pending_results_valid[vector_idx] = true;
+    update_contiguous_results_count(task_id);
   }
 
   void wait_for_all_active_workers() {
@@ -339,39 +355,30 @@ class NaiveMPIWorkDistributor {
     }
   }
 
-  // Efficiently counts how many contiguous results are available
-  // starting from m_next_return_idx without expensive vector scans.
-  size_t count_contiguous_ready_results() const {
-    size_t count = 0;
-    auto it = m_pending_results.find(static_cast<int64_t>(m_next_return_idx));
-
-    while (it != m_pending_results.end()) {
-      // Verify continuity: Key must match (start + count)
-      if (it->first != static_cast<int64_t>(m_next_return_idx + count)) {
-        break;
-      }
-      count++;
-      it++;
-    }
-    return count;
-  }
-
   std::vector<ResultT> collect_available_results(size_t limit) {
     std::vector<ResultT> batch;
-
-    // Extract contiguous results from the map up to the limit.
-    // Logic: Look for m_next_return_idx. If found, move it to batch,
-    // erase from map (saving memory), increment index.
-    while (batch.size() < limit) {
-      auto it = m_pending_results.find(static_cast<int64_t>(m_next_return_idx));
-      if (it == m_pending_results.end()) {
-        break;  // Gap detected or no more results
-      }
-
-      batch.push_back(std::move(it->second));
-      m_pending_results.erase(it);  // Remove from storage
-      m_next_return_idx++;
+    size_t num_results_to_return = std::min(limit, m_known_contiguous_results);
+    if (num_results_to_return == 0) {
+      return batch;
     }
+
+    batch.reserve(num_results_to_return);
+    // Extract from the beginning of the vectors (which contain contiguous results starting from
+    // m_front_result_idx)
+    batch.insert(batch.end(), std::make_move_iterator(m_pending_results.begin()),
+                 std::make_move_iterator(m_pending_results.begin() + num_results_to_return));
+
+    // Erase the collected results from the beginning
+    m_pending_results_valid.erase(m_pending_results_valid.begin(),
+                                  m_pending_results_valid.begin() + num_results_to_return);
+    m_pending_results.erase(m_pending_results.begin(),
+                            m_pending_results.begin() + num_results_to_return);
+
+    // Update counters: increment m_front_result_idx to reflect the new starting point,
+    // and decrement the contiguous count. The vectors now use relative indexing
+    // where index 0 corresponds to task_id = m_front_result_idx.
+    m_front_result_idx += num_results_to_return;
+    m_known_contiguous_results -= num_results_to_return;
 
     return batch;
   }
@@ -379,6 +386,32 @@ class NaiveMPIWorkDistributor {
   void broadcast_done() {
     for (int i = 0; i < num_workers(); i++) {
       m_communicator.send(nullptr, worker_idx_to_rank(i), Tag::DONE);
+    }
+  }
+
+  void ensure_result_capacity(size_t required_size) {
+    // required_size is relative to m_front_result_idx
+    if (m_pending_results.size() < required_size) {
+      m_pending_results.resize(required_size);
+      m_pending_results_valid.resize(required_size, false);
+    }
+  }
+
+  // Updates m_known_contiguous_results when a new result arrives.
+  // If the result extends the contiguous sequence, increment and check forward.
+  void update_contiguous_results_count(int64_t task_id) {
+    int64_t expected_task_id =
+        static_cast<int64_t>(m_front_result_idx + m_known_contiguous_results);
+
+    // Only update if this result extends the contiguous sequence
+    if (task_id == expected_task_id) {
+      // Extend the contiguous sequence forward as far as possible
+      // Use relative indexing for vector access
+      size_t vector_idx = expected_task_id - m_front_result_idx;
+      while (vector_idx < m_pending_results.size() && m_pending_results_valid[vector_idx]) {
+        m_known_contiguous_results++;
+        vector_idx++;
+      }
     }
   }
 
