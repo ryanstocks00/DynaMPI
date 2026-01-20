@@ -59,7 +59,7 @@ TYPED_TEST(DynamicDistribution, Naive) {
   }
 
   if (distributor.is_root_manager()) {
-    auto results = distributor.run_tasks({.max_tasks = 5});
+    auto results = distributor.run_tasks({.min_tasks = 5, .max_tasks = 5});
     EXPECT_EQ(results.size(), 5);
     EXPECT_LE(distributor.remaining_tasks_count(), 5);
     auto second_results = distributor.finish_remaining_tasks();
@@ -126,7 +126,6 @@ TYPED_TEST(DynamicDistribution, Example2) {
     };
     {
       typename Distributer::Config config;
-      config.return_new_results_only = false;
       Distributer work_distributer(worker_task, config);
       if (work_distributer.is_root_manager()) {
         work_distributer.insert_tasks({1, 2, 3, 4, 5});
@@ -135,14 +134,8 @@ TYPED_TEST(DynamicDistribution, Example2) {
                                {1, 1, 1}, {2, 4, 8}, {3, 9, 27}, {4, 16, 64}, {5, 25, 125}}));
         work_distributer.insert_tasks({6, 7, 8});
         results = work_distributer.finish_remaining_tasks();
-        EXPECT_EQ(results, (std::vector<std::vector<int>>{{1, 1, 1},
-                                                          {2, 4, 8},
-                                                          {3, 9, 27},
-                                                          {4, 16, 64},
-                                                          {5, 25, 125},
-                                                          {6, 36, 216},
-                                                          {7, 49, 343},
-                                                          {8, 64, 512}}));
+        EXPECT_EQ(results,
+                  (std::vector<std::vector<int>>{{6, 36, 216}, {7, 49, 343}, {8, 64, 512}}));
       }
     }
   }
@@ -161,10 +154,12 @@ TYPED_TEST(DynamicDistribution, RunTasksMaxTasks) {
 
     typename Distributer::RunConfig config;
     config.max_tasks = 3;
+    config.min_tasks = 3;
     auto results = work_distributer.run_tasks(config);
     EXPECT_EQ(results.size(), 3u);
 
     config.max_tasks = 4;
+    config.min_tasks = 4;
     auto more_results = work_distributer.run_tasks(config);
     EXPECT_EQ(more_results.size(), 4u);
 

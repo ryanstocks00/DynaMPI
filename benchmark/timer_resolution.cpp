@@ -10,7 +10,7 @@
 #include <numeric>
 #include <vector>
 
-void print_resolution_stats(const std::vector<double>& deltas, int iterations) {
+void print_resolution_stats(std::vector<double>& deltas, int iterations) {
   if (deltas.empty()) {
     std::cout << "  Measured resolution: < 1 ns (no measurable difference in " << iterations
               << " iterations)\n";

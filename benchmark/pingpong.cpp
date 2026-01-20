@@ -120,7 +120,6 @@ static Options parse_args(int argc, char **argv, int rank) {
     } else if (a == "--only-rank") {
       parse_int_arg(rank, i, argc, argv, "--only-rank", opt.only_rank);
     } else if (a == "--methods") {
-      need("--methods");
       methods_specified = true;
       opt.methods.clear();
       std::string list = argv[++i];
