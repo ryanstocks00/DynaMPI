@@ -14,6 +14,7 @@ set(benchmarks
     strong_scaling_distribution_rate
     pingpong
     timer_resolution
+    naive_shutdown_time
 )
 
 foreach(benchmark IN LISTS benchmarks)

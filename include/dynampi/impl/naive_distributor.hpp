@@ -182,8 +182,8 @@ class NaiveMPIWorkDistributor {
     assert(!m_finalized && "Work distribution already finalized");
     if (is_root_manager()) {
       broadcast_done();
-      m_finalized = true;
     }
+    m_finalized = true;
   }
 
   // --- Public Accessors ---

@@ -69,6 +69,10 @@ for nodes in "${NODE_LIST[@]}"; do
     fi
     total_ranks=$((nodes * ranks_per_node))
     for dist in "${DISTRIBUTIONS[@]}"; do
+      # For Aurora, restrict to hierarchical distributor on 2048 nodes and above
+      if [[ "${SYSTEM}" == "aurora" && "${nodes}" -ge 2048 && "${dist}" != "hierarchical" ]]; then
+        continue
+      fi
       for mode in "${MODES[@]}"; do
       for expected_us in "${TASK_US_LIST[@]}"; do
           echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist} mode=${mode} expected_us=${expected_us}"
