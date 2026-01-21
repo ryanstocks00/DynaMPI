@@ -38,7 +38,7 @@ export NODE_LIST="${nodes}"
 export LAUNCHER="${LAUNCHER}"
 export LAUNCHER_ARGS="${LAUNCHER_ARGS}"
 export CORES_PER_NODE="${NCPUS_PER_NODE}"
-export OUTPUT_DIR="${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${PBS_JOBID:-manual}"
+export OUTPUT_DIR="${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${PBS_JOBID_SHORT:-manual}"
 ${SCRIPT}
 EOF
 done
