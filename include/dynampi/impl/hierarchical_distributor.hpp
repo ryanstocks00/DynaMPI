@@ -37,7 +37,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     std::optional<size_t> message_batch_size = std::nullopt;
     std::optional<int> max_workers_per_coordinator = std::nullopt;
     int batch_size_multiplier = 2;
-    bool return_new_results_only = false;
   };
 
   struct RunConfig {
@@ -358,33 +357,17 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     // --- Return Logic ---
     std::vector<ResultT> batch;
 
-    if (m_config.return_new_results_only) {
-      // Return only new results (from m_results_returned to end)
-      size_t new_results_start = m_results_returned;
-      size_t new_results_count = m_results.size() - new_results_start;
+    size_t available = m_results.size();
+    size_t count_to_return = available;
 
-      if (new_results_count > 0) {
-        batch.reserve(new_results_count);
-        auto start_it = m_results.begin() + new_results_start;
-        std::move(start_it, m_results.end(), std::back_inserter(batch));
-      }
-
-      // Advance the cursor without clearing m_results
-      m_results_returned = m_results.size();
-    } else {
-      // Original logic: return and remove from m_results
-      size_t available = m_results.size();
-      size_t count_to_return = available;
-
-      if (!config.allow_more_than_target_tasks) {
-        count_to_return = std::min(available, config.target_num_tasks);
-      }
-
-      batch.reserve(count_to_return);
-      auto end_it = m_results.begin() + count_to_return;
-      std::move(m_results.begin(), end_it, std::back_inserter(batch));
-      m_results.erase(m_results.begin(), end_it);
+    if (!config.allow_more_than_target_tasks) {
+      count_to_return = std::min(available, config.target_num_tasks);
     }
+
+    batch.reserve(count_to_return);
+    auto end_it = m_results.begin() + count_to_return;
+    std::move(m_results.begin(), end_it, std::back_inserter(batch));
+    m_results.erase(m_results.begin(), end_it);
 
     m_results_sent_to_parent += batch.size();
     return batch;
