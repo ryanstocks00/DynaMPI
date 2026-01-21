@@ -181,7 +181,6 @@ class NaiveMPIWorkDistributor {
   void finalize() {
     assert(!m_finalized && "Work distribution already finalized");
     if (is_root_manager()) {
-      wait_for_all_active_workers();
       broadcast_done();
       m_finalized = true;
     }
@@ -315,10 +314,9 @@ class NaiveMPIWorkDistributor {
 
     if (status.MPI_TAG == Tag::RESULT) {
       handle_result_message(source, status);
-    } else if (status.MPI_TAG == Tag::REQUEST) {
-      m_communicator.recv_empty_message(source, Tag::REQUEST);
     } else {
-      assert(false && "Unexpected tag received");
+      DYNAMPI_ASSERT_EQ(status.MPI_TAG, Tag::REQUEST, "Unexpected tag received");
+      m_communicator.recv_empty_message(source, Tag::REQUEST);
     }
     m_free_worker_ranks.push(source);
   }
@@ -336,23 +334,12 @@ class NaiveMPIWorkDistributor {
     result_type::resize(result_data, count);
     m_communicator.recv(result_data, source, Tag::RESULT);
 
-    // Skip results that are already too old (shouldn't happen in practice)
-    if (task_id < static_cast<int64_t>(m_front_result_idx)) {
-      return;  // This result was already returned
-    }
-
     // Store in vector (using relative indexing)
     size_t vector_idx = task_id - m_front_result_idx;
     ensure_result_capacity(vector_idx + 1);
     m_pending_results[vector_idx] = std::move(result_data);
     m_pending_results_valid[vector_idx] = true;
     update_contiguous_results_count(task_id);
-  }
-
-  void wait_for_all_active_workers() {
-    while (m_free_worker_ranks.size() < static_cast<size_t>(num_workers())) {
-      process_incoming_message(true);
-    }
   }
 
   std::vector<ResultT> collect_available_results(size_t limit) {

@@ -120,9 +120,11 @@ static Options parse_args(int argc, char **argv, int rank) {
     } else if (a == "--only-rank") {
       parse_int_arg(rank, i, argc, argv, "--only-rank", opt.only_rank);
     } else if (a == "--methods") {
+      if (i + 1 >= argc) die(rank, "missing value for --methods");
+      ++i;
       methods_specified = true;
       opt.methods.clear();
-      std::string list = argv[++i];
+      std::string list = argv[i];
       size_t start = 0;
       while (start <= list.size()) {
         size_t comma = list.find(',', start);

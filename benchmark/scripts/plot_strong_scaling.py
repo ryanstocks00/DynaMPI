@@ -119,92 +119,111 @@ def plot_distributor(system, distributor, grouped, output_dir, image_format):
     # Create separate plots for each mode
     for mode in modes:
         # Use scienceplots IEEE style
-        plt.style.use(['science', 'ieee'])
+        with plt.style.context(['science', 'ieee']):
+            fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT))
 
-        fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT))
+            series = []
+            all_nodes = set()
+            ranks_per_node_value = None
+            for (
+                sys_name,
+                dist,
+                mode_name,
+                expected_ns,
+                ranks_per_node,
+            ), points in grouped.items():
+                # Handle backward compatibility: treat "poisson" as "random"
+                normalized_mode = "random" if mode_name == "poisson" else mode_name
+                if sys_name != system or dist != distributor or normalized_mode != mode:
+                    continue
+                points_sorted = sorted(points, key=lambda x: x[0])
+                nodes = [p[0] for p in points_sorted]
+                throughput = [p[1] for p in points_sorted]
+                all_nodes.update(nodes)
+                if ranks_per_node_value is None:
+                    ranks_per_node_value = ranks_per_node
+                series.append((expected_ns, ranks_per_node, nodes, throughput))
 
-        series = []
-        all_nodes = set()
-        ranks_per_node_value = None
-        for (
-            sys_name,
-            dist,
-            mode_name,
-            expected_ns,
-            ranks_per_node,
-        ), points in grouped.items():
-            # Handle backward compatibility: treat "poisson" as "random"
-            normalized_mode = "random" if mode_name == "poisson" else mode_name
-            if sys_name != system or dist != distributor or normalized_mode != mode:
-                continue
-            points_sorted = sorted(points, key=lambda x: x[0])
-            nodes = [p[0] for p in points_sorted]
-            throughput = [p[1] for p in points_sorted]
-            all_nodes.update(nodes)
-            if ranks_per_node_value is None:
-                ranks_per_node_value = ranks_per_node
-            series.append((expected_ns, ranks_per_node, nodes, throughput))
+            # Sort series by expected_ns (duration) to ensure proper ordering
+            series_sorted = sorted(series, key=lambda x: x[0])  # Sort by expected_ns only
+            handles = []
+            labels = []
 
-        # Sort series by expected_ns (duration) to ensure proper ordering
-        series_sorted = sorted(series, key=lambda x: x[0])  # Sort by expected_ns only
-        handles = []
-        labels = []
+            # Plot actual data first to establish axis limits
+            for idx, (expected_ns, ranks_per_node, nodes, throughput) in enumerate(series_sorted):
+                # Remove rpn from legend label, only show duration
+                label = format_duration(expected_ns)
+                marker = MARKER_SHAPES[idx % len(MARKER_SHAPES)]
+                color = plt.cm.tab10(idx % 10)
+                # Use matplotlib's default color cycle for different colors
+                line, = ax.plot(nodes, throughput, marker=marker, label=label,
+                               fillstyle='none', markeredgewidth=1.0,
+                               color=color)
+                handles.append(line)
+                labels.append(label)
 
-        for idx, (expected_ns, ranks_per_node, nodes, throughput) in enumerate(series_sorted):
-            # Remove rpn from legend label, only show duration
-            label = format_duration(expected_ns)
-            marker = MARKER_SHAPES[idx % len(MARKER_SHAPES)]
-            # Use matplotlib's default color cycle for different colors
-            line, = ax.plot(nodes, throughput, marker=marker, label=label,
-                           fillstyle='none', markeredgewidth=1.0,
-                           color=plt.cm.tab10(idx % 10))
-            handles.append(line)
-            labels.append(label)
+            ax.set_xlabel("Nodes")
+            ax.set_ylabel("Tasks per second")
+            ax.set_xscale("log", base=2)
+            ax.set_yscale("log")
+            # Show actual node counts (2, 4, 8, 16, ...) rather than 2^n formatting.
+            # Keep the log2 spacing but format ticks as plain integers.
+            if all_nodes:
+                node_ticks = sorted(all_nodes)
+                ax.xaxis.set_major_locator(FixedLocator(node_ticks))
+                ax.xaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int(x)}"))
 
-        ax.set_xlabel("Nodes")
-        ax.set_ylabel("Tasks per second")
-        ax.set_xscale("log", base=2)
-        ax.set_yscale("log")
-        # Show actual node counts (2, 4, 8, 16, ...) rather than 2^n formatting.
-        # Keep the log2 spacing but format ticks as plain integers.
-        if all_nodes:
-            node_ticks = sorted(all_nodes)
-            ax.xaxis.set_major_locator(FixedLocator(node_ticks))
-            ax.xaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int(x)}"))
+            # Add very light grey underlying grid
+            ax.grid(True, which="both", linestyle="-", linewidth=0.5, color='lightgrey', alpha=0.5, zorder=0)
 
-        # Add very light grey underlying grid
-        ax.grid(True, which="both", linestyle="-", linewidth=0.5, color='lightgrey', alpha=0.5, zorder=0)
+            # Store axis limits before plotting ideal lines
+            xlim = ax.get_xlim()
+            ylim = ax.get_ylim()
 
-        # Reorder handles and labels to go across columns first (row-major)
-        # Matplotlib's legend with ncol fills column-major (down columns first),
-        # so we need to transpose the order to get row-major display
-        ncol = 4
-        n_items = len(handles)
-        n_rows = (n_items + ncol - 1) // ncol  # Ceiling division
+            # Plot ideal scaling lines without affecting axis limits
+            for idx, (expected_ns, ranks_per_node, nodes, throughput) in enumerate(series_sorted):
+                color = plt.cm.tab10(idx % 10)
+                # Add ideal scaling line: throughput = nodes * ranks_per_node * 1e9 / expected_ns
+                if all_nodes:
+                    ideal_nodes = sorted(all_nodes)
+                    ideal_throughput = [n * ranks_per_node * 1e9 / expected_ns for n in ideal_nodes]
+                    ax.plot(ideal_nodes, ideal_throughput, linestyle='--', color=color,
+                           linewidth=1.0, alpha=0.5, zorder=0)
 
-        # Create reordered lists: transpose so matplotlib's column-major fill gives row-major display
-        reordered_handles = []
-        reordered_labels = []
-        for col in range(ncol):
-            for row in range(n_rows):
-                idx = row * ncol + col
-                if idx < n_items:
-                    reordered_handles.append(handles[idx])
-                    reordered_labels.append(labels[idx])
+            # Restore axis limits to those determined by actual data
+            ax.set_xlim(xlim)
+            ax.set_ylim(ylim)
 
-        # Compact legend with increased column spacing - 4 columns at bottom, no border
-        # Items ordered by duration (1us, 10us, 100us, ...) going across columns first
-        legend = ax.legend(reordered_handles, reordered_labels,
-                          frameon=False,
-                          ncol=ncol, columnspacing=0.8,
-                          loc='upper center', bbox_to_anchor=(0.5, -0.15))
+            # Reorder handles and labels to go across columns first (row-major)
+            # Matplotlib's legend with ncol fills column-major (down columns first),
+            # so we need to transpose the order to get row-major display
+            ncol = 4
+            n_items = len(handles)
+            n_rows = (n_items + ncol - 1) // ncol  # Ceiling division
 
-        # Add rpn to filename
-        rpn_str = f"_{ranks_per_node_value}rpn" if ranks_per_node_value else ""
-        filename = f"strong_scaling_{system}_{distributor}_{mode}{rpn_str}.{image_format}"
-        fig.tight_layout(rect=[0, 0.12, 1, 1])  # Leave space at bottom for legend
-        fig.savefig(os.path.join(output_dir, filename), dpi=300, bbox_inches='tight')
-        plt.close(fig)
+            # Create reordered lists: transpose so matplotlib's column-major fill gives row-major display
+            reordered_handles = []
+            reordered_labels = []
+            for col in range(ncol):
+                for row in range(n_rows):
+                    idx = row * ncol + col
+                    if idx < n_items:
+                        reordered_handles.append(handles[idx])
+                        reordered_labels.append(labels[idx])
+
+            # Compact legend with increased column spacing - 4 columns at bottom, no border
+            # Items ordered by duration (1us, 10us, 100us, ...) going across columns first
+            ax.legend(reordered_handles, reordered_labels,
+                      frameon=False,
+                      ncol=ncol, columnspacing=0.8,
+                      loc='upper center', bbox_to_anchor=(0.5, -0.15))
+
+            # Add rpn to filename
+            rpn_str = f"_{ranks_per_node_value}rpn" if ranks_per_node_value else ""
+            filename = f"strong_scaling_{system}_{distributor}_{mode}{rpn_str}.{image_format}"
+            fig.tight_layout(rect=[0, 0.12, 1, 1])  # Leave space at bottom for legend
+            fig.savefig(os.path.join(output_dir, filename), dpi=300, bbox_inches='tight')
+            plt.close(fig)
 
 
 def main():

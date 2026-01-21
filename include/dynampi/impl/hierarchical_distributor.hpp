@@ -37,7 +37,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     std::optional<size_t> message_batch_size = std::nullopt;
     std::optional<int> max_workers_per_coordinator = std::nullopt;
     int batch_size_multiplier = 2;
-    bool return_new_results_only = true;
+    bool return_new_results_only = false;
   };
 
   struct RunConfig {
@@ -327,18 +327,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
                       "Only the manager can finish remaining tasks");
     Timer timer;
 
-    // In accumulating mode, if current size >= target, we might return early.
-    // However, if the user set "allow_more=false", they might expect a slice of existing data.
-
     while (true) {
-      size_t current_results_count = m_results.size();
-      size_t effective_count =
-          m_config.return_new_results_only ? current_results_count : current_results_count;
-
       // A. Target reached
-      // For new_results_only: target applies to size of m_results (since it was cleared before or
-      // returned). For accumulating: target applies to TOTAL size.
-      if (effective_count >= config.target_num_tasks) {
+      if (m_results.size() >= config.target_num_tasks) {
         break;
       }
 
@@ -359,18 +350,29 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
       if (tasks_available && (is_single_proc || workers_available)) {
         allocate_task_to_child();
-      } else {
-        if (is_single_proc) {
-          break;
-        } else if (active_tasks > 0 || (tasks_available && !workers_available)) {
-          receive_from_anyone();
-        }
+      } else if (active_tasks > 0 || (tasks_available && !workers_available)) {
+        receive_from_anyone();
       }
     }
 
     // --- Return Logic ---
+    std::vector<ResultT> batch;
 
     if (m_config.return_new_results_only) {
+      // Return only new results (from m_results_returned to end)
+      size_t new_results_start = m_results_returned;
+      size_t new_results_count = m_results.size() - new_results_start;
+
+      if (new_results_count > 0) {
+        batch.reserve(new_results_count);
+        auto start_it = m_results.begin() + new_results_start;
+        std::move(start_it, m_results.end(), std::back_inserter(batch));
+      }
+
+      // Advance the cursor without clearing m_results
+      m_results_returned = m_results.size();
+    } else {
+      // Original logic: return and remove from m_results
       size_t available = m_results.size();
       size_t count_to_return = available;
 
@@ -378,30 +380,14 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         count_to_return = std::min(available, config.target_num_tasks);
       }
 
-      std::vector<ResultT> batch;
       batch.reserve(count_to_return);
       auto end_it = m_results.begin() + count_to_return;
       std::move(m_results.begin(), end_it, std::back_inserter(batch));
       m_results.erase(m_results.begin(), end_it);
-
-      m_results_sent_to_parent += batch.size();
-      return batch;
-    } else {
-      // Accumulating Mode
-      size_t available = m_results.size();
-      size_t count_to_return = available;
-
-      if (!config.allow_more_than_target_tasks) {
-        count_to_return = std::min(available, config.target_num_tasks);
-      }
-
-      m_results_sent_to_parent = count_to_return;
-      if (count_to_return == available) {
-        return m_results;
-      } else {
-        return std::vector<ResultT>(m_results.begin(), m_results.begin() + count_to_return);
-      }
     }
+
+    m_results_sent_to_parent += batch.size();
+    return batch;
   }
 
   [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() {

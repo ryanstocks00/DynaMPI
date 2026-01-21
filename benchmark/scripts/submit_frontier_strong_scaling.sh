@@ -11,6 +11,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SYSTEM="frontier"
 SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_frontier_strong_scaling.sh"
 
+NODE_LIST=()
+SBATCH_ARGS=()
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512}"
 IFS=' ' read -r -a SBATCH_ARGS <<< "${SBATCH_ARGS:-}"
 ACCOUNT="${ACCOUNT:-chm213}"
@@ -22,7 +24,7 @@ OUTPUT_BASE="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 
 for nodes in "${NODE_LIST[@]}"; do
   job_name="dynampi_ss_${SYSTEM}_${nodes}"
-  submit_args=("${SBATCH_ARGS[@]}")
+  submit_args=(${SBATCH_ARGS[@]+"${SBATCH_ARGS[@]}"})
   if [[ -n "${ACCOUNT}" ]]; then
     submit_args+=(--account="${ACCOUNT}")
   fi
