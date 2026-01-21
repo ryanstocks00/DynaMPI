@@ -83,19 +83,9 @@ static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts,
      << result.elapsed_s << "," << throughput << "\n";
 }
 
-class CommWrapper {
- public:
-  explicit CommWrapper(MPI_Comm comm) : comm_(comm) {}
-  void barrier() const { MPI_Barrier(comm_); }
-  MPI_Comm get() const { return comm_; }
-
- private:
-  MPI_Comm comm_;
-};
-
 template <typename Distributor>
 static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm) {
-  CommWrapper comm_wrapper(comm);
+  dynampi::MPICommunicator<> comm_wrapper(comm, dynampi::MPICommunicator<>::Ownership::Reference);
   int rank = 0;
   int size = 0;
   MPI_Comm_rank(comm, &rank);
@@ -133,7 +123,7 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
 
   WorkerFunctor worker_function(rank, opts.expected_us, opts.duration_mode);
 
-  comm_wrapper.barrier();
+  MPI_Barrier(comm_wrapper);
   dynampi::Timer timer(dynampi::Timer::AutoStart::No);
   uint64_t total_tasks = 0;
 

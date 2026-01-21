@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cxxopts.hpp>
 #include <dynampi/impl/naive_distributor.hpp>
+#include <dynampi/mpi/mpi_communicator.hpp>
 #include <dynampi/utilities/timer.hpp>
 #include <fstream>
 #include <iostream>
@@ -25,31 +26,22 @@ struct BenchmarkOptions {
 struct BenchmarkResult {
   uint64_t workers = 0;
   uint64_t world_size = 0;
-  double shutdown_time_s = 0.0;
+  double time_per_shutdown_us = 0.0;
+  uint64_t iterations = 0;
 };
 
 static void write_csv_header(std::ostream& os) {
-  os << "system,nodes,world_size,workers,shutdown_time_s\n";
+  os << "system,nodes,world_size,workers,time_per_shutdown_us,iterations\n";
 }
 
 static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts,
                           const BenchmarkResult& result) {
   os << opts.system << "," << opts.nodes << "," << result.world_size << "," << result.workers << ","
-     << result.shutdown_time_s << "\n";
+     << result.time_per_shutdown_us << "," << result.iterations << "\n";
 }
 
-class CommWrapper {
- public:
-  explicit CommWrapper(MPI_Comm comm) : comm_(comm) {}
-  void barrier() const { MPI_Barrier(comm_); }
-  MPI_Comm get() const { return comm_; }
-
- private:
-  MPI_Comm comm_;
-};
-
 static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& opts, MPI_Comm comm) {
-  CommWrapper comm_wrapper(comm);
+  dynampi::MPICommunicator<> comm_wrapper(comm, dynampi::MPICommunicator<>::Ownership::Reference);
   int rank = 0;
   int size = 0;
   MPI_Comm_rank(comm, &rank);
@@ -60,33 +52,52 @@ static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& op
   // Simple worker function that does nothing
   auto worker_function = [](Task task) -> Result { return static_cast<Result>(task); };
 
-  comm_wrapper.barrier();
+  MPI_Barrier(comm_wrapper);
 
-  dynampi::Timer timer(dynampi::Timer::AutoStart::No);
-  double shutdown_time = 0.0;
+  // Overall timer for 10-second duration
+  dynampi::Timer overall_timer(dynampi::Timer::AutoStart::Yes);
+  const double target_duration_s = 10.0;
 
-  {
-    dynampi::NaiveMPIWorkDistributor<Task, Result> distributor(worker_function,
-                                                               {.comm = comm, .manager_rank = 0});
+  // Per-iteration timer
+  dynampi::Timer iteration_timer(dynampi::Timer::AutoStart::No);
 
-    // Ensure all workers are ready
-    comm_wrapper.barrier();
+  double total_shutdown_time = 0.0;
+  uint64_t iterations = 0;
 
-    if (distributor.is_root_manager()) {
-      timer.start();
-      distributor.finalize();
-      timer.stop();
-      shutdown_time = timer.elapsed().count();
-    } else {
-      // Workers will exit when they receive DONE message
-      // The distributor destructor will handle cleanup
+  while (true) {
+    bool should_continue = overall_timer.elapsed().count() < target_duration_s;
+    comm_wrapper.broadcast(should_continue);
+    if (!should_continue) {
+      break;
     }
+    // Ensure all workers are ready
+    MPI_Barrier(comm_wrapper);
+
+    {
+      dynampi::NaiveMPIWorkDistributor<Task, Result> distributor(
+          worker_function, {.comm = comm, .manager_rank = 0, .auto_run_workers = true});
+
+      if (distributor.is_root_manager()) {
+        iteration_timer.reset(dynampi::Timer::AutoStart::Yes);
+        auto _ = distributor.finish_remaining_tasks();
+        (void)_;
+        iteration_timer.stop();
+        total_shutdown_time += iteration_timer.elapsed().count();
+        iterations++;
+      }
+    }
+
+    // Barrier to ensure all processes complete shutdown before next iteration
+    MPI_Barrier(comm_wrapper);
   }
 
-  // Barrier to ensure all processes complete shutdown
-  comm_wrapper.barrier();
+  // Calculate average shutdown time in microseconds
+  const double avg_shutdown_time_us =
+      (iterations > 0) ? (total_shutdown_time / static_cast<double>(iterations)) * 1'000'000.0
+                       : 0.0;
 
-  return BenchmarkResult{num_workers, static_cast<uint64_t>(size), shutdown_time};
+  return BenchmarkResult{num_workers, static_cast<uint64_t>(size), avg_shutdown_time_us,
+                         iterations};
 }
 
 int main(int argc, char** argv) {
@@ -142,8 +153,9 @@ int main(int argc, char** argv) {
     if (rank == 0) {
       std::cout << "RESULT"
                 << " nodes=" << opts.nodes << " world_size=" << result.world_size
-                << " workers=" << result.workers << " shutdown_time_s=" << result.shutdown_time_s
-                << std::endl;
+                << " workers=" << result.workers
+                << " time_per_shutdown_us=" << result.time_per_shutdown_us
+                << " iterations=" << result.iterations << std::endl;
       if (!opts.output_path.empty()) {
         std::ifstream check(opts.output_path);
         const bool needs_header =

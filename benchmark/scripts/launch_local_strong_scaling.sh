@@ -11,7 +11,7 @@ APP="${APP:-${ROOT_DIR}/build/benchmark/strong_scaling_distribution_rate}"
 OUTPUT_DIR="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 SYSTEM="local"
 
-IFS=' ' read -r -a RANK_LIST <<< "${RANK_LIST:-1 2 4 8 12 16 20 24}"
+IFS=' ' read -r -a RANK_LIST <<< "${RANK_LIST:-1 2 4 8 12}"
 IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-1 10 100 1000 10000 100000 1000000}"
 IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
 IFS=' ' read -r -a MODES <<< "${MODES:-fixed random}"

@@ -33,5 +33,5 @@ for nodes in "${NODE_LIST[@]}"; do
     --nodes="${nodes}" \
     --time="${WALLTIME}" \
     --export=ALL,NODE_LIST="${nodes}",LAUNCHER="${LAUNCHER}",LAUNCHER_ARGS="${LAUNCHER_ARGS}" \
-    --wrap="cd ${ROOT_DIR} && OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-${SLURM_JOB_ID:-manual}\" ${SCRIPT}"
+    --wrap="cd ${ROOT_DIR} && OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${SLURM_JOB_ID:-manual}\" ${SCRIPT}"
 done

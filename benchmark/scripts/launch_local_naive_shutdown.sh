@@ -11,7 +11,7 @@ APP="${APP:-${ROOT_DIR}/build/benchmark/naive_shutdown_time}"
 OUTPUT_DIR="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 SYSTEM="local"
 
-IFS=' ' read -r -a RANK_LIST <<< "${RANK_LIST:-1 2 4 8 12 16 20 24}"
+IFS=' ' read -r -a RANK_LIST <<< "${RANK_LIST:-1 2 4 8 12}"
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
 
