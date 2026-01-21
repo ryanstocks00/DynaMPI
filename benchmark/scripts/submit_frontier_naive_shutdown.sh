@@ -11,9 +11,11 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SYSTEM="frontier"
 SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_frontier_naive_shutdown.sh"
 
-NODE_LIST=()
 SBATCH_ARGS=()
-IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512}"
+if [[ -z "${NODE_LIST:-}" ]]; then
+  NODE_LIST="1 2 4 8 16 32 64 128 256 512"
+fi
+IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST}"
 IFS=' ' read -r -a SBATCH_ARGS <<< "${SBATCH_ARGS:-}"
 ACCOUNT="${ACCOUNT:-chm213}"
 
