@@ -54,6 +54,9 @@ DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE(double, MPI_DOUBLE);
 DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE(long double, MPI_LONG_DOUBLE);
 #if defined(MPI_CXX_BOOL)
 DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE(bool, MPI_CXX_BOOL);
+#else
+// Fallback for when MPI_CXX_BOOL is not available (e.g. Microsoft-MPI)
+DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE(bool, MPI_C_BOOL);
 #endif
 
 template <>

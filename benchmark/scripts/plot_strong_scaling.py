@@ -40,10 +40,13 @@ def collect_csv_paths(inputs):
             if os.path.isdir(entry):
                 for root, _, files in os.walk(entry):
                     for name in files:
-                        if name.endswith(".csv"):
+                        # Only collect strong scaling CSV files
+                        if name.endswith(".csv") and "strong_scaling" in name.lower():
                             paths.append(os.path.join(root, name))
             else:
-                paths.append(entry)
+                # Only add if it's a strong scaling CSV file
+                if "strong_scaling" in os.path.basename(entry).lower():
+                    paths.append(entry)
     return paths
 
 
@@ -143,6 +146,11 @@ def plot_distributor(system, distributor, grouped, output_dir, image_format):
                 if ranks_per_node_value is None:
                     ranks_per_node_value = ranks_per_node
                 series.append((expected_ns, ranks_per_node, nodes, throughput))
+
+            # Skip creating plot if there's no data
+            if not series:
+                plt.close(fig)
+                continue
 
             # Sort series by expected_ns (duration) to ensure proper ordering
             series_sorted = sorted(series, key=lambda x: x[0])  # Sort by expected_ns only
@@ -248,7 +256,8 @@ def main():
     grouped = group_rows(rows)
 
     systems = sorted({row["system"] for row in rows})
-    distributors = sorted({row["distributor"] for row in rows})
+    # Filter out empty distributors and only include those with actual data
+    distributors = sorted({row["distributor"] for row in rows if row["distributor"].strip()})
     for system in systems:
         for distributor in distributors:
             plot_distributor(system, distributor, grouped, args.output_dir, args.format)

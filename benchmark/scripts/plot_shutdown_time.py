@@ -28,10 +28,13 @@ def collect_csv_paths(inputs):
             if os.path.isdir(entry):
                 for root, _, files in os.walk(entry):
                     for name in files:
-                        if name.endswith(".csv"):
+                        # Only collect shutdown-related CSV files
+                        if name.endswith(".csv") and "shutdown" in name.lower():
                             paths.append(os.path.join(root, name))
             else:
-                paths.append(entry)
+                # Only add if it's a shutdown CSV file
+                if "shutdown" in os.path.basename(entry).lower():
+                    paths.append(entry)
     return paths
 
 
@@ -42,10 +45,16 @@ def parse_rows(paths):
         with open(path, "r", encoding="utf-8") as handle:
             reader = csv.DictReader(handle)
             for row in reader:
+                # Skip rows that don't have the time_per_shutdown_us column
+                if "time_per_shutdown_us" not in row:
+                    continue
                 nodes = int(float(row.get("nodes", 0)))
                 world_size = int(float(row.get("world_size", 0)))
                 workers = int(float(row.get("workers", 0)))
                 time_per_shutdown_us = float(row.get("time_per_shutdown_us", 0.0))
+                # Skip rows with zero or invalid shutdown times
+                if time_per_shutdown_us <= 0.0:
+                    continue
                 rows.append(
                     {
                         "system": row.get("system", "").strip() or "unknown",
@@ -84,21 +93,36 @@ def group_rows(rows):
     return grouped
 
 
-def plot_system(system, grouped, output_dir, image_format):
+def plot_all_systems(grouped, output_dir, image_format):
     # Use scienceplots IEEE style
     with plt.style.context(['science', 'ieee']):
         fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT))
 
-        points = grouped[system]
-        points_sorted = sorted(points, key=lambda x: x[0])
-        nodes = [p[0] for p in points_sorted]
-        time_per_shutdown_us = [p[1] for p in points_sorted]
-        # Convert microseconds to seconds
-        time_per_shutdown_s = [t / 1_000_000.0 for t in time_per_shutdown_us]
+        # Filter out "local" system
+        systems = sorted([s for s in grouped.keys() if s != "local"])
+        all_nodes = set()
+        handles = []
+        labels = []
 
-        # Plot data
-        ax.plot(nodes, time_per_shutdown_s, marker='o', fillstyle='none',
-                markeredgewidth=1.0, linewidth=1.0)
+        # Plot each system with different markers/colors
+        for idx, system in enumerate(systems):
+            points = grouped[system]
+            points_sorted = sorted(points, key=lambda x: x[0])
+            nodes = [p[0] for p in points_sorted]
+            time_per_shutdown_us = [p[1] for p in points_sorted]
+            # Convert microseconds to seconds
+            time_per_shutdown_s = [t / 1_000_000.0 for t in time_per_shutdown_us]
+
+            all_nodes.update(nodes)
+
+            marker = MARKER_SHAPES[idx % len(MARKER_SHAPES)]
+            color = plt.cm.tab10(idx % 10)
+
+            # Plot data
+            line, = ax.plot(nodes, time_per_shutdown_s, marker=marker, fillstyle='none',
+                           markeredgewidth=1.0, linewidth=1.0, color=color, label=system.capitalize())
+            handles.append(line)
+            labels.append(system.capitalize())
 
         ax.set_xlabel("Nodes")
         ax.set_ylabel("Shutdown time (s)")
@@ -107,15 +131,18 @@ def plot_system(system, grouped, output_dir, image_format):
 
         # Show actual node counts (1, 2, 4, 8, 16, ...) rather than 2^n formatting.
         # Keep the log2 spacing but format ticks as plain integers.
-        if nodes:
-            node_ticks = sorted(set(nodes))
+        if all_nodes:
+            node_ticks = sorted(all_nodes)
             ax.xaxis.set_major_locator(FixedLocator(node_ticks))
             ax.xaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int(x)}"))
 
         # Add very light grey underlying grid
         ax.grid(True, which="both", linestyle="-", linewidth=0.5, color='lightgrey', alpha=0.5, zorder=0)
 
-        filename = f"shutdown_time_{system}.{image_format}"
+        # Add legend
+        ax.legend(handles, labels, frameon=False, loc='best')
+
+        filename = f"shutdown_time_combined.{image_format}"
         fig.tight_layout()
         fig.savefig(os.path.join(output_dir, filename), dpi=300, bbox_inches='tight')
         plt.close(fig)
@@ -142,9 +169,8 @@ def main():
     rows = parse_rows(input_paths)
     grouped = group_rows(rows)
 
-    systems = sorted(set(row["system"] for row in rows))
-    for system in systems:
-        plot_system(system, grouped, args.output_dir, args.format)
+    # Plot all systems on the same figure
+    plot_all_systems(grouped, args.output_dir, args.format)
 
 
 if __name__ == "__main__":
