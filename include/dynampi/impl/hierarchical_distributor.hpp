@@ -724,21 +724,25 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
     if (m_config.coordinator_per_node) {
       // Poll active communicators non-blocking until one matches
-      int flag = 0;
-      while (!flag) {
+      bool found = false;
+      while (!found) {
         if (m_local_comm) {
-          MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, m_local_comm->get(), &flag, &status);
-          if (flag) {
+          auto opt_status = m_local_comm->iprobe();
+          if (opt_status.has_value()) {
+            status = opt_status.value();
             layer = CommLayer::Local;
             active_comm = &m_local_comm.value();
+            found = true;
             break;
           }
         }
         if (m_leader_comm) {
-          MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, m_leader_comm->get(), &flag, &status);
-          if (flag) {
+          auto opt_status = m_leader_comm->iprobe();
+          if (opt_status.has_value()) {
+            status = opt_status.value();
             layer = CommLayer::Leader;
             active_comm = &m_leader_comm.value();
+            found = true;
             break;
           }
         }

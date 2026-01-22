@@ -28,10 +28,13 @@ def collect_csv_paths(inputs):
             if os.path.isdir(entry):
                 for root, _, files in os.walk(entry):
                     for name in files:
-                        if name.endswith(".csv"):
+                        # Only collect shutdown-related CSV files
+                        if name.endswith(".csv") and "shutdown" in name.lower():
                             paths.append(os.path.join(root, name))
             else:
-                paths.append(entry)
+                # Only add if it's a shutdown CSV file
+                if "shutdown" in os.path.basename(entry).lower():
+                    paths.append(entry)
     return paths
 
 
@@ -42,10 +45,16 @@ def parse_rows(paths):
         with open(path, "r", encoding="utf-8") as handle:
             reader = csv.DictReader(handle)
             for row in reader:
+                # Skip rows that don't have the time_per_shutdown_us column
+                if "time_per_shutdown_us" not in row:
+                    continue
                 nodes = int(float(row.get("nodes", 0)))
                 world_size = int(float(row.get("world_size", 0)))
                 workers = int(float(row.get("workers", 0)))
                 time_per_shutdown_us = float(row.get("time_per_shutdown_us", 0.0))
+                # Skip rows with zero or invalid shutdown times
+                if time_per_shutdown_us <= 0.0:
+                    continue
                 rows.append(
                     {
                         "system": row.get("system", "").strip() or "unknown",
