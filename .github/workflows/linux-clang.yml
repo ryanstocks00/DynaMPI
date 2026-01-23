@@ -13,6 +13,7 @@ env:
 jobs:
   linux-clang:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       matrix:
         clang-version: [14, 15, 16, 17, 18]
@@ -75,7 +76,8 @@ jobs:
             -DCMAKE_C_COMPILER=$CC \
             -DCMAKE_CXX_COMPILER=$CXX \
             -DDYNAMPI_BUILD_TESTS=ON \
-            -DDYNAMPI_BUILD_BENCHMARKS=ON"
+            -DDYNAMPI_BUILD_BENCHMARKS=ON \
+            -DDYNAMPI_MAX_MPI_RANK=8"
 
           if [ "$MPI_TYPE" == "MPICH" ]; then
             CMAKE_ARGS="$CMAKE_ARGS -DMPI_C_COMPILER=$CC -DMPI_CXX_COMPILER=$CXX"
@@ -102,4 +104,5 @@ jobs:
           fi
           cd build
           echo "Testing with $MPI_TYPE"
-          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
+          export DYNAMPI_MAX_MPI_RANK=8
+          ctest --output-on-failure -j 1 --timeout 180 -C ${{ matrix.build-type }}
