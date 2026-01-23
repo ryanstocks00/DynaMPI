@@ -10,6 +10,7 @@
 #include <optional>
 #include <variant>
 
+#include "dynampi/mpi/mpi_group.hpp"
 #include "dynampi/mpi/mpi_types.hpp"
 #include "dynampi/utilities/assert.hpp"
 #include "dynampi/utilities/template_options.hpp"
@@ -223,6 +224,9 @@ class MPICommunicator {
   }
 
   [[nodiscard]] MPI_Comm get() const { return m_comm; }
+
+  // Get the group associated with this communicator
+  [[nodiscard]] MPIGroup get_group() const { return MPIGroup(*this); }
 };
 
 }  // namespace dynampi

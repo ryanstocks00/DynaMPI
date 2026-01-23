@@ -126,11 +126,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         // Parent is the Global Manager.
         // With the new topology, Manager is ALWAYS in the leader comm.
         int global_manager = m_config.manager_rank;
-        MPI_Group world_group, leader_group;
-        MPI_Comm_group(m_communicator.get(), &world_group);
-        MPI_Comm_group(m_leader_comm->get(), &leader_group);
-        int leader_rank;
-        MPI_Group_translate_ranks(world_group, 1, &global_manager, leader_group, &leader_rank);
+        MPIGroup world_group = m_communicator.get_group();
+        MPIGroup leader_group = m_leader_comm->get_group();
+        int leader_rank = world_group.translate_rank(global_manager, leader_group);
 
         DYNAMPI_ASSERT_NE(leader_rank, MPI_UNDEFINED,
                           "Manager must be part of the leader communicator in this topology");
@@ -718,7 +716,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     DYNAMPI_ASSERT_GT(m_communicator.size(), 1,
                       "There should be at least one worker to receive results from");
 
-    MPI_Status status;
+    MPI_Status status{};
     CommLayer layer = CommLayer::Global;
     MPICommunicator* active_comm = &m_communicator;
 
