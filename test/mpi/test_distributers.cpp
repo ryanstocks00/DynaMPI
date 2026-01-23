@@ -26,7 +26,33 @@ template <template <typename, typename, typename...> class TT>
 struct DistributerTypeWrapper {
   template <typename TaskT, typename ResultT, typename... Options>
   using type = TT<TaskT, ResultT, Options...>;
+
+  template <typename TaskT, typename ResultT, typename... Options>
+  static typename TT<TaskT, ResultT, Options...>::Config get_config() {
+    return typename TT<TaskT, ResultT, Options...>::Config{};
+  }
 };
+
+// Specialized wrapper for HierarchicalMPIWorkDistributor with coordinator_per_node config
+template <bool CoordinatorPerNode>
+struct HierarchicalDistributerTypeWrapper {
+  template <typename TaskT, typename ResultT, typename... Options>
+  using type = dynampi::HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>;
+
+  template <typename TaskT, typename ResultT, typename... Options>
+  static typename dynampi::HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>::Config
+  get_config() {
+    typename dynampi::HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>::Config config;
+    config.coordinator_per_node = CoordinatorPerNode;
+    return config;
+  }
+};
+
+// Helper to get config from wrapper
+template <typename Wrapper, typename TaskT, typename ResultT, typename... Options>
+auto get_distributer_config() {
+  return Wrapper::template get_config<TaskT, ResultT, Options...>();
+}
 
 template <typename Wrapper, typename... T>
 using DistributerOf = typename Wrapper::template type<T...>;
@@ -35,9 +61,9 @@ using DistributerOf = typename Wrapper::template type<T...>;
 template <typename T>
 class DynamicDistribution : public ::testing::Test {};
 
-using DistributerTypes =
-    ::testing::Types<DistributerTypeWrapper<dynampi::NaiveMPIWorkDistributor>,
-                     DistributerTypeWrapper<dynampi::HierarchicalMPIWorkDistributor>>;
+using DistributerTypes = ::testing::Types<DistributerTypeWrapper<dynampi::NaiveMPIWorkDistributor>,
+                                          HierarchicalDistributerTypeWrapper<true>,
+                                          HierarchicalDistributerTypeWrapper<false>>;
 
 TYPED_TEST_SUITE(DynamicDistribution, DistributerTypes);
 
@@ -50,7 +76,10 @@ TYPED_TEST(DynamicDistribution, Naive) {
   std::vector<TaskT> tasks(10);
   for (size_t i = 0; i < tasks.size(); ++i) tasks[i] = static_cast<TaskT>(i);
 
-  Distributer distributor(worker_task, {.comm = MPI_COMM_WORLD, .auto_run_workers = false});
+  auto config = get_distributer_config<TypeParam, TaskT, double>();
+  config.comm = MPI_COMM_WORLD;
+  config.auto_run_workers = false;
+  Distributer distributor(worker_task, config);
 
   EXPECT_EQ(distributor.is_root_manager(), MPIEnvironment::world_comm_rank() == 0);
 
@@ -126,7 +155,7 @@ TYPED_TEST(DynamicDistribution, Example2) {
       return Result{task, task * task, task * task * task};
     };
     {
-      typename Distributer::Config config;
+      auto config = get_distributer_config<TypeParam, Task, Result>();
       Distributer work_distributer(worker_task, config);
       if (work_distributer.is_root_manager()) {
         work_distributer.insert_tasks({1, 2, 3, 4, 5});
@@ -149,7 +178,8 @@ TYPED_TEST(DynamicDistribution, RunTasksMaxTasks) {
 
   auto worker_task = [](Task task) -> Result { return task * 2; };
 
-  Distributer work_distributer(worker_task);
+  auto config = get_distributer_config<TypeParam, Task, Result>();
+  Distributer work_distributer(worker_task, config);
   if (work_distributer.is_root_manager()) {
     work_distributer.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
 
@@ -182,7 +212,8 @@ TYPED_TEST(DynamicDistribution, RunTasksMinTasksWithTimeLimit) {
 
   auto worker_task = [](Task task) -> Result { return task * 3; };
 
-  Distributer work_distributer(worker_task);
+  auto config = get_distributer_config<TypeParam, Task, Result>();
+  Distributer work_distributer(worker_task, config);
   if (work_distributer.is_root_manager()) {
     work_distributer.insert_tasks({1, 2, 3, 4, 5});
 
@@ -207,7 +238,8 @@ TYPED_TEST(DynamicDistribution, PriorityQueue) {
   }
   auto worker_task = [](Task task) -> Result { return task * task; };
   {
-    Distributer work_distributer(worker_task);
+    auto config = get_distributer_config<TypeParam, Task, Result, dynampi::enable_prioritization>();
+    Distributer work_distributer(worker_task, config);
     if (work_distributer.is_root_manager()) {
       work_distributer.insert_task(1, 1.0);
       work_distributer.insert_task(7, 7.0);
@@ -229,7 +261,10 @@ TYPED_TEST(DynamicDistribution, Statistics) {
                                     dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>;
   auto worker_task = [](Task task) -> Result { return task * task; };
   {
-    Distributer work_distributer(worker_task);
+    auto config =
+        get_distributer_config<TypeParam, Task, Result,
+                               dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>();
+    Distributer work_distributer(worker_task, config);
     if (work_distributer.is_root_manager()) {
       work_distributer.insert_tasks({1, 2, 3, 4, 5});
       auto results = work_distributer.finish_remaining_tasks();

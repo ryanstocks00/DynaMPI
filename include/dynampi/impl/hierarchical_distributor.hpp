@@ -765,9 +765,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         std::this_thread::yield();
       }
     } else {
-      // Legacy: blocking probe on global
       status = m_communicator.probe();
-      layer = CommLayer::Global;
     }
 
     // Assert that the tag is a valid Tag enum value before casting
