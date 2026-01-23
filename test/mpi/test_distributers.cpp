@@ -227,10 +227,6 @@ TYPED_TEST(DynamicDistribution, Statistics) {
   using Result = int;
   using Distributer = DistributerOf<TypeParam, Task, Result,
                                     dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>;
-  // skip hierarchical distributer for now
-  if constexpr (is_specialization_of<dynampi::HierarchicalMPIWorkDistributor, Distributer>::value) {
-    GTEST_SKIP() << "This test is not applicable for HierarchicalMPIWorkDistributor.";
-  }
   auto worker_task = [](Task task) -> Result { return task * task; };
   {
     Distributer work_distributer(worker_task);

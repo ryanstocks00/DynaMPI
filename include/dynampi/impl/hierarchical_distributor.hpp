@@ -88,9 +88,11 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   using MPICommunicator = dynampi::MPICommunicator<track_statistics<statistics_mode>>;
 
-  MPICommunicator m_communicator;                // Global communicator
-  std::optional<MPICommunicator> m_local_comm;   // Intra-node (Shared Memory)
-  std::optional<MPICommunicator> m_leader_comm;  // Inter-node (Leaders only)
+  MPICommunicator m_communicator;  // Global communicator
+  MPIGroup m_world_group;          // Group for the global communicator (for rank translation)
+  std::optional<MPIGroup> m_local_group;  // Intra-node group (Shared Memory, excludes manager)
+  std::optional<MPIGroup>
+      m_leader_group;  // Inter-node group (Leaders only: manager + node coordinators)
 
   std::function<ResultT(TaskT)> m_worker_function;
   Config m_config;
@@ -117,22 +119,19 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     if (m_config.coordinator_per_node) {
       if (is_root_manager()) {
         result = {-1, CommLayer::Global};
-      } else if (m_local_comm && m_local_comm->rank() > 0) {
-        // Case 1: I am a Local Worker (Rank > 0 in Local Comm)
+      } else if (m_local_group && m_local_group->rank() > 0) {
+        // Case 1: I am a Local Worker (Rank > 0 in Local Group)
         // Parent is the Node Coordinator (Local Rank 0).
-        result = {0, CommLayer::Local};
-      } else if (m_leader_comm) {
+        // Translate local rank 0 to world rank
+        int node_coord_world_rank = m_local_group->translate_rank(0, m_world_group);
+        result = {node_coord_world_rank, CommLayer::Local};
+      } else if (m_leader_group) {
         // Case 2: I am a Node Coordinator (Local Rank 0).
         // Parent is the Global Manager.
-        // With the new topology, Manager is ALWAYS in the leader comm.
+        // With the new topology, Manager is ALWAYS in the leader group.
+        // We need the manager's world rank, which we already have
         int global_manager = m_config.manager_rank;
-        MPIGroup world_group = m_communicator.get_group();
-        MPIGroup leader_group = m_leader_comm->get_group();
-        int leader_rank = world_group.translate_rank(global_manager, leader_group);
-
-        DYNAMPI_ASSERT_NE(leader_rank, MPI_UNDEFINED,
-                          "Manager must be part of the leader communicator in this topology");
-        result = {leader_rank, CommLayer::Leader};
+        result = std::make_pair(global_manager, CommLayer::Leader);
       } else {
         // Should not be reachable if topology initialized correctly
         DYNAMPI_ASSERT(false, "Unreachable topology state in get_parent_target");
@@ -177,14 +176,14 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   inline int num_direct_children() const {
     if (m_config.coordinator_per_node) {
       int count = 0;
-      // 1. Local Children: Everyone in local comm except me (Rank 0)
-      if (m_local_comm && m_local_comm->rank() == 0) {
-        count += (m_local_comm->size() - 1);
+      // 1. Local Children: Everyone in local group except me (Rank 0)
+      if (m_local_group && m_local_group->rank() == 0) {
+        count += (m_local_group->size() - 1);
       }
       // 2. Remote Children: If I am Manager, other Leaders are my children.
-      // Note: In this topology, Manager is IN leader comm, but NOT in local comm.
-      if (is_root_manager() && m_leader_comm) {
-        count += (m_leader_comm->size() - 1);
+      // Note: In this topology, Manager is IN leader group, but NOT in local group.
+      if (is_root_manager() && m_leader_group) {
+        count += (m_leader_group->size() - 1);
       }
       return count;
     } else {
@@ -207,12 +206,12 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     if (m_config.coordinator_per_node) {
       if (is_root_manager()) return false;
 
-      // If I am NOT in local comm (should only be Manager, handled above), panic?
-      // Actually, with this topology, everyone except Manager is in local comm.
-      if (!m_local_comm) return true;  // Safety fallback
+      // If I am NOT in local group (should only be Manager, handled above), panic?
+      // Actually, with this topology, everyone except Manager is in local group.
+      if (!m_local_group) return true;  // Safety fallback
 
-      // Standard Worker: Rank > 0 in Local Comm
-      if (m_local_comm->rank() > 0) return true;
+      // Standard Worker: Rank > 0 in Local Group
+      if (m_local_group->rank() > 0) return true;
 
       // Node Coordinator: Rank 0 in Local Comm.
       // Leaf only if single-core node (no children).
@@ -258,37 +257,45 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   explicit HierarchicalMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
                                           Config runtime_config = Config{})
       : m_communicator(runtime_config.comm, MPICommunicator::Duplicate),
+        m_world_group(m_communicator),
         m_worker_function(worker_function),
         m_config(runtime_config),
         _statistics{create_statistics(m_communicator)} {
-    // --- Initialize Topology Communicators ---
+    // --- Initialize Topology Groups ---
     if (m_config.coordinator_per_node) {
       // 1. Identify physical nodes via split_by_node
       MPICommunicator node_comm = m_communicator.split_by_node();
 
-      // 2. Create Local Comm: Exclude Manager!
+      // 2. Create Local Group: Exclude Manager!
       // If I am Manager, color is Undefined (I don't participate in local worker pool).
       // Everyone else participates.
       int local_color = (m_communicator.rank() == m_config.manager_rank) ? MPI_UNDEFINED : 0;
 
       auto local_comm_opt = node_comm.split(local_color, m_communicator.rank());
       if (local_comm_opt.has_value()) {
-        m_local_comm.emplace(std::move(*local_comm_opt));
+        // Extract group from the temporary communicator, then let it be freed
+        m_local_group.emplace(*local_comm_opt);
       }
 
-      // 3. Create Leader Comm
+      // 3. Create Leader Group
       // Who joins?
       // A: The Manager (Always)
       // B: The Node Coordinators (Rank 0 of the *Local* Comm)
       bool is_manager = (m_communicator.rank() == m_config.manager_rank);
-      bool is_node_coordinator = (m_local_comm && m_local_comm->rank() == 0);
+      // Check if we're rank 0 in the local group (node coordinator)
+      bool is_node_coordinator = false;
+      if (m_local_group.has_value()) {
+        int my_local_rank = m_local_group->rank();
+        is_node_coordinator = (my_local_rank == 0);
+      }
 
       int leader_color = (is_manager || is_node_coordinator) ? 0 : MPI_UNDEFINED;
 
       // Key is global rank to maintain global ordering among leaders
       auto leader_comm_opt = m_communicator.split(leader_color, m_communicator.rank());
       if (leader_comm_opt.has_value()) {
-        m_leader_comm.emplace(std::move(*leader_comm_opt));
+        // Extract group from the temporary communicator, then let it be freed
+        m_leader_group.emplace(*leader_comm_opt);
       }
     }
 
@@ -573,6 +580,27 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   int worker_for_idx(int idx) const { return (idx < m_config.manager_rank) ? idx : (idx + 1); }
 
+  // --- Helper: Determine which layer a world rank belongs to ---
+  CommLayer determine_layer_from_world_rank(int world_rank) const {
+    if (m_config.coordinator_per_node) {
+      // Check if rank is in local group (and not manager)
+      if (m_local_group) {
+        int local_rank = m_world_group.translate_rank(world_rank, *m_local_group);
+        if (local_rank != MPI_UNDEFINED) {
+          return CommLayer::Local;
+        }
+      }
+      // Check if rank is in leader group
+      if (m_leader_group) {
+        int leader_rank = m_world_group.translate_rank(world_rank, *m_leader_group);
+        if (leader_rank != MPI_UNDEFINED) {
+          return CommLayer::Leader;
+        }
+      }
+    }
+    return CommLayer::Global;
+  }
+
   // --- Abstract Send Wrappers ---
 
   template <typename T>
@@ -580,37 +608,14 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     auto [target, layer] = get_parent_target();
     DYNAMPI_ASSERT_NE(target, -1, "Root cannot send to parent");
 
-    if (m_config.coordinator_per_node) {
-      if (layer == CommLayer::Leader) {
-        DYNAMPI_ASSERT(m_leader_comm.has_value(), "Expected leader comm");
-        m_leader_comm->send(data, target, tag);
-      } else if (layer == CommLayer::Local) {
-        DYNAMPI_ASSERT(m_local_comm.has_value(), "Expected local comm");
-        m_local_comm->send(data, target, tag);
-      } else {
-        // Global fallback
-        m_communicator.send(data, target, tag);
-      }
-    } else {
-      m_communicator.send(data, target, tag);
-    }
+    // With groups, target is always a world rank, so use global communicator
+    m_communicator.send(data, target, tag);
   }
 
   template <typename T>
-  void send_to_worker(const T& data, int rank, Tag tag, CommLayer layer) {
-    if (m_config.coordinator_per_node) {
-      if (layer == CommLayer::Local) {
-        DYNAMPI_ASSERT(m_local_comm.has_value(), "Cannot send local without local comm");
-        m_local_comm->send(data, rank, tag);
-      } else if (layer == CommLayer::Leader) {
-        DYNAMPI_ASSERT(m_leader_comm.has_value(), "Cannot send leader without leader comm");
-        m_leader_comm->send(data, rank, tag);
-      } else {
-        m_communicator.send(data, rank, tag);
-      }
-    } else {
-      m_communicator.send(data, rank, tag);
-    }
+  void send_to_worker(const T& data, int rank, Tag tag, [[maybe_unused]] CommLayer layer) {
+    // With groups, rank is stored as world rank in TaskRequest, so use global communicator
+    m_communicator.send(data, rank, tag);
   }
 
   void send_done_to_children_when_free() {
@@ -632,48 +637,62 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   using result_mpi_type = MPI_Type<ResultT>;
   using task_mpi_type = MPI_Type<TaskT>;
 
-  void receive_result_from(MPI_Status status, MPICommunicator& source_comm, CommLayer layer) {
+  void receive_result_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
+                           CommLayer layer) {
     m_results.push_back(ResultT{});
     if (result_mpi_type::resize_required) {
       DYNAMPI_UNIMPLEMENTED(  // LCOV_EXCL_LINE
           "Dynamic resizing of results is not supported in hierarchical distribution");
     }
-    source_comm.recv(m_results.back(), status.MPI_SOURCE, Tag::RESULT);
+    // With groups, always use global communicator and determine layer from source rank
+    int world_source = status.MPI_SOURCE;
+    if (m_config.coordinator_per_node) {
+      layer = determine_layer_from_world_rank(world_source);
+    }
+    m_communicator.recv(m_results.back(), world_source, Tag::RESULT);
     m_results_received_from_child++;
-    m_free_worker_indices.push(
-        TaskRequest{.worker_rank = status.MPI_SOURCE, .source_layer = layer});
+    m_free_worker_indices.push(TaskRequest{.worker_rank = world_source, .source_layer = layer});
   }
 
-  void receive_result_batch_from(MPI_Status status, MPICommunicator& source_comm, CommLayer layer) {
+  void receive_result_batch_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
+                                 CommLayer layer) {
     using message_type = MPI_Type<std::vector<ResultT>>;
     int count;
     DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
     std::vector<ResultT> results;
     message_type::resize(results, count);
-    source_comm.recv(results, status.MPI_SOURCE, Tag::RESULT_BATCH);
-    m_free_worker_indices.push({.worker_rank = status.MPI_SOURCE,
+    // With groups, always use global communicator and determine layer from source rank
+    int world_source = status.MPI_SOURCE;
+    if (m_config.coordinator_per_node) {
+      layer = determine_layer_from_world_rank(world_source);
+    }
+    m_communicator.recv(results, world_source, Tag::RESULT_BATCH);
+    m_free_worker_indices.push({.worker_rank = world_source,
                                 .source_layer = layer,
                                 .num_tasks_requested = static_cast<int>(results.size())});
     std::copy(results.begin(), results.end(), std::back_inserter(m_results));
     m_results_received_from_child += results.size();
   }
 
-  void receive_execute_return_task_from(MPI_Status status, MPICommunicator& source_comm,
+  void receive_execute_return_task_from(MPI_Status status,
+                                        [[maybe_unused]] MPICommunicator& source_comm,
                                         [[maybe_unused]] CommLayer layer) {
     int count;
     DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, task_mpi_type::value, &count));
     TaskT message;
     task_mpi_type::resize(message, count);
-    source_comm.recv(message, status.MPI_SOURCE, Tag::TASK);
+    // With groups, always use global communicator
+    int world_source = status.MPI_SOURCE;
+    m_communicator.recv(message, world_source, Tag::TASK);
     m_tasks_received_from_parent++;
     ResultT result = m_worker_function(message);
     m_tasks_executed++;
-    // Reply on the same comm/layer
-    source_comm.send(result, status.MPI_SOURCE, Tag::RESULT);
+    // Reply on the global communicator
+    m_communicator.send(result, world_source, Tag::RESULT);
     m_results_sent_to_parent++;
   }
 
-  void receive_task_batch_from(MPI_Status status, MPICommunicator& source_comm,
+  void receive_task_batch_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
                                [[maybe_unused]] CommLayer layer) {
     if constexpr (prioritize_tasks) {
       DYNAMPI_UNIMPLEMENTED("Prioritized hierarchical distribution");
@@ -683,7 +702,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
       std::vector<TaskT> tasks;
       message_type::resize(tasks, count);
-      source_comm.recv(tasks, status.MPI_SOURCE, Tag::TASK_BATCH);
+      // With groups, always use global communicator
+      int world_source = status.MPI_SOURCE;
+      m_communicator.recv(tasks, world_source, Tag::TASK_BATCH);
       m_tasks_received_from_parent += tasks.size();
       for (const auto& task : tasks) {
         m_unallocated_task_queue.push_back(task);
@@ -691,24 +712,35 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     }
   }
 
-  void receive_request_from(MPI_Status status, MPICommunicator& source_comm, CommLayer layer) {
-    source_comm.recv_empty_message(status.MPI_SOURCE, Tag::REQUEST);
-    m_free_worker_indices.push(
-        TaskRequest{.worker_rank = status.MPI_SOURCE, .source_layer = layer});
+  void receive_request_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
+                            CommLayer layer) {
+    // With groups, always use global communicator and determine layer from source rank
+    int world_source = status.MPI_SOURCE;
+    if (m_config.coordinator_per_node) {
+      layer = determine_layer_from_world_rank(world_source);
+    }
+    m_communicator.recv_empty_message(world_source, Tag::REQUEST);
+    m_free_worker_indices.push(TaskRequest{.worker_rank = world_source, .source_layer = layer});
   }
 
-  void receive_request_batch_from(MPI_Status status, MPICommunicator& source_comm,
+  void receive_request_batch_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
                                   CommLayer layer) {
+    // With groups, always use global communicator and determine layer from source rank
+    int world_source = status.MPI_SOURCE;
+    if (m_config.coordinator_per_node) {
+      layer = determine_layer_from_world_rank(world_source);
+    }
     int request_count;
-    source_comm.recv(request_count, status.MPI_SOURCE, Tag::REQUEST_BATCH);
-    m_free_worker_indices.push(TaskRequest{.worker_rank = status.MPI_SOURCE,
-                                           .source_layer = layer,
-                                           .num_tasks_requested = request_count});
+    m_communicator.recv(request_count, world_source, Tag::REQUEST_BATCH);
+    m_free_worker_indices.push(TaskRequest{
+        .worker_rank = world_source, .source_layer = layer, .num_tasks_requested = request_count});
   }
 
-  void receive_done_from(MPI_Status status, MPICommunicator& source_comm,
+  void receive_done_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
                          [[maybe_unused]] CommLayer layer) {
-    source_comm.recv_empty_message(status.MPI_SOURCE, Tag::DONE);
+    // With groups, always use global communicator
+    int world_source = status.MPI_SOURCE;
+    m_communicator.recv_empty_message(world_source, Tag::DONE);
     m_done = true;
   }
 
@@ -718,31 +750,17 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
     MPI_Status status{};
     CommLayer layer = CommLayer::Global;
-    MPICommunicator* active_comm = &m_communicator;
 
     if (m_config.coordinator_per_node) {
-      // Poll active communicators non-blocking until one matches
+      // Poll global communicator non-blocking until a message is available
+      // The layer will be determined from the source rank in the receive methods
       bool found = false;
       while (!found) {
-        if (m_local_comm) {
-          auto opt_status = m_local_comm->iprobe();
-          if (opt_status.has_value()) {
-            status = opt_status.value();
-            layer = CommLayer::Local;
-            active_comm = &m_local_comm.value();
-            found = true;
-            break;
-          }
-        }
-        if (m_leader_comm) {
-          auto opt_status = m_leader_comm->iprobe();
-          if (opt_status.has_value()) {
-            status = opt_status.value();
-            layer = CommLayer::Leader;
-            active_comm = &m_leader_comm.value();
-            found = true;
-            break;
-          }
+        auto opt_status = m_communicator.iprobe();
+        if (opt_status.has_value()) {
+          status = opt_status.value();
+          found = true;
+          break;
         }
         std::this_thread::yield();
       }
@@ -750,7 +768,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       // Legacy: blocking probe on global
       status = m_communicator.probe();
       layer = CommLayer::Global;
-      active_comm = &m_communicator;
     }
 
     // Assert that the tag is a valid Tag enum value before casting
@@ -758,21 +775,22 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
                        status.MPI_TAG <= static_cast<int>(Tag::REQUEST_BATCH),
                    "Received invalid MPI tag: " + std::to_string(status.MPI_TAG));
     Tag tag = static_cast<Tag>(status.MPI_TAG);
+    // Note: receive methods now use global communicator and determine layer from source rank
     switch (tag) {
       case Tag::TASK:
-        return receive_execute_return_task_from(status, *active_comm, layer);
+        return receive_execute_return_task_from(status, m_communicator, layer);
       case Tag::TASK_BATCH:
-        return receive_task_batch_from(status, *active_comm, layer);
+        return receive_task_batch_from(status, m_communicator, layer);
       case Tag::RESULT:
-        return receive_result_from(status, *active_comm, layer);
+        return receive_result_from(status, m_communicator, layer);
       case Tag::RESULT_BATCH:
-        return receive_result_batch_from(status, *active_comm, layer);
+        return receive_result_batch_from(status, m_communicator, layer);
       case Tag::REQUEST:
-        return receive_request_from(status, *active_comm, layer);
+        return receive_request_from(status, m_communicator, layer);
       case Tag::REQUEST_BATCH:
-        return receive_request_batch_from(status, *active_comm, layer);
+        return receive_request_batch_from(status, m_communicator, layer);
       case Tag::DONE:
-        return receive_done_from(status, *active_comm, layer);
+        return receive_done_from(status, m_communicator, layer);
     }
   }
 };

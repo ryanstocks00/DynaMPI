@@ -64,6 +64,28 @@ class MPIGroup {
     return translated_rank;
   }
 
+  // Get the size of this group
+  int size() const {
+    int size;
+    DYNAMPI_MPI_CHECK(MPI_Group_size, (m_group, &size));
+    return size;
+  }
+
+  // Get the rank of the calling process in this group (MPI_UNDEFINED if not in group)
+  int rank() const {
+    int rank;
+    DYNAMPI_MPI_CHECK(MPI_Group_rank, (m_group, &rank));
+    return rank;
+  }
+
+  // Check if a rank (from a reference group, typically the world group) is in this group
+  // Returns the rank in this group, or MPI_UNDEFINED if not found
+  // Note: This translates FROM reference_group TO this group
+  static int contains_rank_in_group(int rank_in_reference, const MPIGroup& reference_group,
+                                    const MPIGroup& target_group) {
+    return reference_group.translate_rank(rank_in_reference, target_group);
+  }
+
   operator MPI_Group() const { return m_group; }
 
   [[nodiscard]] MPI_Group get() const { return m_group; }
