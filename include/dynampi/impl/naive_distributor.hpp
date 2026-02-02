@@ -6,6 +6,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <deque>
@@ -32,6 +33,10 @@ class NaiveMPIWorkDistributor {
     MPI_Comm comm = MPI_COMM_WORLD;
     int manager_rank = 0;
     bool auto_run_workers = true;
+
+    // If set, use pre-posted MPI_IRecv instead of MPI_Probe with the given maximum message size (in
+    // elements) If std::nullopt, use MPI_Probe (default behavior)
+    std::optional<size_t> prepost_recv_size = std::nullopt;
   };
 
   struct RunConfig {
@@ -81,6 +86,22 @@ class NaiveMPIWorkDistributor {
       0;  // Number of contiguous valid results starting from m_front_result_idx
   bool m_finalized = false;
 
+  // Pre-posted receive state (only used if prepost_recv_size is set)
+  struct PrePostedReceiveState {
+    // Worker state
+    TaskT task_buffer;
+    MPI_Request task_request = MPI_REQUEST_NULL;
+    MPI_Request done_request = MPI_REQUEST_NULL;
+
+    // Manager state
+    std::vector<ResultT> result_buffers;  // One per worker
+    std::vector<MPI_Request> result_requests;
+    std::vector<MPI_Request> request_requests;  // For REQUEST messages (empty messages)
+
+    bool initialized = false;
+  };
+  PrePostedReceiveState m_preposted_state;
+
   enum Tag : int { TASK = 0, DONE = 1, RESULT = 2, REQUEST = 3, ERROR = 4 };
 
  public:
@@ -106,6 +127,10 @@ class NaiveMPIWorkDistributor {
       m_worker_current_task_indices.resize(num_workers(), -1);
     }
 
+    if (m_config.prepost_recv_size.has_value()) {
+      initialize_preposted_receives();
+    }
+
     if (m_config.auto_run_workers && !is_root_manager()) {
       run_worker();
     }
@@ -117,6 +142,9 @@ class NaiveMPIWorkDistributor {
 
   ~NaiveMPIWorkDistributor() {
     if (!m_finalized) finalize();
+    if (m_config.prepost_recv_size.has_value()) {
+      cleanup_preposted_receives();
+    }
   }
 
   // --- Main Interface ---
@@ -234,6 +262,16 @@ class NaiveMPIWorkDistributor {
     // Handshake
     m_communicator.send(nullptr, m_config.manager_rank, Tag::REQUEST);
 
+    if (m_config.prepost_recv_size.has_value()) {
+      run_worker_preposted();
+    } else {
+      run_worker_probe();
+    }
+  }
+
+  void run_worker_probe() {
+    using task_type = MPI_Type<TaskT>;
+
     while (true) {
       MPI_Status status = m_communicator.probe();
 
@@ -251,6 +289,54 @@ class NaiveMPIWorkDistributor {
       ResultT result = m_worker_function(std::move(message));
 
       m_communicator.send(result, m_config.manager_rank, Tag::RESULT);
+    }
+  }
+
+  void run_worker_preposted() {
+    using task_type = MPI_Type<TaskT>;
+    size_t max_size = m_config.prepost_recv_size.value();
+
+    // Ensure task buffer is sized appropriately
+    task_type::resize(m_preposted_state.task_buffer, static_cast<int>(max_size));
+
+    while (true) {
+      // Wait for either TASK or DONE message
+      int index;
+      MPI_Status status;
+      std::array<MPI_Request, 2> requests = {m_preposted_state.task_request,
+                                             m_preposted_state.done_request};
+      DYNAMPI_MPI_CHECK(MPI_Waitany, (2, requests.data(), &index, &status));
+
+      if (index == 1) {  // DONE message
+        // DONE is an empty message, already received
+        // Cancel the pending task request if any
+        if (m_preposted_state.task_request != MPI_REQUEST_NULL) {
+          MPI_Cancel(&m_preposted_state.task_request);
+          MPI_Wait(&m_preposted_state.task_request, MPI_STATUS_IGNORE);
+        }
+        break;
+      }
+
+      // TASK message received
+      int count;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, task_type::value, &count));
+
+      // Resize buffer if message is smaller than max
+      if (count < static_cast<int>(max_size)) {
+        task_type::resize(m_preposted_state.task_buffer, count);
+      }
+
+      TaskT message = std::move(m_preposted_state.task_buffer);
+      ResultT result = m_worker_function(std::move(message));
+
+      m_communicator.send(result, m_config.manager_rank, Tag::RESULT);
+
+      // Repost receive for next TASK
+      task_type::resize(m_preposted_state.task_buffer, static_cast<int>(max_size));
+      DYNAMPI_MPI_CHECK(MPI_Irecv,
+                        (task_type::ptr(m_preposted_state.task_buffer), static_cast<int>(max_size),
+                         task_type::value, m_config.manager_rank, Tag::TASK, m_communicator.get(),
+                         &m_preposted_state.task_request));
     }
   }
 
@@ -309,6 +395,14 @@ class NaiveMPIWorkDistributor {
   void process_incoming_message(bool blocking) {
     if (!blocking) return;  // iprobe not available in wrapper
 
+    if (m_config.prepost_recv_size.has_value()) {
+      process_incoming_message_preposted();
+    } else {
+      process_incoming_message_probe();
+    }
+  }
+
+  void process_incoming_message_probe() {
     MPI_Status status = m_communicator.probe(MPI_ANY_SOURCE, MPI_ANY_TAG);
     int source = status.MPI_SOURCE;
 
@@ -319,6 +413,56 @@ class NaiveMPIWorkDistributor {
       m_communicator.recv_empty_message(source, Tag::REQUEST);
     }
     m_free_worker_ranks.push(source);
+  }
+
+  void process_incoming_message_preposted() {
+    // Wait for any pre-posted receive to complete
+    int index;
+    MPI_Status status;
+    std::vector<MPI_Request> all_requests;
+    std::vector<std::pair<int, bool>> request_mapping;  // (worker_idx, is_result)
+    all_requests.reserve(m_preposted_state.result_requests.size() +
+                         m_preposted_state.request_requests.size());
+
+    // Build request list with mapping
+    for (size_t i = 0; i < m_preposted_state.result_requests.size(); i++) {
+      if (m_preposted_state.result_requests[i] != MPI_REQUEST_NULL) {
+        all_requests.push_back(m_preposted_state.result_requests[i]);
+        request_mapping.push_back({static_cast<int>(i), true});
+      }
+    }
+    for (size_t i = 0; i < m_preposted_state.request_requests.size(); i++) {
+      if (m_preposted_state.request_requests[i] != MPI_REQUEST_NULL) {
+        all_requests.push_back(m_preposted_state.request_requests[i]);
+        request_mapping.push_back({static_cast<int>(i), false});
+      }
+    }
+
+    if (all_requests.empty()) {
+      // No pre-posted receives, fall back to probe
+      process_incoming_message_probe();
+      return;
+    }
+
+    DYNAMPI_MPI_CHECK(
+        MPI_Waitany, (static_cast<int>(all_requests.size()), all_requests.data(), &index, &status));
+
+    int source = status.MPI_SOURCE;
+    auto [worker_idx, is_result] = request_mapping[index];
+
+    if (is_result) {
+      // RESULT message
+      handle_result_message_preposted(source, worker_idx, status);
+      // Repost receive for this worker
+      repost_result_receive(worker_idx);
+    } else {
+      // REQUEST message
+      DYNAMPI_ASSERT_EQ(status.MPI_TAG, Tag::REQUEST, "Unexpected tag received");
+      // Empty message already received
+      m_free_worker_ranks.push(source);
+      // Repost receive for this worker
+      repost_request_receive(worker_idx);
+    }
   }
 
   void handle_result_message(int source, MPI_Status& probe_status) {
@@ -408,6 +552,115 @@ class NaiveMPIWorkDistributor {
     } else {
       return {};
     }
+  }
+
+  // --- Pre-posted receive helpers ---
+
+  void initialize_preposted_receives() {
+    if (m_preposted_state.initialized) return;
+    size_t max_size = m_config.prepost_recv_size.value();
+
+    if (is_root_manager()) {
+      // Manager: pre-post receives for RESULT and REQUEST from each worker
+      int n_workers = num_workers();
+      m_preposted_state.result_buffers.resize(n_workers);
+      m_preposted_state.result_requests.resize(n_workers, MPI_REQUEST_NULL);
+      m_preposted_state.request_requests.resize(n_workers, MPI_REQUEST_NULL);
+
+      using result_type = MPI_Type<ResultT>;
+      for (int i = 0; i < n_workers; i++) {
+        int worker_rank = worker_idx_to_rank(i);
+        result_type::resize(m_preposted_state.result_buffers[i], static_cast<int>(max_size));
+        repost_result_receive(i);
+        repost_request_receive(i);
+      }
+    } else {
+      // Worker: pre-post receives for TASK and DONE from manager
+      using task_type = MPI_Type<TaskT>;
+      task_type::resize(m_preposted_state.task_buffer, static_cast<int>(max_size));
+      DYNAMPI_MPI_CHECK(MPI_Irecv,
+                        (task_type::ptr(m_preposted_state.task_buffer), static_cast<int>(max_size),
+                         task_type::value, m_config.manager_rank, Tag::TASK, m_communicator.get(),
+                         &m_preposted_state.task_request));
+      DYNAMPI_MPI_CHECK(MPI_Irecv, (nullptr, 0, MPI_BYTE, m_config.manager_rank, Tag::DONE,
+                                    m_communicator.get(), &m_preposted_state.done_request));
+    }
+
+    m_preposted_state.initialized = true;
+  }
+
+  void cleanup_preposted_receives() {
+    if (!m_preposted_state.initialized) return;
+
+    // Cancel and wait for all outstanding requests
+    if (is_root_manager()) {
+      for (auto& req : m_preposted_state.result_requests) {
+        if (req != MPI_REQUEST_NULL) {
+          MPI_Cancel(&req);
+          MPI_Wait(&req, MPI_STATUS_IGNORE);
+        }
+      }
+      for (auto& req : m_preposted_state.request_requests) {
+        if (req != MPI_REQUEST_NULL) {
+          MPI_Cancel(&req);
+          MPI_Wait(&req, MPI_STATUS_IGNORE);
+        }
+      }
+    } else {
+      if (m_preposted_state.task_request != MPI_REQUEST_NULL) {
+        MPI_Cancel(&m_preposted_state.task_request);
+        MPI_Wait(&m_preposted_state.task_request, MPI_STATUS_IGNORE);
+      }
+      if (m_preposted_state.done_request != MPI_REQUEST_NULL) {
+        MPI_Cancel(&m_preposted_state.done_request);
+        MPI_Wait(&m_preposted_state.done_request, MPI_STATUS_IGNORE);
+      }
+    }
+
+    m_preposted_state.initialized = false;
+  }
+
+  void repost_result_receive(int worker_idx) {
+    int worker_rank = worker_idx_to_rank(worker_idx);
+    using result_type = MPI_Type<ResultT>;
+    size_t max_size = m_config.prepost_recv_size.value();
+
+    result_type::resize(m_preposted_state.result_buffers[worker_idx], static_cast<int>(max_size));
+    DYNAMPI_MPI_CHECK(MPI_Irecv,
+                      (result_type::ptr(m_preposted_state.result_buffers[worker_idx]),
+                       static_cast<int>(max_size), result_type::value, worker_rank, Tag::RESULT,
+                       m_communicator.get(), &m_preposted_state.result_requests[worker_idx]));
+  }
+
+  void repost_request_receive(int worker_idx) {
+    int worker_rank = worker_idx_to_rank(worker_idx);
+    DYNAMPI_MPI_CHECK(MPI_Irecv,
+                      (nullptr, 0, MPI_BYTE, worker_rank, Tag::REQUEST, m_communicator.get(),
+                       &m_preposted_state.request_requests[worker_idx]));
+  }
+
+  void handle_result_message_preposted(int source, int worker_idx, MPI_Status& status) {
+    int64_t task_id = m_worker_current_task_indices[worker_idx];
+    m_worker_current_task_indices[worker_idx] = -1;
+
+    using result_type = MPI_Type<ResultT>;
+    int count;
+    DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, result_type::value, &count));
+
+    ResultT result_data = std::move(m_preposted_state.result_buffers[worker_idx]);
+    size_t max_size = m_config.prepost_recv_size.value();
+
+    // Resize if message is smaller than max
+    if (count < static_cast<int>(max_size)) {
+      result_type::resize(result_data, count);
+    }
+
+    // Store in vector (using relative indexing)
+    size_t vector_idx = task_id - m_front_result_idx;
+    ensure_result_capacity(vector_idx + 1);
+    m_pending_results[vector_idx] = std::move(result_data);
+    m_pending_results_valid[vector_idx] = true;
+    update_contiguous_results_count(task_id);
   }
 };
 
