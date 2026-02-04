@@ -166,6 +166,29 @@ class MPICommunicator {
     }
   }
 
+  // Probe for a message, returns status
+  inline MPI_Status probe(int source = MPI_ANY_SOURCE, int tag = MPI_ANY_TAG) {
+    MPI_Status status;
+    DYNAMPI_MPI_CHECK(MPI_Probe, (source, tag, _comm, &status));
+    return status;
+  }
+
+  // Receive with MPI_ANY_SOURCE/MPI_ANY_TAG and return status
+  template <typename T>
+  inline MPI_Status recv_any(T& data, int source = MPI_ANY_SOURCE, int tag = MPI_ANY_TAG) {
+    using mpi_type = MPI_Type<T>;
+    MPI_Status status;
+    DYNAMPI_MPI_CHECK(MPI_Recv, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
+                                 source, tag, _comm, &status));
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.recv_count++;
+      int size;
+      MPI_Type_size(mpi_type::value, &size);
+      _statistics.bytes_received += mpi_type::count(data) * size;
+    }
+    return status;
+  }
+
   template <typename T>
   inline void broadcast(T& data, int root = 0) {
     using mpi_type = MPI_Type<T>;
@@ -189,6 +212,25 @@ class MPICommunicator {
                                  _comm, MPI_STATUS_IGNORE));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
+    }
+  }
+
+  // Receive empty message with MPI_ANY_SOURCE/MPI_ANY_TAG and return status
+  inline MPI_Status recv_empty_message_any(int source = MPI_ANY_SOURCE, int tag = MPI_ANY_TAG) {
+    using mpi_type = MPI_Type<std::nullptr_t>;
+    MPI_Status status;
+    DYNAMPI_MPI_CHECK(MPI_Recv, (nullptr, mpi_type::count(nullptr), mpi_type::value, source, tag,
+                                 _comm, &status));
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.recv_count++;
+    }
+    return status;
+  }
+
+  // Helper to adjust receive statistics (subtract bytes that were incorrectly counted)
+  void adjust_recv_bytes_received(size_t bytes_to_subtract) {
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.bytes_received -= bytes_to_subtract;
     }
   }
 
