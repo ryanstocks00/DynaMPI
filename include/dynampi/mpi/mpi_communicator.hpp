@@ -220,18 +220,6 @@ class MPICommunicator {
     }
   }
 
-  // Receive empty message with MPI_ANY_SOURCE/MPI_ANY_TAG and return status
-  inline MPI_Status recv_empty_message_any(int source = MPI_ANY_SOURCE, int tag = MPI_ANY_TAG) {
-    using mpi_type = MPI_Type<std::nullptr_t>;
-    MPI_Status status;
-    DYNAMPI_MPI_CHECK(MPI_Recv, (nullptr, mpi_type::count(nullptr), mpi_type::value, source, tag,
-                                 _comm, &status));
-    if constexpr (statistics_mode != StatisticsMode::None) {
-      _statistics.recv_count++;
-    }
-    return status;
-  }
-
   [[nodiscard]] MPI_Comm get() const { return _comm; }
 };
 
