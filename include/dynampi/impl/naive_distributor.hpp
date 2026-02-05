@@ -244,6 +244,22 @@ class NaiveMPIWorkDistributor {
 
   int worker_for_idx(int idx) const { return (idx < _config.manager_rank) ? idx : (idx + 1); }
 
+  void process_result_message(const MPI_Status& status, ResultT&& result, int count) {
+    using result_type = MPI_Type<ResultT>;
+    int worker_idx = status.MPI_SOURCE - (status.MPI_SOURCE > _config.manager_rank);
+    int64_t task_idx = _worker_current_task_indices[worker_idx];
+    _worker_current_task_indices[worker_idx] = -1;
+    assert(task_idx >= 0 && "Task index should be valid");
+    if (static_cast<uint64_t>(task_idx) >= _results.size()) {
+      _results.resize(task_idx + 1);
+    }
+    if constexpr (result_type::resize_required) {
+      result_type::resize(_results[task_idx], count);
+    }
+    _results[task_idx] = std::move(result);
+    _results_received++;
+  }
+
   void receive_from_any_worker() {
     assert(_communicator.rank() == _config.manager_rank &&
            "Only the manager can receive results and send tasks");
@@ -262,86 +278,38 @@ class NaiveMPIWorkDistributor {
         status = _communicator.recv_any(buffer);
 
         if (status.MPI_TAG == Tag::RESULT) {
-          int64_t task_idx =
-              _worker_current_task_indices[status.MPI_SOURCE -
-                                           (status.MPI_SOURCE > _config.manager_rank)];
-          _worker_current_task_indices[status.MPI_SOURCE -
-                                       (status.MPI_SOURCE > _config.manager_rank)] = -1;
-          assert(task_idx >= 0 && "Task index should be valid");
-          if (static_cast<uint64_t>(task_idx) >= _results.size()) {
-            _results.resize(task_idx + 1);
-          }
           int count;
           DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, result_type::value, &count));
           // Resize buffer to actual received count (may be less than max_result_size)
           result_type::resize(buffer, count);
-          // Statistics already updated by recv_any, but need to adjust for actual count
-          // The statistics were updated with max_result_size, so we need to correct them
-          if constexpr (statistics_mode != StatisticsMode::None) {
-            int size;
-            MPI_Type_size(result_type::value, &size);
-            _communicator.adjust_recv_bytes_received((_config.max_result_size - count) * size);
-          }
-          // Move buffer to results
-          result_type::resize(_results[task_idx], count);
-          _results[task_idx] = std::move(buffer);
-          _results_received++;
+          process_result_message(status, std::move(buffer), count);
         } else {
           assert(status.MPI_TAG == Tag::REQUEST && "Unexpected tag received");
-          // REQUEST messages are empty, statistics were updated incorrectly (as if we received
-          // data) Need to correct: remove the bytes_received that were added
-          if constexpr (statistics_mode != StatisticsMode::None) {
-            int size;
-            MPI_Type_size(result_type::value, &size);
-            _communicator.adjust_recv_bytes_received(_config.max_result_size * size);
-          }
         }
       } else {
-        // For fixed-size types, we can receive directly
         ResultT buffer;
         status = _communicator.recv_any(buffer);
 
         if (status.MPI_TAG == Tag::RESULT) {
-          int64_t task_idx =
-              _worker_current_task_indices[status.MPI_SOURCE -
-                                           (status.MPI_SOURCE > _config.manager_rank)];
-          _worker_current_task_indices[status.MPI_SOURCE -
-                                       (status.MPI_SOURCE > _config.manager_rank)] = -1;
-          assert(task_idx >= 0 && "Task index should be valid");
-          if (static_cast<uint64_t>(task_idx) >= _results.size()) {
-            _results.resize(task_idx + 1);
-          }
-          // Statistics already updated by recv_any
-          _results[task_idx] = std::move(buffer);
-          _results_received++;
+          int count;
+          DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, result_type::value, &count));
+          process_result_message(status, std::move(buffer), count);
         } else {
           assert(status.MPI_TAG == Tag::REQUEST && "Unexpected tag received");
-          // REQUEST messages are empty, but recv_any updated statistics as if we received data
-          // Need to correct: remove the bytes_received that were added
-          if constexpr (statistics_mode != StatisticsMode::None) {
-            int size;
-            MPI_Type_size(result_type::value, &size);
-            _communicator.adjust_recv_bytes_received(result_type::count(buffer) * size);
-          }
         }
       }
     } else {
       // Probe mode: use probe to check message size before receiving
       status = _communicator.probe();
       if (status.MPI_TAG == Tag::RESULT) {
-        int64_t task_idx = _worker_current_task_indices[status.MPI_SOURCE -
-                                                        (status.MPI_SOURCE > _config.manager_rank)];
-        _worker_current_task_indices[status.MPI_SOURCE -
-                                     (status.MPI_SOURCE > _config.manager_rank)] = -1;
-        assert(task_idx >= 0 && "Task index should be valid");
-        if (static_cast<uint64_t>(task_idx) >= _results.size()) {
-          _results.resize(task_idx + 1);
-        }
         int count;
         DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, result_type::value, &count));
-        result_type::resize(_results[task_idx], count);
-        _communicator.recv(_results[task_idx], status.MPI_SOURCE, Tag::RESULT);
-        _results_received++;
+        ResultT buffer;
+        if constexpr (result_type::resize_required) {
+          result_type::resize(buffer, count);
+        }
+        _communicator.recv(buffer, status.MPI_SOURCE, Tag::RESULT);
+        process_result_message(status, std::move(buffer), count);
       } else {
         assert(status.MPI_TAG == Tag::REQUEST && "Unexpected tag received in worker");
         _communicator.recv_empty_message(status.MPI_SOURCE, Tag::REQUEST);

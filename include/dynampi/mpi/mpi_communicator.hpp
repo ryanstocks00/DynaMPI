@@ -156,13 +156,16 @@ class MPICommunicator {
   template <typename T>
   inline void recv(T& data, int source, int tag = 0) {
     using mpi_type = MPI_Type<T>;
+    MPI_Status status;
     DYNAMPI_MPI_CHECK(MPI_Recv, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
-                                 source, tag, _comm, MPI_STATUS_IGNORE));
+                                 source, tag, _comm, &status));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
+      int actual_count;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, mpi_type::value, &actual_count));
       int size;
       MPI_Type_size(mpi_type::value, &size);
-      _statistics.bytes_received += mpi_type::count(data) * size;
+      _statistics.bytes_received += actual_count * size;
     }
   }
 
@@ -182,9 +185,11 @@ class MPICommunicator {
                                  source, tag, _comm, &status));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
+      int actual_count;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, mpi_type::value, &actual_count));
       int size;
       MPI_Type_size(mpi_type::value, &size);
-      _statistics.bytes_received += mpi_type::count(data) * size;
+      _statistics.bytes_received += actual_count * size;
     }
     return status;
   }
@@ -225,13 +230,6 @@ class MPICommunicator {
       _statistics.recv_count++;
     }
     return status;
-  }
-
-  // Helper to adjust receive statistics (subtract bytes that were incorrectly counted)
-  void adjust_recv_bytes_received(size_t bytes_to_subtract) {
-    if constexpr (statistics_mode != StatisticsMode::None) {
-      _statistics.bytes_received -= bytes_to_subtract;
-    }
   }
 
   [[nodiscard]] MPI_Comm get() const { return _comm; }
