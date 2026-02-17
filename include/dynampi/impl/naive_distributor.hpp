@@ -32,6 +32,10 @@ class NaiveMPIWorkDistributor {
     MPI_Comm comm = MPI_COMM_WORLD;
     int manager_rank = 0;
     bool auto_run_workers = true;
+    bool use_immediate_recv = false;
+    int max_result_size = 1024;  // Maximum expected size for RESULT messages when using immediate
+                                 // recv. Must be large enough to hold the largest expected RESULT
+                                 // message. If a message exceeds this size, behavior is undefined.
   };
 
   struct RunConfig {
@@ -231,8 +235,9 @@ class NaiveMPIWorkDistributor {
     assert(!is_root_manager());
     using task_type = MPI_Type<TaskT>;
 
-    // Handshake
-    m_communicator.send(nullptr, m_config.manager_rank, Tag::REQUEST);
+    // Handshake: send REQUEST as 0 elements of ResultT so manager can recv_any(ResultT&) for both
+    // REQUEST and RESULT
+    m_communicator.template send_empty<ResultT>(m_config.manager_rank, Tag::REQUEST);
 
     while (true) {
       MPI_Status status = m_communicator.probe();
@@ -316,7 +321,7 @@ class NaiveMPIWorkDistributor {
       handle_result_message(source, status);
     } else {
       DYNAMPI_ASSERT_EQ(status.MPI_TAG, Tag::REQUEST, "Unexpected tag received");
-      m_communicator.recv_empty_message(source, Tag::REQUEST);
+      m_communicator.template recv_empty<ResultT>(source, Tag::REQUEST);
     }
     m_free_worker_ranks.push(source);
   }

@@ -27,6 +27,9 @@ struct DistributerTypeWrapper {
   template <typename TaskT, typename ResultT, typename... Options>
   using type = TT<TaskT, ResultT, Options...>;
 
+  static constexpr bool use_immediate_recv = false;
+  static constexpr size_t max_result_size = 1024;
+
   template <typename TaskT, typename ResultT, typename... Options>
   static typename TT<TaskT, ResultT, Options...>::Config get_config() {
     return typename TT<TaskT, ResultT, Options...>::Config{};
@@ -38,6 +41,9 @@ template <bool CoordinatorPerNode>
 struct HierarchicalDistributerTypeWrapper {
   template <typename TaskT, typename ResultT, typename... Options>
   using type = dynampi::HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>;
+
+  static constexpr bool use_immediate_recv = false;
+  static constexpr size_t max_result_size = 1024;
 
   template <typename TaskT, typename ResultT, typename... Options>
   static typename dynampi::HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>::Config
@@ -59,7 +65,27 @@ using DistributerOf = typename Wrapper::template type<T...>;
 
 // Test fixture
 template <typename T>
-class DynamicDistribution : public ::testing::Test {};
+class DynamicDistribution : public ::testing::Test {
+ protected:
+  template <typename TaskT, typename ResultT, typename... Options>
+  auto make_distributor(auto worker_task, bool auto_run = false) {
+    using DistT = typename T::template type<TaskT, ResultT, Options...>;
+
+    // Use decltype to get the correct Options type regardless of its internal name
+    using ConfigT = typename DistT::Config;
+
+    ConfigT opts{};
+    opts.comm = MPI_COMM_WORLD;
+    opts.auto_run_workers = auto_run;
+
+    if constexpr (T::use_immediate_recv) {
+      opts.use_immediate_recv = true;
+      opts.max_result_size = T::max_result_size;
+    }
+
+    return DistT(worker_task, opts);
+  }
+};
 
 using DistributerTypes = ::testing::Types<DistributerTypeWrapper<dynampi::NaiveMPIWorkDistributor>,
                                           HierarchicalDistributerTypeWrapper<true>,
@@ -67,14 +93,12 @@ using DistributerTypes = ::testing::Types<DistributerTypeWrapper<dynampi::NaiveM
 
 TYPED_TEST_SUITE(DynamicDistribution, DistributerTypes);
 
-TYPED_TEST(DynamicDistribution, Naive) {
-  using TaskT = uint32_t;
+// --- Tests are now much leaner ---
+
+TYPED_TEST(DynamicDistribution, BasicFlow) {
+  using TaskT = int;
   using Distributer = DistributerOf<TypeParam, TaskT, double>;
-
   auto worker_task = [](TaskT task) -> double { return sqrt(static_cast<double>(task)); };
-
-  std::vector<TaskT> tasks(10);
-  for (size_t i = 0; i < tasks.size(); ++i) tasks[i] = static_cast<TaskT>(i);
 
   auto config = get_distributer_config<TypeParam, TaskT, double>();
   config.comm = MPI_COMM_WORLD;
@@ -303,4 +327,18 @@ TYPED_TEST(DynamicDistribution, Statistics) {
       }
     }
   }
+}
+
+TYPED_TEST(DynamicDistribution, AutoRunWorkers) {
+  auto worker_task = [](int task) -> int { return task * task; };
+  // Test with auto_run_workers = true - workers should start automatically
+  auto dist = this->template make_distributor<int, int>(worker_task, true);
+
+  if (dist.is_root_manager()) {
+    // Workers should already be running, so we can just insert tasks
+    dist.insert_tasks({1, 2, 3, 4, 5});
+    auto results = dist.finish_remaining_tasks();
+    EXPECT_EQ(results, (std::vector<int>{1, 4, 9, 16, 25}));
+  }
+  // Workers run automatically in constructor, no need to call run_worker()
 }
