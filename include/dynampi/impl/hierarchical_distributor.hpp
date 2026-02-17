@@ -26,6 +26,7 @@ template <typename TaskT, typename ResultT, typename... Options>
 class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, ResultT, Options...> {
   using Base = BaseMPIWorkDistributor<TaskT, ResultT, Options...>;
 
+ public:
   struct Config {
     MPI_Comm comm = MPI_COMM_WORLD;
     int manager_rank = 0;

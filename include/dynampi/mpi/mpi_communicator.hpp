@@ -156,14 +156,42 @@ class MPICommunicator {
   template <typename T>
   inline void recv(T& data, int source, int tag = 0) {
     using mpi_type = MPI_Type<T>;
+    MPI_Status status;
     DYNAMPI_MPI_CHECK(MPI_Recv, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
-                                 source, tag, _comm, MPI_STATUS_IGNORE));
+                                 source, tag, _comm, &status));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
+      int actual_count;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, mpi_type::value, &actual_count));
       int size;
       MPI_Type_size(mpi_type::value, &size);
-      _statistics.bytes_received += mpi_type::count(data) * size;
+      _statistics.bytes_received += actual_count * size;
     }
+  }
+
+  // Probe for a message, returns status
+  inline MPI_Status probe(int source = MPI_ANY_SOURCE, int tag = MPI_ANY_TAG) {
+    MPI_Status status;
+    DYNAMPI_MPI_CHECK(MPI_Probe, (source, tag, _comm, &status));
+    return status;
+  }
+
+  // Receive with MPI_ANY_SOURCE/MPI_ANY_TAG and return status
+  template <typename T>
+  inline MPI_Status recv_any(T& data, int source = MPI_ANY_SOURCE, int tag = MPI_ANY_TAG) {
+    using mpi_type = MPI_Type<T>;
+    MPI_Status status;
+    DYNAMPI_MPI_CHECK(MPI_Recv, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
+                                 source, tag, _comm, &status));
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.recv_count++;
+      int actual_count;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, mpi_type::value, &actual_count));
+      int size;
+      MPI_Type_size(mpi_type::value, &size);
+      _statistics.bytes_received += actual_count * size;
+    }
+    return status;
   }
 
   template <typename T>
@@ -187,6 +215,28 @@ class MPICommunicator {
     using mpi_type = MPI_Type<std::nullptr_t>;
     DYNAMPI_MPI_CHECK(MPI_Recv, (nullptr, mpi_type::count(nullptr), mpi_type::value, source, tag,
                                  _comm, MPI_STATUS_IGNORE));
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.recv_count++;
+    }
+  }
+
+  /// Sends 0 elements of type T (same type as recv buffer) so that recv_any(T&) can receive any
+  /// worker message (REQUEST or RESULT) into a single buffer type.
+  template <typename T>
+  inline void send_empty(int dest, int tag = 0) {
+    using mpi_type = MPI_Type<T>;
+    DYNAMPI_MPI_CHECK(MPI_Send, (nullptr, 0, mpi_type::value, dest, tag, _comm));
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.send_count++;
+    }
+  }
+
+  /// Receives 0 elements of type T. Use when the sender used send_empty<T>.
+  template <typename T>
+  inline void recv_empty(int source, int tag = 0) {
+    using mpi_type = MPI_Type<T>;
+    DYNAMPI_MPI_CHECK(MPI_Recv,
+                      (nullptr, 0, mpi_type::value, source, tag, _comm, MPI_STATUS_IGNORE));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
     }
