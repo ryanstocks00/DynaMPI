@@ -9,6 +9,7 @@
 #include <cassert>
 #include <cmath>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <limits>
 #include <ranges>
@@ -71,6 +72,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     CommLayer source_layer = CommLayer::Global;  // Which comm did this come from?
     std::optional<int> num_tasks_requested = std::nullopt;
   };
+  static constexpr int kMaxTasksRequested = 1'000'000;  // guard against pathological reserve()
   std::stack<TaskRequest, std::vector<TaskRequest>> m_free_worker_indices;
 
   size_t m_tasks_sent_to_child = 0;
@@ -732,6 +734,12 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     }
     int request_count;
     m_communicator.recv(request_count, world_source, Tag::REQUEST_BATCH);
+    if (request_count <= 0 || request_count > kMaxTasksRequested) {
+      std::cerr << "DynaMPI [rank " << m_communicator.rank()
+                << "] receive_request_batch_from: invalid request_count=" << request_count
+                << " (expected 1.." << kMaxTasksRequested << "), skipping." << std::endl;
+      return;
+    }
     m_free_worker_indices.push(TaskRequest{
         .worker_rank = world_source, .source_layer = layer, .num_tasks_requested = request_count});
   }

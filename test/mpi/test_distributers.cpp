@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <dynampi/dynampi.hpp>
@@ -330,6 +331,7 @@ TYPED_TEST(DynamicDistribution, Statistics) {
 }
 
 TYPED_TEST(DynamicDistribution, AutoRunWorkers) {
+  using Distributer = DistributerOf<TypeParam, int, int>;
   auto worker_task = [](int task) -> int { return task * task; };
   // Test with auto_run_workers = true - workers should start automatically
   auto dist = this->template make_distributor<int, int>(worker_task, true);
@@ -338,6 +340,9 @@ TYPED_TEST(DynamicDistribution, AutoRunWorkers) {
     // Workers should already be running, so we can just insert tasks
     dist.insert_tasks({1, 2, 3, 4, 5});
     auto results = dist.finish_remaining_tasks();
+    if constexpr (!Distributer::ordered) {
+      std::sort(results.begin(), results.end());
+    }
     EXPECT_EQ(results, (std::vector<int>{1, 4, 9, 16, 25}));
   }
   // Workers run automatically in constructor, no need to call run_worker()
