@@ -220,6 +220,28 @@ class MPICommunicator {
     }
   }
 
+  /// Sends 0 elements of type T (same type as recv buffer) so that recv_any(T&) can receive any
+  /// worker message (REQUEST or RESULT) into a single buffer type.
+  template <typename T>
+  inline void send_empty(int dest, int tag = 0) {
+    using mpi_type = MPI_Type<T>;
+    DYNAMPI_MPI_CHECK(MPI_Send, (nullptr, 0, mpi_type::value, dest, tag, _comm));
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.send_count++;
+    }
+  }
+
+  /// Receives 0 elements of type T. Use when the sender used send_empty<T>.
+  template <typename T>
+  inline void recv_empty(int source, int tag = 0) {
+    using mpi_type = MPI_Type<T>;
+    DYNAMPI_MPI_CHECK(MPI_Recv,
+                      (nullptr, 0, mpi_type::value, source, tag, _comm, MPI_STATUS_IGNORE));
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.recv_count++;
+    }
+  }
+
   [[nodiscard]] MPI_Comm get() const { return _comm; }
 };
 

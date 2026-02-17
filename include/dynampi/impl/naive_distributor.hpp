@@ -104,7 +104,9 @@ class NaiveMPIWorkDistributor {
   void run_worker() {
     assert(_communicator.rank() != _config.manager_rank && "Worker cannot run on the manager rank");
     using task_type = MPI_Type<TaskT>;
-    _communicator.send(nullptr, _config.manager_rank, Tag::REQUEST);
+    // Send REQUEST as 0 elements of ResultT so manager can recv_any(ResultT&) for both REQUEST and
+    // RESULT
+    _communicator.template send_empty<ResultT>(_config.manager_rank, Tag::REQUEST);
     while (true) {
       MPI_Status status = _communicator.probe();
       if (status.MPI_TAG == Tag::DONE) {
@@ -269,9 +271,8 @@ class NaiveMPIWorkDistributor {
     MPI_Status status;
 
     if (_config.use_immediate_recv) {
-      // Immediate receive mode: use recv_any with predetermined buffer size
-      // For REQUEST messages (empty), we can receive with a null buffer
-      // For RESULT messages, we use the predetermined buffer size
+      // Immediate receive mode: REQUEST and RESULT both use type ResultT (REQUEST = 0 elements).
+      // recv_any(buffer) receives into the same buffer type for both.
       if constexpr (result_type::resize_required) {
         ResultT buffer;
         result_type::resize(buffer, _config.max_result_size);
@@ -312,7 +313,7 @@ class NaiveMPIWorkDistributor {
         process_result_message(status, std::move(buffer), count);
       } else {
         assert(status.MPI_TAG == Tag::REQUEST && "Unexpected tag received in worker");
-        _communicator.recv_empty_message(status.MPI_SOURCE, Tag::REQUEST);
+        _communicator.recv_empty<ResultT>(status.MPI_SOURCE, Tag::REQUEST);
       }
     }
     _free_worker_indices.push(status.MPI_SOURCE);
