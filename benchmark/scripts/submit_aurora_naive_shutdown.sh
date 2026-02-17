@@ -28,6 +28,7 @@ for nodes in "${NODE_LIST[@]}"; do
   if [[ -n "${ACCOUNT}" ]]; then
     submit_args+=(-A "${ACCOUNT}")
   fi
+  echo "==> qsub ${submit_args[*]} -N \"${job_name}\" -l \"select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}\" -l \"walltime=${WALLTIME}\" -l \"filesystems=${FILESYSTEMS}\" (job script: cd ${ROOT_DIR}, NODE_LIST=${nodes}, OUTPUT_DIR=${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${PBS_JOBID_SHORT:-manual})"
   qsub "${submit_args[@]}" -N "${job_name}" -l "select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}" -l "walltime=${WALLTIME}" \
     -l "filesystems=${FILESYSTEMS}" <<EOF
 #!/usr/bin/env bash
