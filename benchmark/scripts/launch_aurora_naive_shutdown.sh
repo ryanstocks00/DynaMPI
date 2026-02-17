@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 set -euo pipefail
 
-# Example usage:
-#   qsub --nodes=512 --time=00:15:00 launch_aurora_naive_shutdown.sh
+# Example usage (PBS, qsub):
+#   qsub -l select=512:ncpus=102:mpiprocs=102 -l walltime=00:15:00 launch_aurora_naive_shutdown.sh
+# Or use the submit script: ./benchmark/scripts/submit_aurora_naive_shutdown.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 APP="${APP:-${ROOT_DIR}/build/benchmark/naive_shutdown_time}"

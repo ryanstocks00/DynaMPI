@@ -28,6 +28,11 @@ for nodes in "${NODE_LIST[@]}"; do
   if [[ -n "${ACCOUNT}" ]]; then
     submit_args+=(-A "${ACCOUNT}")
   fi
+  if [[ "${nodes}" -lt 256 ]]; then
+    submit_args+=(-q "debug-scaling")
+  else
+    submit_args+=(-q "prod")
+  fi
   job_script="#!/usr/bin/env bash
 #PBS -j oe
 set -euo pipefail

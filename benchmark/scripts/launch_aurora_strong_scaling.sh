@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 set -euo pipefail
 
-# Example usage:
-#   sbatch --nodes=8096 --time=02:00:00 launch_aurora_strong_scaling.sh
+# Example usage (PBS, qsub):
+#   qsub -l select=1:ncpus=102:mpiprocs=102 -l walltime=02:00:00 launch_aurora_strong_scaling.sh
+# Or use the submit script: ./benchmark/scripts/submit_aurora_strong_scaling.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 APP="${APP:-${ROOT_DIR}/build/benchmark/strong_scaling_distribution_rate}"
