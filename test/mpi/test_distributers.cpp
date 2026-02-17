@@ -208,14 +208,14 @@ TYPED_TEST(DynamicDistribution, RunTasksMaxTasks) {
   if (work_distributer.is_root_manager()) {
     work_distributer.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
 
-    typename Distributer::RunConfig config;
-    config.target_num_tasks = 3;
-    config.allow_more_than_target_tasks = false;
-    auto results = work_distributer.run_tasks(config);
+    typename Distributer::RunConfig run_config;
+    run_config.target_num_tasks = 3;
+    run_config.allow_more_than_target_tasks = false;
+    auto results = work_distributer.run_tasks(run_config);
     EXPECT_EQ(results.size(), 3u);
 
-    config.target_num_tasks = 4;
-    auto more_results = work_distributer.run_tasks(config);
+    run_config.target_num_tasks = 4;
+    auto more_results = work_distributer.run_tasks(run_config);
     EXPECT_EQ(more_results.size(), 4u);
 
     auto remaining_results = work_distributer.run_tasks();
@@ -242,10 +242,10 @@ TYPED_TEST(DynamicDistribution, RunTasksMinTasksWithTimeLimit) {
   if (work_distributer.is_root_manager()) {
     work_distributer.insert_tasks({1, 2, 3, 4, 5});
 
-    typename Distributer::RunConfig config;
-    config.target_num_tasks = 2;
-    config.max_seconds = 0.0;
-    auto results = work_distributer.run_tasks(config);
+    typename Distributer::RunConfig run_config;
+    run_config.target_num_tasks = 2;
+    run_config.max_seconds = 0.0;
+    auto results = work_distributer.run_tasks(run_config);
     EXPECT_EQ(results.size(), 0u);
 
     auto remaining_results = work_distributer.run_tasks();

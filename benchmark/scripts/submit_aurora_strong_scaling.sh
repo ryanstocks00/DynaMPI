@@ -28,18 +28,20 @@ for nodes in "${NODE_LIST[@]}"; do
   if [[ -n "${ACCOUNT}" ]]; then
     submit_args+=(-A "${ACCOUNT}")
   fi
-  echo "==> qsub ${submit_args[*]} -N \"${job_name}\" -l \"select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}\" -l \"walltime=${WALLTIME}\" -l \"filesystems=${FILESYSTEMS}\" (job script: cd ${ROOT_DIR}, NODE_LIST=${nodes}, OUTPUT_DIR=${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${PBS_JOBID_SHORT:-manual})"
-  qsub "${submit_args[@]}" -N "${job_name}" -l "select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}" -l "walltime=${WALLTIME}" \
-    -l "filesystems=${FILESYSTEMS}" <<EOF
-#!/usr/bin/env bash
+  job_script="#!/usr/bin/env bash
 #PBS -j oe
 set -euo pipefail
-cd "${ROOT_DIR}"
-export NODE_LIST="${nodes}"
-export LAUNCHER="${LAUNCHER}"
-export LAUNCHER_ARGS="${LAUNCHER_ARGS}"
-export CORES_PER_NODE="${NCPUS_PER_NODE}"
-export OUTPUT_DIR="${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${PBS_JOBID_SHORT:-manual}"
+cd \"${ROOT_DIR}\"
+export NODE_LIST=\"${nodes}\"
+export LAUNCHER=\"${LAUNCHER}\"
+export LAUNCHER_ARGS=\"${LAUNCHER_ARGS}\"
+export CORES_PER_NODE=\"${NCPUS_PER_NODE}\"
+export OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${PBS_JOBID_SHORT:-manual}\"
 ${SCRIPT}
-EOF
+"
+  echo "qsub ${submit_args[*]} -N \"${job_name}\" -l \"select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}\" -l \"walltime=${WALLTIME}\" -l \"filesystems=${FILESYSTEMS}\" <<'QSUBEOF'"
+  echo "${job_script}"
+  echo "QSUBEOF"
+  qsub "${submit_args[@]}" -N "${job_name}" -l "select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}" -l "walltime=${WALLTIME}" \
+    -l "filesystems=${FILESYSTEMS}" <<< "${job_script}"
 done
