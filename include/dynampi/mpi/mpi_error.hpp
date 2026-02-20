@@ -9,6 +9,7 @@
 
 #include <string>
 
+// cppcheck-suppress preprocessorErrorDirective
 #if __has_include(<source_location>)
 #include <source_location>
 #if defined(__cpp_lib_source_location)

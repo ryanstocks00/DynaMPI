@@ -586,7 +586,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       }
     }
     DYNAMPI_ASSERT(m_leader_group.has_value(), "Leader group should be present");
-    int leader_rank = m_world_group.translate_rank(world_rank, *m_leader_group);
+    [[maybe_unused]] int leader_rank = m_world_group.translate_rank(world_rank, *m_leader_group);
     DYNAMPI_ASSERT_NE(leader_rank, MPI_UNDEFINED, "Rank should be in leader group");
     return CommLayer::Leader;
   }
