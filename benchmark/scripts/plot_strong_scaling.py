@@ -8,7 +8,7 @@ from collections import defaultdict
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FixedLocator, FuncFormatter
-import scienceplots
+import scienceplots  # noqa: F401  # registers matplotlib styles
 
 # IEEE styling parameters
 IEEE_FIG_WIDTH = 3.5  # Single column width in inches

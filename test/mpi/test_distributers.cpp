@@ -151,6 +151,39 @@ TYPED_TEST(DynamicDistribution, Naive2) {
   }
 }
 
+// Exercises manager_rank != 0 for both Naive and Hierarchical (e.g. idx_for_worker branches).
+TYPED_TEST(DynamicDistribution, ManagerRankNonZero) {
+  if (MPIEnvironment::world_comm_size() < 2) {
+    GTEST_SKIP() << "Need at least 2 ranks for non-zero manager rank";
+  }
+  const int manager_rank = 1;
+  using TaskT = int;
+  using ResultT = double;
+  using Distributer = DistributerOf<TypeParam, TaskT, ResultT>;
+  auto worker_task = [](TaskT task) -> ResultT { return sqrt(static_cast<double>(task)); };
+  auto config = get_distributer_config<TypeParam, TaskT, ResultT>();
+  config.comm = MPI_COMM_WORLD;
+  config.auto_run_workers = false;
+  config.manager_rank = manager_rank;
+  Distributer distributor(worker_task, config);
+
+  EXPECT_EQ(distributor.is_root_manager(), MPIEnvironment::world_comm_rank() == manager_rank);
+
+  if (distributor.is_root_manager()) {
+    for (int i = 0; i < 10; ++i) distributor.insert_task(i);
+    auto results = distributor.finish_remaining_tasks();
+    if (!Distributer::ordered) {
+      std::sort(results.begin(), results.end());
+    }
+    EXPECT_EQ(results.size(), 10u);
+    for (size_t i = 0; i < results.size(); ++i) {
+      EXPECT_DOUBLE_EQ(results[i] * results[i], static_cast<double>(i));
+    }
+  } else {
+    distributor.run_worker();
+  }
+}
+
 TYPED_TEST(DynamicDistribution, Example1) {
   using DistributerWrapper = TypeParam;
 

@@ -8,6 +8,9 @@ set -euo pipefail
 #   ./benchmark/scripts/submit_aurora_strong_scaling.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=benchmark/scripts/aurora_queue_utils.sh
+source "${SCRIPT_DIR}/aurora_queue_utils.sh"
 SYSTEM="aurora"
 SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_aurora_strong_scaling.sh"
 
@@ -33,6 +36,7 @@ for nodes in "${NODE_LIST[@]}"; do
   else
     submit_args+=(-q "prod")
   fi
+  wait_for_aurora_queue_space "${nodes}"
   job_script="#!/usr/bin/env bash
 #PBS -j oe
 set -euo pipefail

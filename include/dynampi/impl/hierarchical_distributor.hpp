@@ -118,39 +118,32 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     }
 
     std::pair<int, CommLayer> result;
+    DYNAMPI_ASSERT(!is_root_manager(), "Root manager should not have a parent");
     if (m_config.coordinator_per_node) {
-      if (is_root_manager()) {
-        result = {-1, CommLayer::Global};
-      } else if (m_local_group && m_local_group->rank() > 0) {
+      DYNAMPI_ASSERT(m_local_group.has_value() || m_leader_group.has_value(),
+                     "Local or leader group should be present");
+      if (m_local_group && m_local_group->rank() > 0) {
         // Case 1: I am a Local Worker (Rank > 0 in Local Group)
         // Parent is the Node Coordinator (Local Rank 0).
         // Translate local rank 0 to world rank
         int node_coord_world_rank = m_local_group->translate_rank(0, m_world_group);
         result = {node_coord_world_rank, CommLayer::Local};
-      } else if (m_leader_group) {
+      } else {
         // Case 2: I am a Node Coordinator (Local Rank 0).
         // Parent is the Global Manager.
         // With the new topology, Manager is ALWAYS in the leader group.
         // We need the manager's world rank, which we already have
         int global_manager = m_config.manager_rank;
         result = std::make_pair(global_manager, CommLayer::Leader);
-      } else {
-        // Should not be reachable if topology initialized correctly
-        DYNAMPI_ASSERT(false, "Unreachable topology state in get_parent_target");
-        result = {-1, CommLayer::Global};
       }
     } else {
       // Original Logic
       int rank = m_communicator.rank();
       int virtual_rank = rank == m_config.manager_rank ? 0 : idx_for_worker(rank) + 1;
-      if (virtual_rank == 0) {
-        result = {-1, CommLayer::Global};  // Root
-      } else {
-        int virtual_parent = (virtual_rank - 1) / max_workers_per_coordinator();
-        int parent_rank =
-            virtual_parent == 0 ? m_config.manager_rank : worker_for_idx(virtual_parent - 1);
-        result = {parent_rank, CommLayer::Global};
-      }
+      int virtual_parent = (virtual_rank - 1) / max_workers_per_coordinator();
+      int parent_rank =
+          virtual_parent == 0 ? m_config.manager_rank : worker_for_idx(virtual_parent - 1);
+      result = {parent_rank, CommLayer::Global};
     }
 
     // Cache the result
@@ -584,23 +577,18 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   // --- Helper: Determine which layer a world rank belongs to ---
   CommLayer determine_layer_from_world_rank(int world_rank) const {
-    if (m_config.coordinator_per_node) {
-      // Check if rank is in local group (and not manager)
-      if (m_local_group) {
-        int local_rank = m_world_group.translate_rank(world_rank, *m_local_group);
-        if (local_rank != MPI_UNDEFINED) {
-          return CommLayer::Local;
-        }
-      }
-      // Check if rank is in leader group
-      if (m_leader_group) {
-        int leader_rank = m_world_group.translate_rank(world_rank, *m_leader_group);
-        if (leader_rank != MPI_UNDEFINED) {
-          return CommLayer::Leader;
-        }
+    DYNAMPI_ASSERT(m_config.coordinator_per_node);
+    // Check if rank is in local group (and not manager)
+    if (m_local_group) {
+      int local_rank = m_world_group.translate_rank(world_rank, *m_local_group);
+      if (local_rank != MPI_UNDEFINED) {
+        return CommLayer::Local;
       }
     }
-    return CommLayer::Global;
+    DYNAMPI_ASSERT(m_leader_group.has_value(), "Leader group should be present");
+    int leader_rank = m_world_group.translate_rank(world_rank, *m_leader_group);
+    DYNAMPI_ASSERT_NE(leader_rank, MPI_UNDEFINED, "Rank should be in leader group");
+    return CommLayer::Leader;
   }
 
   // --- Abstract Send Wrappers ---
@@ -734,12 +722,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     }
     int request_count;
     m_communicator.recv(request_count, world_source, Tag::REQUEST_BATCH);
-    if (request_count <= 0 || request_count > kMaxTasksRequested) {
-      std::cerr << "DynaMPI [rank " << m_communicator.rank()
-                << "] receive_request_batch_from: invalid request_count=" << request_count
-                << " (expected 1.." << kMaxTasksRequested << "), skipping." << std::endl;
-      return;
-    }
+    DYNAMPI_ASSERT_GT(request_count, 0, "Invalid request count");
+    DYNAMPI_ASSERT_LE(request_count, kMaxTasksRequested, "Request count exceeds maximum allowed");
     m_free_worker_indices.push(TaskRequest{
         .worker_rank = world_source, .source_layer = layer, .num_tasks_requested = request_count});
   }
