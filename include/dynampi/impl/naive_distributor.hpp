@@ -162,7 +162,7 @@ class NaiveMPIWorkDistributor {
         }
         // Standard MPI wait
         else if (active_worker_count() > 0) {
-          process_incoming_message(true);  // Blocking wait
+          process_incoming_message();
         }
       }
     }
@@ -311,31 +311,16 @@ class NaiveMPIWorkDistributor {
     m_tasks_sent++;
   }
 
-  void process_incoming_message(bool blocking) {
-    if (blocking) {
-      MPI_Status status = m_communicator.probe(MPI_ANY_SOURCE, MPI_ANY_TAG);
-      int source = status.MPI_SOURCE;
-      if (status.MPI_TAG == Tag::RESULT) {
-        handle_result_message(source, status);
-      } else {
-        DYNAMPI_ASSERT_EQ(status.MPI_TAG, Tag::REQUEST, "Unexpected tag received");
-        m_communicator.template recv_empty<ResultT>(source, Tag::REQUEST);
-      }
-      m_free_worker_ranks.push(source);
-      return;
+  void process_incoming_message() {
+    MPI_Status status = m_communicator.probe(MPI_ANY_SOURCE, MPI_ANY_TAG);
+    int source = status.MPI_SOURCE;
+    if (status.MPI_TAG == Tag::RESULT) {
+      handle_result_message(source, status);
+    } else {
+      DYNAMPI_ASSERT_EQ(status.MPI_TAG, Tag::REQUEST, "Unexpected tag received");
+      m_communicator.template recv_empty<ResultT>(source, Tag::REQUEST);
     }
-    // Non-blocking: process all currently available messages via iprobe
-    while (auto opt_status = m_communicator.iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG)) {
-      MPI_Status status = *opt_status;
-      int source = status.MPI_SOURCE;
-      if (status.MPI_TAG == Tag::RESULT) {
-        handle_result_message(source, status);
-      } else {
-        DYNAMPI_ASSERT_EQ(status.MPI_TAG, Tag::REQUEST, "Unexpected tag received");
-        m_communicator.template recv_empty<ResultT>(source, Tag::REQUEST);
-      }
-      m_free_worker_ranks.push(source);
-    }
+    m_free_worker_ranks.push(source);
   }
 
   void handle_result_message(int source, MPI_Status& probe_status) {
