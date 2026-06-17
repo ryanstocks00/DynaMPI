@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "dynampi/impl/hierarchical_distributor.hpp"
+#include "dynampi/impl/lockfree_distributor.hpp"
 #include "dynampi/mpi/mpi_communicator.hpp"
 #include "mpi_test_environment.hpp"
 
@@ -88,9 +89,11 @@ class DynamicDistribution : public ::testing::Test {
   }
 };
 
-using DistributerTypes = ::testing::Types<DistributerTypeWrapper<dynampi::NaiveMPIWorkDistributor>,
-                                          HierarchicalDistributerTypeWrapper<true>,
-                                          HierarchicalDistributerTypeWrapper<false>>;
+using DistributerTypes =
+    ::testing::Types<DistributerTypeWrapper<dynampi::NaiveMPIWorkDistributor>,
+                     DistributerTypeWrapper<dynampi::LockFreeMPIWorkDistributor>,
+                     HierarchicalDistributerTypeWrapper<true>,
+                     HierarchicalDistributerTypeWrapper<false>>;
 
 TYPED_TEST_SUITE(DynamicDistribution, DistributerTypes);
 
@@ -207,7 +210,7 @@ TYPED_TEST(DynamicDistribution, Example2) {
   using Result = std::vector<int>;
   using Distributer = DistributerOf<TypeParam, Task, Result>;
   if constexpr (is_specialization_of<dynampi::HierarchicalMPIWorkDistributor, Distributer>::value) {
-    GTEST_SKIP() << "This test is not applicable for HierarchicalMPIWorkDistributor.";
+    GTEST_SKIP() << "This test is not applicable for this distributor.";
   } else {
     auto worker_task = [](Task task) -> Result {
       return Result{task, task * task, task * task * task};
@@ -290,9 +293,10 @@ TYPED_TEST(DynamicDistribution, PriorityQueue) {
   using Task = int;
   using Result = int;
   using Distributer = DistributerOf<TypeParam, Task, Result, dynampi::enable_prioritization>;
-  if (!Distributer::ordered) {
-    GTEST_SKIP()
-        << "This test requires ordered results, which is not supported by this distributer.";
+  if (!Distributer::ordered ||
+      is_specialization_of<dynampi::LockFreeMPIWorkDistributor, Distributer>::value) {
+    GTEST_SKIP() << "This test requires ordered results with priority, which is not supported by "
+                    "this distributer.";
   }
   auto worker_task = [](Task task) -> Result { return task * task; };
   {
@@ -379,4 +383,75 @@ TYPED_TEST(DynamicDistribution, AutoRunWorkers) {
     EXPECT_EQ(results, (std::vector<int>{1, 4, 9, 16, 25}));
   }
   // Workers run automatically in constructor, no need to call run_worker()
+}
+
+// --- MinimalLockFreeMPIWorkDistributor (index parallel-for) ---
+// This distributor has a distinct, collective API (run(n)), so it is tested
+// directly rather than through the generic DynamicDistribution suite.
+
+TEST(MinimalLockFree, ScalarResults) {
+  dynampi::MinimalLockFreeMPIWorkDistributor<double> dist(
+      [](size_t i) -> double { return std::sqrt(static_cast<double>(i)); });
+
+  auto results = dist.run(20);
+
+  if (MPIEnvironment::world_comm_rank() == 0) {
+    ASSERT_EQ(results.size(), 20u);
+    for (size_t i = 0; i < results.size(); ++i) {
+      EXPECT_DOUBLE_EQ(results[i] * results[i], static_cast<double>(i));
+    }
+  } else {
+    EXPECT_TRUE(results.empty());
+  }
+}
+
+TEST(MinimalLockFree, ManagerRankNonZero) {
+  if (MPIEnvironment::world_comm_size() < 2) {
+    GTEST_SKIP() << "Need at least 2 ranks for non-zero manager rank";
+  }
+  const int manager_rank = 1;
+  dynampi::MinimalLockFreeMPIWorkDistributor<size_t> dist(
+      [](size_t i) -> size_t { return i * i; },
+      {.comm = MPI_COMM_WORLD, .manager_rank = manager_rank});
+
+  auto results = dist.run(8);
+
+  if (MPIEnvironment::world_comm_rank() == manager_rank) {
+    ASSERT_EQ(results.size(), 8u);
+    for (size_t i = 0; i < results.size(); ++i) EXPECT_EQ(results[i], i * i);
+  } else {
+    EXPECT_TRUE(results.empty());
+  }
+}
+
+TEST(MinimalLockFree, VariableSizeResults) {
+  dynampi::MinimalLockFreeMPIWorkDistributor<std::vector<int>> dist(
+      [](size_t i) -> std::vector<int> {
+        int v = static_cast<int>(i);
+        return {v, v * v, v * v * v};
+      });
+
+  auto results = dist.run(5);
+
+  if (MPIEnvironment::world_comm_rank() == 0) {
+    ASSERT_EQ(results.size(), 5u);
+    for (size_t i = 0; i < results.size(); ++i) {
+      int v = static_cast<int>(i);
+      EXPECT_EQ(results[i], (std::vector<int>{v, v * v, v * v * v}));
+    }
+  }
+}
+
+TEST(MinimalLockFree, EmptyAndReusable) {
+  dynampi::MinimalLockFreeMPIWorkDistributor<int> dist(
+      [](size_t i) -> int { return static_cast<int>(i) + 1; });
+
+  auto empty = dist.run(0);
+  EXPECT_TRUE(empty.empty());
+
+  // The distributor can be reused for multiple independent runs.
+  auto results = dist.run(4);
+  if (MPIEnvironment::world_comm_rank() == 0) {
+    EXPECT_EQ(results, (std::vector<int>{1, 2, 3, 4}));
+  }
 }

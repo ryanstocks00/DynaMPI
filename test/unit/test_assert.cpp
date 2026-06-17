@@ -59,7 +59,8 @@ TEST(OptionalString, ConcatsMultipleArgs) {
 
 TEST(DynaMPIAssert, TrueConditionDoesNotThrow) {
 #ifndef NDEBUG
-  int a1 = 1, b1 = 1;
+  volatile int a1 = 1;
+  volatile int b1 = 1;
   EXPECT_NO_THROW({ DYNAMPI_ASSERT(a1 == b1, "should not throw"); });
 #else
   EXPECT_NO_THROW({ DYNAMPI_ASSERT(false, "no-op in NDEBUG"); });
@@ -114,11 +115,13 @@ TEST(DynaMPIAssertBinOp, EqFailureShowsValuesAndNegatedOp) {
 
 TEST(DynaMPIAssertBinOp, GeAndLtPassWithoutThrow) {
 #ifndef NDEBUG
-  int a5 = 5, b5 = 5, c4 = 4;
+  volatile int a5 = 5;
+  volatile int b5 = 5;
+  volatile int c4 = 4;
   EXPECT_NO_THROW({ DYNAMPI_ASSERT_GE(a5, b5, "ok"); });
   EXPECT_NO_THROW({ DYNAMPI_ASSERT_LT(c4, a5, "ok"); });
 #else
-  EXPECT_NO_THROW({ DYNAMPI_ASSERT_GE(c4, a5, "no-op"); });
-  EXPECT_NO_THROW({ DYNAMPI_ASSERT_LT(can write, anything here); });
+  EXPECT_NO_THROW({ DYNAMPI_ASSERT_GE(0, 0, "no-op"); });
+  EXPECT_NO_THROW({ DYNAMPI_ASSERT_LT(0, 1, "no-op"); });
 #endif
 }

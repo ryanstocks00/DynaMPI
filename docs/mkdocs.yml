@@ -1,0 +1,66 @@
+# SPDX-FileCopyrightText: 2026 Ryan Stocks
+# SPDX-License-Identifier: Apache-2.0
+---
+site_name: DynaMPI
+site_url: https://trailblaze-software.github.io/DynaMPI/
+repo_url: https://github.com/Trailblaze-Software/DynaMPI
+repo_name: Trailblaze-Software/DynaMPI
+docs_dir: src
+theme:
+  name: material
+  features:
+    - navigation.indexes
+    - navigation.tracking
+    - navigation.top
+    - toc.follow
+    - content.code.copy
+  palette:
+    - scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to light mode
+    - scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+extra:
+  version:
+    provider: mike
+plugins:
+  - search
+  - mkdoxy:
+      projects:
+        dynampi:
+          src-dirs: ../include
+          full-doc: true
+          doxy-cfg:
+            INPUT: ../include
+            RECURSIVE: true
+            FILE_PATTERNS: '*.hpp'
+            EXTRACT_ALL: true
+            GENERATE_HTML: false
+            GENERATE_XML: true
+            GENERATE_LATEX: false
+            QUIET: true
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+nav:
+  - Home: index.md
+  - Install: install.md
+  - API Reference: api.md
+  - Implementations: implementations.md
+  - Design Notes:
+      - Lock-Free Design: mpi_compare_and_swap_design.md
+validation:
+  omitted_files: ignore
+  not_found: ignore

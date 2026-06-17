@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: 2026 Ryan Stocks
+# SPDX-License-Identifier: Apache-2.0
+---
+name: Publish Docs
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: documentation
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install system deps
+        run: sudo apt-get install -y doxygen graphviz
+      - name: Install Python deps
+        run: pip install mkdocs mkdocs-material mike mkdoxy
+      - name: Deploy dev docs
+        if: github.ref == 'refs/heads/main'
+        working-directory: docs
+        run: |
+          mike deploy dev --push --config-file mkdocs.yml
+          mike set-default latest --push --config-file mkdocs.yml || \
+          mike set-default dev --push --config-file mkdocs.yml
+      - name: Deploy release docs
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: docs
+        run: |
+          mike deploy "${{ github.ref_name }}" latest --push --config-file mkdocs.yml
+          mike set-default latest --push --config-file mkdocs.yml

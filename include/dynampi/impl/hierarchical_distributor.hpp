@@ -15,7 +15,6 @@
 #include <ranges>
 #include <span>
 #include <stack>
-#include <thread>
 #include <type_traits>
 #include <vector>
 
@@ -743,22 +742,10 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     MPI_Status status{};
     CommLayer layer = CommLayer::Global;
 
-    if (m_config.coordinator_per_node) {
-      // Poll global communicator non-blocking until a message is available
-      // The layer will be determined from the source rank in the receive methods
-      bool found = false;
-      while (!found) {
-        auto opt_status = m_communicator.iprobe();
-        if (opt_status.has_value()) {
-          status = opt_status.value();
-          found = true;
-          break;
-        }
-        std::this_thread::yield();
-      }
-    } else {
-      status = m_communicator.probe();
-    }
+    // All messages now route through the global communicator regardless of topology,
+    // so a blocking probe is sufficient. The CommLayer is determined from the source
+    // rank in each receive method via determine_layer_from_world_rank.
+    status = m_communicator.probe();
 
     // Assert that the tag is a valid Tag enum value before casting
     DYNAMPI_ASSERT(status.MPI_TAG >= static_cast<int>(Tag::TASK) &&

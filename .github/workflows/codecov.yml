@@ -55,7 +55,7 @@ jobs:
           lcov --gcov-tool $GCOV --remove coverage.info '/usr/*' --output-file coverage.info
           lcov --list coverage.info
       - name: Upload coverage to codecov
-        uses: codecov/codecov-action@5c93f7ab87f1aa9b956609bbc4b50a6e747fe2fb
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ steps.strings.outputs.build-output-dir }}/coverage.info

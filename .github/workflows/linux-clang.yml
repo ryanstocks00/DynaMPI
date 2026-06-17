@@ -41,6 +41,8 @@ jobs:
             16|17)
               sudo apt-get install -y libmpich-dev mpich
               echo "MPI_TYPE=MPICH" >> $GITHUB_ENV
+              # GH runners have no IB; UCX must not probe mlx5/verbs or MPI_Init fails.
+              echo "UCX_TLS=tcp,sm,self" >> $GITHUB_ENV
               echo "USE_LIBCXX=OFF" >> $GITHUB_ENV
               ;;
             18)

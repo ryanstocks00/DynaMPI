@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2026 Ryan Stocks
+# SPDX-License-Identifier: Apache-2.0
+#
+# Doxygen configuration for DynaMPI API docs (consumed by mkdoxy)
+# Minimal config — mkdoxy handles most of the rendering.
+
+PROJECT_NAME           = DynaMPI
+PROJECT_BRIEF          = "Header-only C++20 library for dynamic MPI task distribution"
+
+INPUT                  = ../include
+RECURSIVE              = YES
+FILE_PATTERNS          = *.hpp
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = NO
+
+GENERATE_HTML          = NO
+GENERATE_XML           = YES
+GENERATE_LATEX         = NO
+
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = NO

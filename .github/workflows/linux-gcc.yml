@@ -51,6 +51,8 @@ jobs:
             echo "MPI_C_COMPILER=/usr/bin/mpicc" >> $GITHUB_ENV
             echo "MPI_CXX_COMPILER=/usr/bin/mpicxx" >> $GITHUB_ENV
             echo "MPI_TYPE=MPICH" >> $GITHUB_ENV
+            # GH runners have no IB; UCX must not probe mlx5/verbs or MPI_Init fails.
+            echo "UCX_TLS=tcp,sm,self" >> $GITHUB_ENV
           else
             # Intel MPI for GCC 13+
             wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
