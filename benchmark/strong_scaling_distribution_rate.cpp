@@ -94,20 +94,20 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
   const uint64_t num_workers = (size == 1) ? 1 : static_cast<uint64_t>(size - 1);
 
   struct WorkerFunctor {
-    std::mt19937_64 rng;
-    std::uniform_int_distribution<uint64_t> uniform;
     uint64_t expected_us;
     DurationMode duration_mode;
+    std::mt19937_64 rng;
+    std::uniform_int_distribution<uint64_t> uniform;
 
-    WorkerFunctor(int rank, uint64_t expected_us, DurationMode mode)
-        : rng([rank]() {
+    WorkerFunctor(int rank, uint64_t expected_us_in, DurationMode mode)
+        : expected_us(expected_us_in),
+          duration_mode(mode),
+          rng([rank]() {
             std::random_device rd;
             std::mt19937_64 seed_gen(rd());
             return seed_gen() + static_cast<uint64_t>(rank);
           }()),
-          uniform(0, 2 * expected_us),
-          expected_us(expected_us),
-          duration_mode(mode) {}
+          uniform(0, 2 * expected_us_in) {}
 
     uint32_t operator()(Task task) {
       uint32_t value = task;
