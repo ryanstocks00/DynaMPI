@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+      - name: Configure apt mirror fallbacks
+        uses: ./.github/actions/apt-mirror
       - name: Set reusable strings
         id: strings
         shell: bash

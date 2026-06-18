@@ -20,11 +20,13 @@ jobs:
         build-type: [Debug, Release]
     steps:
       - uses: actions/checkout@v4
+      - name: Configure apt mirror fallbacks
+        uses: ./.github/actions/apt-mirror
       - name: Install GCC ${{ matrix.gcc-version }}
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++-${{ matrix.gcc-version }} cmake
+          sudo apt-get install -y --no-install-recommends g++-${{ matrix.gcc-version }} cmake
           echo "CC=gcc-${{ matrix.gcc-version }}" >> $GITHUB_ENV
           echo "CXX=g++-${{ matrix.gcc-version }}" >> $GITHUB_ENV
       - name: Install MPI
@@ -32,11 +34,11 @@ jobs:
         run: |
           if [ "${{ matrix.gcc-version }}" == "11" ]; then
             # OpenMPI for GCC 11
-            sudo apt-get install -y libopenmpi-dev openmpi-bin
+            sudo apt-get install -y --no-install-recommends libopenmpi-dev openmpi-bin
             echo "MPI_TYPE=OpenMPI" >> $GITHUB_ENV
           elif [ "${{ matrix.gcc-version }}" == "12" ]; then
             # MPICH for GCC 12
-            sudo apt-get install -y libmpich-dev mpich
+            sudo apt-get install -y --no-install-recommends libmpich-dev mpich
             # Verify MPICH installation
             which mpicc || echo "mpicc not found"
             which mpicxx || echo "mpicxx not found"
@@ -60,7 +62,7 @@ jobs:
             echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg]\
                   https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
             sudo apt-get update
-            sudo apt-get install -y intel-oneapi-mpi-devel
+            sudo apt-get install -y --no-install-recommends intel-oneapi-mpi-devel
             echo "MPI_TYPE=Intel MPI" >> $GITHUB_ENV
           fi
       - name: Configure CMake

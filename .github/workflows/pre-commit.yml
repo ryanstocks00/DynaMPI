@@ -16,6 +16,8 @@ jobs:
         with:
           # Fetch all history for all branches and tags
           fetch-depth: 0
+      - name: Configure apt mirror fallbacks
+        uses: ./.github/actions/apt-mirror
       - name: Set up Python
         uses: actions/setup-python@v4
         with:

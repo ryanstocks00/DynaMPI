@@ -19,6 +19,8 @@ jobs:
         sanitizer: [address, undefined]
     steps:
       - uses: actions/checkout@v4
+      - name: Configure apt mirror fallbacks
+        uses: ./.github/actions/apt-mirror
       - name: Install GCC and OpenMPI
         shell: bash
         run: |

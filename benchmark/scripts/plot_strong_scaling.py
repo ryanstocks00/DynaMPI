@@ -9,16 +9,20 @@ from collections.abc import Sequence
 from typing import TypedDict
 
 import matplotlib.pyplot as plt
-from matplotlib import colormaps
-from matplotlib.ticker import FixedLocator, FuncFormatter
-import scienceplots  # noqa: F401  # registers matplotlib styles
 
-# IEEE styling parameters
-IEEE_FIG_WIDTH = 3.5  # Single column width in inches
-IEEE_FIG_HEIGHT = 3.5  # Height in inches (increased for bottom legend)
-
-# Hollow marker shapes for different series
-MARKER_SHAPES = ['o', 's', '^', 'v', 'D', 'p', '*', 'h', 'X', '<', '>', 'd']
+from plot_common import (
+    IEEE_FIG_HEIGHT,
+    IEEE_FIG_WIDTH,
+    add_light_grid,
+    add_plot_cli_args,
+    collect_csv_paths,
+    dedupe_newest,
+    normalize_mode,
+    save_figure,
+    series_color,
+    series_marker,
+    set_log_node_axes,
+)
 
 
 class StrongScalingRow(TypedDict):
@@ -42,26 +46,6 @@ def format_duration(expected_ns: int | float) -> str:
     if expected_ns >= 1_000:
         return f"{expected_ns / 1_000:g} us"
     return f"{expected_ns:g} ns"
-
-
-def collect_csv_paths(inputs: Sequence[str]) -> list[str]:
-    paths = []
-    for raw in inputs:
-        for entry in raw.split(","):
-            entry = entry.strip()
-            if not entry:
-                continue
-            if os.path.isdir(entry):
-                for root, _, files in os.walk(entry):
-                    for name in files:
-                        # Only collect strong scaling CSV files
-                        if name.endswith(".csv") and "strong_scaling" in name.lower():
-                            paths.append(os.path.join(root, name))
-            else:
-                # Only add if it's a strong scaling CSV file
-                if "strong_scaling" in os.path.basename(entry).lower():
-                    paths.append(entry)
-    return paths
 
 
 def parse_rows(paths: Sequence[str]) -> list[StrongScalingRow]:
@@ -97,36 +81,31 @@ def parse_rows(paths: Sequence[str]) -> list[StrongScalingRow]:
     return rows
 
 
-def group_rows(rows: Sequence[StrongScalingRow]) -> dict[tuple[str, str, str, int, int], list[tuple[int, float]]]:
-    # First, filter to keep only newest results for each unique configuration
-    # Key: (system, distributor, mode, expected_ns, ranks_per_node, nodes)
-    # Value: (throughput, file_mtime)
-    # Note: Normalize mode for backward compatibility (poisson -> random)
-    newest_by_config = {}
-    for row in rows:
-        # Handle backward compatibility: treat "poisson" as "random"
-        normalized_mode = "random" if row["mode"] == "poisson" else row["mode"]
-        config_key = (
+def group_rows(
+    rows: Sequence[StrongScalingRow],
+) -> dict[tuple[str, str, str, int, int], list[tuple[int, float]]]:
+    newest = dedupe_newest(
+        rows,
+        lambda row: (
             row["system"],
             row["distributor"],
-            normalized_mode,
+            normalize_mode(row["mode"]),
             row["expected_ns"],
             row["ranks_per_node"],
             row["nodes"],
-        )
-        if config_key not in newest_by_config:
-            newest_by_config[config_key] = (row["throughput"], row["file_mtime"])
-        else:
-            # Keep the one from the newest file
-            _, existing_mtime = newest_by_config[config_key]
-            if row["file_mtime"] > existing_mtime:
-                newest_by_config[config_key] = (row["throughput"], row["file_mtime"])
-
-    # Now group by (system, distributor, mode, expected_ns, ranks_per_node) for plotting
-    grouped = defaultdict(list)
-    for (system, distributor, mode, expected_ns, ranks_per_node, nodes), (throughput, _) in newest_by_config.items():
-        key = (system, distributor, mode, expected_ns, ranks_per_node)
-        grouped[key].append((nodes, throughput))
+        ),
+        "throughput",
+    )
+    grouped: dict[tuple[str, str, str, int, int], list[tuple[int, float]]] = defaultdict(list)
+    for (
+        system,
+        distributor,
+        mode,
+        expected_ns,
+        ranks_per_node,
+        nodes,
+    ), (throughput, _) in newest.items():
+        grouped[(system, distributor, mode, expected_ns, ranks_per_node)].append((nodes, throughput))
     return grouped
 
 
@@ -137,17 +116,13 @@ def plot_distributor(
     output_dir: str,
     image_format: str,
 ) -> None:
-    modes = ["fixed", "random"]
-
-    # Create separate plots for each mode
-    for mode in modes:
-        # Use scienceplots IEEE style
+    for mode in ("fixed", "random"):
         with plt.style.context(['science', 'ieee']):
             fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT))
 
             series = []
-            all_nodes = set()
-            ranks_per_node_value = None
+            all_nodes: set[int] = set()
+            ranks_per_node_value: int | None = None
             for (
                 sys_name,
                 dist,
@@ -155,81 +130,64 @@ def plot_distributor(
                 expected_ns,
                 ranks_per_node,
             ), points in grouped.items():
-                # Handle backward compatibility: treat "poisson" as "random"
-                normalized_mode = "random" if mode_name == "poisson" else mode_name
-                if sys_name != system or dist != distributor or normalized_mode != mode:
+                if sys_name != system or dist != distributor or normalize_mode(mode_name) != mode:
                     continue
-                points_sorted = sorted(points, key=lambda x: x[0])
-                nodes = [p[0] for p in points_sorted]
-                throughput = [p[1] for p in points_sorted]
+                points_sorted = sorted(points, key=lambda point: point[0])
+                nodes = [point[0] for point in points_sorted]
+                throughput = [point[1] for point in points_sorted]
                 all_nodes.update(nodes)
                 if ranks_per_node_value is None:
                     ranks_per_node_value = ranks_per_node
                 series.append((expected_ns, ranks_per_node, nodes, throughput))
 
-            # Skip creating plot if there's no data
             if not series:
                 plt.close(fig)
                 continue
 
-            # Sort series by expected_ns (duration) to ensure proper ordering
-            series_sorted = sorted(series, key=lambda x: x[0])  # Sort by expected_ns only
+            series_sorted = sorted(series, key=lambda item: item[0])
             handles = []
             labels = []
 
-            # Plot actual data first to establish axis limits
             for idx, (expected_ns, ranks_per_node, nodes, throughput) in enumerate(series_sorted):
-                # Remove rpn from legend label, only show duration
                 label = format_duration(expected_ns)
-                marker = MARKER_SHAPES[idx % len(MARKER_SHAPES)]
-                color = colormaps['tab10'](idx % 10)
-                # Use matplotlib's default color cycle for different colors
-                line, = ax.plot(nodes, throughput, marker=marker, label=label,
-                               fillstyle='none', markeredgewidth=1.0,
-                               color=color)
+                line, = ax.plot(
+                    nodes,
+                    throughput,
+                    marker=series_marker(idx),
+                    label=label,
+                    fillstyle='none',
+                    markeredgewidth=1.0,
+                    color=series_color(idx),
+                )
                 handles.append(line)
                 labels.append(label)
 
             ax.set_xlabel("Nodes")
             ax.set_ylabel("Tasks per second")
-            ax.set_xscale("log", base=2)
-            ax.set_yscale("log")
-            # Show actual node counts (2, 4, 8, 16, ...) rather than 2^n formatting.
-            # Keep the log2 spacing but format ticks as plain integers.
-            if all_nodes:
-                node_ticks = sorted(all_nodes)
-                ax.xaxis.set_major_locator(FixedLocator(node_ticks))
-                ax.xaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int(x)}"))
+            set_log_node_axes(ax, all_nodes)
+            add_light_grid(ax)
 
-            # Add very light grey underlying grid
-            ax.grid(True, which="both", linestyle="-", linewidth=0.5, color='lightgrey', alpha=0.5, zorder=0)
-
-            # Store axis limits before plotting ideal lines
             xlim = ax.get_xlim()
             ylim = ax.get_ylim()
-
-            # Plot ideal scaling lines without affecting axis limits
-            for idx, (expected_ns, ranks_per_node, nodes, throughput) in enumerate(series_sorted):
-                color = colormaps['tab10'](idx % 10)
-                # Add ideal scaling line: throughput = nodes * ranks_per_node * 1e9 / expected_ns
+            for idx, (expected_ns, ranks_per_node, _nodes, _throughput) in enumerate(series_sorted):
                 if all_nodes:
                     ideal_nodes = sorted(all_nodes)
                     ideal_throughput = [n * ranks_per_node * 1e9 / expected_ns for n in ideal_nodes]
-                    ax.plot(ideal_nodes, ideal_throughput, linestyle='--', color=color,
-                           linewidth=1.0, alpha=0.5, zorder=0)
-
-            # Restore axis limits to those determined by actual data
+                    ax.plot(
+                        ideal_nodes,
+                        ideal_throughput,
+                        linestyle='--',
+                        color=series_color(idx),
+                        linewidth=1.0,
+                        alpha=0.5,
+                        zorder=0,
+                    )
             ax.set_xlim(xlim)
             ax.set_ylim(ylim)
 
-            # Reorder handles and labels to go across columns first (row-major)
-            # Matplotlib's legend with ncol fills column-major (down columns first),
-            # so we need to transpose the order to get row-major display
             ncol = 4
             n_items = len(handles)
-            n_rows = (n_items + ncol - 1) // ncol  # Ceiling division
-
-            # Create reordered lists: transpose so matplotlib's column-major fill gives row-major display
+            n_rows = (n_items + ncol - 1) // ncol
             reordered_handles = []
             reordered_labels = []
             for col in range(ncol):
@@ -239,44 +197,36 @@ def plot_distributor(
                         reordered_handles.append(handles[idx])
                         reordered_labels.append(labels[idx])
 
-            # Compact legend with increased column spacing - 4 columns at bottom, no border
-            # Items ordered by duration (1us, 10us, 100us, ...) going across columns first
-            ax.legend(reordered_handles, reordered_labels,
-                      frameon=False,
-                      ncol=ncol, columnspacing=0.8,
-                      loc='upper center', bbox_to_anchor=(0.5, -0.15))
+            ax.legend(
+                reordered_handles,
+                reordered_labels,
+                frameon=False,
+                ncol=ncol,
+                columnspacing=0.8,
+                loc='upper center',
+                bbox_to_anchor=(0.5, -0.15),
+            )
 
-            # Add rpn to filename
-            rpn_str = f"_{ranks_per_node_value}rpn" if ranks_per_node_value else ""
+            rpn_str = f"_{ranks_per_node_value}rpn" if ranks_per_node_value is not None else ""
             filename = f"strong_scaling_{system}_{distributor}_{mode}{rpn_str}.{image_format}"
-            fig.tight_layout(rect=(0, 0.12, 1, 1))  # Leave space at bottom for legend
-            fig.savefig(os.path.join(output_dir, filename), dpi=300, bbox_inches='tight')
-            plt.close(fig)
+            save_figure(
+                fig,
+                output_dir,
+                filename,
+                tight_layout_rect=(0, 0.12, 1, 1),
+            )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Plot strong scaling distribution throughput.")
-    parser.add_argument(
-        "--input",
-        required=True,
-        action="append",
-        help="CSV file or directory (can be passed multiple times)",
-    )
-    parser.add_argument(
-        "--output-dir", required=True, help="Directory to write output plots"
-    )
-    parser.add_argument(
-        "--format", default="png", choices=["png", "pdf", "svg"], help="Output image format"
-    )
+    add_plot_cli_args(parser)
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
-    input_paths = collect_csv_paths(args.input)
-    rows = parse_rows(input_paths)
+    rows = parse_rows(collect_csv_paths(args.input, "strong_scaling"))
     grouped = group_rows(rows)
 
     systems = sorted({row["system"] for row in rows})
-    # Filter out empty distributors and only include those with actual data
     distributors = sorted({row["distributor"] for row in rows if row["distributor"].strip()})
     for system in systems:
         for distributor in distributors:
