@@ -66,6 +66,16 @@ repos:
     hooks:
       - id: commitizen
         stages: [commit-msg]
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.410
+    hooks:
+      - id: pyright
+        name: Pyright
+        files: ^benchmark/scripts/.*\.py$
+        args: ["--pythonversion", "3.11"]
+        additional_dependencies:
+          - matplotlib
+          - scienceplots
   - repo: https://github.com/fsfe/reuse-tool
     rev: v5.0.2
     hooks:

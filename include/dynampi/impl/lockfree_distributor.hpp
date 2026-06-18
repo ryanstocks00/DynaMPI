@@ -39,6 +39,39 @@ inline int mpi_type_size_bytes() {
 
 inline constexpr size_t round_up_8(size_t bytes) { return (bytes + 7) & ~static_cast<size_t>(7); }
 
+inline void write_bytes(std::byte* buffer, [[maybe_unused]] size_t buffer_size, size_t offset,
+                        const void* src, size_t nbytes) {
+  if (nbytes == 0) return;
+  assert(offset <= buffer_size && nbytes <= buffer_size - offset);
+  std::memcpy(buffer + offset, src, nbytes);
+}
+
+inline int64_t read_i64(const std::byte* buffer, [[maybe_unused]] size_t buffer_size,
+                        size_t offset) {
+  assert(offset + sizeof(int64_t) <= buffer_size);
+  int64_t value{};
+  std::memcpy(&value, buffer + offset, sizeof(int64_t));
+  return value;
+}
+
+inline void write_i64(std::byte* buffer, size_t buffer_size, size_t offset, int64_t value) {
+  write_bytes(buffer, buffer_size, offset, &value, sizeof(int64_t));
+}
+
+template <typename T>
+inline void read_result_bytes(const std::byte* buffer, [[maybe_unused]] size_t buffer_size,
+                              size_t offset, T& value, size_t data_bytes) {
+  if (data_bytes == 0) return;
+  assert(offset <= buffer_size && data_bytes <= buffer_size - offset);
+  if constexpr (MPI_Type<T>::resize_required) {
+    // cppcheck-suppress invalidPointerCast
+    std::memcpy(MPI_Type<T>::ptr(value), buffer + offset, data_bytes);
+  } else {
+    assert(data_bytes == sizeof(T));
+    std::memcpy(&value, buffer + offset, sizeof(T));
+  }
+}
+
 // Passive-target RMA on MS-MPI needs explicit flush progress while spinning.
 inline void rma_wait_idle(MPI_Win window) {
 #if defined(_WIN32)
@@ -173,11 +206,11 @@ class MinimalLockFreeMPIWorkDistributor {
           count > 0 ? static_cast<size_t>(count) * static_cast<size_t>(elem) : size_t{0};
       const size_t offset = send_buf.size();
       send_buf.resize(offset + 16 + data_bytes);
-      int64_t i64 = index, c64 = count;
-      std::memcpy(send_buf.data() + offset, &i64, sizeof(i64));
-      std::memcpy(send_buf.data() + offset + 8, &c64, sizeof(c64));
+      detail::write_i64(send_buf.data(), send_buf.size(), offset, index);
+      detail::write_i64(send_buf.data(), send_buf.size(), offset + 8, count);
       if (data_bytes > 0) {
-        std::memcpy(send_buf.data() + offset + 16, MPI_Type<ResultT>::ptr(result), data_bytes);
+        detail::write_bytes(send_buf.data(), send_buf.size(), offset + 16,
+                            MPI_Type<ResultT>::ptr(result), data_bytes);
       }
     }
 
@@ -210,9 +243,9 @@ class MinimalLockFreeMPIWorkDistributor {
     std::vector<std::pair<int64_t, ResultT>> all;
     size_t pos = 0;
     while (pos < static_cast<size_t>(total_bytes)) {
-      int64_t index, count;
-      std::memcpy(&index, recv_buf.data() + pos, sizeof(index));
-      std::memcpy(&count, recv_buf.data() + pos + 8, sizeof(count));
+      assert(pos + 16 <= static_cast<size_t>(total_bytes));
+      const int64_t index = detail::read_i64(recv_buf.data(), recv_buf.size(), pos);
+      const int64_t count = detail::read_i64(recv_buf.data(), recv_buf.size(), pos + 8);
       pos += 16;
       ResultT result{};
       if constexpr (MPI_Type<ResultT>::resize_required)
@@ -220,9 +253,7 @@ class MinimalLockFreeMPIWorkDistributor {
       assert(count >= 0);
       const size_t data_bytes =
           count > 0 ? static_cast<size_t>(count) * static_cast<size_t>(elem) : size_t{0};
-      if (data_bytes > 0) {
-        std::memcpy(MPI_Type<ResultT>::ptr(result), recv_buf.data() + pos, data_bytes);
-      }
+      detail::read_result_bytes(recv_buf.data(), recv_buf.size(), pos, result, data_bytes);
       pos += data_bytes;
       all.emplace_back(index, std::move(result));
     }
@@ -562,9 +593,11 @@ class LockFreeMPIWorkDistributor {
     const size_t data_bytes = static_cast<size_t>(count) * m_task_elem;
 
     std::vector<std::byte> buffer(T_DATA + data_bytes);
-    int64_t count64 = count;
-    std::memcpy(buffer.data() + T_COUNT, &count64, sizeof(count64));
-    if (count > 0) std::memcpy(buffer.data() + T_DATA, MPI_Type<TaskT>::ptr(task), data_bytes);
+    detail::write_i64(buffer.data(), buffer.size(), T_COUNT, count);
+    if (count > 0) {
+      detail::write_bytes(buffer.data(), buffer.size(), T_DATA, MPI_Type<TaskT>::ptr(task),
+                          data_bytes);
+    }
     put_bytes(buffer.data(), buffer.size(), task_slot(index));
 
     if constexpr (statistics_mode != StatisticsMode::None) {
@@ -628,11 +661,11 @@ class LockFreeMPIWorkDistributor {
           count > 0 ? static_cast<size_t>(count) * static_cast<size_t>(elem) : size_t{0};
       const size_t offset = send_buf.size();
       send_buf.resize(offset + 16 + data_bytes);
-      int64_t i64 = index, c64 = count;
-      std::memcpy(send_buf.data() + offset, &i64, sizeof(i64));
-      std::memcpy(send_buf.data() + offset + 8, &c64, sizeof(c64));
+      detail::write_i64(send_buf.data(), send_buf.size(), offset, index);
+      detail::write_i64(send_buf.data(), send_buf.size(), offset + 8, count);
       if (data_bytes > 0) {
-        std::memcpy(send_buf.data() + offset + 16, MPI_Type<ResultT>::ptr(result), data_bytes);
+        detail::write_bytes(send_buf.data(), send_buf.size(), offset + 16,
+                            MPI_Type<ResultT>::ptr(result), data_bytes);
       }
     }
     m_local_results.clear();
@@ -668,9 +701,9 @@ class LockFreeMPIWorkDistributor {
       const size_t end = pos + static_cast<size_t>(byte_counts[static_cast<size_t>(r)]);
       size_t result_count = 0;
       while (pos < end) {
-        int64_t index, count;
-        std::memcpy(&index, recv_buf.data() + pos, sizeof(index));
-        std::memcpy(&count, recv_buf.data() + pos + 8, sizeof(count));
+        assert(pos + 16 <= end);
+        const int64_t index = detail::read_i64(recv_buf.data(), recv_buf.size(), pos);
+        const int64_t count = detail::read_i64(recv_buf.data(), recv_buf.size(), pos + 8);
         pos += 16;
         ResultT result{};
         if constexpr (MPI_Type<ResultT>::resize_required)
@@ -678,9 +711,7 @@ class LockFreeMPIWorkDistributor {
         assert(count >= 0);
         const size_t data_bytes =
             count > 0 ? static_cast<size_t>(count) * static_cast<size_t>(elem) : size_t{0};
-        if (data_bytes > 0) {
-          std::memcpy(MPI_Type<ResultT>::ptr(result), recv_buf.data() + pos, data_bytes);
-        }
+        detail::read_result_bytes(recv_buf.data(), recv_buf.size(), pos, result, data_bytes);
         pos += data_bytes;
         m_staging[index] = std::move(result);
         result_count++;

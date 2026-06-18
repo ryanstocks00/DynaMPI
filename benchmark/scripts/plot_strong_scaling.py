@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-# SPDX-FileCopyrightText: 2025 QDX Technologies. Authored by Ryan Stocks <ryan.stocks00@gmail.com>
+# SPDX-FileCopyrightText: 2026 Ryan Stocks
 # SPDX-License-Identifier: Apache-2.0
 import argparse
 import csv
 import os
 from collections import defaultdict
+from collections.abc import Sequence
+from typing import TypedDict
 
 import matplotlib.pyplot as plt
+from matplotlib import colormaps
 from matplotlib.ticker import FixedLocator, FuncFormatter
 import scienceplots  # noqa: F401  # registers matplotlib styles
 
@@ -18,7 +21,18 @@ IEEE_FIG_HEIGHT = 3.5  # Height in inches (increased for bottom legend)
 MARKER_SHAPES = ['o', 's', '^', 'v', 'D', 'p', '*', 'h', 'X', '<', '>', 'd']
 
 
-def format_duration(expected_ns):
+class StrongScalingRow(TypedDict):
+    system: str
+    distributor: str
+    mode: str
+    expected_ns: int
+    nodes: int
+    ranks_per_node: int
+    throughput: float
+    file_mtime: float
+
+
+def format_duration(expected_ns: int | float) -> str:
     if expected_ns <= 0:
         return "0 ns"
     if expected_ns >= 1_000_000_000:
@@ -30,7 +44,7 @@ def format_duration(expected_ns):
     return f"{expected_ns:g} ns"
 
 
-def collect_csv_paths(inputs):
+def collect_csv_paths(inputs: Sequence[str]) -> list[str]:
     paths = []
     for raw in inputs:
         for entry in raw.split(","):
@@ -50,8 +64,8 @@ def collect_csv_paths(inputs):
     return paths
 
 
-def parse_rows(paths):
-    rows = []
+def parse_rows(paths: Sequence[str]) -> list[StrongScalingRow]:
+    rows: list[StrongScalingRow] = []
     for path in paths:
         file_mtime = os.path.getmtime(path)
         with open(path, "r", encoding="utf-8") as handle:
@@ -83,7 +97,7 @@ def parse_rows(paths):
     return rows
 
 
-def group_rows(rows):
+def group_rows(rows: Sequence[StrongScalingRow]) -> dict[tuple[str, str, str, int, int], list[tuple[int, float]]]:
     # First, filter to keep only newest results for each unique configuration
     # Key: (system, distributor, mode, expected_ns, ranks_per_node, nodes)
     # Value: (throughput, file_mtime)
@@ -116,7 +130,13 @@ def group_rows(rows):
     return grouped
 
 
-def plot_distributor(system, distributor, grouped, output_dir, image_format):
+def plot_distributor(
+    system: str,
+    distributor: str,
+    grouped: dict[tuple[str, str, str, int, int], list[tuple[int, float]]],
+    output_dir: str,
+    image_format: str,
+) -> None:
     modes = ["fixed", "random"]
 
     # Create separate plots for each mode
@@ -162,7 +182,7 @@ def plot_distributor(system, distributor, grouped, output_dir, image_format):
                 # Remove rpn from legend label, only show duration
                 label = format_duration(expected_ns)
                 marker = MARKER_SHAPES[idx % len(MARKER_SHAPES)]
-                color = plt.cm.tab10(idx % 10)
+                color = colormaps['tab10'](idx % 10)
                 # Use matplotlib's default color cycle for different colors
                 line, = ax.plot(nodes, throughput, marker=marker, label=label,
                                fillstyle='none', markeredgewidth=1.0,
@@ -190,7 +210,7 @@ def plot_distributor(system, distributor, grouped, output_dir, image_format):
 
             # Plot ideal scaling lines without affecting axis limits
             for idx, (expected_ns, ranks_per_node, nodes, throughput) in enumerate(series_sorted):
-                color = plt.cm.tab10(idx % 10)
+                color = colormaps['tab10'](idx % 10)
                 # Add ideal scaling line: throughput = nodes * ranks_per_node * 1e9 / expected_ns
                 if all_nodes:
                     ideal_nodes = sorted(all_nodes)
@@ -229,12 +249,12 @@ def plot_distributor(system, distributor, grouped, output_dir, image_format):
             # Add rpn to filename
             rpn_str = f"_{ranks_per_node_value}rpn" if ranks_per_node_value else ""
             filename = f"strong_scaling_{system}_{distributor}_{mode}{rpn_str}.{image_format}"
-            fig.tight_layout(rect=[0, 0.12, 1, 1])  # Leave space at bottom for legend
+            fig.tight_layout(rect=(0, 0.12, 1, 1))  # Leave space at bottom for legend
             fig.savefig(os.path.join(output_dir, filename), dpi=300, bbox_inches='tight')
             plt.close(fig)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Plot strong scaling distribution throughput.")
     parser.add_argument(
         "--input",

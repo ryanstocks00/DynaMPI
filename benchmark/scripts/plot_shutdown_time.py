@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-# SPDX-FileCopyrightText: 2025 QDX Technologies. Authored by Ryan Stocks <ryan.stocks00@gmail.com>
+# SPDX-FileCopyrightText: 2026 Ryan Stocks
 # SPDX-License-Identifier: Apache-2.0
 import argparse
 import csv
 import os
 from collections import defaultdict
+from collections.abc import Sequence
+from typing import TypedDict
 
 import matplotlib.pyplot as plt
+from matplotlib import colormaps
 from matplotlib.ticker import FixedLocator, FuncFormatter
 import scienceplots  # noqa: F401  # registers matplotlib styles
 
@@ -18,7 +21,16 @@ IEEE_FIG_HEIGHT = 3.5  # Height in inches
 MARKER_SHAPES = ['o', 's', '^', 'v', 'D', 'p', '*', 'h', 'X', '<', '>', 'd']
 
 
-def collect_csv_paths(inputs):
+class ShutdownRow(TypedDict):
+    system: str
+    nodes: int
+    world_size: int
+    workers: int
+    time_per_shutdown_us: float
+    file_mtime: float
+
+
+def collect_csv_paths(inputs: Sequence[str]) -> list[str]:
     paths = []
     for raw in inputs:
         for entry in raw.split(","):
@@ -38,8 +50,8 @@ def collect_csv_paths(inputs):
     return paths
 
 
-def parse_rows(paths):
-    rows = []
+def parse_rows(paths: Sequence[str]) -> list[ShutdownRow]:
+    rows: list[ShutdownRow] = []
     for path in paths:
         file_mtime = os.path.getmtime(path)
         with open(path, "r", encoding="utf-8") as handle:
@@ -68,7 +80,7 @@ def parse_rows(paths):
     return rows
 
 
-def group_rows(rows):
+def group_rows(rows: Sequence[ShutdownRow]) -> dict[str, list[tuple[int, float]]]:
     # First, filter to keep only newest results for each unique configuration
     # Key: (system, nodes)
     # Value: (time_per_shutdown_us, file_mtime)
@@ -93,7 +105,11 @@ def group_rows(rows):
     return grouped
 
 
-def plot_all_systems(grouped, output_dir, image_format):
+def plot_all_systems(
+    grouped: dict[str, list[tuple[int, float]]],
+    output_dir: str,
+    image_format: str,
+) -> None:
     # Use scienceplots IEEE style
     with plt.style.context(['science', 'ieee']):
         fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT))
@@ -116,7 +132,7 @@ def plot_all_systems(grouped, output_dir, image_format):
             all_nodes.update(nodes)
 
             marker = MARKER_SHAPES[idx % len(MARKER_SHAPES)]
-            color = plt.cm.tab10(idx % 10)
+            color = colormaps['tab10'](idx % 10)
 
             # Plot data
             line, = ax.plot(nodes, time_per_shutdown_s, marker=marker, fillstyle='none',
@@ -148,7 +164,7 @@ def plot_all_systems(grouped, output_dir, image_format):
         plt.close(fig)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Plot shutdown time vs number of nodes.")
     parser.add_argument(
         "--input",
