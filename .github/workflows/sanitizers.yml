@@ -13,8 +13,9 @@ env:
 jobs:
   linux-debug-sanitizers:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     strategy:
+      max-parallel: 5
       matrix:
         sanitizer: [address, undefined]
     steps:

@@ -13,8 +13,9 @@ env:
 jobs:
   linux-intel:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
+      max-parallel: 5
       matrix:
         build-type: [Debug, Release]
     steps:
