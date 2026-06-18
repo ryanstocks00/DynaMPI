@@ -33,7 +33,9 @@ using source_location = std::experimental::source_location;
 #endif
 
 #include <sstream>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 
 #include "printing.hpp"
 #endif

@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
+      max-parallel: 5
       matrix:
         clang-version: [14, 15, 16, 17, 18]
         build-type: [Debug, Release]

@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
   opts.system = args["system"].as<std::string>();
   opts.output_path = args["output"].as<std::string>();
 
-  {
+  try {
     MPI_Comm comm = MPI_COMM_WORLD;
     int rank = 0;
     int size = 0;
@@ -168,6 +168,16 @@ int main(int argc, char** argv) {
         write_csv_row(out, opts, result);
       }
     }
+  } catch (const std::exception& e) {
+    if (world_rank == 0) {
+      std::cerr << "Benchmark failed: " << e.what() << std::endl;
+    }
+    MPI_Abort(MPI_COMM_WORLD, 1);
+  } catch (...) {
+    if (world_rank == 0) {
+      std::cerr << "Benchmark failed: unknown error" << std::endl;
+    }
+    MPI_Abort(MPI_COMM_WORLD, 1);
   }
   MPI_Finalize();
   return 0;

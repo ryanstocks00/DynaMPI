@@ -13,6 +13,7 @@
 #include <set>
 #include <span>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 namespace dynampi {
@@ -53,7 +54,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::span<T>& vec) {
 
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
-  return os << std::span<const T>(vec);
+  return os << std::span<const T>(vec.data(), vec.size());
 }
 
 template <typename T, std::size_t N>
