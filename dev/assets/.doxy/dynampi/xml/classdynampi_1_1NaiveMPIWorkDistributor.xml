@@ -1,0 +1,858 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classdynampi_1_1NaiveMPIWorkDistributor" kind="class" language="C++" prot="public">
+    <compoundname>dynampi::NaiveMPIWorkDistributor</compoundname>
+    <includes refid="naive__distributor_8hpp" local="no">naive_distributor.hpp</includes>
+    <innerclass refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Config" prot="public">dynampi::NaiveMPIWorkDistributor::Config</innerclass>
+    <innerclass refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig" prot="public">dynampi::NaiveMPIWorkDistributor::RunConfig</innerclass>
+    <innerclass refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics" prot="public">dynampi::NaiveMPIWorkDistributor::Statistics</innerclass>
+    <templateparamlist>
+      <param>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref></type>
+      </param>
+      <param>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref></type>
+      </param>
+      <param>
+        <type>typename...</type>
+        <declname>Options</declname>
+        <defname>Options</defname>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="private-type">
+      <memberdef kind="enum" id="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849" prot="private" static="no" strong="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <name>Tag</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::Tag</qualifiedname>
+        <enumvalue id="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849a6618410b80f31fd3f01a24e59af11a76" prot="private">
+          <name>TASK</name>
+          <initializer>= 0</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849af242e6c8ddcba6da192f643751d4f3d7" prot="private">
+          <name>DONE</name>
+          <initializer>= 1</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849af24d0b335cb4efc0fa17a257d622f4e0" prot="private">
+          <name>RESULT</name>
+          <initializer>= 2</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849a0b3ba5c2a5f24100c3855dc06f6fc104" prot="private">
+          <name>REQUEST</name>
+          <initializer>= 3</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849ad7b973b7b505abe2efd003308d181c08" prot="private">
+          <name>ERROR</name>
+          <initializer>= 4</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="88" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="88" bodyend="88"/>
+      </memberdef>
+      <memberdef kind="typedef" id="classdynampi_1_1NaiveMPIWorkDistributor_1ad98000922c607189ea72ab680cb78618" prot="private" static="no">
+        <type>std::conditional_t&lt; prioritize_tasks, std::priority_queue&lt; std::pair&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref>, <ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref> &gt; &gt;, std::deque&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref> &gt; &gt;</type>
+        <definition>using dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::QueueT =  std::conditional_t&lt;prioritize_tasks, std::priority_queue&lt;std::pair&lt;double, TaskT&gt; &gt;, std::deque&lt;TaskT&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>QueueT</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::QueueT</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="60" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="classdynampi_1_1NaiveMPIWorkDistributor_1ae1e01140586717868c36efe67ddb5af7" prot="private" static="no">
+        <type><ref refid="classdynampi_1_1MPICommunicator" kindref="compound">dynampi::MPICommunicator</ref>&lt; <ref refid="structdynampi_1_1track__statistics" kindref="compound">track_statistics</ref>&lt; statistics_mode &gt; &gt;</type>
+        <definition>using dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::MPICommunicator =  dynampi::MPICommunicator&lt;track_statistics&lt;statistics_mode&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>MPICommunicator</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::MPICommunicator</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="62" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="62" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="classdynampi_1_1NaiveMPIWorkDistributor_1a304d3073a4c1557d83063e6600a0284a" prot="public" static="no">
+        <type>std::conditional_t&lt; statistics_mode==<ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082ea4042fcadbe61a3300451157e2c9fe651" kindref="member">StatisticsMode::Detailed</ref>, <ref refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics" kindref="compound">Statistics</ref>, std::monostate &gt;</type>
+        <definition>using dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::StatisticsT =  std::conditional_t&lt;statistics_mode == StatisticsMode::Detailed, Statistics, std::monostate&gt;</definition>
+        <argsstring></argsstring>
+        <name>StatisticsT</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::StatisticsT</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="96" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="97" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1a4e791ea12a197bf253f495e6c48b0817" prot="public" static="yes" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <definition>const bool dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::ordered</definition>
+        <argsstring></argsstring>
+        <name>ordered</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::ordered</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="53" column="21" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="53" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-static-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1a86a441fdbdc226cc2ce31d100e394e89" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <definition>constexpr bool dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::prioritize_tasks</definition>
+        <argsstring></argsstring>
+        <name>prioritize_tasks</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::prioritize_tasks</qualifiedname>
+        <initializer>= <ref refid="template__options_8hpp_1a6c0b54e9bbf688ea376f50d340c1889f" kindref="member">get_option_value</ref>&lt;<ref refid="structdynampi_1_1prioritize__tasks__t" kindref="compound">prioritize_tasks_t</ref>, Options...&gt;()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="56" column="25" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1ab793fa03c43da560b3d5c038b386de39" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
+        <definition>constexpr StatisticsMode dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::statistics_mode</definition>
+        <argsstring></argsstring>
+        <name>statistics_mode</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::statistics_mode</qualifiedname>
+        <initializer>=
+      <ref refid="template__options_8hpp_1a6c0b54e9bbf688ea376f50d340c1889f" kindref="member">get_option_value</ref>&lt;<ref refid="structdynampi_1_1track__statistics__t" kindref="compound">track_statistics_t</ref>, Options...&gt;()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="57" column="35" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="57" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1aa337e0887477ebf221c94568db6b02de" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Config" kindref="compound">Config</ref></type>
+        <definition>Config dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_config</definition>
+        <argsstring></argsstring>
+        <name>m_config</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_config</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="65" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1aa88c3c9be4aa03522e6937e464b7bd03" prot="private" static="no" mutable="no">
+        <type><ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref></type>
+        <definition>MPICommunicator dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_communicator</definition>
+        <argsstring></argsstring>
+        <name>m_communicator</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_communicator</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="66" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="66" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1ae405965612b76d0fe6888678d4b58fbe" prot="private" static="no" mutable="no">
+        <type>std::function&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref>)&gt;</type>
+        <definition>std::function&lt;ResultT(TaskT)&gt; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_worker_function</definition>
+        <argsstring></argsstring>
+        <name>m_worker_function</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_worker_function</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="67" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="67" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1a7ee127ce714ced17d7cb0b2709f2776c" prot="private" static="no" mutable="no">
+        <type>QueueT</type>
+        <definition>QueueT dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_unallocated_task_queue</definition>
+        <argsstring></argsstring>
+        <name>m_unallocated_task_queue</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_unallocated_task_queue</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="69" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="69" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1a51f5efc5b038109ba46064ce13c8c7f3" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">int64_t</ref> &gt;</type>
+        <definition>std::vector&lt;int64_t&gt; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_worker_current_task_indices</definition>
+        <argsstring></argsstring>
+        <name>m_worker_current_task_indices</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_worker_current_task_indices</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="72" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="72" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1a3c2425072b92c17391de2b374b4bbbaf" prot="private" static="no" mutable="no">
+        <type>std::stack&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref> &gt;</type>
+        <definition>std::stack&lt;int&gt; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_free_worker_ranks</definition>
+        <argsstring></argsstring>
+        <name>m_free_worker_ranks</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_free_worker_ranks</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="73" column="14" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="73" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1a9d937c260f26d8cf6f4b2ca2b74549b3" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref> &gt;</type>
+        <definition>std::vector&lt;ResultT&gt; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_pending_results</definition>
+        <argsstring></argsstring>
+        <name>m_pending_results</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_pending_results</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="78" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="78" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1a1f463456140a2ff538ce526415ebcb32" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref> &gt;</type>
+        <definition>std::vector&lt;bool&gt; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_pending_results_valid</definition>
+        <argsstring></argsstring>
+        <name>m_pending_results_valid</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_pending_results_valid</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="79" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="79" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1a3c65e0515e727c4e0163afc4c669a80f" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+        <definition>size_t dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_tasks_sent</definition>
+        <argsstring></argsstring>
+        <name>m_tasks_sent</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_tasks_sent</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="82" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="82" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1a17545992c5aca4236e891380bb6dbd05" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+        <definition>size_t dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_front_result_idx</definition>
+        <argsstring></argsstring>
+        <name>m_front_result_idx</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_front_result_idx</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="83" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="83" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1aabbac006136e1acd7c6d2b5b60eb3c1f" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+        <definition>size_t dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_known_contiguous_results</definition>
+        <argsstring></argsstring>
+        <name>m_known_contiguous_results</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_known_contiguous_results</qualifiedname>
+        <initializer>=
+      0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="84" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="84" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1a4e2ad7e0605373d7b84db40797102331" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <definition>bool dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_finalized</definition>
+        <argsstring></argsstring>
+        <name>m_finalized</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_finalized</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">false</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="86" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="86" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1NaiveMPIWorkDistributor_1ada63f7212e2824cafd608fa221bf7edd" prot="private" static="no" mutable="no">
+        <type><ref refid="classdynampi_1_1NaiveMPIWorkDistributor_1a304d3073a4c1557d83063e6600a0284a" kindref="member">StatisticsT</ref></type>
+        <definition>StatisticsT dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_statistics</definition>
+        <argsstring></argsstring>
+        <name>m_statistics</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::m_statistics</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="100" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="100" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a0ee0f6fea6796fb7d6df7ee69a819b5a" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::NaiveMPIWorkDistributor</definition>
+        <argsstring>(std::function&lt; ResultT(TaskT)&gt; worker_function, Config runtime_config=Config{})</argsstring>
+        <name>NaiveMPIWorkDistributor</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::NaiveMPIWorkDistributor</qualifiedname>
+        <param>
+          <type>std::function&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref>)&gt;</type>
+          <declname>worker_function</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Config" kindref="compound">Config</ref></type>
+          <declname>runtime_config</declname>
+          <defval><ref refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Config" kindref="compound">Config</ref>{}</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="103" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="103" bodyend="120"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a547e121aae0179d46c7682bcd4a0ac29" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::~NaiveMPIWorkDistributor</definition>
+        <argsstring>()</argsstring>
+        <name>~NaiveMPIWorkDistributor</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::~NaiveMPIWorkDistributor</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="122" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="122" bodyend="124"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1abc1f9450c34407d8827c149bdc636c73" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref> &gt;</type>
+        <definition>std::vector&lt; ResultT &gt; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::run_tasks</definition>
+        <argsstring>(RunConfig config=RunConfig{})</argsstring>
+        <name>run_tasks</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::run_tasks</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig" kindref="compound">RunConfig</ref></type>
+          <declname>config</declname>
+          <defval><ref refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig" kindref="compound">RunConfig</ref>{}</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="128" column="16" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="128" bodyend="177"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a68ee90fb11a2879dd2a6b12a0d44f2ec" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref> &gt;</type>
+        <definition>std::vector&lt; ResultT &gt; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::finish_remaining_tasks</definition>
+        <argsstring>()</argsstring>
+        <name>finish_remaining_tasks</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::finish_remaining_tasks</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="179" column="16" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="179" bodyend="183"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1acb6dc3ebb120f8e4b37d6632ad9d4d85" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::finalize</definition>
+        <argsstring>()</argsstring>
+        <name>finalize</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::finalize</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="185" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="185" bodyend="191"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a03da754e42d2bd9b4ac2125e7171832e" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <definition>bool dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::is_root_manager</definition>
+        <argsstring>() const</argsstring>
+        <name>is_root_manager</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::is_root_manager</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="195" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="195" bodyend="195"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1ac4ad439f8eb60b05e32b607521c9be20" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+        <definition>size_t dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::remaining_tasks_count</definition>
+        <argsstring>() const</argsstring>
+        <name>remaining_tasks_count</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::remaining_tasks_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="197" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="197" bodyend="200"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a3ac381213cd743d113377e3dc82b63c2" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1NaiveMPIWorkDistributor_1a304d3073a4c1557d83063e6600a0284a" kindref="member">StatisticsT</ref> &amp;</type>
+        <definition>const StatisticsT &amp; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::get_statistics</definition>
+        <argsstring>() const</argsstring>
+        <name>get_statistics</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::get_statistics</qualifiedname>
+    <requiresclause>(statistics_mode != StatisticsMode::None)    </requiresclause>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="202" column="21" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="202" bodyend="207"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a8c2b567437cec662796cb3a11ff4f95b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::insert_task</definition>
+        <argsstring>(TaskT task)</argsstring>
+        <name>insert_task</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::insert_task</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref></type>
+          <declname>task</declname>
+        </param>
+    <requiresclause>(!prioritize_tasks)    </requiresclause>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="211" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="211" bodyend="216"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a4662fcdaafa0e9385bd05c76ae7b5536" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::insert_task</definition>
+        <argsstring>(const TaskT &amp;task, double priority)</argsstring>
+        <name>insert_task</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::insert_task</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref> &amp;</type>
+          <declname>task</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref></type>
+          <declname>priority</declname>
+        </param>
+    <requiresclause>(prioritize_tasks)    </requiresclause>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="218" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="218" bodyend="223"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1ad465e16fd9948f3ee5ba4b71ce1fdec0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::insert_tasks</definition>
+        <argsstring>(const std::vector&lt; TaskT &gt; &amp;tasks)</argsstring>
+        <name>insert_tasks</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::insert_tasks</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref> &gt; &amp;</type>
+          <declname>tasks</declname>
+        </param>
+    <requiresclause>(!prioritize_tasks)    </requiresclause>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="225" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="225" bodyend="230"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a1101822fd81251dc1b39a4feade64b9f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::run_worker</definition>
+        <argsstring>()</argsstring>
+        <name>run_worker</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::run_worker</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="234" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="234" bodyend="260"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a8f9da5318803e83a3d8b5a8ace38665e" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>int dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::num_workers</definition>
+        <argsstring>() const</argsstring>
+        <name>num_workers</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::num_workers</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="265" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="265" bodyend="265"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a493179cc12c51346c973767dfacb4f63" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+        <definition>size_t dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::active_worker_count</definition>
+        <argsstring>() const</argsstring>
+        <name>active_worker_count</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::active_worker_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="267" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="267" bodyend="269"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1ad75b24f01c267ba1a8d9f6a9cbf675e8" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>int dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::rank_to_worker_idx</definition>
+        <argsstring>(int rank) const</argsstring>
+        <name>rank_to_worker_idx</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::rank_to_worker_idx</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>rank</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="271" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="271" bodyend="273"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a7f9a9b495c904682a64df3c5dd17d0b4" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>int dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::worker_idx_to_rank</definition>
+        <argsstring>(int idx) const</argsstring>
+        <name>worker_idx_to_rank</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::worker_idx_to_rank</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>idx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="275" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="275" bodyend="275"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1acbb9ac3bfc631f41884af5a865567958" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref></type>
+        <definition>TaskT dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::pop_next_task</definition>
+        <argsstring>()</argsstring>
+        <name>pop_next_task</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::pop_next_task</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="277" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="277" bodyend="287"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1ae7bce0c598979de606254997630e2b8f" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::run_task_locally</definition>
+        <argsstring>()</argsstring>
+        <name>run_task_locally</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::run_task_locally</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="289" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="289" bodyend="299"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1acdb78d5cd582c9feb666dd76c6989ee7" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::send_next_task_to_worker</definition>
+        <argsstring>(int worker_rank)</argsstring>
+        <name>send_next_task_to_worker</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::send_next_task_to_worker</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>worker_rank</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="301" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="301" bodyend="312"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1aac955c5176d8f157611b9fa831ee1694" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::process_incoming_message</definition>
+        <argsstring>()</argsstring>
+        <name>process_incoming_message</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::process_incoming_message</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="314" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="314" bodyend="324"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1acead1314e7fc44d37f0b9376a06f11ec" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::handle_result_message</definition>
+        <argsstring>(int source, MPI_Status &amp;probe_status)</argsstring>
+        <name>handle_result_message</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::handle_result_message</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>source</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Status</ref> &amp;</type>
+          <declname>probe_status</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="326" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="326" bodyend="345"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a80c9cd37921b3f941da200932d056c64" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref> &gt;</type>
+        <definition>std::vector&lt; ResultT &gt; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::collect_available_results</definition>
+        <argsstring>(size_t limit)</argsstring>
+        <name>collect_available_results</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::collect_available_results</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>limit</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="347" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="347" bodyend="373"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a5194a8f9da2cf5a89cc118f8ae771e01" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::broadcast_done</definition>
+        <argsstring>()</argsstring>
+        <name>broadcast_done</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::broadcast_done</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="375" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="375" bodyend="379"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a4039fd2914dc69488cbe97f1be4dc7ff" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::ensure_result_capacity</definition>
+        <argsstring>(size_t required_size)</argsstring>
+        <name>ensure_result_capacity</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::ensure_result_capacity</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>required_size</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="381" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="381" bodyend="387"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1a5f8daed06f36a43fd5155bb14bf83b03" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::update_contiguous_results_count</definition>
+        <argsstring>(int64_t task_id)</argsstring>
+        <name>update_contiguous_results_count</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::update_contiguous_results_count</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int64_t</ref></type>
+          <declname>task_id</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="391" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="391" bodyend="405"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-static-func">
+      <memberdef kind="function" id="classdynampi_1_1NaiveMPIWorkDistributor_1adf474025695e703de81b39908bc1821c" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classdynampi_1_1NaiveMPIWorkDistributor_1a304d3073a4c1557d83063e6600a0284a" kindref="member">StatisticsT</ref></type>
+        <definition>static StatisticsT dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::create_statistics</definition>
+        <argsstring>(const MPICommunicator &amp;comm)</argsstring>
+        <name>create_statistics</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::create_statistics</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &amp;</type>
+          <declname>comm</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="407" column="22" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="407" bodyend="413"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="29" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="29" bodyend="414"/>
+    <listofallmembers>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a493179cc12c51346c973767dfacb4f63" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>active_worker_count</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a5194a8f9da2cf5a89cc118f8ae771e01" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>broadcast_done</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a80c9cd37921b3f941da200932d056c64" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>collect_available_results</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1adf474025695e703de81b39908bc1821c" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>create_statistics</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849af242e6c8ddcba6da192f643751d4f3d7" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>DONE</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a4039fd2914dc69488cbe97f1be4dc7ff" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>ensure_result_capacity</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849ad7b973b7b505abe2efd003308d181c08" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>ERROR</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1acb6dc3ebb120f8e4b37d6632ad9d4d85" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>finalize</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a68ee90fb11a2879dd2a6b12a0d44f2ec" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>finish_remaining_tasks</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a3ac381213cd743d113377e3dc82b63c2" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>get_statistics</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1acead1314e7fc44d37f0b9376a06f11ec" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>handle_result_message</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8c2b567437cec662796cb3a11ff4f95b" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>insert_task</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a4662fcdaafa0e9385bd05c76ae7b5536" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>insert_task</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ad465e16fd9948f3ee5ba4b71ce1fdec0" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>insert_tasks</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a03da754e42d2bd9b4ac2125e7171832e" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>is_root_manager</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1aa88c3c9be4aa03522e6937e464b7bd03" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_communicator</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1aa337e0887477ebf221c94568db6b02de" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_config</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a4e2ad7e0605373d7b84db40797102331" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_finalized</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a3c2425072b92c17391de2b374b4bbbaf" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_free_worker_ranks</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a17545992c5aca4236e891380bb6dbd05" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_front_result_idx</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1aabbac006136e1acd7c6d2b5b60eb3c1f" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_known_contiguous_results</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a9d937c260f26d8cf6f4b2ca2b74549b3" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_pending_results</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a1f463456140a2ff538ce526415ebcb32" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_pending_results_valid</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ada63f7212e2824cafd608fa221bf7edd" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_statistics</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a3c65e0515e727c4e0163afc4c669a80f" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_tasks_sent</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a7ee127ce714ced17d7cb0b2709f2776c" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_unallocated_task_queue</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a51f5efc5b038109ba46064ce13c8c7f3" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_worker_current_task_indices</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ae405965612b76d0fe6888678d4b58fbe" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>m_worker_function</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ae1e01140586717868c36efe67ddb5af7" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>MPICommunicator</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a0ee0f6fea6796fb7d6df7ee69a819b5a" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>NaiveMPIWorkDistributor</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8f9da5318803e83a3d8b5a8ace38665e" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>num_workers</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a4e791ea12a197bf253f495e6c48b0817" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>ordered</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1acbb9ac3bfc631f41884af5a865567958" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>pop_next_task</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a86a441fdbdc226cc2ce31d100e394e89" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>prioritize_tasks</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1aac955c5176d8f157611b9fa831ee1694" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>process_incoming_message</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ad98000922c607189ea72ab680cb78618" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>QueueT</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ad75b24f01c267ba1a8d9f6a9cbf675e8" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>rank_to_worker_idx</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ac4ad439f8eb60b05e32b607521c9be20" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>remaining_tasks_count</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849a0b3ba5c2a5f24100c3855dc06f6fc104" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>REQUEST</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849af24d0b335cb4efc0fa17a257d622f4e0" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>RESULT</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ae7bce0c598979de606254997630e2b8f" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>run_task_locally</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1abc1f9450c34407d8827c149bdc636c73" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>run_tasks</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a1101822fd81251dc1b39a4feade64b9f" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>run_worker</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1acdb78d5cd582c9feb666dd76c6989ee7" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>send_next_task_to_worker</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ab793fa03c43da560b3d5c038b386de39" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>statistics_mode</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a304d3073a4c1557d83063e6600a0284a" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>StatisticsT</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>Tag</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849a6618410b80f31fd3f01a24e59af11a76" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>TASK</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a5f8daed06f36a43fd5155bb14bf83b03" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>update_contiguous_results_count</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a7f9a9b495c904682a64df3c5dd17d0b4" prot="private" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>worker_idx_to_rank</name></member>
+      <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a547e121aae0179d46c7682bcd4a0ac29" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor</scope><name>~NaiveMPIWorkDistributor</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,197 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="namespacedynampi_1_1detail" kind="namespace" language="C++">
+    <compoundname>dynampi::detail</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespacedynampi_1_1detail_1a30efd8764a044e52cae4ffc68c80e48c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>int dynampi::detail::mpi_type_size_bytes</definition>
+        <argsstring>()</argsstring>
+        <name>mpi_type_size_bytes</name>
+        <qualifiedname>dynampi::detail::mpi_type_size_bytes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="34" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="34" bodyend="38"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1_1detail_1adb500a1854a00df8ea6182f4e53a67f4" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+        <definition>constexpr size_t dynampi::detail::round_up_8</definition>
+        <argsstring>(size_t bytes)</argsstring>
+        <name>round_up_8</name>
+        <qualifiedname>dynampi::detail::round_up_8</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="40" column="25" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="40" bodyend="40"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1_1detail_1a34d57099f1541ccd6a529ceb545cf90c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::detail::write_bytes</definition>
+        <argsstring>(std::byte *buffer, size_t buffer_size, size_t offset, const void *src, size_t nbytes)</argsstring>
+        <name>write_bytes</name>
+        <qualifiedname>dynampi::detail::write_bytes</qualifiedname>
+        <param>
+          <type>std::byte *</type>
+          <declname>buffer</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>buffer_size</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>offset</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref> *</type>
+          <declname>src</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>nbytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="42" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="42" bodyend="47"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1_1detail_1aaafdce65b60ce335948c59dbee9c99eb" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int64_t</ref></type>
+        <definition>int64_t dynampi::detail::read_i64</definition>
+        <argsstring>(const std::byte *buffer, size_t buffer_size, size_t offset)</argsstring>
+        <name>read_i64</name>
+        <qualifiedname>dynampi::detail::read_i64</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::byte *</type>
+          <declname>buffer</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>buffer_size</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>offset</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="49" column="16" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="49" bodyend="55"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1_1detail_1a8b9b8d1e1c284407db328528ba13e00a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::detail::write_i64</definition>
+        <argsstring>(std::byte *buffer, size_t buffer_size, size_t offset, int64_t value)</argsstring>
+        <name>write_i64</name>
+        <qualifiedname>dynampi::detail::write_i64</qualifiedname>
+        <param>
+          <type>std::byte *</type>
+          <declname>buffer</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>buffer_size</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>offset</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int64_t</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="57" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="57" bodyend="59"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1_1detail_1ae3bae93ef582e633899ac9508fe80013" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::detail::read_result_bytes</definition>
+        <argsstring>(const std::byte *buffer, size_t buffer_size, size_t offset, T &amp;value, size_t data_bytes)</argsstring>
+        <name>read_result_bytes</name>
+        <qualifiedname>dynampi::detail::read_result_bytes</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::byte *</type>
+          <declname>buffer</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>buffer_size</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>offset</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &amp;</type>
+          <declname>value</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>data_bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="62" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="62" bodyend="73"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1_1detail_1adb2870ea479d304dad3ed5c445f0cad9" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::detail::rma_wait_idle</definition>
+        <argsstring>(MPI_Win window)</argsstring>
+        <name>rma_wait_idle</name>
+        <qualifiedname>dynampi::detail::rma_wait_idle</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Win</ref></type>
+          <declname>window</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="76" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="76" bodyend="86"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="29" column="1"/>
+  </compounddef>
+</doxygen>

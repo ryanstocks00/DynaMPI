@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structoption__value_3_01Option_00_01Head_00_01Tail_8_8_8_01_4" kind="struct" language="C++" prot="public">
+    <compoundname>option_value&lt; Option, Head, Tail... &gt;</compoundname>
+    <includes refid="template__options_8hpp" local="no">template_options.hpp</includes>
+    <templateparamlist>
+      <param>
+        <type>typename Option</type>
+      </param>
+      <param>
+        <type>typename Head</type>
+      </param>
+      <param>
+        <type>typename...</type>
+        <declname>Tail</declname>
+        <defname>Tail</defname>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="structoption__value_3_01Option_00_01Head_00_01Tail_8_8_8_01_4_1a040b10250584767e76c190c4f425fe9a" prot="public" static="yes" constexpr="yes" mutable="no">
+        <type>constexpr decltype(Option::value)</type>
+        <definition>constexpr decltype(Option::value) option_value&lt; Option, Head, Tail... &gt;::value</definition>
+        <argsstring></argsstring>
+        <name>value</name>
+        <qualifiedname>option_value&lt; Option, Head, Tail... &gt;::value</qualifiedname>
+        <initializer>= [] {
+    if constexpr (std::is_base_of_v&lt;Option, Head&gt;) {
+      
+      return static_cast&lt;decltype(Option::value)&gt;(Head::value);
+    } else {
+      return <ref refid="structoption__value" kindref="compound">option_value</ref>&lt;Option, Tail...&gt;::value;
+    }
+  }()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/template_options.hpp" line="16" column="29" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/template_options.hpp" bodystart="16" bodyend="23"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/template_options.hpp" line="15" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/template_options.hpp" bodystart="15" bodyend="24"/>
+    <listofallmembers>
+      <member refid="structoption__value_3_01Option_00_01Head_00_01Tail_8_8_8_01_4_1a040b10250584767e76c190c4f425fe9a" prot="public" virt="non-virtual"><scope>option_value&lt; Option, Head, Tail... &gt;</scope><name>value</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

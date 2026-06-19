@@ -1,0 +1,269 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="mpi__group_8hpp" kind="file" language="C++">
+    <compoundname>mpi_group.hpp</compoundname>
+    <includes local="no">mpi.h</includes>
+    <includes refid="assert_8hpp" local="yes">dynampi/utilities/assert.hpp</includes>
+    <includes refid="mpi__error_8hpp" local="yes">mpi_error.hpp</includes>
+    <includedby refid="mpi__communicator_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp</includedby>
+    <incdepgraph>
+      <node id="20">
+        <label>mpi_error.hpp</label>
+        <link refid="mpi__error_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp</label>
+        <link refid="mpi__group_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>dynampi/utilities/assert.hpp</label>
+        <link refid="assert_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="11">
+        <label>printing.hpp</label>
+        <link refid="printing_8hpp"/>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>array</label>
+      </node>
+      <node id="13">
+        <label>cstddef</label>
+      </node>
+      <node id="14">
+        <label>cstdint</label>
+      </node>
+      <node id="4">
+        <label>exception</label>
+      </node>
+      <node id="5">
+        <label>iostream</label>
+      </node>
+      <node id="2">
+        <label>mpi.h</label>
+      </node>
+      <node id="6">
+        <label>optional</label>
+      </node>
+      <node id="15">
+        <label>set</label>
+      </node>
+      <node id="16">
+        <label>span</label>
+      </node>
+      <node id="7">
+        <label>sstream</label>
+      </node>
+      <node id="8">
+        <label>stdexcept</label>
+      </node>
+      <node id="9">
+        <label>string</label>
+      </node>
+      <node id="10">
+        <label>string_view</label>
+      </node>
+      <node id="17">
+        <label>tuple</label>
+      </node>
+      <node id="18">
+        <label>utility</label>
+      </node>
+      <node id="19">
+        <label>vector</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="4">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp</label>
+        <link refid="dynampi_8hpp"/>
+      </node>
+      <node id="3">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</label>
+        <link refid="hierarchical__distributor_8hpp"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp</label>
+        <link refid="lockfree__distributor_8hpp"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp</label>
+        <link refid="naive__distributor_8hpp"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp</label>
+        <link refid="mpi__communicator_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp</label>
+        <link refid="mpi__group_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="classdynampi_1_1MPIGroup" prot="public">dynampi::MPIGroup</innerclass>
+    <innernamespace refid="namespacedynampi">dynampi</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>SPDX-FileCopyrightText:<sp/>2025<sp/>QDX<sp/>Technologies.<sp/>Authored<sp/>by<sp/>Ryan<sp/>Stocks<sp/>&lt;ryan.stocks00@gmail.com&gt;</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>Apache-2.0</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;mpi.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="assert_8hpp" kindref="compound">dynampi/utilities/assert.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="mpi__error_8hpp" kindref="compound">mpi_error.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespacedynampi" kindref="compound">dynampi</ref><sp/>{</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Forward<sp/>declaration</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal">...<sp/>Options&gt;</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">MPICommunicator;</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight></codeline>
+<codeline lineno="19" refid="classdynampi_1_1MPIGroup" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref><sp/>{</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"><sp/></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Group</ref><sp/>m_group;</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>from<sp/>a<sp/>communicator<sp/>(extracts<sp/>the<sp/>group)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal">...<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">Options</ref>&gt;</highlight></codeline>
+<codeline lineno="26" refid="classdynampi_1_1MPIGroup_1a61eb7e0c1caa9d560203b3728ede1083" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">explicit</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup_1a61eb7e0c1caa9d560203b3728ede1083" kindref="member">MPIGroup</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPICommunicator&lt;Options...&gt;</ref>&amp;<sp/>comm)<sp/>{</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="mpi__error_8hpp_1a4dcbe7cc9eb81ae64b53bb69fe3ac422" kindref="member">DYNAMPI_MPI_CHECK</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Comm_group</ref>,<sp/>(comm.get(),<sp/>&amp;m_group));</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Non-copyable</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31" refid="classdynampi_1_1MPIGroup_1adcee085ee5eaf556504543aebe923788" refkind="member"><highlight class="normal"><sp/><sp/><ref refid="classdynampi_1_1MPIGroup_1adcee085ee5eaf556504543aebe923788" kindref="member">MPIGroup</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref>&amp;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">other</ref>)<sp/>=<sp/></highlight><highlight class="keyword">delete</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="32" refid="classdynampi_1_1MPIGroup_1aa86e95863c1f2d5bc3b48828ed80c0bd" refkind="member"><highlight class="normal"><sp/><sp/><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref>&amp;<sp/><ref refid="classdynampi_1_1MPIGroup_1aa86e95863c1f2d5bc3b48828ed80c0bd" kindref="member">operator=</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref>&amp;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">other</ref>)<sp/>=<sp/></highlight><highlight class="keyword">delete</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Movable</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="35" refid="classdynampi_1_1MPIGroup_1afedebed7a6657ff852e2626bc142a967" refkind="member"><highlight class="normal"><sp/><sp/><ref refid="classdynampi_1_1MPIGroup_1afedebed7a6657ff852e2626bc142a967" kindref="member">MPIGroup</ref>(<ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref>&amp;&amp;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">other</ref>)<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">noexcept</ref><sp/>:<sp/>m_group(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">other</ref>.m_group)<sp/>{<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">other</ref>.m_group<sp/>=<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_GROUP_NULL</ref>;<sp/>}</highlight></codeline>
+<codeline lineno="36" refid="classdynampi_1_1MPIGroup_1a3826dc1195d5346c97477566d5a4da59" refkind="member"><highlight class="normal"><sp/><sp/><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref>&amp;<sp/><ref refid="classdynampi_1_1MPIGroup_1a3826dc1195d5346c97477566d5a4da59" kindref="member">operator=</ref>(<ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref>&amp;&amp;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">other</ref>)<sp/></highlight><highlight class="keyword">noexcept</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">this</highlight><highlight class="normal"><sp/>!=<sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">other</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(m_group<sp/>!=<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_GROUP_NULL</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Group_free</ref>(&amp;m_group);</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>m_group<sp/>=<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">other</ref>.m_group;</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">other</ref>.m_group<sp/>=<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_GROUP_NULL</ref>;</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>*</highlight><highlight class="keyword">this</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"></highlight></codeline>
+<codeline lineno="47" refid="classdynampi_1_1MPIGroup_1a2ffaacb419356ded7c3be5cc884e4c31" refkind="member"><highlight class="normal"><sp/><sp/><ref refid="classdynampi_1_1MPIGroup_1a2ffaacb419356ded7c3be5cc884e4c31" kindref="member">~MPIGroup</ref>()<sp/>{</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(m_group<sp/>!=<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_GROUP_NULL</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Group_free</ref>(&amp;m_group);</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Translate<sp/>ranks<sp/>from<sp/>this<sp/>group<sp/>to<sp/>another<sp/>group</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="54" refid="classdynampi_1_1MPIGroup_1adfb16096432d877c21b57362ed1adcb6" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup_1adfb16096432d877c21b57362ed1adcb6" kindref="member">translate_ranks</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref>&amp;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">to_group</ref>,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">n</ref>,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">ranks</ref>[],</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">translated_ranks</ref>[])</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="mpi__error_8hpp_1a4dcbe7cc9eb81ae64b53bb69fe3ac422" kindref="member">DYNAMPI_MPI_CHECK</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Group_translate_ranks</ref>,</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(m_group,<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">n</ref>,<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">ranks</ref>,<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">to_group</ref>.m_group,<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">translated_ranks</ref>));</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"></highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Convenience<sp/>method<sp/>for<sp/>single<sp/>rank<sp/>translation</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="61" refid="classdynampi_1_1MPIGroup_1aef96a69d92a9a507d107bac37ff8245b" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup_1aef96a69d92a9a507d107bac37ff8245b" kindref="member">translate_rank</ref>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup_1ad17930ebf9ddd0f8801273619511fcd6" kindref="member">rank</ref>,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref>&amp;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">to_group</ref>)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">translated_rank</ref>;</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classdynampi_1_1MPIGroup_1adfb16096432d877c21b57362ed1adcb6" kindref="member">translate_ranks</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">to_group</ref>,<sp/>1,<sp/>&amp;<ref refid="classdynampi_1_1MPIGroup_1ad17930ebf9ddd0f8801273619511fcd6" kindref="member">rank</ref>,<sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">translated_rank</ref>);</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">translated_rank</ref>;</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"></highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Get<sp/>the<sp/>size<sp/>of<sp/>this<sp/>group</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="68" refid="classdynampi_1_1MPIGroup_1a46a492d4081d0b8f69b3eedbbd337c1e" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup_1a46a492d4081d0b8f69b3eedbbd337c1e" kindref="member">size</ref>()</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup_1a46a492d4081d0b8f69b3eedbbd337c1e" kindref="member">size</ref>;</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="mpi__error_8hpp_1a4dcbe7cc9eb81ae64b53bb69fe3ac422" kindref="member">DYNAMPI_MPI_CHECK</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Group_size</ref>,<sp/>(m_group,<sp/>&amp;<ref refid="classdynampi_1_1MPIGroup_1a46a492d4081d0b8f69b3eedbbd337c1e" kindref="member">size</ref>));</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup_1a46a492d4081d0b8f69b3eedbbd337c1e" kindref="member">size</ref>;</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"></highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Get<sp/>the<sp/>rank<sp/>of<sp/>the<sp/>calling<sp/>process<sp/>in<sp/>this<sp/>group<sp/>(MPI_UNDEFINED<sp/>if<sp/>not<sp/>in<sp/>group)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="75" refid="classdynampi_1_1MPIGroup_1ad17930ebf9ddd0f8801273619511fcd6" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup_1ad17930ebf9ddd0f8801273619511fcd6" kindref="member">rank</ref>()</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup_1ad17930ebf9ddd0f8801273619511fcd6" kindref="member">rank</ref>;</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="mpi__error_8hpp_1a4dcbe7cc9eb81ae64b53bb69fe3ac422" kindref="member">DYNAMPI_MPI_CHECK</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Group_rank</ref>,<sp/>(m_group,<sp/>&amp;<ref refid="classdynampi_1_1MPIGroup_1ad17930ebf9ddd0f8801273619511fcd6" kindref="member">rank</ref>));</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup_1ad17930ebf9ddd0f8801273619511fcd6" kindref="member">rank</ref>;</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"></highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Check<sp/>if<sp/>a<sp/>rank<sp/>(from<sp/>a<sp/>reference<sp/>group,<sp/>typically<sp/>the<sp/>world<sp/>group)<sp/>is<sp/>in<sp/>this<sp/>group</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Returns<sp/>the<sp/>rank<sp/>in<sp/>this<sp/>group,<sp/>or<sp/>MPI_UNDEFINED<sp/>if<sp/>not<sp/>found</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Note:<sp/>This<sp/>translates<sp/>FROM<sp/>reference_group<sp/>TO<sp/>this<sp/>group</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="84" refid="classdynampi_1_1MPIGroup_1ac0ef720ca8ac06ab123258638dd0d4eb" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup_1ac0ef720ca8ac06ab123258638dd0d4eb" kindref="member">contains_rank_in_group</ref>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">rank_in_reference</ref>,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref>&amp;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">reference_group</ref>,</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref>&amp;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">target_group</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">reference_group</ref>.translate_rank(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">rank_in_reference</ref>,<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">target_group</ref>);</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"></highlight></codeline>
+<codeline lineno="89" refid="classdynampi_1_1MPIGroup_1aba25c87ae045fc8af89e1f4f39aaffa8" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">operator</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Group</ref>()</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>m_group;<sp/>}</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"></highlight></codeline>
+<codeline lineno="91" refid="classdynampi_1_1MPIGroup_1a4f6d8742deffabdbfdb656d4ecf96f62" refkind="member"><highlight class="normal"><sp/><sp/>[[<ref refid="structdynampi_1_1MPI__Type" kindref="compound">nodiscard</ref>]]<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Group</ref><sp/><ref refid="classdynampi_1_1MPIGroup_1a4f6d8742deffabdbfdb656d4ecf96f62" kindref="member">get</ref>()</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>m_group;<sp/>}</highlight></codeline>
+<codeline lineno="92"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"></highlight></codeline>
+<codeline lineno="94"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>dynampi</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp"/>
+  </compounddef>
+</doxygen>

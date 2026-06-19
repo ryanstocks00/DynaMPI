@@ -1,0 +1,686 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classdynampi_1_1MPICommunicator" kind="class" language="C++" prot="public">
+    <compoundname>dynampi::MPICommunicator</compoundname>
+    <includes refid="mpi__communicator_8hpp" local="no">mpi_communicator.hpp</includes>
+    <templateparamlist>
+      <param>
+        <type>typename...</type>
+        <declname>Options</declname>
+        <defname>Options</defname>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-type">
+      <memberdef kind="enum" id="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6d" prot="public" static="no" strong="no">
+        <type></type>
+        <name>Ownership</name>
+        <qualifiedname>dynampi::MPICommunicator::Ownership</qualifiedname>
+        <enumvalue id="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6da468d7a620a18ea774ab87695f1422d2d" prot="public">
+          <name>Reference</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6dadae5bc393c23dc311bbe3378394271d7" prot="public">
+          <name>Move</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6dad4ac868d92d26d2067d0cb2fe65e40e6" prot="public">
+          <name>Duplicate</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="66" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="66" bodyend="70"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-type">
+      <memberdef kind="typedef" id="classdynampi_1_1MPICommunicator_1a63ec23d45df7ae88fe0a2ae8aa6219fa" prot="private" static="no">
+        <type>std::conditional_t&lt; statistics_mode !=<ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082ea6adf97f83acf6453d4a6a4b1070f3754" kindref="member">StatisticsMode::None</ref>, <ref refid="structdynampi_1_1CommStatistics" kindref="compound">CommStatistics</ref>, std::monostate &gt;</type>
+        <definition>using dynampi::MPICommunicator&lt; Options &gt;::StatisticsT =  std::conditional_t&lt;statistics_mode != StatisticsMode::None, CommStatistics, std::monostate&gt;</definition>
+        <argsstring></argsstring>
+        <name>StatisticsT</name>
+        <qualifiedname>dynampi::MPICommunicator::StatisticsT</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="78" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="79" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1MPICommunicator_1aa48154136d1fa86148940404611e05d1" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Comm</ref></type>
+        <definition>MPI_Comm dynampi::MPICommunicator&lt; Options &gt;::m_comm</definition>
+        <argsstring></argsstring>
+        <name>m_comm</name>
+        <qualifiedname>dynampi::MPICommunicator::m_comm</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="73" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="73" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1MPICommunicator_1adb021bdc3f379f659f0275d684d4d334" prot="private" static="no" mutable="no">
+        <type><ref refid="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6d" kindref="member">Ownership</ref></type>
+        <definition>Ownership dynampi::MPICommunicator&lt; Options &gt;::m_ownership</definition>
+        <argsstring></argsstring>
+        <name>m_ownership</name>
+        <qualifiedname>dynampi::MPICommunicator::m_ownership</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="74" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1MPICommunicator_1a5a83f1a580c0f7b23caaf64776cde92f" prot="private" static="no" mutable="no">
+        <type>StatisticsT</type>
+        <definition>StatisticsT dynampi::MPICommunicator&lt; Options &gt;::_statistics</definition>
+        <argsstring></argsstring>
+        <name>_statistics</name>
+        <qualifiedname>dynampi::MPICommunicator::_statistics</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="81" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="81" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-static-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1MPICommunicator_1a367b71e7d524555dacfa87aa73701c31" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
+        <definition>constexpr StatisticsMode dynampi::MPICommunicator&lt; Options &gt;::statistics_mode</definition>
+        <argsstring></argsstring>
+        <name>statistics_mode</name>
+        <qualifiedname>dynampi::MPICommunicator::statistics_mode</qualifiedname>
+        <initializer>=
+      <ref refid="template__options_8hpp_1a6c0b54e9bbf688ea376f50d340c1889f" kindref="member">get_option_value</ref>&lt;<ref refid="structdynampi_1_1track__statistics__t" kindref="compound">track_statistics_t</ref>, Options...&gt;()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="76" column="35" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="76" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1aaac97d6a2a3cf83e414913cbeca22910" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::MPICommunicator&lt; Options &gt;::MPICommunicator</definition>
+        <argsstring>(MPI_Comm comm, Ownership ownership=Duplicate)</argsstring>
+        <name>MPICommunicator</name>
+        <qualifiedname>dynampi::MPICommunicator::MPICommunicator</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Comm</ref></type>
+          <declname>comm</declname>
+        </param>
+        <param>
+          <type><ref refid="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6d" kindref="member">Ownership</ref></type>
+          <declname>ownership</declname>
+          <defval><ref refid="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6dad4ac868d92d26d2067d0cb2fe65e40e6" kindref="member">Duplicate</ref></defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="84" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="84" bodyend="89"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1ad45d71c12b36b4eb18dc0aeb2db3c4ee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::MPICommunicator&lt; Options &gt;::MPICommunicator</definition>
+        <argsstring>(const MPICommunicator &amp;other)=delete</argsstring>
+        <name>MPICommunicator</name>
+        <qualifiedname>dynampi::MPICommunicator::MPICommunicator</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="91" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a1798692adccb74d7da9191a5abc93e1b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &amp;</type>
+        <definition>MPICommunicator &amp; dynampi::MPICommunicator&lt; Options &gt;::operator=</definition>
+        <argsstring>(const MPICommunicator &amp;other)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>dynampi::MPICommunicator::operator=</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="92" column="19"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a08848241df7a97a8746a7bf0e9ccc037" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::MPICommunicator&lt; Options &gt;::MPICommunicator</definition>
+        <argsstring>(MPICommunicator &amp;&amp;other) noexcept</argsstring>
+        <name>MPICommunicator</name>
+        <qualifiedname>dynampi::MPICommunicator::MPICommunicator</qualifiedname>
+        <param>
+          <type><ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &amp;&amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="93" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="93" bodyend="99"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1aaeb6336fc3f1ce904058d97e2b050625" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &amp;</type>
+        <definition>MPICommunicator &amp; dynampi::MPICommunicator&lt; Options &gt;::operator=</definition>
+        <argsstring>(MPICommunicator &amp;&amp;other)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>dynampi::MPICommunicator::operator=</qualifiedname>
+        <param>
+          <type><ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &amp;&amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="100" column="19"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a6130c70b6540039946ac51390499ebf3" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::MPICommunicator&lt; Options &gt;::~MPICommunicator</definition>
+        <argsstring>()</argsstring>
+        <name>~MPICommunicator</name>
+        <qualifiedname>dynampi::MPICommunicator::~MPICommunicator</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="102" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="102" bodyend="106"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a78b65bf7a6724f50e1238f2ccf342e76" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref></type>
+        <definition>MPICommunicator dynampi::MPICommunicator&lt; Options &gt;::split_by_node</definition>
+        <argsstring>() const</argsstring>
+        <name>split_by_node</name>
+        <qualifiedname>dynampi::MPICommunicator::split_by_node</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="108" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="108" bodyend="113"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a3f59e746bb2642b30e7e9d6ffc9481e8" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::optional&lt; <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &gt;</type>
+        <definition>std::optional&lt; MPICommunicator &gt; dynampi::MPICommunicator&lt; Options &gt;::split</definition>
+        <argsstring>(int color, int key=0) const</argsstring>
+        <name>split</name>
+        <qualifiedname>dynampi::MPICommunicator::split</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>color</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>key</declname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="115" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="115" bodyend="123"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1ab54da51bd7978431d9e55aa27804593f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::MPICommunicator&lt; Options &gt;::operator MPI_Comm</definition>
+        <argsstring>() const</argsstring>
+        <name>operator MPI_Comm</name>
+        <qualifiedname>dynampi::MPICommunicator::operator MPI_Comm</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="125" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="125" bodyend="125"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a149b4aa34d721d0e816b5e6ed4510d48" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1CommStatistics" kindref="compound">CommStatistics</ref> &amp;</type>
+        <definition>const CommStatistics &amp; dynampi::MPICommunicator&lt; Options &gt;::get_statistics</definition>
+        <argsstring>() const</argsstring>
+        <name>get_statistics</name>
+        <qualifiedname>dynampi::MPICommunicator::get_statistics</qualifiedname>
+    <requiresclause>(statistics_mode != StatisticsMode::None)    </requiresclause>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="127" column="24" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="127" bodyend="131"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1ae08399570bf9b7b3b80d1577aa6ccbe9" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>int dynampi::MPICommunicator&lt; Options &gt;::rank</definition>
+        <argsstring>() const</argsstring>
+        <name>rank</name>
+        <qualifiedname>dynampi::MPICommunicator::rank</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="133" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="133" bodyend="137"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a60803fdde73fb42d1d7a637714134290" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>int dynampi::MPICommunicator&lt; Options &gt;::size</definition>
+        <argsstring>() const</argsstring>
+        <name>size</name>
+        <qualifiedname>dynampi::MPICommunicator::size</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="139" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="139" bodyend="143"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a89d3eaae1d7f772706c0259abc5138d5" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::MPICommunicator&lt; Options &gt;::send</definition>
+        <argsstring>(const T &amp;data, int dest, int tag=0)</argsstring>
+        <name>send</name>
+        <qualifiedname>dynampi::MPICommunicator::send</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &amp;</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>dest</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>tag</declname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="146" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="146" bodyend="156"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1afae2eb6131af281a9cc7717638496841" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Status</ref></type>
+        <definition>MPI_Status dynampi::MPICommunicator&lt; Options &gt;::probe</definition>
+        <argsstring>(int source=MPI_ANY_SOURCE, int tag=MPI_ANY_TAG)</argsstring>
+        <name>probe</name>
+        <qualifiedname>dynampi::MPICommunicator::probe</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>source</declname>
+          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_ANY_SOURCE</ref></defval>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>tag</declname>
+          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_ANY_TAG</ref></defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="158" column="21" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="158" bodyend="162"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a877f737c54e0f9d6e4cd28c568b73e28" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::optional&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Status</ref> &gt;</type>
+        <definition>std::optional&lt; MPI_Status &gt; dynampi::MPICommunicator&lt; Options &gt;::iprobe</definition>
+        <argsstring>(int source=MPI_ANY_SOURCE, int tag=MPI_ANY_TAG)</argsstring>
+        <name>iprobe</name>
+        <qualifiedname>dynampi::MPICommunicator::iprobe</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>source</declname>
+          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_ANY_SOURCE</ref></defval>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>tag</declname>
+          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_ANY_TAG</ref></defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="164" column="24" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="164" bodyend="172"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a236bdb1a221ab6f118fad71e8abe9e50" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::MPICommunicator&lt; Options &gt;::recv</definition>
+        <argsstring>(T &amp;data, int source, int tag=0)</argsstring>
+        <name>recv</name>
+        <qualifiedname>dynampi::MPICommunicator::recv</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &amp;</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>source</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>tag</declname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="175" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="175" bodyend="188"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a083f2257b84cc47458b2a88273a316da" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Status</ref></type>
+        <definition>MPI_Status dynampi::MPICommunicator&lt; Options &gt;::recv_any</definition>
+        <argsstring>(T &amp;data, int source=MPI_ANY_SOURCE, int tag=MPI_ANY_TAG)</argsstring>
+        <name>recv_any</name>
+        <qualifiedname>dynampi::MPICommunicator::recv_any</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &amp;</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>source</declname>
+          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_ANY_SOURCE</ref></defval>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>tag</declname>
+          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_ANY_TAG</ref></defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="192" column="21" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="192" bodyend="206"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a908609eb1387b8b46fa8bc29b1b971af" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::MPICommunicator&lt; Options &gt;::broadcast</definition>
+        <argsstring>(T &amp;data, int root=0)</argsstring>
+        <name>broadcast</name>
+        <qualifiedname>dynampi::MPICommunicator::broadcast</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &amp;</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>root</declname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="209" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="209" bodyend="223"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a23089e5594e4075a4b0efa8f24d49dfd" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::MPICommunicator&lt; Options &gt;::recv_empty_message</definition>
+        <argsstring>(int source, int tag=0)</argsstring>
+        <name>recv_empty_message</name>
+        <qualifiedname>dynampi::MPICommunicator::recv_empty_message</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>source</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>tag</declname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="225" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="225" bodyend="232"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1acac6192d057971c440e62674dc14539b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::MPICommunicator&lt; Options &gt;::send_empty</definition>
+        <argsstring>(int dest, int tag=0)</argsstring>
+        <name>send_empty</name>
+        <qualifiedname>dynampi::MPICommunicator::send_empty</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>dest</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>tag</declname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Sends 0 elements of type T (same type as recv buffer) so that recv_any(T&amp;) can receive any worker message (REQUEST or RESULT) into a single buffer type. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="237" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="237" bodyend="243"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a780f1e002bea00e97fb16a4ca7f3fc93" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::MPICommunicator&lt; Options &gt;::recv_empty</definition>
+        <argsstring>(int source, int tag=0)</argsstring>
+        <name>recv_empty</name>
+        <qualifiedname>dynampi::MPICommunicator::recv_empty</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>source</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>tag</declname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+<para>Receives 0 elements of type T. Use when the sender used send_empty&lt;T&gt;. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="247" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="247" bodyend="254"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a67630cb450a31446e5cabf679ef5c237" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::MPICommunicator&lt; Options &gt;::gather</definition>
+        <argsstring>(const T &amp;data, std::vector&lt; T &gt; *result, int root=0)</argsstring>
+        <name>gather</name>
+        <qualifiedname>dynampi::MPICommunicator::gather</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &amp;</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &gt; *</type>
+          <declname>result</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>root</declname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="257" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="257" bodyend="267"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a822f42f75a2aa920b4171a3f752962ad" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Comm</ref></type>
+        <definition>MPI_Comm dynampi::MPICommunicator&lt; Options &gt;::get</definition>
+        <argsstring>() const</argsstring>
+        <name>get</name>
+        <qualifiedname>dynampi::MPICommunicator::get</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="269" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="269" bodyend="269"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a5c934640af714145ddd879671df7d026" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref></type>
+        <definition>MPIGroup dynampi::MPICommunicator&lt; Options &gt;::get_group</definition>
+        <argsstring>() const</argsstring>
+        <name>get_group</name>
+        <qualifiedname>dynampi::MPICommunicator::get_group</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="272" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="272" bodyend="272"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="64" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="64" bodyend="273"/>
+    <listofallmembers>
+      <member refid="classdynampi_1_1MPICommunicator_1a5a83f1a580c0f7b23caaf64776cde92f" prot="private" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>_statistics</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a908609eb1387b8b46fa8bc29b1b971af" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>broadcast</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6dad4ac868d92d26d2067d0cb2fe65e40e6" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>Duplicate</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a67630cb450a31446e5cabf679ef5c237" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>gather</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a822f42f75a2aa920b4171a3f752962ad" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>get</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a5c934640af714145ddd879671df7d026" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>get_group</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a149b4aa34d721d0e816b5e6ed4510d48" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>get_statistics</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a877f737c54e0f9d6e4cd28c568b73e28" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>iprobe</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1aa48154136d1fa86148940404611e05d1" prot="private" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>m_comm</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1adb021bdc3f379f659f0275d684d4d334" prot="private" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>m_ownership</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6dadae5bc393c23dc311bbe3378394271d7" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>Move</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1aaac97d6a2a3cf83e414913cbeca22910" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>MPICommunicator</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1ad45d71c12b36b4eb18dc0aeb2db3c4ee" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>MPICommunicator</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a08848241df7a97a8746a7bf0e9ccc037" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>MPICommunicator</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1ab54da51bd7978431d9e55aa27804593f" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>operator MPI_Comm</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a1798692adccb74d7da9191a5abc93e1b" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>operator=</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1aaeb6336fc3f1ce904058d97e2b050625" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>operator=</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6d" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>Ownership</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1afae2eb6131af281a9cc7717638496841" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>probe</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1ae08399570bf9b7b3b80d1577aa6ccbe9" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>rank</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a236bdb1a221ab6f118fad71e8abe9e50" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>recv</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a083f2257b84cc47458b2a88273a316da" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>recv_any</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a780f1e002bea00e97fb16a4ca7f3fc93" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>recv_empty</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a23089e5594e4075a4b0efa8f24d49dfd" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>recv_empty_message</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6da468d7a620a18ea774ab87695f1422d2d" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>Reference</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a89d3eaae1d7f772706c0259abc5138d5" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>send</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1acac6192d057971c440e62674dc14539b" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>send_empty</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a60803fdde73fb42d1d7a637714134290" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>size</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a3f59e746bb2642b30e7e9d6ffc9481e8" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>split</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a78b65bf7a6724f50e1238f2ccf342e76" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>split_by_node</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a367b71e7d524555dacfa87aa73701c31" prot="private" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>statistics_mode</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a63ec23d45df7ae88fe0a2ae8aa6219fa" prot="private" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>StatisticsT</name></member>
+      <member refid="classdynampi_1_1MPICommunicator_1a6130c70b6540039946ac51390499ebf3" prot="public" virt="non-virtual"><scope>dynampi::MPICommunicator</scope><name>~MPICommunicator</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

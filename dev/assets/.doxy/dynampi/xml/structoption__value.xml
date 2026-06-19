@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structoption__value" kind="struct" language="C++" prot="public">
+    <compoundname>option_value</compoundname>
+    <includes refid="template__options_8hpp" local="no">template_options.hpp</includes>
+    <templateparamlist>
+      <param>
+        <type>typename Option</type>
+      </param>
+      <param>
+        <type>typename...</type>
+        <declname>Options</declname>
+        <defname>Options</defname>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="structoption__value_1aef85a27af9812c6a2d583b770fd382c2" prot="public" static="yes" constexpr="yes" mutable="no">
+        <type>constexpr decltype(Option::value)</type>
+        <definition>constexpr decltype(Option::value) option_value&lt; Option, Options &gt;::value</definition>
+        <argsstring></argsstring>
+        <name>value</name>
+        <qualifiedname>option_value::value</qualifiedname>
+        <initializer>= Option::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/template_options.hpp" line="11" column="29" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/template_options.hpp" bodystart="11" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/template_options.hpp" line="10" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/template_options.hpp" bodystart="10" bodyend="12"/>
+    <listofallmembers>
+      <member refid="structoption__value_1aef85a27af9812c6a2d583b770fd382c2" prot="public" virt="non-virtual"><scope>option_value</scope><name>value</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

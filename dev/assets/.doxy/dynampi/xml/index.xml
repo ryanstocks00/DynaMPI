@@ -1,0 +1,521 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.9.8" xml:lang="en-US">
+  <compound refid="classdynampi_1_1BaseMPIWorkDistributor" kind="class"><name>dynampi::BaseMPIWorkDistributor</name>
+    <member refid="classdynampi_1_1BaseMPIWorkDistributor_1a267745d02dd4eddc107dd4877e629067" kind="typedef"><name>QueueT</name></member>
+    <member refid="classdynampi_1_1BaseMPIWorkDistributor_1addcebc39033a4dc6bf38c51562f99170" kind="variable"><name>prioritize_tasks</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1CommStatistics" kind="struct"><name>dynampi::CommStatistics</name>
+    <member refid="structdynampi_1_1CommStatistics_1aedbf769de2b5252a313a25090032548a" kind="variable"><name>send_count</name></member>
+    <member refid="structdynampi_1_1CommStatistics_1ab521b0246078ebb8844e55a54a627e08" kind="variable"><name>recv_count</name></member>
+    <member refid="structdynampi_1_1CommStatistics_1ac6e8d795792906c7a454362256e7395d" kind="variable"><name>collective_count</name></member>
+    <member refid="structdynampi_1_1CommStatistics_1ad65a6956c56ba8950d7d1b3c5b7479f0" kind="variable"><name>bytes_sent</name></member>
+    <member refid="structdynampi_1_1CommStatistics_1a2707f481b091116e0e101a7b6a1854ab" kind="variable"><name>bytes_received</name></member>
+    <member refid="structdynampi_1_1CommStatistics_1a634d154e522a2d1ceb44547877e0c5ff" kind="variable"><name>send_time</name></member>
+    <member refid="structdynampi_1_1CommStatistics_1a165aae2d4036c28fbc0f587300359ffa" kind="variable"><name>recv_time</name></member>
+    <member refid="structdynampi_1_1CommStatistics_1a434695cb6f0afa458b645300ecf80526" kind="function"><name>reset</name></member>
+    <member refid="structdynampi_1_1CommStatistics_1a382e28b4fd5dba8e535a4e007c3688ca" kind="function"><name>average_send_size</name></member>
+    <member refid="structdynampi_1_1CommStatistics_1a7cea11f39d408736bd58fe99dcd55ca2" kind="function"><name>average_receive_size</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config" kind="struct"><name>dynampi::BaseMPIWorkDistributor::Config</name>
+    <member refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config_1aa688bdada49e18f53802103c7fe1dd2b" kind="variable"><name>comm</name></member>
+    <member refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config_1ae67f3951132cea4064f6f2628a768a34" kind="variable"><name>manager_rank</name></member>
+    <member refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config_1a508267cf291e1d57a01501378f086e22" kind="variable"><name>auto_run_workers</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config" kind="struct"><name>dynampi::HierarchicalMPIWorkDistributor::Config</name>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a0e1cc5c220e5ffd441c9fef89f999738" kind="variable"><name>comm</name></member>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a6fe5c89129c8304691ea70fac6cb0876" kind="variable"><name>manager_rank</name></member>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a78346efaef33dfb219fdc1fa388ede14" kind="variable"><name>auto_run_workers</name></member>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a09e2d0a3885beff070c5271b1d73a014" kind="variable"><name>message_batch_size</name></member>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1ace5235a0f8051726107bfee5f01141b1" kind="variable"><name>max_workers_per_coordinator</name></member>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a8bb5a3f7dd882decb7c86600ed4ff62b" kind="variable"><name>batch_size_multiplier</name></member>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1ac8b39933ae73b323c80b4da64df54509" kind="variable"><name>coordinator_per_node</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config" kind="struct"><name>dynampi::LockFreeMPIWorkDistributor::Config</name>
+    <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config_1af845cd6c19c2c19d4010c42f9ad33b2b" kind="variable"><name>comm</name></member>
+    <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config_1ac7f843b2cdb9503aae062a6a39745c92" kind="variable"><name>manager_rank</name></member>
+    <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config_1a5c01465e78a1e12f9b3573c1820a1afb" kind="variable"><name>auto_run_workers</name></member>
+    <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config_1af4aa8805df1ceeabb693e7da8c8bdf9a" kind="variable"><name>max_tasks</name></member>
+    <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config_1a02d3b518c2a15774bfee60616f2ce7f3" kind="variable"><name>max_task_count</name></member>
+    <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config_1a3e8c9b0f29cf414fea142b65fc3664e7" kind="variable"><name>max_result_count</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config" kind="struct"><name>dynampi::MinimalLockFreeMPIWorkDistributor::Config</name>
+    <member refid="structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config_1a00f3a965ae9d59d91f162505bd2c52a5" kind="variable"><name>comm</name></member>
+    <member refid="structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config_1aea4ac18d6671aa9a774a4d0be70909f4" kind="variable"><name>manager_rank</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Config" kind="struct"><name>dynampi::NaiveMPIWorkDistributor::Config</name>
+    <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Config_1a08d801c08bb51b8050f5d11b0c2bce09" kind="variable"><name>comm</name></member>
+    <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Config_1a591bf9a63fb2efa8a79ef362ef6f8917" kind="variable"><name>manager_rank</name></member>
+    <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Config_1a7b5d5e2cb663e4eda5347aa69746deeb" kind="variable"><name>auto_run_workers</name></member>
+    <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Config_1a284e991cc728e401d8ebcabb0f3caca2" kind="variable"><name>use_immediate_recv</name></member>
+    <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Config_1a6c5c5868dda5247bb5d68c5a1f74206c" kind="variable"><name>max_result_size</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1enable__prioritization" kind="struct"><name>dynampi::enable_prioritization</name>
+    <member refid="structdynampi_1_1enable__prioritization_1a5f7e39497cc7af2ad7e7d3ef5eb38d4d" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1has__dynampi__mpi__type" kind="struct"><name>dynampi::has_dynampi_mpi_type</name>
+  </compound>
+  <compound refid="structdynampi_1_1has__dynampi__mpi__type_3_01U_00_01std_1_1void__t_3_01decltype_07MPI__Type_3_01U_01_4_1_1value_08_4_01_4" kind="struct"><name>dynampi::has_dynampi_mpi_type&lt; U, std::void_t&lt; decltype(MPI_Type&lt; U &gt;::value)&gt; &gt;</name>
+  </compound>
+  <compound refid="classdynampi_1_1HierarchicalMPIWorkDistributor" kind="class"><name>dynampi::HierarchicalMPIWorkDistributor</name>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a6a0f6c630d5ce7c6bec1d19a078d65d1" kind="enum"><name>CommLayer</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a6a0f6c630d5ce7c6bec1d19a078d65d1a4cc6684df7b4a92b1dec6fce3264fac8" kind="enumvalue"><name>Global</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a6a0f6c630d5ce7c6bec1d19a078d65d1a509820290d57f333403f490dde7316f4" kind="enumvalue"><name>Local</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a6a0f6c630d5ce7c6bec1d19a078d65d1a5158a250e30f1fb4415d86ded2c8e0c5" kind="enumvalue"><name>Leader</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a024c57291a47fc2e5d6a98311e23d158" kind="enum"><name>Tag</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a024c57291a47fc2e5d6a98311e23d158a48359a11af32d7f707c150877c701f9f" kind="enumvalue"><name>TASK</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a024c57291a47fc2e5d6a98311e23d158a9c77b3a091520d80af895e80fe592a06" kind="enumvalue"><name>DONE</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a024c57291a47fc2e5d6a98311e23d158ac4091a95013fcf3a5413e49d24e3eca7" kind="enumvalue"><name>RESULT</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a024c57291a47fc2e5d6a98311e23d158acf536c8e2fbb4b3f61b1a42263c96623" kind="enumvalue"><name>REQUEST</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a024c57291a47fc2e5d6a98311e23d158a4414ea0223b14421a064435dd440c8df" kind="enumvalue"><name>TASK_BATCH</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a024c57291a47fc2e5d6a98311e23d158af351a188045dd38aa742e8cb93aeef10" kind="enumvalue"><name>RESULT_BATCH</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a024c57291a47fc2e5d6a98311e23d158ae9466f9f3df6b472e9d1375288e90eb2" kind="enumvalue"><name>REQUEST_BATCH</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a8a35679293204621fb7623fa4de78cef" kind="typedef"><name>Base</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1aefc11f2865c01af08b1c155a8e56d9f1" kind="typedef"><name>MPICommunicator</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a6a9072bbe39b37344bfac89c3474bc03" kind="typedef"><name>StatisticsT</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a8b970bc0eccac3aba16603ca8f1fa44d" kind="typedef"><name>result_mpi_type</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1ae4b8190b995f03ed5bd9de740c3f6529" kind="typedef"><name>task_mpi_type</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a13c81bbed9edae92bec2d9b7b2cf77f4" kind="variable"><name>prioritize_tasks</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a96521b65f4fa41246f57a8d6e474ca05" kind="variable"><name>ordered</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a054fc8c9ef1b600dbd5578ab002e21e4" kind="variable"><name>m_unallocated_task_queue</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a3fa2e45f95f8f6bb1d153698398841ce" kind="variable"><name>m_results</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1aba7c9044d07ef3f77461003fb62460f1" kind="variable"><name>m_free_worker_indices</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a6646f699aa1c4f4f083759ac72c28dec" kind="variable"><name>m_tasks_sent_to_child</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1aac54d624cacb56cdc0fda3a421d7615e" kind="variable"><name>m_results_received_from_child</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1ad8ca60b7470f901ad4792c12b824c315" kind="variable"><name>m_results_sent_to_parent</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a37ff5d07db4a9f05627d1445d9c0909b" kind="variable"><name>m_tasks_received_from_parent</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1aa5b50e04aec12086f92c72db012a47d6" kind="variable"><name>m_tasks_executed</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a0aedd1fe0c90be02c841ee883c4fb1c0" kind="variable"><name>m_results_returned</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1ad44e0beff82fb414d4c6fc3a3a71f643" kind="variable"><name>m_finalized</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a295dcd1d8d755c9b45bfd851629caba2" kind="variable"><name>m_done</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1ae18e60f6b3e3413026200c37db2091b1" kind="variable"><name>m_communicator</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a1baec567b56ad63c965448f4e3a800d5" kind="variable"><name>m_world_group</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1adaa64c8ace4d393562d8ea32745b4f00" kind="variable"><name>m_local_group</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1ad21c4aedd26e3c91a941391559cb1324" kind="variable"><name>m_leader_group</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a01310230823f2bae98f2fb8fc09181a8" kind="variable"><name>m_worker_function</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a69be2535f517b35b902f5082a96f633c" kind="variable"><name>m_config</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a89f0edaa8c3768b44b496b427a228d31" kind="variable"><name>m_cached_parent_target</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1ac6db7e5320ad1d8143bcabc3acc38802" kind="variable"><name>_statistics</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a50470c0f0014f41b749b92e148587cd0" kind="variable"><name>kMaxTasksRequested</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a5c686700f5749a19876c82b6f8d997a8" kind="variable"><name>statistics_mode</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a5506dbc6b31ae39fff44a8ecd404d714" kind="function"><name>max_workers_per_coordinator</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a12c800f9510fb3d9f20adfbdf8ff82d0" kind="function"><name>get_parent_target</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a2ba8602e745181532b3c1475b5c284df" kind="function"><name>total_num_children</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a9e64a1b586b7802dd46517c239dff24b" kind="function"><name>num_direct_children</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a2c4217939dc0953045125b88a4106e1b" kind="function"><name>is_leaf_worker</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a0b13a4db8c2eb0c3de0807ae7857bb07" kind="function"><name>get_next_task_to_send</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1ab81bb2e6bdc35db7963accaf17d6bea3" kind="function"><name>idx_for_worker</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1aa0fbdf3fc87f15eb2a4970af54857093" kind="function"><name>worker_for_idx</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a010c515d5b67fd4cb9b60fd237361e0c" kind="function"><name>determine_layer_from_world_rank</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1ad5ca400ada05c460c1bbe485e0478a31" kind="function"><name>send_to_parent</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a13291d4657b09aee5f8ea302205da009" kind="function"><name>send_to_worker</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a9301663a1e8eb43fc7f214162f0c2fa7" kind="function"><name>send_done_to_children_when_free</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a75f2dc7e2b641329136f378c617241c9" kind="function"><name>receive_result_from</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1ac5b226dafdd5bf26e08713353039fe38" kind="function"><name>receive_result_batch_from</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a66e7a17805290626c8ff461f98b5b0c9" kind="function"><name>receive_execute_return_task_from</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1aade2f37677e6d667cd10c9fc5382829b" kind="function"><name>receive_task_batch_from</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1ac6ea9012e4a4e92a7a7a138b8360b1c1" kind="function"><name>receive_request_from</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a0637e5d54851521b8967577a68fad25c" kind="function"><name>receive_request_batch_from</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a1f8ca8357e242b31025850187b44d35f" kind="function"><name>receive_done_from</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1aaf67fc55bdbcc75ffb165bc3c5386a16" kind="function"><name>receive_from_anyone</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a50f007da31140465406f0b6d252fcae6" kind="function"><name>create_statistics</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a1c8def04883cc23bd95f4d86f7e41f58" kind="function"><name>HierarchicalMPIWorkDistributor</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1aec37eb8dea602a48ee0845b4a9367bc7" kind="function"><name>get_statistics</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1ae5c51e5d25d250e644edf4f11a92ae45" kind="function"><name>run_worker</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a73311929569bde184488cc09ba108d6f" kind="function"><name>return_results_and_request_next_batch_from_manager</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1af3bfe281759462a650ba924c5af5de8b" kind="function"><name>is_root_manager</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1ab589119dac944270d3558c92d4e6ac9e" kind="function"><name>remaining_tasks_count</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a4f30213866047035f54ede3ae3e91361" kind="function"><name>insert_task</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a3a3e4cd61af6b7e052809186f141b073" kind="function"><name>insert_task</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a0f7243894e83cee459c433be09c143c1" kind="function"><name>insert_tasks</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a1b27562d5c5ab33b5b09ac12e795c95a" kind="function"><name>insert_tasks</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a7b110614a45769186bf92096a7b072f6" kind="function"><name>allocate_task_to_child</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a8304dffa248686d4185905e6b3484504" kind="function"><name>run_tasks</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a87c19e51ef3097dc375cf744f0aaba3e" kind="function"><name>finish_remaining_tasks</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1aab2ba235b43ae0a6e2f6f3e1d956868f" kind="function"><name>finalize</name></member>
+    <member refid="classdynampi_1_1HierarchicalMPIWorkDistributor_1a38b6d9db1a846fc6c1aca27b91e8d256" kind="function"><name>~HierarchicalMPIWorkDistributor</name></member>
+  </compound>
+  <compound refid="classdynampi_1_1LockFreeMPIWorkDistributor" kind="class"><name>dynampi::LockFreeMPIWorkDistributor</name>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1af2b8f8fa85e0a1ff66e0e49cda4162c4" kind="typedef"><name>Comm</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a4b2c0b8f3c22d1bcb92c4c86000e5082" kind="typedef"><name>StatisticsT</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1aed8d9b4cf7a9a8915a5c3cac4b321214" kind="variable"><name>ordered</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a1c43dc960636cebaba8c451bb64ebf33" kind="variable"><name>prioritize_tasks</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a010a34db1d7792a5c16366ae1ee7b19e" kind="variable"><name>statistics_mode</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a8fdd811ecffb7f17eb89b91aa0da0b40" kind="variable"><name>HEAD_OFF</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a0166596c380e3c3151a836498b5be0ac" kind="variable"><name>TOTAL_OFF</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1ac4f13fc641a40dbde54871aa42bf5c5b" kind="variable"><name>FINISHED_OFF</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a9550ef6e72bb6a533ad71d8d5b583b77" kind="variable"><name>GATHER_SEQ_OFF</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1ad257bcda00af9ee176c88f61f03c47b7" kind="variable"><name>CONTROL_BYTES</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1ae6dd4cbf4c45e53b889195a59d352c0a" kind="variable"><name>T_COUNT</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1adcc00989a2d28d5c3c81a8e3352d715d" kind="variable"><name>T_DATA</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a7fde576bf8d71b10b7050e922c8c0c44" kind="variable"><name>m_config</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a3c0bdce80d95a3da037c87c18ba23106" kind="variable"><name>m_comm</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1ae2eb0e56d13afc6e5c20ea03959dd91c" kind="variable"><name>m_worker_function</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a65dbfd33deb0977579774fdc7adc2560" kind="variable"><name>m_window</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a7f7fc65913a3b133528dfaa8da4a078a" kind="variable"><name>m_window_buffer</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a90a1f04a15e36c74dc6d99db87a1b874" kind="variable"><name>m_worker_window</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a30e58c062d1f832b4403bf7e9871b123" kind="variable"><name>m_finalized</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a42b6fe839ce243a3d5a2490efef36e22" kind="variable"><name>m_task_elem</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a0546f4c10ac92a1125cc743721af8a87" kind="variable"><name>m_result_elem</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1aced1e539ea60c37801179aa8bc9d1bcc" kind="variable"><name>m_max_task_count</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1aafe1730207030e9158e592d0925327b2" kind="variable"><name>m_max_result_count</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a259642dbc29419557abc209a0886de77" kind="variable"><name>m_task_slot_stride</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a07d0a4a86b41405f40e9f5363e447664" kind="variable"><name>m_task_base</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a00522f95db835a106755e7b6a14e9156" kind="variable"><name>m_total_tasks</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1aa730b84f0b93f1dc93625d0c02d17feb" kind="variable"><name>m_gather_seq</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a981d72f35f510ecfaa2eae9396484911" kind="variable"><name>m_seen_gather_seq</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a31d951f0c7a914e0b16cd966578f1656" kind="variable"><name>m_collected_count</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a796b32232d0f6aced3fa98e6cf5cbe28" kind="variable"><name>m_returned_count</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a2afbede894cced390e5580c33692b882" kind="variable"><name>m_results</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1ac551f1e26c3daff7173d9b3bcb9fd7d9" kind="variable"><name>m_staging</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a98601360fe559e278b20eda048193235" kind="variable"><name>m_task_store</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1af4a043b35b545d8add9e9baee7ab9a98" kind="variable"><name>m_local_results</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a325d2444c697859a9fc02ff97b5ae37c" kind="variable"><name>m_statistics</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1ae0565bde79a851f0a2bac8df0383d884" kind="function"><name>LockFreeMPIWorkDistributor</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a08098d06497c4fbdb5ddb5f126b6c94c" kind="function"><name>~LockFreeMPIWorkDistributor</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a783691f17901e8752abcb929d608a3ba" kind="function"><name>run_tasks</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a9462603a8c8c5e6db4e0229d6686d6e2" kind="function"><name>finish_remaining_tasks</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1aca060619c71df0a1b932c26b4d4c5640" kind="function"><name>finalize</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a86aba7596b25c4a3cd4474ee123ea5f1" kind="function"><name>is_root_manager</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a4d37a3fbf7a1e9b792ae7567fffb3c68" kind="function"><name>remaining_tasks_count</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1ae85b75c2d1971647277576f4e9ce58a0" kind="function"><name>get_statistics</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a208a9da4b39ef1a016130d6511a5a5a8" kind="function"><name>insert_task</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1acfbbf166c1acd5be907586dd55fd4bff" kind="function"><name>insert_task</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a58b3efb98d24ed4f0b299a7125245625" kind="function"><name>insert_tasks</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a9c5016bf691b3c1bd14cac73624a5074" kind="function"><name>run_worker</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a12d5b2429858ece99a671551e972d83c" kind="function"><name>num_workers</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1ac4d1598c4ee1cd35a74fdac5f8d37cc3" kind="function"><name>initialize_window</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1ad0c7c75ea11408a7ea68907695c6cecf" kind="function"><name>task_slot</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a6aa6f68ceda251911d009a886674cca9" kind="function"><name>available</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1aa8541ef21237818dfbd4f4f0619193ab" kind="function"><name>flush</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1afccda6f4f4746fdd8549dfdbba021b85" kind="function"><name>atomic_read</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a4447744babdd3d53454da25f7c8a8765" kind="function"><name>atomic_set</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a334317a97ff493e29e166c44d0cacfcf" kind="function"><name>compare_and_swap</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a8d1b2095b901a189e4d723549e5a9c51" kind="function"><name>put_bytes</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1aa175676f4ad67edaaadcc3de5fdc42b2" kind="function"><name>get_bytes</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a2e2084a40c516c71515c96e9bd20aeba" kind="function"><name>publish_task</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1aba35077a4906c55e5c852223e0a75342" kind="function"><name>read_task</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a744ce09220598ab2bfa9c5ff82975c44" kind="function"><name>store_result</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a9fdf4aaabf81529b6485b12c817d138c" kind="function"><name>maybe_participate_in_gather</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a96dc31bd511b8f909a5f19780f836331" kind="function"><name>request_gather</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1ae8a020bd8adbc588d57f553b16e3226f" kind="function"><name>try_gather_results</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a6806163b79a9f45fcec7bb58bb6dd924" kind="function"><name>exchange_gathered_results</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1addbae0520477b8053678cb2f8c38b83a" kind="function"><name>run_one_task_locally</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a184045e434975cac41de01d43d20662b" kind="function"><name>drain_results</name></member>
+    <member refid="classdynampi_1_1LockFreeMPIWorkDistributor_1a3f51fdec23e6499e11b3b56c4d9eb2fd" kind="function"><name>make_statistics</name></member>
+  </compound>
+  <compound refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor" kind="class"><name>dynampi::MinimalLockFreeMPIWorkDistributor</name>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1ae4c38e68f4fb5dd9062baf5893510459" kind="variable"><name>m_config</name></member>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a40d5169d538791273f8564d32c51aace" kind="variable"><name>m_comm</name></member>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a61a0bcba56b2977982e5b5a568e95b2a" kind="variable"><name>m_worker_function</name></member>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a05f703e846e20bedf0989e9b00dd03fa" kind="variable"><name>m_window</name></member>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a2a7b710e20bc935c2c93bb707fa14b5e" kind="variable"><name>m_counter</name></member>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a911c90726fe52009f6920157c4776a0c" kind="variable"><name>m_worker_window</name></member>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a1a1ac55c002f82688c98fac2760b3157" kind="function"><name>MinimalLockFreeMPIWorkDistributor</name></member>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a36a1a20ca791f8968a980fd43105fc9b" kind="function"><name>~MinimalLockFreeMPIWorkDistributor</name></member>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a62ec9e80dffa4b1a26f24f2e2d7edb06" kind="function"><name>is_root_manager</name></member>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a6780c174bff3eeafd937efd7df9a84fe" kind="function"><name>run</name></member>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1aae945874e59169dfdd9bef99718fa664" kind="function"><name>set_counter</name></member>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a4500794264b2f17c7545dac60d8e8388" kind="function"><name>fetch_add</name></member>
+    <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a61234e57c79b4790b3ca964778e49388" kind="function"><name>gather_sorted</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1MPI__Type" kind="struct"><name>dynampi::MPI_Type</name>
+  </compound>
+  <compound refid="structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4" kind="struct"><name>dynampi::MPI_Type&lt; std::nullptr_t &gt;</name>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4_1a2c81d4dde481be522b52a70668bda63b" kind="variable"><name>value</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4_1a34c572ae21e6288add26a8c68d019e58" kind="variable"><name>resize_required</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4_1a1a7a92656a9935b3cca82abc2cdff250" kind="function"><name>count</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4_1ad1ff2c84197057275a90322d2ba95c62" kind="function"><name>resize</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4_1ac4491f57e0668935173950200f7a6761" kind="function"><name>ptr</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4_1a3b20cf81ff577dbc086b9f83dfb596a9" kind="function"><name>ptr</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4" kind="struct"><name>dynampi::MPI_Type&lt; std::string &gt;</name>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4_1a630be445749df516264cb01ca03f88e7" kind="variable"><name>value</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4_1a2b3d463b9aad40010da8ade31ec0dab6" kind="variable"><name>resize_required</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4_1a57d3720736970b111e5060cdf0e6d513" kind="function"><name>count</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4_1a5d7d7adfad4dbabffa34d975448ffa31" kind="function"><name>resize</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4_1a347e34a08cd84b90dd9046b28beb8487" kind="function"><name>ptr</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4_1acdd01f57b3664186ccfec39966e00210" kind="function"><name>ptr</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051" kind="struct"><name>dynampi::MPI_Type&lt; std::vector&lt; T &gt;, std::enable_if_t&lt; has_dynampi_mpi_type&lt; T &gt;::value &gt; &gt;</name>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051_1aac7fb3ccb04cffb4274286d5aa2fc25b" kind="variable"><name>value</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051_1a4acd71896a8ea0e1e4afdc44dfca2794" kind="variable"><name>resize_required</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051_1add213e666843ce98226a4e8436fa20b5" kind="function"><name>count</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051_1a9b0727316ed9f3b3622691a04d4f833a" kind="function"><name>resize</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051_1ac121fddaeb0dec59923a70f91f123cc7" kind="function"><name>ptr</name></member>
+    <member refid="structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051_1aaa7d5cac72d2ca8bbecd6af66902c5d0" kind="function"><name>ptr</name></member>
+  </compound>
+  <compound refid="classdynampi_1_1MPICommunicator" kind="class"><name>dynampi::MPICommunicator</name>
+    <member refid="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6d" kind="enum"><name>Ownership</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6da468d7a620a18ea774ab87695f1422d2d" kind="enumvalue"><name>Reference</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6dadae5bc393c23dc311bbe3378394271d7" kind="enumvalue"><name>Move</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a0384dcf1a9219f4cef66756fc0e25a6dad4ac868d92d26d2067d0cb2fe65e40e6" kind="enumvalue"><name>Duplicate</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a63ec23d45df7ae88fe0a2ae8aa6219fa" kind="typedef"><name>StatisticsT</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1aa48154136d1fa86148940404611e05d1" kind="variable"><name>m_comm</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1adb021bdc3f379f659f0275d684d4d334" kind="variable"><name>m_ownership</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a5a83f1a580c0f7b23caaf64776cde92f" kind="variable"><name>_statistics</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a367b71e7d524555dacfa87aa73701c31" kind="variable"><name>statistics_mode</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1aaac97d6a2a3cf83e414913cbeca22910" kind="function"><name>MPICommunicator</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1ad45d71c12b36b4eb18dc0aeb2db3c4ee" kind="function"><name>MPICommunicator</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a1798692adccb74d7da9191a5abc93e1b" kind="function"><name>operator=</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a08848241df7a97a8746a7bf0e9ccc037" kind="function"><name>MPICommunicator</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1aaeb6336fc3f1ce904058d97e2b050625" kind="function"><name>operator=</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a6130c70b6540039946ac51390499ebf3" kind="function"><name>~MPICommunicator</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a78b65bf7a6724f50e1238f2ccf342e76" kind="function"><name>split_by_node</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a3f59e746bb2642b30e7e9d6ffc9481e8" kind="function"><name>split</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1ab54da51bd7978431d9e55aa27804593f" kind="function"><name>operator MPI_Comm</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a149b4aa34d721d0e816b5e6ed4510d48" kind="function"><name>get_statistics</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1ae08399570bf9b7b3b80d1577aa6ccbe9" kind="function"><name>rank</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a60803fdde73fb42d1d7a637714134290" kind="function"><name>size</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a89d3eaae1d7f772706c0259abc5138d5" kind="function"><name>send</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1afae2eb6131af281a9cc7717638496841" kind="function"><name>probe</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a877f737c54e0f9d6e4cd28c568b73e28" kind="function"><name>iprobe</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a236bdb1a221ab6f118fad71e8abe9e50" kind="function"><name>recv</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a083f2257b84cc47458b2a88273a316da" kind="function"><name>recv_any</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a908609eb1387b8b46fa8bc29b1b971af" kind="function"><name>broadcast</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a23089e5594e4075a4b0efa8f24d49dfd" kind="function"><name>recv_empty_message</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1acac6192d057971c440e62674dc14539b" kind="function"><name>send_empty</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a780f1e002bea00e97fb16a4ca7f3fc93" kind="function"><name>recv_empty</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a67630cb450a31446e5cabf679ef5c237" kind="function"><name>gather</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a822f42f75a2aa920b4171a3f752962ad" kind="function"><name>get</name></member>
+    <member refid="classdynampi_1_1MPICommunicator_1a5c934640af714145ddd879671df7d026" kind="function"><name>get_group</name></member>
+  </compound>
+  <compound refid="classdynampi_1_1MPIGroup" kind="class"><name>dynampi::MPIGroup</name>
+    <member refid="classdynampi_1_1MPIGroup_1a74031a5b8ba169a9e3048282f03b2543" kind="variable"><name>m_group</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1a61eb7e0c1caa9d560203b3728ede1083" kind="function"><name>MPIGroup</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1adcee085ee5eaf556504543aebe923788" kind="function"><name>MPIGroup</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1aa86e95863c1f2d5bc3b48828ed80c0bd" kind="function"><name>operator=</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1afedebed7a6657ff852e2626bc142a967" kind="function"><name>MPIGroup</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1a3826dc1195d5346c97477566d5a4da59" kind="function"><name>operator=</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1a2ffaacb419356ded7c3be5cc884e4c31" kind="function"><name>~MPIGroup</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1adfb16096432d877c21b57362ed1adcb6" kind="function"><name>translate_ranks</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1aef96a69d92a9a507d107bac37ff8245b" kind="function"><name>translate_rank</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1a46a492d4081d0b8f69b3eedbbd337c1e" kind="function"><name>size</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1ad17930ebf9ddd0f8801273619511fcd6" kind="function"><name>rank</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1aba25c87ae045fc8af89e1f4f39aaffa8" kind="function"><name>operator MPI_Group</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1a4f6d8742deffabdbfdb656d4ecf96f62" kind="function"><name>get</name></member>
+    <member refid="classdynampi_1_1MPIGroup_1ac0ef720ca8ac06ab123258638dd0d4eb" kind="function"><name>contains_rank_in_group</name></member>
+  </compound>
+  <compound refid="classdynampi_1_1NaiveMPIWorkDistributor" kind="class"><name>dynampi::NaiveMPIWorkDistributor</name>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849" kind="enum"><name>Tag</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849a6618410b80f31fd3f01a24e59af11a76" kind="enumvalue"><name>TASK</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849af242e6c8ddcba6da192f643751d4f3d7" kind="enumvalue"><name>DONE</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849af24d0b335cb4efc0fa17a257d622f4e0" kind="enumvalue"><name>RESULT</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849a0b3ba5c2a5f24100c3855dc06f6fc104" kind="enumvalue"><name>REQUEST</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8340ce56084b4664f88c41a6c60ae849ad7b973b7b505abe2efd003308d181c08" kind="enumvalue"><name>ERROR</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ad98000922c607189ea72ab680cb78618" kind="typedef"><name>QueueT</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ae1e01140586717868c36efe67ddb5af7" kind="typedef"><name>MPICommunicator</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a304d3073a4c1557d83063e6600a0284a" kind="typedef"><name>StatisticsT</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a4e791ea12a197bf253f495e6c48b0817" kind="variable"><name>ordered</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a86a441fdbdc226cc2ce31d100e394e89" kind="variable"><name>prioritize_tasks</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ab793fa03c43da560b3d5c038b386de39" kind="variable"><name>statistics_mode</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1aa337e0887477ebf221c94568db6b02de" kind="variable"><name>m_config</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1aa88c3c9be4aa03522e6937e464b7bd03" kind="variable"><name>m_communicator</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ae405965612b76d0fe6888678d4b58fbe" kind="variable"><name>m_worker_function</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a7ee127ce714ced17d7cb0b2709f2776c" kind="variable"><name>m_unallocated_task_queue</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a51f5efc5b038109ba46064ce13c8c7f3" kind="variable"><name>m_worker_current_task_indices</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a3c2425072b92c17391de2b374b4bbbaf" kind="variable"><name>m_free_worker_ranks</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a9d937c260f26d8cf6f4b2ca2b74549b3" kind="variable"><name>m_pending_results</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a1f463456140a2ff538ce526415ebcb32" kind="variable"><name>m_pending_results_valid</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a3c65e0515e727c4e0163afc4c669a80f" kind="variable"><name>m_tasks_sent</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a17545992c5aca4236e891380bb6dbd05" kind="variable"><name>m_front_result_idx</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1aabbac006136e1acd7c6d2b5b60eb3c1f" kind="variable"><name>m_known_contiguous_results</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a4e2ad7e0605373d7b84db40797102331" kind="variable"><name>m_finalized</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ada63f7212e2824cafd608fa221bf7edd" kind="variable"><name>m_statistics</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a0ee0f6fea6796fb7d6df7ee69a819b5a" kind="function"><name>NaiveMPIWorkDistributor</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a547e121aae0179d46c7682bcd4a0ac29" kind="function"><name>~NaiveMPIWorkDistributor</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1abc1f9450c34407d8827c149bdc636c73" kind="function"><name>run_tasks</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a68ee90fb11a2879dd2a6b12a0d44f2ec" kind="function"><name>finish_remaining_tasks</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1acb6dc3ebb120f8e4b37d6632ad9d4d85" kind="function"><name>finalize</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a03da754e42d2bd9b4ac2125e7171832e" kind="function"><name>is_root_manager</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ac4ad439f8eb60b05e32b607521c9be20" kind="function"><name>remaining_tasks_count</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a3ac381213cd743d113377e3dc82b63c2" kind="function"><name>get_statistics</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8c2b567437cec662796cb3a11ff4f95b" kind="function"><name>insert_task</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a4662fcdaafa0e9385bd05c76ae7b5536" kind="function"><name>insert_task</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ad465e16fd9948f3ee5ba4b71ce1fdec0" kind="function"><name>insert_tasks</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a1101822fd81251dc1b39a4feade64b9f" kind="function"><name>run_worker</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a8f9da5318803e83a3d8b5a8ace38665e" kind="function"><name>num_workers</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a493179cc12c51346c973767dfacb4f63" kind="function"><name>active_worker_count</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ad75b24f01c267ba1a8d9f6a9cbf675e8" kind="function"><name>rank_to_worker_idx</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a7f9a9b495c904682a64df3c5dd17d0b4" kind="function"><name>worker_idx_to_rank</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1acbb9ac3bfc631f41884af5a865567958" kind="function"><name>pop_next_task</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1ae7bce0c598979de606254997630e2b8f" kind="function"><name>run_task_locally</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1acdb78d5cd582c9feb666dd76c6989ee7" kind="function"><name>send_next_task_to_worker</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1aac955c5176d8f157611b9fa831ee1694" kind="function"><name>process_incoming_message</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1acead1314e7fc44d37f0b9376a06f11ec" kind="function"><name>handle_result_message</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a80c9cd37921b3f941da200932d056c64" kind="function"><name>collect_available_results</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a5194a8f9da2cf5a89cc118f8ae771e01" kind="function"><name>broadcast_done</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a4039fd2914dc69488cbe97f1be4dc7ff" kind="function"><name>ensure_result_capacity</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1a5f8daed06f36a43fd5155bb14bf83b03" kind="function"><name>update_contiguous_results_count</name></member>
+    <member refid="classdynampi_1_1NaiveMPIWorkDistributor_1adf474025695e703de81b39908bc1821c" kind="function"><name>create_statistics</name></member>
+  </compound>
+  <compound refid="structoption__value" kind="struct"><name>option_value</name>
+    <member refid="structoption__value_1aef85a27af9812c6a2d583b770fd382c2" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structoption__value_3_01Option_00_01Head_00_01Tail_8_8_8_01_4" kind="struct"><name>option_value&lt; Option, Head, Tail... &gt;</name>
+    <member refid="structoption__value_3_01Option_00_01Head_00_01Tail_8_8_8_01_4_1a040b10250584767e76c190c4f425fe9a" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1prioritize__tasks__t" kind="struct"><name>dynampi::prioritize_tasks_t</name>
+    <member refid="structdynampi_1_1prioritize__tasks__t_1a24862588f73da6625c53bb543745cbd9" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig" kind="struct"><name>dynampi::HierarchicalMPIWorkDistributor::RunConfig</name>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig_1af97e78838144297bd2c5526cbf841e36" kind="variable"><name>target_num_tasks</name></member>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig_1a2bce322fdaafa762bce524d2ed78f9cf" kind="variable"><name>allow_more_than_target_tasks</name></member>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig_1a33686216c9c091e5c6ab11fe77ff9743" kind="variable"><name>max_seconds</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig" kind="struct"><name>dynampi::LockFreeMPIWorkDistributor::RunConfig</name>
+    <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig_1aa6d92071a51854ec473724a09689077e" kind="variable"><name>target_num_tasks</name></member>
+    <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig_1ae1d1ddf32d04588388bafd7a7070e21e" kind="variable"><name>allow_more_than_target_tasks</name></member>
+    <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig_1a9ee51c014872a27b87f949c60d66cabf" kind="variable"><name>max_seconds</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig" kind="struct"><name>dynampi::NaiveMPIWorkDistributor::RunConfig</name>
+    <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig_1a201f78a7308fdcb7941f0b29f9a6ed5a" kind="variable"><name>target_num_tasks</name></member>
+    <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig_1a458213e051f4e378ee8e1b15af49091f" kind="variable"><name>allow_more_than_target_tasks</name></member>
+    <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig_1ac70dd38a256e427d71b24f8d2176afd0" kind="variable"><name>max_seconds</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Statistics" kind="struct"><name>dynampi::HierarchicalMPIWorkDistributor::Statistics</name>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Statistics_1a1867b9ced9ff0dec2ae9599f8aa2de9d" kind="variable"><name>comm_statistics</name></member>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Statistics_1a614bcf25c508133461187fbda0e6d511" kind="variable"><name>worker_task_counts</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics" kind="struct"><name>dynampi::LockFreeMPIWorkDistributor::Statistics</name>
+    <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics_1a2b04f3870064b3fd2eff15848a67f4b9" kind="variable"><name>comm_statistics</name></member>
+    <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics_1aa762d2bdb452502b3c974d3c1275689b" kind="variable"><name>worker_task_counts</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics" kind="struct"><name>dynampi::NaiveMPIWorkDistributor::Statistics</name>
+    <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics_1a67c2180de30ea30920a755ec986ac288" kind="variable"><name>comm_statistics</name></member>
+    <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics_1adf952f820977528dd6be4954a4a99bf3" kind="variable"><name>worker_task_counts</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1TaskRequest" kind="struct"><name>dynampi::HierarchicalMPIWorkDistributor::TaskRequest</name>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1TaskRequest_1ac1edeee8e0a471b7f3f0502eadd420e5" kind="variable"><name>worker_rank</name></member>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1TaskRequest_1a034f05606d8de3e1228330b187e728ab" kind="variable"><name>source_layer</name></member>
+    <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1TaskRequest_1a7f5475d23737e03e508d38cf2cca7e16" kind="variable"><name>num_tasks_requested</name></member>
+  </compound>
+  <compound refid="classdynampi_1_1Timer" kind="class"><name>dynampi::Timer</name>
+    <member refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044" kind="enum"><name>AutoStart</name></member>
+    <member refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044a93cba07454f06a4a960172bbd6e2a435" kind="enumvalue"><name>Yes</name></member>
+    <member refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044abafd7322c6e97d25b6299b5d6fe8920b" kind="enumvalue"><name>No</name></member>
+    <member refid="classdynampi_1_1Timer_1adaa9cb97d941d6858f74947e9e8813f1" kind="variable"><name>_start_time</name></member>
+    <member refid="classdynampi_1_1Timer_1af96f427e312f729ae8599b269c71f8d4" kind="variable"><name>_elapsed_time</name></member>
+    <member refid="classdynampi_1_1Timer_1a48b49e58305af754d7bbb97be76ce2a0" kind="function"><name>Timer</name></member>
+    <member refid="classdynampi_1_1Timer_1a094bb6d98993adfa0d631835c97b4c73" kind="function"><name>start</name></member>
+    <member refid="classdynampi_1_1Timer_1a3b04edcd8eaa183021ad714541357260" kind="function"><name>stop</name></member>
+    <member refid="classdynampi_1_1Timer_1af63ac97c131c79c1466c7fa5836476f6" kind="function"><name>reset</name></member>
+    <member refid="classdynampi_1_1Timer_1ae0c61ce303d7657ef46b47a330f2bb33" kind="function"><name>elapsed</name></member>
+    <member refid="classdynampi_1_1Timer_1a8e125e38ee1ec31b73d2e322c1ec93f2" kind="friend"><name>operator&lt;&lt;</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1track__statistics" kind="struct"><name>dynampi::track_statistics</name>
+    <member refid="structdynampi_1_1track__statistics_1a97b405ebe28f951a671e89db3eeb310f" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structdynampi_1_1track__statistics__t" kind="struct"><name>dynampi::track_statistics_t</name>
+    <member refid="structdynampi_1_1track__statistics__t_1a4466269905b89f8fe06781bb1defa797" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="namespacedynampi" kind="namespace"><name>dynampi</name>
+    <member refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kind="enum"><name>StatisticsMode</name></member>
+    <member refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082ea6adf97f83acf6453d4a6a4b1070f3754" kind="enumvalue"><name>None</name></member>
+    <member refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082eadacc57ae9b3078e0adfee2542d7fa034" kind="enumvalue"><name>Aggregated</name></member>
+    <member refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082ea4042fcadbe61a3300451157e2c9fe651" kind="enumvalue"><name>Detailed</name></member>
+    <member refid="namespacedynampi_1a4009798493b2b97fbd0f54779a586e96" kind="typedef"><name>MPIDynamicWorkDistributor</name></member>
+    <member refid="namespacedynampi_1a0b9a969b4b265bd87f7d6e62dd546a1c" kind="function"><name>mpi_manager_worker_distribution</name></member>
+    <member refid="namespacedynampi_1af862140654b4d18da319d1098b371dfa" kind="function"><name>mpi_fail</name></member>
+    <member refid="namespacedynampi_1a85d49e63aa1f991adeff667144f085c2" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1af4d8f512b90f9d3df20ad3221bc17b49" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1a6871b5aed87a4d5816e99d3fd25cff0e" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1ad47f61718062c88b8953b37ad98ff25a" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1a7d6e5ed5c1e4e7c9a94a3637722a4eca" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1aa31f957ac9b6f909d0acb48025482ab1" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1af670bad5bf83130c2795a75dace0dba3" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1a5000f0d6b13a8371a3cb4f17bc774630" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1a645ee8942ed9583facd11a20b2f2fb4f" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1abeccc465f54603d4c1f70c13a485f6a7" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1a0eccd76e93ada3852d0c6004bd02fb05" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1affbad9fdc490b2473cad2aae91ce3111" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1ae08f11e2fda097cbed0fa9d23b70e292" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1a95374a17ad3bfdec7224de6fa9699c26" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1ad2dbce84f2aa09b523a169726dfbbf30" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1a030e5a1adc982e6e097827ff8d10d4b8" kind="function"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+    <member refid="namespacedynampi_1aa95ac84922fb5db11726bbbb7061603f" kind="function"><name>OptionalString</name></member>
+    <member refid="namespacedynampi_1a73c9e8db89503bafedb278ff40b20351" kind="function"><name>_DYNAMPI_FAIL_ASSERT</name></member>
+    <member refid="namespacedynampi_1a54e508df8e16c3c7ccf69152c35f09b5" kind="function"><name>_DYNAMPI_FAILBinOp</name></member>
+    <member refid="namespacedynampi_1a7783a1ffa2b2647950dca550b90e90f8" kind="function"><name>operator&lt;&lt;</name></member>
+    <member refid="namespacedynampi_1ab28b7d547bf4d04c8acf6ac9c18f11f6" kind="function"><name>operator&lt;&lt;</name></member>
+    <member refid="namespacedynampi_1ac972b9f02b077f08b09ac95b912e1801" kind="function"><name>operator&lt;&lt;</name></member>
+    <member refid="namespacedynampi_1ab230e30aee0fc333e9d0eb0f23eee253" kind="function"><name>operator&lt;&lt;</name></member>
+    <member refid="namespacedynampi_1a5b3ac9612d27c53f43e69a1ba6fbf2af" kind="function"><name>operator&lt;&lt;</name></member>
+    <member refid="namespacedynampi_1a871e352238d27a9b0d3ee9ebea293882" kind="function"><name>operator&lt;&lt;</name></member>
+    <member refid="namespacedynampi_1a336bb2348ac456c12aa487fb056a0e6c" kind="function"><name>operator&lt;&lt;</name></member>
+    <member refid="namespacedynampi_1a663ea506875fbb1dd56688aa2ac97972" kind="function"><name>operator&lt;&lt;</name></member>
+  </compound>
+  <compound refid="namespacedynampi_1_1detail" kind="namespace"><name>dynampi::detail</name>
+    <member refid="namespacedynampi_1_1detail_1a30efd8764a044e52cae4ffc68c80e48c" kind="function"><name>mpi_type_size_bytes</name></member>
+    <member refid="namespacedynampi_1_1detail_1adb500a1854a00df8ea6182f4e53a67f4" kind="function"><name>round_up_8</name></member>
+    <member refid="namespacedynampi_1_1detail_1a34d57099f1541ccd6a529ceb545cf90c" kind="function"><name>write_bytes</name></member>
+    <member refid="namespacedynampi_1_1detail_1aaafdce65b60ce335948c59dbee9c99eb" kind="function"><name>read_i64</name></member>
+    <member refid="namespacedynampi_1_1detail_1a8b9b8d1e1c284407db328528ba13e00a" kind="function"><name>write_i64</name></member>
+    <member refid="namespacedynampi_1_1detail_1ae3bae93ef582e633899ac9508fe80013" kind="function"><name>read_result_bytes</name></member>
+    <member refid="namespacedynampi_1_1detail_1adb2870ea479d304dad3ed5c445f0cad9" kind="function"><name>rma_wait_idle</name></member>
+  </compound>
+  <compound refid="namespacedynampi_1_1version" kind="namespace"><name>dynampi::version</name>
+    <member refid="namespacedynampi_1_1version_1a6bc0be0e262bac9bf3396ca2faad7e9f" kind="variable"><name>major</name></member>
+    <member refid="namespacedynampi_1_1version_1a96fba606cba8678a6bcceef4ba3c8111" kind="variable"><name>minor</name></member>
+    <member refid="namespacedynampi_1_1version_1a23be4013e62698563d03303ab3550ee0" kind="variable"><name>patch</name></member>
+    <member refid="namespacedynampi_1_1version_1aee9460a2a8eb2d1e646d8f65f8918bf1" kind="variable"><name>string</name></member>
+    <member refid="namespacedynampi_1_1version_1a97ebeb88cb74b845e9061e51ef2b08c8" kind="function"><name>is_at_least</name></member>
+    <member refid="namespacedynampi_1_1version_1adcad9661257f4dfe00d23817a032644f" kind="function"><name>compile_date</name></member>
+    <member refid="namespacedynampi_1_1version_1a6f74ef38beb6132301fb791c009d0864" kind="function"><name>commit_hash</name></member>
+  </compound>
+  <compound refid="namespacestd" kind="namespace"><name>std</name>
+  </compound>
+  <compound refid="dynampi_8hpp" kind="file"><name>dynampi.hpp</name>
+    <member refid="dynampi_8hpp_1ab52585869cefd5930f2afc5beed2e0ec" kind="define"><name>DYNAMPI_STR_HELPER</name></member>
+    <member refid="dynampi_8hpp_1a9af522ad1f7873670e7f78b44b5edbeb" kind="define"><name>DYNAMPI_STR</name></member>
+    <member refid="dynampi_8hpp_1a4bfff23c065ba8372b4d35dcd79cf2d2" kind="define"><name>DYNAMPI_VERSION_STRING</name></member>
+  </compound>
+  <compound refid="base__distributor_8hpp" kind="file"><name>base_distributor.hpp</name>
+  </compound>
+  <compound refid="hierarchical__distributor_8hpp" kind="file"><name>hierarchical_distributor.hpp</name>
+  </compound>
+  <compound refid="lockfree__distributor_8hpp" kind="file"><name>lockfree_distributor.hpp</name>
+  </compound>
+  <compound refid="naive__distributor_8hpp" kind="file"><name>naive_distributor.hpp</name>
+  </compound>
+  <compound refid="mpi__communicator_8hpp" kind="file"><name>mpi_communicator.hpp</name>
+  </compound>
+  <compound refid="mpi__error_8hpp" kind="file"><name>mpi_error.hpp</name>
+    <member refid="mpi__error_8hpp_1a4dcbe7cc9eb81ae64b53bb69fe3ac422" kind="define"><name>DYNAMPI_MPI_CHECK</name></member>
+  </compound>
+  <compound refid="mpi__group_8hpp" kind="file"><name>mpi_group.hpp</name>
+  </compound>
+  <compound refid="mpi__types_8hpp" kind="file"><name>mpi_types.hpp</name>
+    <member refid="mpi__types_8hpp_1a8d8d83ec0430c7e390334c1f4e9a8a7e" kind="define"><name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name></member>
+  </compound>
+  <compound refid="assert_8hpp" kind="file"><name>assert.hpp</name>
+    <member refid="assert_8hpp_1a939dc32d004efb85dbcc3200e88d7ff9" kind="define"><name>DYNAMPI_HAS_BUILTIN</name></member>
+    <member refid="assert_8hpp_1ade0220bbf506bab67b700a6dbf3a0d65" kind="define"><name>DYNAMPI_ASSERT</name></member>
+    <member refid="assert_8hpp_1ab2b43adfba6879e7da32089fe338b722" kind="define"><name>DYNAMPI_ASSERT_BIN_OP</name></member>
+    <member refid="assert_8hpp_1ad75b93e50cd584c5b4e688e8a762d570" kind="define"><name>DYNAMPI_FAIL</name></member>
+    <member refid="assert_8hpp_1ac5602c8ebb228ad44153df4f4b298c05" kind="define"><name>DYNAMPI_UNIMPLEMENTED</name></member>
+    <member refid="assert_8hpp_1a395bc439b949d895e94c7e4f03624dea" kind="define"><name>DYNAMPI_ASSERT_GE</name></member>
+    <member refid="assert_8hpp_1a11bf2983306459fa3631751284fef2ae" kind="define"><name>DYNAMPI_ASSERT_LE</name></member>
+    <member refid="assert_8hpp_1a6c7271fba51643c2b352a70a8e66f07b" kind="define"><name>DYNAMPI_ASSERT_GT</name></member>
+    <member refid="assert_8hpp_1a27e322080ce6adee72b64405a32961db" kind="define"><name>DYNAMPI_ASSERT_LT</name></member>
+    <member refid="assert_8hpp_1a2ad20178e43885b81b3f04e66982f09a" kind="define"><name>DYNAMPI_ASSERT_EQ</name></member>
+    <member refid="assert_8hpp_1adf49a35760419c5ce727113c1b4c0681" kind="define"><name>DYNAMPI_ASSERT_NE</name></member>
+    <member refid="assert_8hpp_1ae1c0fadababed6efe15da7f6a397e3a0" kind="define"><name>DYNAMPI_UNREACHABLE</name></member>
+  </compound>
+  <compound refid="printing_8hpp" kind="file"><name>printing.hpp</name>
+  </compound>
+  <compound refid="template__options_8hpp" kind="file"><name>template_options.hpp</name>
+    <member refid="template__options_8hpp_1a6c0b54e9bbf688ea376f50d340c1889f" kind="function"><name>get_option_value</name></member>
+  </compound>
+  <compound refid="timer_8hpp" kind="file"><name>timer.hpp</name>
+  </compound>
+  <compound refid="dir_f8db417ebd5c3d89eea80c24e3fd4369" kind="dir"><name>/home/runner/work/DynaMPI/DynaMPI/include/dynampi</name>
+  </compound>
+  <compound refid="dir_87365955bfd9c1869b83a1fbd3fdb221" kind="dir"><name>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl</name>
+  </compound>
+  <compound refid="dir_d44c64559bbebec7f509842c48db8b23" kind="dir"><name>/home/runner/work/DynaMPI/DynaMPI/include</name>
+  </compound>
+  <compound refid="dir_70f9944cf42b7c83e40875b744e30ff7" kind="dir"><name>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi</name>
+  </compound>
+  <compound refid="dir_23e51883c93568b92bc8806003dcc116" kind="dir"><name>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities</name>
+  </compound>
+</doxygenindex>

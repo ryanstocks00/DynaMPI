@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="base__distributor_8hpp" kind="file" language="C++">
+    <compoundname>base_distributor.hpp</compoundname>
+    <includes local="no">mpi.h</includes>
+    <includes local="no">deque</includes>
+    <includes local="no">queue</includes>
+    <includes local="no">type_traits</includes>
+    <includes local="no">utility</includes>
+    <includedby refid="hierarchical__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</includedby>
+    <includedby refid="lockfree__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp</includedby>
+    <includedby refid="naive__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp</includedby>
+    <incdepgraph>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp</label>
+        <link refid="base__distributor_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>deque</label>
+      </node>
+      <node id="2">
+        <label>mpi.h</label>
+      </node>
+      <node id="4">
+        <label>queue</label>
+      </node>
+      <node id="5">
+        <label>type_traits</label>
+      </node>
+      <node id="6">
+        <label>utility</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="3">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp</label>
+        <link refid="dynampi_8hpp"/>
+      </node>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp</label>
+        <link refid="base__distributor_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</label>
+        <link refid="hierarchical__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp</label>
+        <link refid="lockfree__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp</label>
+        <link refid="naive__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="structdynampi_1_1prioritize__tasks__t" prot="public">dynampi::prioritize_tasks_t</innerclass>
+    <innerclass refid="structdynampi_1_1enable__prioritization" prot="public">dynampi::enable_prioritization</innerclass>
+    <innerclass refid="classdynampi_1_1BaseMPIWorkDistributor" prot="public">dynampi::BaseMPIWorkDistributor</innerclass>
+    <innerclass refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config" prot="public">dynampi::BaseMPIWorkDistributor::Config</innerclass>
+    <innernamespace refid="namespacedynampi">dynampi</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>SPDX-FileCopyrightText:<sp/>2025<sp/>QDX<sp/>Technologies.<sp/>Authored<sp/>by<sp/>Ryan<sp/>Stocks<sp/>&lt;ryan.stocks00@gmail.com&gt;</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>Apache-2.0</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;mpi.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;deque&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;queue&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;type_traits&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;utility&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespacedynampi" kindref="compound">dynampi</ref><sp/>{</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight></codeline>
+<codeline lineno="17" refid="structdynampi_1_1prioritize__tasks__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structdynampi_1_1prioritize__tasks__t" kindref="compound">prioritize_tasks_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="18" refid="structdynampi_1_1prioritize__tasks__t_1a24862588f73da6625c53bb543745cbd9" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1prioritize__tasks__t_1a24862588f73da6625c53bb543745cbd9" kindref="member">value</ref><sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="19"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight></codeline>
+<codeline lineno="21" refid="structdynampi_1_1enable__prioritization" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structdynampi_1_1enable__prioritization" kindref="compound">enable_prioritization</ref><sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1prioritize__tasks__t" kindref="compound">prioritize_tasks_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="22" refid="structdynampi_1_1enable__prioritization_1a5f7e39497cc7af2ad7e7d3ef5eb38d4d" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1enable__prioritization_1a5f7e39497cc7af2ad7e7d3ef5eb38d4d" kindref="member">value</ref><sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="23"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref>,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref>,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal">...<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">Options</ref>&gt;</highlight></codeline>
+<codeline lineno="26" refid="classdynampi_1_1BaseMPIWorkDistributor" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classdynampi_1_1BaseMPIWorkDistributor" kindref="compound">BaseMPIWorkDistributor</ref><sp/>{</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="28" refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config" refkind="compound"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config" kindref="compound">Config</ref><sp/>{</highlight></codeline>
+<codeline lineno="29" refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config_1aa688bdada49e18f53802103c7fe1dd2b" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Comm</ref><sp/><ref refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config_1aa688bdada49e18f53802103c7fe1dd2b" kindref="member">comm</ref><sp/>=<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_COMM_WORLD</ref>;</highlight></codeline>
+<codeline lineno="30" refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config_1ae67f3951132cea4064f6f2628a768a34" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config_1ae67f3951132cea4064f6f2628a768a34" kindref="member">manager_rank</ref><sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="31" refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config_1a508267cf291e1d57a01501378f086e22" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config_1a508267cf291e1d57a01501378f086e22" kindref="member">auto_run_workers</ref><sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/>};</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/></highlight><highlight class="keyword">protected</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="35" refid="classdynampi_1_1BaseMPIWorkDistributor_1addcebc39033a4dc6bf38c51562f99170" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1BaseMPIWorkDistributor_1addcebc39033a4dc6bf38c51562f99170" kindref="member">prioritize_tasks</ref><sp/>=<sp/><ref refid="template__options_8hpp_1a6c0b54e9bbf688ea376f50d340c1889f" kindref="member">get_option_value</ref>&lt;<ref refid="structdynampi_1_1prioritize__tasks__t" kindref="compound">prioritize_tasks_t</ref>,<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">Options</ref>...&gt;();</highlight></codeline>
+<codeline lineno="36" refid="classdynampi_1_1BaseMPIWorkDistributor_1a267745d02dd4eddc107dd4877e629067" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classdynampi_1_1BaseMPIWorkDistributor_1a267745d02dd4eddc107dd4877e629067" kindref="member">QueueT</ref><sp/>=<sp/>std::conditional_t&lt;prioritize_tasks,<sp/>std::priority_queue&lt;std::pair&lt;double,<sp/>TaskT&gt;&gt;,</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::deque&lt;TaskT&gt;&gt;;</highlight></codeline>
+<codeline lineno="38"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"></highlight></codeline>
+<codeline lineno="40"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>dynampi</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp"/>
+  </compounddef>
+</doxygen>

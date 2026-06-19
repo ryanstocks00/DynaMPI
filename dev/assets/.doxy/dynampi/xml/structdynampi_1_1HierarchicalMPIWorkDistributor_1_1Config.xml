@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::HierarchicalMPIWorkDistributor::Config</compoundname>
+    <includes refid="hierarchical__distributor_8hpp" local="no">hierarchical_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a0e1cc5c220e5ffd441c9fef89f999738" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Comm</ref></type>
+        <definition>MPI_Comm dynampi::HierarchicalMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::comm</definition>
+        <argsstring></argsstring>
+        <name>comm</name>
+        <qualifiedname>dynampi::HierarchicalMPIWorkDistributor::Config::comm</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_COMM_WORLD</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="35" column="14" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a6fe5c89129c8304691ea70fac6cb0876" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>int dynampi::HierarchicalMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::manager_rank</definition>
+        <argsstring></argsstring>
+        <name>manager_rank</name>
+        <qualifiedname>dynampi::HierarchicalMPIWorkDistributor::Config::manager_rank</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="36" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a78346efaef33dfb219fdc1fa388ede14" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <definition>bool dynampi::HierarchicalMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::auto_run_workers</definition>
+        <argsstring></argsstring>
+        <name>auto_run_workers</name>
+        <qualifiedname>dynampi::HierarchicalMPIWorkDistributor::Config::auto_run_workers</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="37" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a09e2d0a3885beff070c5271b1d73a014" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref> &gt;</type>
+        <definition>std::optional&lt;size_t&gt; dynampi::HierarchicalMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::message_batch_size</definition>
+        <argsstring></argsstring>
+        <name>message_batch_size</name>
+        <qualifiedname>dynampi::HierarchicalMPIWorkDistributor::Config::message_batch_size</qualifiedname>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="38" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1ace5235a0f8051726107bfee5f01141b1" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref> &gt;</type>
+        <definition>std::optional&lt;int&gt; dynampi::HierarchicalMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::max_workers_per_coordinator</definition>
+        <argsstring></argsstring>
+        <name>max_workers_per_coordinator</name>
+        <qualifiedname>dynampi::HierarchicalMPIWorkDistributor::Config::max_workers_per_coordinator</qualifiedname>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="39" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a8bb5a3f7dd882decb7c86600ed4ff62b" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>int dynampi::HierarchicalMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::batch_size_multiplier</definition>
+        <argsstring></argsstring>
+        <name>batch_size_multiplier</name>
+        <qualifiedname>dynampi::HierarchicalMPIWorkDistributor::Config::batch_size_multiplier</qualifiedname>
+        <initializer>= 2</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="40" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1ac8b39933ae73b323c80b4da64df54509" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <definition>bool dynampi::HierarchicalMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::coordinator_per_node</definition>
+        <argsstring></argsstring>
+        <name>coordinator_per_node</name>
+        <qualifiedname>dynampi::HierarchicalMPIWorkDistributor::Config::coordinator_per_node</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="45" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="34" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="34" bodyend="46"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a78346efaef33dfb219fdc1fa388ede14" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalMPIWorkDistributor::Config</scope><name>auto_run_workers</name></member>
+      <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a8bb5a3f7dd882decb7c86600ed4ff62b" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalMPIWorkDistributor::Config</scope><name>batch_size_multiplier</name></member>
+      <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a0e1cc5c220e5ffd441c9fef89f999738" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalMPIWorkDistributor::Config</scope><name>comm</name></member>
+      <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1ac8b39933ae73b323c80b4da64df54509" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalMPIWorkDistributor::Config</scope><name>coordinator_per_node</name></member>
+      <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a6fe5c89129c8304691ea70fac6cb0876" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalMPIWorkDistributor::Config</scope><name>manager_rank</name></member>
+      <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1ace5235a0f8051726107bfee5f01141b1" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalMPIWorkDistributor::Config</scope><name>max_workers_per_coordinator</name></member>
+      <member refid="structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config_1a09e2d0a3885beff070c5271b1d73a014" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalMPIWorkDistributor::Config</scope><name>message_batch_size</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

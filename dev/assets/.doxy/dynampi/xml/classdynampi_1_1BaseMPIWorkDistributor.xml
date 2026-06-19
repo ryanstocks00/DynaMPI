@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classdynampi_1_1BaseMPIWorkDistributor" kind="class" language="C++" prot="public">
+    <compoundname>dynampi::BaseMPIWorkDistributor</compoundname>
+    <includes refid="base__distributor_8hpp" local="no">base_distributor.hpp</includes>
+    <innerclass refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config" prot="public">dynampi::BaseMPIWorkDistributor::Config</innerclass>
+    <templateparamlist>
+      <param>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref></type>
+      </param>
+      <param>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref></type>
+      </param>
+      <param>
+        <type>typename...</type>
+        <declname>Options</declname>
+        <defname>Options</defname>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="protected-type">
+      <memberdef kind="typedef" id="classdynampi_1_1BaseMPIWorkDistributor_1a267745d02dd4eddc107dd4877e629067" prot="protected" static="no">
+        <type>std::conditional_t&lt; <ref refid="classdynampi_1_1BaseMPIWorkDistributor_1addcebc39033a4dc6bf38c51562f99170" kindref="member">prioritize_tasks</ref>, std::priority_queue&lt; std::pair&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref>, <ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref> &gt; &gt;, std::deque&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref> &gt; &gt;</type>
+        <definition>using dynampi::BaseMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::QueueT =  std::conditional_t&lt;prioritize_tasks, std::priority_queue&lt;std::pair&lt;double, TaskT&gt; &gt;, std::deque&lt;TaskT&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>QueueT</name>
+        <qualifiedname>dynampi::BaseMPIWorkDistributor::QueueT</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp" line="36" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="protected-static-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1BaseMPIWorkDistributor_1addcebc39033a4dc6bf38c51562f99170" prot="protected" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <definition>constexpr bool dynampi::BaseMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::prioritize_tasks</definition>
+        <argsstring></argsstring>
+        <name>prioritize_tasks</name>
+        <qualifiedname>dynampi::BaseMPIWorkDistributor::prioritize_tasks</qualifiedname>
+        <initializer>= <ref refid="template__options_8hpp_1a6c0b54e9bbf688ea376f50d340c1889f" kindref="member">get_option_value</ref>&lt;<ref refid="structdynampi_1_1prioritize__tasks__t" kindref="compound">prioritize_tasks_t</ref>, Options...&gt;()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp" line="35" column="25" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp" line="26" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp" bodystart="26" bodyend="38"/>
+    <listofallmembers>
+      <member refid="classdynampi_1_1BaseMPIWorkDistributor_1addcebc39033a4dc6bf38c51562f99170" prot="protected" virt="non-virtual"><scope>dynampi::BaseMPIWorkDistributor</scope><name>prioritize_tasks</name></member>
+      <member refid="classdynampi_1_1BaseMPIWorkDistributor_1a267745d02dd4eddc107dd4877e629067" prot="protected" virt="non-virtual"><scope>dynampi::BaseMPIWorkDistributor</scope><name>QueueT</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

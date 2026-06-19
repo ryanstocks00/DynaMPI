@@ -1,0 +1,160 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="mpi__error_8hpp" kind="file" language="C++">
+    <compoundname>mpi_error.hpp</compoundname>
+    <includes local="no">mpi.h</includes>
+    <includes local="no">string</includes>
+    <includes local="no">stdexcept</includes>
+    <includedby refid="lockfree__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp</includedby>
+    <includedby refid="mpi__communicator_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp</includedby>
+    <includedby refid="mpi__group_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp</includedby>
+    <incdepgraph>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_error.hpp</label>
+        <link refid="mpi__error_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>mpi.h</label>
+      </node>
+      <node id="4">
+        <label>stdexcept</label>
+      </node>
+      <node id="3">
+        <label>string</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="3">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp</label>
+        <link refid="dynampi_8hpp"/>
+      </node>
+      <node id="5">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</label>
+        <link refid="hierarchical__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp</label>
+        <link refid="lockfree__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp</label>
+        <link refid="naive__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp</label>
+        <link refid="mpi__communicator_8hpp"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_error.hpp</label>
+        <link refid="mpi__error_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp</label>
+        <link refid="mpi__group_8hpp"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innernamespace refid="namespacedynampi">dynampi</innernamespace>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="mpi__error_8hpp_1a4dcbe7cc9eb81ae64b53bb69fe3ac422" prot="public" static="no">
+        <name>DYNAMPI_MPI_CHECK</name>
+        <param><defname>func</defname></param>
+        <param><defname>args</defname></param>
+        <initializer>  do {                                     \
+    int err = func args;                   \
+    if (err != MPI_SUCCESS) {              \
+      <ref refid="namespacedynampi_1af862140654b4d18da319d1098b371dfa" kindref="member">dynampi::mpi_fail</ref>(err, #func #args); \
+    }                                      \
+  } while (false)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_error.hpp" line="24" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_error.hpp" bodystart="24" bodyend="30"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>SPDX-FileCopyrightText:<sp/>2025<sp/>QDX<sp/>Technologies.<sp/>Authored<sp/>by<sp/>Ryan<sp/>Stocks<sp/>&lt;ryan.stocks00@gmail.com&gt;</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>Apache-2.0</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;mpi.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="comment">//<sp/>cppcheck-suppress<sp/>preprocessorErrorDirective</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>__has_include(&lt;source_location&gt;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;source_location&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>defined(__cpp_lib_source_location)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>DYNAMPI_HAS_SOURCE_LOCATION</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="preprocessor">#elif<sp/>__has_include(&lt;experimental/source_location&gt;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;experimental/source_location&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>DYNAMPI_HAS_SOURCE_LOCATION</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdexcept&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24" refid="mpi__error_8hpp_1a4dcbe7cc9eb81ae64b53bb69fe3ac422" refkind="member"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>DYNAMPI_MPI_CHECK(func,<sp/>args)<sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="25"><highlight class="preprocessor"><sp/><sp/>do<sp/>{<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="26"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>int<sp/>err<sp/>=<sp/>func<sp/>args;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="27"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>if<sp/>(err<sp/>!=<sp/>MPI_SUCCESS)<sp/>{<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="28"><highlight class="preprocessor"><sp/><sp/><sp/><sp/><sp/><sp/>dynampi::mpi_fail(err,<sp/>#func<sp/>#args);<sp/>\</highlight></codeline>
+<codeline lineno="29"><highlight class="preprocessor"><sp/><sp/><sp/><sp/>}<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="30"><highlight class="preprocessor"><sp/><sp/>}<sp/>while<sp/>(false)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespacedynampi" kindref="compound">dynampi</ref><sp/>{</highlight></codeline>
+<codeline lineno="33" refid="namespacedynampi_1af862140654b4d18da319d1098b371dfa" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1af862140654b4d18da319d1098b371dfa" kindref="member">mpi_fail</ref>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">err</ref>,<sp/>std::string_view<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">command</ref></highlight></codeline>
+<codeline lineno="34"><highlight class="normal">#<ref refid="structdynampi_1_1MPI__Type" kindref="compound">ifdef</ref><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">DYNAMPI_HAS_SOURCE_LOCATION</ref></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::source_location<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">loc</ref><sp/>=<sp/>std::source_location::current()</highlight></codeline>
+<codeline lineno="37"><highlight class="normal">#<ref refid="structdynampi_1_1MPI__Type" kindref="compound">endif</ref></highlight></codeline>
+<codeline lineno="38"><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">error_string</ref>[<ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_MAX_ERROR_STRING</ref>];</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">length_of_error_string</ref>;</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Error_string</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">err</ref>,<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">error_string</ref>,<sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">length_of_error_string</ref>);</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>std::runtime_error(std::string(</highlight><highlight class="stringliteral">&quot;MPI<sp/>error<sp/>in<sp/>&quot;</highlight><highlight class="normal">)<sp/>+<sp/>std::string(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">command</ref>)<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;:<sp/>&quot;</highlight><highlight class="normal"><sp/>+</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::string(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">error_string</ref>,<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">length_of_error_string</ref>)</highlight></codeline>
+<codeline lineno="44"><highlight class="normal">#<ref refid="structdynampi_1_1MPI__Type" kindref="compound">ifdef</ref><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">DYNAMPI_HAS_SOURCE_LOCATION</ref></highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>+<sp/></highlight><highlight class="stringliteral">&quot;<sp/>at<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">loc</ref>.file_name()<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;:&quot;</highlight><highlight class="normal"><sp/>+<sp/>std::to_string(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">loc</ref>.line())</highlight></codeline>
+<codeline lineno="46"><highlight class="normal">#<ref refid="structdynampi_1_1MPI__Type" kindref="compound">endif</ref></highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/>);</highlight></codeline>
+<codeline lineno="48"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="49"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>dynampi</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_error.hpp"/>
+  </compounddef>
+</doxygen>

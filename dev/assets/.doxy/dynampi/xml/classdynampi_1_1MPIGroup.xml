@@ -1,0 +1,295 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classdynampi_1_1MPIGroup" kind="class" language="C++" prot="public">
+    <compoundname>dynampi::MPIGroup</compoundname>
+    <includes refid="mpi__group_8hpp" local="no">mpi_group.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1MPIGroup_1a74031a5b8ba169a9e3048282f03b2543" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Group</ref></type>
+        <definition>MPI_Group dynampi::MPIGroup::m_group</definition>
+        <argsstring></argsstring>
+        <name>m_group</name>
+        <qualifiedname>dynampi::MPIGroup::m_group</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="21" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="21" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1a61eb7e0c1caa9d560203b3728ede1083" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Options</declname>
+            <defname>Options</defname>
+          </param>
+        </templateparamlist>
+        <type></type>
+        <definition>dynampi::MPIGroup::MPIGroup</definition>
+        <argsstring>(const MPICommunicator&lt; Options... &gt; &amp;comm)</argsstring>
+        <name>MPIGroup</name>
+        <qualifiedname>dynampi::MPIGroup::MPIGroup</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref>&lt; Options... &gt; &amp;</type>
+          <declname>comm</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="26" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="26" bodyend="28"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1adcee085ee5eaf556504543aebe923788" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::MPIGroup::MPIGroup</definition>
+        <argsstring>(const MPIGroup &amp;other)=delete</argsstring>
+        <name>MPIGroup</name>
+        <qualifiedname>dynampi::MPIGroup::MPIGroup</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="31" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1aa86e95863c1f2d5bc3b48828ed80c0bd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+        <definition>MPIGroup &amp; dynampi::MPIGroup::operator=</definition>
+        <argsstring>(const MPIGroup &amp;other)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>dynampi::MPIGroup::operator=</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="32" column="12"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1afedebed7a6657ff852e2626bc142a967" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::MPIGroup::MPIGroup</definition>
+        <argsstring>(MPIGroup &amp;&amp;other) noexcept</argsstring>
+        <name>MPIGroup</name>
+        <qualifiedname>dynampi::MPIGroup::MPIGroup</qualifiedname>
+        <param>
+          <type><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;&amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="35" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="35" bodyend="35"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1a3826dc1195d5346c97477566d5a4da59" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+        <definition>MPIGroup &amp; dynampi::MPIGroup::operator=</definition>
+        <argsstring>(MPIGroup &amp;&amp;other) noexcept</argsstring>
+        <name>operator=</name>
+        <qualifiedname>dynampi::MPIGroup::operator=</qualifiedname>
+        <param>
+          <type><ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;&amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="36" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="36" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1a2ffaacb419356ded7c3be5cc884e4c31" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::MPIGroup::~MPIGroup</definition>
+        <argsstring>()</argsstring>
+        <name>~MPIGroup</name>
+        <qualifiedname>dynampi::MPIGroup::~MPIGroup</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="47" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="47" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1adfb16096432d877c21b57362ed1adcb6" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::MPIGroup::translate_ranks</definition>
+        <argsstring>(const MPIGroup &amp;to_group, int n, const int ranks[], int translated_ranks[]) const</argsstring>
+        <name>translate_ranks</name>
+        <qualifiedname>dynampi::MPIGroup::translate_ranks</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+          <declname>to_group</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>n</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>ranks</declname>
+          <array>[]</array>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>translated_ranks</declname>
+          <array>[]</array>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="54" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="54" bodyend="58"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1aef96a69d92a9a507d107bac37ff8245b" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>int dynampi::MPIGroup::translate_rank</definition>
+        <argsstring>(int rank, const MPIGroup &amp;to_group) const</argsstring>
+        <name>translate_rank</name>
+        <qualifiedname>dynampi::MPIGroup::translate_rank</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>rank</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+          <declname>to_group</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="61" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="61" bodyend="65"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1a46a492d4081d0b8f69b3eedbbd337c1e" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>int dynampi::MPIGroup::size</definition>
+        <argsstring>() const</argsstring>
+        <name>size</name>
+        <qualifiedname>dynampi::MPIGroup::size</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="68" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="68" bodyend="72"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1ad17930ebf9ddd0f8801273619511fcd6" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>int dynampi::MPIGroup::rank</definition>
+        <argsstring>() const</argsstring>
+        <name>rank</name>
+        <qualifiedname>dynampi::MPIGroup::rank</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="75" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="75" bodyend="79"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1aba25c87ae045fc8af89e1f4f39aaffa8" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::MPIGroup::operator MPI_Group</definition>
+        <argsstring>() const</argsstring>
+        <name>operator MPI_Group</name>
+        <qualifiedname>dynampi::MPIGroup::operator MPI_Group</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="89" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="89" bodyend="89"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1a4f6d8742deffabdbfdb656d4ecf96f62" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Group</ref></type>
+        <definition>MPI_Group dynampi::MPIGroup::get</definition>
+        <argsstring>() const</argsstring>
+        <name>get</name>
+        <qualifiedname>dynampi::MPIGroup::get</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="91" column="14" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="91" bodyend="91"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classdynampi_1_1MPIGroup_1ac0ef720ca8ac06ab123258638dd0d4eb" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>static int dynampi::MPIGroup::contains_rank_in_group</definition>
+        <argsstring>(int rank_in_reference, const MPIGroup &amp;reference_group, const MPIGroup &amp;target_group)</argsstring>
+        <name>contains_rank_in_group</name>
+        <qualifiedname>dynampi::MPIGroup::contains_rank_in_group</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>rank_in_reference</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+          <declname>reference_group</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+          <declname>target_group</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="84" column="14" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="84" bodyend="87"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="19" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="19" bodyend="92"/>
+    <listofallmembers>
+      <member refid="classdynampi_1_1MPIGroup_1ac0ef720ca8ac06ab123258638dd0d4eb" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>contains_rank_in_group</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1a4f6d8742deffabdbfdb656d4ecf96f62" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>get</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1a74031a5b8ba169a9e3048282f03b2543" prot="private" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>m_group</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1a61eb7e0c1caa9d560203b3728ede1083" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>MPIGroup</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1adcee085ee5eaf556504543aebe923788" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>MPIGroup</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1afedebed7a6657ff852e2626bc142a967" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>MPIGroup</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1aba25c87ae045fc8af89e1f4f39aaffa8" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>operator MPI_Group</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1aa86e95863c1f2d5bc3b48828ed80c0bd" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>operator=</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1a3826dc1195d5346c97477566d5a4da59" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>operator=</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1ad17930ebf9ddd0f8801273619511fcd6" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>rank</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1a46a492d4081d0b8f69b3eedbbd337c1e" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>size</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1aef96a69d92a9a507d107bac37ff8245b" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>translate_rank</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1adfb16096432d877c21b57362ed1adcb6" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>translate_ranks</name></member>
+      <member refid="classdynampi_1_1MPIGroup_1a2ffaacb419356ded7c3be5cc884e4c31" prot="public" virt="non-virtual"><scope>dynampi::MPIGroup</scope><name>~MPIGroup</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

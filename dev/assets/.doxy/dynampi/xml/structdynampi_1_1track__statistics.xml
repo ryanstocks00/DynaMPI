@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1track__statistics" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::track_statistics</compoundname>
+    <basecompoundref refid="structdynampi_1_1track__statistics__t" prot="public" virt="non-virtual">dynampi::track_statistics_t</basecompoundref>
+    <includes refid="mpi__communicator_8hpp" local="no">mpi_communicator.hpp</includes>
+    <templateparamlist>
+      <param>
+        <type><ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
+        <declname>Mode</declname>
+        <defname>Mode</defname>
+        <defval><ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082ea4042fcadbe61a3300451157e2c9fe651" kindref="member">StatisticsMode::Detailed</ref></defval>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1track__statistics_1a97b405ebe28f951a671e89db3eeb310f" prot="public" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
+        <definition>constexpr StatisticsMode dynampi::track_statistics&lt; Mode &gt;::value</definition>
+        <argsstring></argsstring>
+        <name>value</name>
+        <qualifiedname>dynampi::track_statistics::value</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">Mode</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="33" column="35" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>dynampi::track_statistics&lt; Mode &gt;</label>
+        <link refid="structdynampi_1_1track__statistics"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>dynampi::track_statistics_t</label>
+        <link refid="structdynampi_1_1track__statistics__t"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>dynampi::track_statistics&lt; Mode &gt;</label>
+        <link refid="structdynampi_1_1track__statistics"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>dynampi::track_statistics_t</label>
+        <link refid="structdynampi_1_1track__statistics__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="32" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="32" bodyend="34"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1track__statistics_1a97b405ebe28f951a671e89db3eeb310f" prot="public" virt="non-virtual"><scope>dynampi::track_statistics</scope><name>value</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

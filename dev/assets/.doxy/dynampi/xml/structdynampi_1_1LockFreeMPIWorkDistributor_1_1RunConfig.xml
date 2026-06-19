@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::LockFreeMPIWorkDistributor::RunConfig</compoundname>
+    <includes refid="lockfree__distributor_8hpp" local="no">lockfree_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig_1aa6d92071a51854ec473724a09689077e" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::target_num_tasks</definition>
+        <argsstring></argsstring>
+        <name>target_num_tasks</name>
+        <qualifiedname>dynampi::LockFreeMPIWorkDistributor::RunConfig::target_num_tasks</qualifiedname>
+        <initializer>= std::numeric_limits&lt;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref>&gt;::max()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="294" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="294" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig_1ae1d1ddf32d04588388bafd7a7070e21e" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <definition>bool dynampi::LockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::allow_more_than_target_tasks</definition>
+        <argsstring></argsstring>
+        <name>allow_more_than_target_tasks</name>
+        <qualifiedname>dynampi::LockFreeMPIWorkDistributor::RunConfig::allow_more_than_target_tasks</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="295" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="295" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig_1a9ee51c014872a27b87f949c60d66cabf" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref> &gt;</type>
+        <definition>std::optional&lt;double&gt; dynampi::LockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::max_seconds</definition>
+        <argsstring></argsstring>
+        <name>max_seconds</name>
+        <qualifiedname>dynampi::LockFreeMPIWorkDistributor::RunConfig::max_seconds</qualifiedname>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="296" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="296" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="293" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="293" bodyend="297"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig_1ae1d1ddf32d04588388bafd7a7070e21e" prot="public" virt="non-virtual"><scope>dynampi::LockFreeMPIWorkDistributor::RunConfig</scope><name>allow_more_than_target_tasks</name></member>
+      <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig_1a9ee51c014872a27b87f949c60d66cabf" prot="public" virt="non-virtual"><scope>dynampi::LockFreeMPIWorkDistributor::RunConfig</scope><name>max_seconds</name></member>
+      <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig_1aa6d92071a51854ec473724a09689077e" prot="public" virt="non-virtual"><scope>dynampi::LockFreeMPIWorkDistributor::RunConfig</scope><name>target_num_tasks</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

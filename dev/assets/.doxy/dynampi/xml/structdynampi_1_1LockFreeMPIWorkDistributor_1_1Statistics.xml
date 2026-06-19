@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::LockFreeMPIWorkDistributor::Statistics</compoundname>
+    <includes refid="lockfree__distributor_8hpp" local="no">lockfree_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics_1a2b04f3870064b3fd2eff15848a67f4b9" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1CommStatistics" kindref="compound">CommStatistics</ref></type>
+        <definition>CommStatistics dynampi::LockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics::comm_statistics</definition>
+        <argsstring></argsstring>
+        <name>comm_statistics</name>
+        <qualifiedname>dynampi::LockFreeMPIWorkDistributor::Statistics::comm_statistics</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="320" column="20" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="320" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics_1aa762d2bdb452502b3c974d3c1275689b" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref> &gt;</type>
+        <definition>std::vector&lt;size_t&gt; dynampi::LockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics::worker_task_counts</definition>
+        <argsstring></argsstring>
+        <name>worker_task_counts</name>
+        <qualifiedname>dynampi::LockFreeMPIWorkDistributor::Statistics::worker_task_counts</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="321" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="321" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="2">
+        <label>dynampi::CommStatistics</label>
+        <link refid="structdynampi_1_1CommStatistics"/>
+      </node>
+      <node id="1">
+        <label>dynampi::LockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics</label>
+        <link refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>comm_statistics</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="319" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="319" bodyend="322"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics_1a2b04f3870064b3fd2eff15848a67f4b9" prot="public" virt="non-virtual"><scope>dynampi::LockFreeMPIWorkDistributor::Statistics</scope><name>comm_statistics</name></member>
+      <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics_1aa762d2bdb452502b3c974d3c1275689b" prot="public" virt="non-virtual"><scope>dynampi::LockFreeMPIWorkDistributor::Statistics</scope><name>worker_task_counts</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

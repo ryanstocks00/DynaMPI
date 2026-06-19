@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::MinimalLockFreeMPIWorkDistributor::Config</compoundname>
+    <includes refid="lockfree__distributor_8hpp" local="no">lockfree_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config_1a00f3a965ae9d59d91f162505bd2c52a5" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Comm</ref></type>
+        <definition>MPI_Comm dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::Config::comm</definition>
+        <argsstring></argsstring>
+        <name>comm</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::Config::comm</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_COMM_WORLD</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="112" column="14" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="112" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config_1aea4ac18d6671aa9a774a4d0be70909f4" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>int dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::Config::manager_rank</definition>
+        <argsstring></argsstring>
+        <name>manager_rank</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::Config::manager_rank</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="113" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="113" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="111" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="111" bodyend="114"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config_1a00f3a965ae9d59d91f162505bd2c52a5" prot="public" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor::Config</scope><name>comm</name></member>
+      <member refid="structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config_1aea4ac18d6671aa9a774a4d0be70909f4" prot="public" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor::Config</scope><name>manager_rank</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

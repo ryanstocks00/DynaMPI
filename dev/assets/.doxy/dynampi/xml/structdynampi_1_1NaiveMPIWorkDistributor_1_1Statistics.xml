@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::NaiveMPIWorkDistributor::Statistics</compoundname>
+    <includes refid="naive__distributor_8hpp" local="no">naive_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics_1a67c2180de30ea30920a755ec986ac288" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1CommStatistics" kindref="compound">CommStatistics</ref> &amp;</type>
+        <definition>const CommStatistics&amp; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics::comm_statistics</definition>
+        <argsstring></argsstring>
+        <name>comm_statistics</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::Statistics::comm_statistics</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="92" column="26" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="92" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics_1adf952f820977528dd6be4954a4a99bf3" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref> &gt;</type>
+        <definition>std::vector&lt;size_t&gt; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics::worker_task_counts</definition>
+        <argsstring></argsstring>
+        <name>worker_task_counts</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::Statistics::worker_task_counts</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="93" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="93" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="2">
+        <label>dynampi::CommStatistics</label>
+        <link refid="structdynampi_1_1CommStatistics"/>
+      </node>
+      <node id="1">
+        <label>dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics</label>
+        <link refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>comm_statistics</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="91" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="91" bodyend="94"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics_1a67c2180de30ea30920a755ec986ac288" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor::Statistics</scope><name>comm_statistics</name></member>
+      <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics_1adf952f820977528dd6be4954a4a99bf3" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor::Statistics</scope><name>worker_task_counts</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

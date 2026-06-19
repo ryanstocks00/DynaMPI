@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="timer_8hpp" kind="file" language="C++">
+    <compoundname>timer.hpp</compoundname>
+    <includes local="no">cassert</includes>
+    <includes local="no">chrono</includes>
+    <includes local="no">optional</includes>
+    <includes local="no">ostream</includes>
+    <includedby refid="hierarchical__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</includedby>
+    <includedby refid="naive__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp</includedby>
+    <incdepgraph>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp</label>
+        <link refid="timer_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>cassert</label>
+      </node>
+      <node id="3">
+        <label>chrono</label>
+      </node>
+      <node id="4">
+        <label>optional</label>
+      </node>
+      <node id="5">
+        <label>ostream</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="3">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp</label>
+        <link refid="dynampi_8hpp"/>
+      </node>
+      <node id="2">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</label>
+        <link refid="hierarchical__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp</label>
+        <link refid="naive__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp</label>
+        <link refid="timer_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="classdynampi_1_1Timer" prot="public">dynampi::Timer</innerclass>
+    <innernamespace refid="namespacedynampi">dynampi</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>SPDX-FileCopyrightText:<sp/>2025<sp/>QDX<sp/>Technologies.<sp/>Authored<sp/>by<sp/>Ryan<sp/>Stocks<sp/>&lt;ryan.stocks00@gmail.com&gt;</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>Apache-2.0</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;chrono&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;optional&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;ostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespacedynampi" kindref="compound">dynampi</ref><sp/>{</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight></codeline>
+<codeline lineno="15" refid="classdynampi_1_1Timer" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classdynampi_1_1Timer" kindref="compound">Timer</ref><sp/>{</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/>std::optional&lt;std::chrono::time_point&lt;std::chrono::high_resolution_clock&gt;&gt;<sp/>_start_time;</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/>std::chrono::nanoseconds<sp/>_elapsed_time{0};</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="20" refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044" kindref="member">AutoStart</ref><sp/>{<sp/><ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044a93cba07454f06a4a960172bbd6e2a435" kindref="member">Yes</ref>,<sp/><ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044abafd7322c6e97d25b6299b5d6fe8920b" kindref="member">No</ref><sp/>};</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22" refid="classdynampi_1_1Timer_1a48b49e58305af754d7bbb97be76ce2a0" refkind="member"><highlight class="normal"><sp/><sp/><ref refid="classdynampi_1_1Timer_1a48b49e58305af754d7bbb97be76ce2a0" kindref="member">Timer</ref>(<ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044" kindref="member">AutoStart</ref><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">auto_start</ref><sp/>=<sp/><ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044a93cba07454f06a4a960172bbd6e2a435" kindref="member">AutoStart::Yes</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">auto_start</ref><sp/>==<sp/><ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044a93cba07454f06a4a960172bbd6e2a435" kindref="member">AutoStart::Yes</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classdynampi_1_1Timer_1a094bb6d98993adfa0d631835c97b4c73" kindref="member">start</ref>();</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight></codeline>
+<codeline lineno="28" refid="classdynampi_1_1Timer_1a094bb6d98993adfa0d631835c97b4c73" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1Timer_1a094bb6d98993adfa0d631835c97b4c73" kindref="member">start</ref>()<sp/>{</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">assert</ref>(!_start_time.has_value()<sp/>&amp;&amp;<sp/></highlight><highlight class="stringliteral">&quot;Timer<sp/>already<sp/>started&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/>_start_time<sp/>=<sp/>std::chrono::high_resolution_clock::now();</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight></codeline>
+<codeline lineno="33" refid="classdynampi_1_1Timer_1a3b04edcd8eaa183021ad714541357260" refkind="member"><highlight class="normal"><sp/><sp/>std::chrono::duration&lt;double&gt;<sp/><ref refid="classdynampi_1_1Timer_1a3b04edcd8eaa183021ad714541357260" kindref="member">stop</ref>()<sp/>{</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">assert</ref>(_start_time.has_value()<sp/>&amp;&amp;<sp/></highlight><highlight class="stringliteral">&quot;Timer<sp/>not<sp/>started&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">end_time</ref><sp/>=<sp/>std::chrono::high_resolution_clock::now();</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/>_elapsed_time<sp/>+=</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::chrono::duration_cast&lt;std::chrono::nanoseconds&gt;(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">end_time</ref><sp/>-<sp/>_start_time.value());</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/>_start_time.reset();</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>std::chrono::duration&lt;double&gt;(_elapsed_time);</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"></highlight></codeline>
+<codeline lineno="42" refid="classdynampi_1_1Timer_1af63ac97c131c79c1466c7fa5836476f6" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1Timer_1af63ac97c131c79c1466c7fa5836476f6" kindref="member">reset</ref>(<ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044" kindref="member">AutoStart</ref><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">auto_start</ref><sp/>=<sp/><ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044a93cba07454f06a4a960172bbd6e2a435" kindref="member">AutoStart::Yes</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/>_start_time.reset();</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/>_elapsed_time<sp/>=<sp/>std::chrono::nanoseconds{0};</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">auto_start</ref><sp/>==<sp/><ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044a93cba07454f06a4a960172bbd6e2a435" kindref="member">AutoStart::Yes</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classdynampi_1_1Timer_1a094bb6d98993adfa0d631835c97b4c73" kindref="member">start</ref>();</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight></codeline>
+<codeline lineno="50" refid="classdynampi_1_1Timer_1ae0c61ce303d7657ef46b47a330f2bb33" refkind="member"><highlight class="normal"><sp/><sp/>[[<ref refid="structdynampi_1_1MPI__Type" kindref="compound">nodiscard</ref>]]<sp/>std::chrono::duration&lt;double&gt;<sp/><ref refid="classdynampi_1_1Timer_1ae0c61ce303d7657ef46b47a330f2bb33" kindref="member">elapsed</ref>()</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(_start_time.has_value())<sp/>{</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">current_elapsed</ref><sp/>=</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>_elapsed_time<sp/>+<sp/>std::chrono::duration_cast&lt;std::chrono::nanoseconds&gt;(</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::chrono::high_resolution_clock::now()<sp/>-<sp/>_start_time.value());</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>std::chrono::duration&lt;double&gt;(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">current_elapsed</ref>);</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>std::chrono::duration&lt;double&gt;(_elapsed_time);</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"></highlight></codeline>
+<codeline lineno="60" refid="classdynampi_1_1Timer_1a8e125e38ee1ec31b73d2e322c1ec93f2" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">friend</highlight><highlight class="normal"><sp/>std::ostream&amp;<sp/><ref refid="classdynampi_1_1Timer_1a8e125e38ee1ec31b73d2e322c1ec93f2" kindref="member">operator&lt;&lt;</ref>(std::ostream&amp;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">os</ref>,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1Timer" kindref="compound">Timer</ref>&amp;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">timer</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">os</ref><sp/>&lt;&lt;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">timer</ref>.elapsed().count()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>seconds&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="63"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"></highlight></codeline>
+<codeline lineno="65"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>dynampi</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp"/>
+  </compounddef>
+</doxygen>

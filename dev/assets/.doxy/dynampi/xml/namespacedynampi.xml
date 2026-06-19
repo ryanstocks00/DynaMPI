@@ -1,0 +1,797 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="namespacedynampi" kind="namespace" language="C++">
+    <compoundname>dynampi</compoundname>
+    <innerclass refid="classdynampi_1_1BaseMPIWorkDistributor" prot="public">dynampi::BaseMPIWorkDistributor</innerclass>
+    <innerclass refid="structdynampi_1_1CommStatistics" prot="public">dynampi::CommStatistics</innerclass>
+    <innerclass refid="structdynampi_1_1enable__prioritization" prot="public">dynampi::enable_prioritization</innerclass>
+    <innerclass refid="structdynampi_1_1has__dynampi__mpi__type" prot="public">dynampi::has_dynampi_mpi_type</innerclass>
+    <innerclass refid="structdynampi_1_1has__dynampi__mpi__type_3_01U_00_01std_1_1void__t_3_01decltype_07MPI__Type_3_01U_01_4_1_1value_08_4_01_4" prot="public">dynampi::has_dynampi_mpi_type&lt; U, std::void_t&lt; decltype(MPI_Type&lt; U &gt;::value)&gt; &gt;</innerclass>
+    <innerclass refid="classdynampi_1_1HierarchicalMPIWorkDistributor" prot="public">dynampi::HierarchicalMPIWorkDistributor</innerclass>
+    <innerclass refid="classdynampi_1_1LockFreeMPIWorkDistributor" prot="public">dynampi::LockFreeMPIWorkDistributor</innerclass>
+    <innerclass refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor" prot="public">dynampi::MinimalLockFreeMPIWorkDistributor</innerclass>
+    <innerclass refid="structdynampi_1_1MPI__Type" prot="public">dynampi::MPI_Type</innerclass>
+    <innerclass refid="structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4" prot="public">dynampi::MPI_Type&lt; std::nullptr_t &gt;</innerclass>
+    <innerclass refid="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4" prot="public">dynampi::MPI_Type&lt; std::string &gt;</innerclass>
+    <innerclass refid="structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051" prot="public">dynampi::MPI_Type&lt; std::vector&lt; T &gt;, std::enable_if_t&lt; has_dynampi_mpi_type&lt; T &gt;::value &gt; &gt;</innerclass>
+    <innerclass refid="classdynampi_1_1MPICommunicator" prot="public">dynampi::MPICommunicator</innerclass>
+    <innerclass refid="classdynampi_1_1MPIGroup" prot="public">dynampi::MPIGroup</innerclass>
+    <innerclass refid="classdynampi_1_1NaiveMPIWorkDistributor" prot="public">dynampi::NaiveMPIWorkDistributor</innerclass>
+    <innerclass refid="structdynampi_1_1prioritize__tasks__t" prot="public">dynampi::prioritize_tasks_t</innerclass>
+    <innerclass refid="classdynampi_1_1Timer" prot="public">dynampi::Timer</innerclass>
+    <innerclass refid="structdynampi_1_1track__statistics" prot="public">dynampi::track_statistics</innerclass>
+    <innerclass refid="structdynampi_1_1track__statistics__t" prot="public">dynampi::track_statistics_t</innerclass>
+    <innernamespace refid="namespacedynampi_1_1detail">dynampi::detail</innernamespace>
+    <innernamespace refid="namespacedynampi_1_1version">dynampi::version</innernamespace>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>StatisticsMode</name>
+        <qualifiedname>dynampi::StatisticsMode</qualifiedname>
+        <enumvalue id="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082ea6adf97f83acf6453d4a6a4b1070f3754" prot="public">
+          <name>None</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082eadacc57ae9b3078e0adfee2542d7fa034" prot="public">
+          <name>Aggregated</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082ea4042fcadbe61a3300451157e2c9fe651" prot="public">
+          <name>Detailed</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="21" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="21" bodyend="25"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="namespacedynampi_1a4009798493b2b97fbd0f54779a586e96" prot="public" static="no">
+        <templateparamlist>
+          <param>
+            <type>typename TaskT</type>
+          </param>
+          <param>
+            <type>typename ResultT</type>
+          </param>
+          <param>
+            <type>typename...</type>
+            <declname>Options</declname>
+            <defname>Options</defname>
+          </param>
+        </templateparamlist>
+        <type><ref refid="classdynampi_1_1HierarchicalMPIWorkDistributor" kindref="compound">HierarchicalMPIWorkDistributor</ref>&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref>, <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref>, Options... &gt;</type>
+        <definition>using dynampi::MPIDynamicWorkDistributor = typedef HierarchicalMPIWorkDistributor&lt;TaskT, ResultT, Options...&gt;</definition>
+        <argsstring></argsstring>
+        <name>MPIDynamicWorkDistributor</name>
+        <qualifiedname>dynampi::MPIDynamicWorkDistributor</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" line="64" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" bodystart="64" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespacedynampi_1a0b9a969b4b265bd87f7d6e62dd546a1c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename ResultT</type>
+          </param>
+          <param>
+            <type>template&lt; typename, typename, typename... &gt; typename</type>
+            <declname>T</declname>
+            <defname>T</defname>
+            <defval>HierarchicalMPIWorkDistributor</defval>
+          </param>
+        </templateparamlist>
+        <type>std::optional&lt; std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref> &gt; &gt;</type>
+        <definition>std::optional&lt; std::vector&lt; ResultT &gt; &gt; dynampi::mpi_manager_worker_distribution</definition>
+        <argsstring>(size_t n_tasks, std::function&lt; ResultT(size_t)&gt; worker_function, MPI_Comm comm=MPI_COMM_WORLD, int manager_rank=0)</argsstring>
+        <name>mpi_manager_worker_distribution</name>
+        <qualifiedname>dynampi::mpi_manager_worker_distribution</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>n_tasks</declname>
+        </param>
+        <param>
+          <type>std::function&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref>)&gt;</type>
+          <declname>worker_function</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Comm</ref></type>
+          <declname>comm</declname>
+          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_COMM_WORLD</ref></defval>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>manager_rank</declname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" line="50" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" bodystart="50" bodyend="61"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1af862140654b4d18da319d1098b371dfa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::mpi_fail</definition>
+        <argsstring>(int err, std::string_view command)</argsstring>
+        <name>mpi_fail</name>
+        <qualifiedname>dynampi::mpi_fail</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>err</declname>
+        </param>
+        <param>
+          <type>std::string_view</type>
+          <declname>command</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_error.hpp" line="33" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_error.hpp" bodystart="33" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a85d49e63aa1f991adeff667144f085c2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(char, MPI_CHAR)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">char</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_CHAR</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="40" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="40" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1af4d8f512b90f9d3df20ad3221bc17b49" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(std::byte, MPI_BYTE)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type>std::byte</type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_BYTE</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="41" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="41" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a6871b5aed87a4d5816e99d3fd25cff0e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(signed char, MPI_SIGNED_CHAR)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">signed</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">char</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_SIGNED_CHAR</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="42" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="42" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1ad47f61718062c88b8953b37ad98ff25a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(unsigned char, MPI_UNSIGNED_CHAR)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">unsigned</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">char</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_UNSIGNED_CHAR</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="43" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="43" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a7d6e5ed5c1e4e7c9a94a3637722a4eca" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(short, MPI_SHORT)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">short</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_SHORT</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="44" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="44" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1aa31f957ac9b6f909d0acb48025482ab1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(unsigned short, MPI_UNSIGNED_SHORT)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">unsigned</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">short</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_UNSIGNED_SHORT</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="45" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="45" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1af670bad5bf83130c2795a75dace0dba3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(int, MPI_INT)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_INT</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="46" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="46" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a5000f0d6b13a8371a3cb4f17bc774630" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(unsigned int, MPI_UNSIGNED)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">unsigned</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_UNSIGNED</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="47" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="47" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a645ee8942ed9583facd11a20b2f2fb4f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(long, MPI_LONG)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">long</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_LONG</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="48" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="48" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1abeccc465f54603d4c1f70c13a485f6a7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(unsigned long, MPI_UNSIGNED_LONG)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">unsigned</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">long</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_UNSIGNED_LONG</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="49" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="49" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a0eccd76e93ada3852d0c6004bd02fb05" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(long long, MPI_LONG_LONG_INT)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">long</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">long</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_LONG_LONG_INT</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="50" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="50" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1affbad9fdc490b2473cad2aae91ce3111" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(unsigned long long, MPI_UNSIGNED_LONG_LONG)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">unsigned</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">long</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">long</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_UNSIGNED_LONG_LONG</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="51" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="51" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1ae08f11e2fda097cbed0fa9d23b70e292" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(float, MPI_FLOAT)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">float</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_FLOAT</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="52" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="52" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a95374a17ad3bfdec7224de6fa9699c26" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(double, MPI_DOUBLE)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_DOUBLE</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="53" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="53" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1ad2dbce84f2aa09b523a169726dfbbf30" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(long double, MPI_LONG_DOUBLE)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">long</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_LONG_DOUBLE</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="54" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="54" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a030e5a1adc982e6e097827ff8d10d4b8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</definition>
+        <argsstring>(bool, MPI_C_BOOL)</argsstring>
+        <name>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</name>
+        <qualifiedname>dynampi::DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_C_BOOL</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="59" column="1" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" declline="59" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1aa95ac84922fb5db11726bbbb7061603f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>std::optional&lt; std::string &gt;</type>
+        <definition>std::optional&lt; std::string &gt; dynampi::OptionalString</definition>
+        <argsstring>(Args &amp;&amp;...args)</argsstring>
+        <name>OptionalString</name>
+        <qualifiedname>dynampi::OptionalString</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">Args</ref> &amp;&amp;...</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/assert.hpp" line="47" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/assert.hpp" bodystart="47" bodyend="55"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a73c9e8db89503bafedb278ff40b20351" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::_DYNAMPI_FAIL_ASSERT</definition>
+        <argsstring>(const std::string &amp;condition_str, const std::optional&lt; std::string &gt; &amp;message)</argsstring>
+        <name>_DYNAMPI_FAIL_ASSERT</name>
+        <qualifiedname>dynampi::_DYNAMPI_FAIL_ASSERT</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::string &amp;</type>
+          <declname>condition_str</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::optional&lt; std::string &gt; &amp;</type>
+          <declname>message</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/assert.hpp" line="63" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/assert.hpp" bodystart="63" bodyend="88"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a54e508df8e16c3c7ccf69152c35f09b5" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename A</type>
+          </param>
+          <param>
+            <type>typename B</type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::_DYNAMPI_FAILBinOp</definition>
+        <argsstring>(const A &amp;a, const B &amp;b, const std::string &amp;a_str, const std::string &amp;b_str, const std::string &amp;nop, const std::optional&lt; std::string &gt; &amp;message)</argsstring>
+        <name>_DYNAMPI_FAILBinOp</name>
+        <qualifiedname>dynampi::_DYNAMPI_FAILBinOp</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">A</ref> &amp;</type>
+          <declname>a</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">B</ref> &amp;</type>
+          <declname>b</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::string &amp;</type>
+          <declname>a_str</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::string &amp;</type>
+          <declname>b_str</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::string &amp;</type>
+          <declname>nop</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::optional&lt; std::string &gt; &amp;</type>
+          <declname>message</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/assert.hpp" line="100" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/assert.hpp" bodystart="100" bodyend="117"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a7783a1ffa2b2647950dca550b90e90f8" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::ostream &amp;</type>
+        <definition>std::ostream &amp; dynampi::operator&lt;&lt;</definition>
+        <argsstring>(std::ostream &amp;os, const std::set&lt; T &gt; &amp;set)</argsstring>
+        <name>operator&lt;&lt;</name>
+        <qualifiedname>dynampi::operator&lt;&lt;</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::set&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &gt; &amp;</type>
+          <declname>set</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" line="73" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" bodystart="73" bodyend="84" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" declline="22" declcolumn="8"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1ab28b7d547bf4d04c8acf6ac9c18f11f6" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::ostream &amp;</type>
+        <definition>std::ostream &amp; dynampi::operator&lt;&lt;</definition>
+        <argsstring>(std::ostream &amp;os, const std::vector&lt; T &gt; &amp;vec)</argsstring>
+        <name>operator&lt;&lt;</name>
+        <qualifiedname>dynampi::operator&lt;&lt;</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &gt; &amp;</type>
+          <declname>vec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" line="56" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" bodystart="56" bodyend="58" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" declline="24" declcolumn="8"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1ac972b9f02b077f08b09ac95b912e1801" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>std::size_t</type>
+            <declname>N</declname>
+            <defname>N</defname>
+          </param>
+        </templateparamlist>
+        <type>std::ostream &amp;</type>
+        <definition>std::ostream &amp; dynampi::operator&lt;&lt;</definition>
+        <argsstring>(std::ostream &amp;os, const std::array&lt; T, N &gt; &amp;arr)</argsstring>
+        <name>operator&lt;&lt;</name>
+        <qualifiedname>dynampi::operator&lt;&lt;</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::array&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref>, <ref refid="structdynampi_1_1MPI__Type" kindref="compound">N</ref> &gt; &amp;</type>
+          <declname>arr</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" line="61" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" bodystart="61" bodyend="70" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" declline="26" declcolumn="8"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1ab230e30aee0fc333e9d0eb0f23eee253" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::ostream &amp;</type>
+        <definition>std::ostream &amp; dynampi::operator&lt;&lt;</definition>
+        <argsstring>(std::ostream &amp;os, const std::span&lt; T &gt; &amp;vec)</argsstring>
+        <name>operator&lt;&lt;</name>
+        <qualifiedname>dynampi::operator&lt;&lt;</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::span&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &gt; &amp;</type>
+          <declname>vec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" line="44" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" bodystart="44" bodyend="53" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" declline="28" declcolumn="8"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a5b3ac9612d27c53f43e69a1ba6fbf2af" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::ostream &amp;</type>
+        <definition>std::ostream &amp; dynampi::operator&lt;&lt;</definition>
+        <argsstring>(std::ostream &amp;os, const std::optional&lt; T &gt; &amp;op)</argsstring>
+        <name>operator&lt;&lt;</name>
+        <qualifiedname>dynampi::operator&lt;&lt;</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::optional&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &gt; &amp;</type>
+          <declname>op</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" line="92" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" bodystart="92" bodyend="97" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" declline="30" declcolumn="8"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a871e352238d27a9b0d3ee9ebea293882" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>std::ostream &amp;</type>
+        <definition>std::ostream &amp; dynampi::operator&lt;&lt;</definition>
+        <argsstring>(std::ostream &amp;os, const std::tuple&lt; Args... &gt; &amp;tup)</argsstring>
+        <name>operator&lt;&lt;</name>
+        <qualifiedname>dynampi::operator&lt;&lt;</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::tuple&lt; Args... &gt; &amp;</type>
+          <declname>tup</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" line="100" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" bodystart="100" bodyend="109" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" declline="32" declcolumn="8"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a336bb2348ac456c12aa487fb056a0e6c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename U</type>
+          </param>
+        </templateparamlist>
+        <type>std::ostream &amp;</type>
+        <definition>std::ostream &amp; dynampi::operator&lt;&lt;</definition>
+        <argsstring>(std::ostream &amp;os, const std::pair&lt; T, U &gt; &amp;pair)</argsstring>
+        <name>operator&lt;&lt;</name>
+        <qualifiedname>dynampi::operator&lt;&lt;</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::pair&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref>, <ref refid="structdynampi_1_1MPI__Type" kindref="compound">U</ref> &gt; &amp;</type>
+          <declname>pair</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" line="87" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" bodystart="87" bodyend="89" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" declline="34" declcolumn="8"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1a663ea506875fbb1dd56688aa2ac97972" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::ostream &amp;</type>
+        <definition>std::ostream &amp; dynampi::operator&lt;&lt;</definition>
+        <argsstring>(std::ostream &amp;os, const std::byte &amp;b)</argsstring>
+        <name>operator&lt;&lt;</name>
+        <qualifiedname>dynampi::operator&lt;&lt;</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::byte &amp;</type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" line="39" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" bodystart="39" bodyend="41" declfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/printing.hpp" declline="35" declcolumn="8"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" line="21" column="1"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,249 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor" kind="class" language="C++" prot="public">
+    <compoundname>dynampi::MinimalLockFreeMPIWorkDistributor</compoundname>
+    <includes refid="lockfree__distributor_8hpp" local="no">lockfree_distributor.hpp</includes>
+    <innerclass refid="structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config" prot="public">dynampi::MinimalLockFreeMPIWorkDistributor::Config</innerclass>
+    <templateparamlist>
+      <param>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref></type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1ae4c38e68f4fb5dd9062baf5893510459" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config" kindref="compound">Config</ref></type>
+        <definition>Config dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::m_config</definition>
+        <argsstring></argsstring>
+        <name>m_config</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::m_config</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="173" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="173" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a40d5169d538791273f8564d32c51aace" prot="private" static="no" mutable="no">
+        <type><ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref></type>
+        <definition>MPICommunicator dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::m_comm</definition>
+        <argsstring></argsstring>
+        <name>m_comm</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::m_comm</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="174" column="4" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="174" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a61a0bcba56b2977982e5b5a568e95b2a" prot="private" static="no" mutable="no">
+        <type>std::function&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref>)&gt;</type>
+        <definition>std::function&lt;ResultT(size_t)&gt; dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::m_worker_function</definition>
+        <argsstring></argsstring>
+        <name>m_worker_function</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::m_worker_function</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="175" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="175" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a05f703e846e20bedf0989e9b00dd03fa" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Win</ref></type>
+        <definition>MPI_Win dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::m_window</definition>
+        <argsstring></argsstring>
+        <name>m_window</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::m_window</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_WIN_NULL</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="176" column="11" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="176" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a2a7b710e20bc935c2c93bb707fa14b5e" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int64_t</ref></type>
+        <definition>int64_t dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::m_counter</definition>
+        <argsstring></argsstring>
+        <name>m_counter</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::m_counter</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="177" column="11" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="177" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a911c90726fe52009f6920157c4776a0c" prot="private" static="no" mutable="no">
+        <type>std::byte</type>
+        <definition>std::byte dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::m_worker_window[sizeof(int64_t)]</definition>
+        <argsstring>[sizeof(int64_t)]</argsstring>
+        <name>m_worker_window</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::m_worker_window</qualifiedname>
+        <initializer>{}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="178" column="21" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="178" bodyend="178"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a1a1ac55c002f82688c98fac2760b3157" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::MinimalLockFreeMPIWorkDistributor</definition>
+        <argsstring>(std::function&lt; ResultT(size_t)&gt; worker_function, Config config={})</argsstring>
+        <name>MinimalLockFreeMPIWorkDistributor</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::MinimalLockFreeMPIWorkDistributor</qualifiedname>
+        <param>
+          <type>std::function&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref>)&gt;</type>
+          <declname>worker_function</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config" kindref="compound">Config</ref></type>
+          <declname>config</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="116" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="116" bodyend="130"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a36a1a20ca791f8968a980fd43105fc9b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::~MinimalLockFreeMPIWorkDistributor</definition>
+        <argsstring>()</argsstring>
+        <name>~MinimalLockFreeMPIWorkDistributor</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::~MinimalLockFreeMPIWorkDistributor</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="132" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="132" bodyend="138"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a62ec9e80dffa4b1a26f24f2e2d7edb06" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <definition>bool dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::is_root_manager</definition>
+        <argsstring>() const</argsstring>
+        <name>is_root_manager</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::is_root_manager</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="140" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="140" bodyend="140"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a6780c174bff3eeafd937efd7df9a84fe" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref> &gt;</type>
+        <definition>std::vector&lt; ResultT &gt; dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::run</definition>
+        <argsstring>(size_t n_tasks)</argsstring>
+        <name>run</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::run</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+          <declname>n_tasks</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="144" column="16" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="144" bodyend="170"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1aae945874e59169dfdd9bef99718fa664" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::set_counter</definition>
+        <argsstring>(int64_t value)</argsstring>
+        <name>set_counter</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::set_counter</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int64_t</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="180" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="180" bodyend="185"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a4500794264b2f17c7545dac60d8e8388" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int64_t</ref></type>
+        <definition>int64_t dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::fetch_add</definition>
+        <argsstring>(int64_t increment)</argsstring>
+        <name>fetch_add</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::fetch_add</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int64_t</ref></type>
+          <declname>increment</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="187" column="11" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="187" bodyend="193"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a61234e57c79b4790b3ca964778e49388" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref> &gt;</type>
+        <definition>std::vector&lt; ResultT &gt; dynampi::MinimalLockFreeMPIWorkDistributor&lt; ResultT &gt;::gather_sorted</definition>
+        <argsstring>(std::vector&lt; std::pair&lt; int64_t, ResultT &gt; &gt; &amp;local)</argsstring>
+        <name>gather_sorted</name>
+        <qualifiedname>dynampi::MinimalLockFreeMPIWorkDistributor::gather_sorted</qualifiedname>
+        <param>
+          <type>std::vector&lt; std::pair&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">int64_t</ref>, <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref> &gt; &gt; &amp;</type>
+          <declname>local</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="195" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="195" bodyend="265"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="109" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="109" bodyend="266"/>
+    <listofallmembers>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a4500794264b2f17c7545dac60d8e8388" prot="private" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>fetch_add</name></member>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a61234e57c79b4790b3ca964778e49388" prot="private" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>gather_sorted</name></member>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a62ec9e80dffa4b1a26f24f2e2d7edb06" prot="public" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>is_root_manager</name></member>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a40d5169d538791273f8564d32c51aace" prot="private" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>m_comm</name></member>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1ae4c38e68f4fb5dd9062baf5893510459" prot="private" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>m_config</name></member>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a2a7b710e20bc935c2c93bb707fa14b5e" prot="private" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>m_counter</name></member>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a05f703e846e20bedf0989e9b00dd03fa" prot="private" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>m_window</name></member>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a61a0bcba56b2977982e5b5a568e95b2a" prot="private" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>m_worker_function</name></member>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a911c90726fe52009f6920157c4776a0c" prot="private" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>m_worker_window</name></member>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a1a1ac55c002f82688c98fac2760b3157" prot="public" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>MinimalLockFreeMPIWorkDistributor</name></member>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a6780c174bff3eeafd937efd7df9a84fe" prot="public" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>run</name></member>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1aae945874e59169dfdd9bef99718fa664" prot="private" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>set_counter</name></member>
+      <member refid="classdynampi_1_1MinimalLockFreeMPIWorkDistributor_1a36a1a20ca791f8968a980fd43105fc9b" prot="public" virt="non-virtual"><scope>dynampi::MinimalLockFreeMPIWorkDistributor</scope><name>~MinimalLockFreeMPIWorkDistributor</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

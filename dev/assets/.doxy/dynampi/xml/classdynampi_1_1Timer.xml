@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classdynampi_1_1Timer" kind="class" language="C++" prot="public">
+    <compoundname>dynampi::Timer</compoundname>
+    <includes refid="timer_8hpp" local="no">timer.hpp</includes>
+    <sectiondef kind="public-type">
+      <memberdef kind="enum" id="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>AutoStart</name>
+        <qualifiedname>dynampi::Timer::AutoStart</qualifiedname>
+        <enumvalue id="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044a93cba07454f06a4a960172bbd6e2a435" prot="public">
+          <name>Yes</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044abafd7322c6e97d25b6299b5d6fe8920b" prot="public">
+          <name>No</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="20" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="20" bodyend="20"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1Timer_1adaa9cb97d941d6858f74947e9e8813f1" prot="private" static="no" mutable="no">
+        <type>std::optional&lt; std::chrono::time_point&lt; std::chrono::high_resolution_clock &gt; &gt;</type>
+        <definition>std::optional&lt;std::chrono::time_point&lt;std::chrono::high_resolution_clock&gt; &gt; dynampi::Timer::_start_time</definition>
+        <argsstring></argsstring>
+        <name>_start_time</name>
+        <qualifiedname>dynampi::Timer::_start_time</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="16" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="16" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1Timer_1af96f427e312f729ae8599b269c71f8d4" prot="private" static="no" mutable="no">
+        <type>std::chrono::nanoseconds</type>
+        <definition>std::chrono::nanoseconds dynampi::Timer::_elapsed_time</definition>
+        <argsstring></argsstring>
+        <name>_elapsed_time</name>
+        <qualifiedname>dynampi::Timer::_elapsed_time</qualifiedname>
+        <initializer>{0}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="17" column="28" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="17" bodyend="17"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdynampi_1_1Timer_1a48b49e58305af754d7bbb97be76ce2a0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::Timer::Timer</definition>
+        <argsstring>(AutoStart auto_start=AutoStart::Yes)</argsstring>
+        <name>Timer</name>
+        <qualifiedname>dynampi::Timer::Timer</qualifiedname>
+        <param>
+          <type><ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044" kindref="member">AutoStart</ref></type>
+          <declname>auto_start</declname>
+          <defval><ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044a93cba07454f06a4a960172bbd6e2a435" kindref="member">AutoStart::Yes</ref></defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="22" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="22" bodyend="26"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1Timer_1a094bb6d98993adfa0d631835c97b4c73" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::Timer::start</definition>
+        <argsstring>()</argsstring>
+        <name>start</name>
+        <qualifiedname>dynampi::Timer::start</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="28" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="28" bodyend="31"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1Timer_1a3b04edcd8eaa183021ad714541357260" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::chrono::duration&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref> &gt;</type>
+        <definition>std::chrono::duration&lt; double &gt; dynampi::Timer::stop</definition>
+        <argsstring>()</argsstring>
+        <name>stop</name>
+        <qualifiedname>dynampi::Timer::stop</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="33" column="25" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="33" bodyend="40"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1Timer_1af63ac97c131c79c1466c7fa5836476f6" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <definition>void dynampi::Timer::reset</definition>
+        <argsstring>(AutoStart auto_start=AutoStart::Yes)</argsstring>
+        <name>reset</name>
+        <qualifiedname>dynampi::Timer::reset</qualifiedname>
+        <param>
+          <type><ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044" kindref="member">AutoStart</ref></type>
+          <declname>auto_start</declname>
+          <defval><ref refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044a93cba07454f06a4a960172bbd6e2a435" kindref="member">AutoStart::Yes</ref></defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="42" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="42" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1Timer_1ae0c61ce303d7657ef46b47a330f2bb33" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::chrono::duration&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref> &gt;</type>
+        <definition>std::chrono::duration&lt; double &gt; dynampi::Timer::elapsed</definition>
+        <argsstring>() const</argsstring>
+        <name>elapsed</name>
+        <qualifiedname>dynampi::Timer::elapsed</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="50" column="26" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="50" bodyend="58"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="friend">
+      <memberdef kind="friend" id="classdynampi_1_1Timer_1a8e125e38ee1ec31b73d2e322c1ec93f2" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::ostream &amp;</type>
+        <definition>std::ostream &amp; operator&lt;&lt;</definition>
+        <argsstring>(std::ostream &amp;os, const Timer &amp;timer)</argsstring>
+        <name>operator&lt;&lt;</name>
+        <qualifiedname>dynampi::Timer::operator&lt;&lt;</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1Timer" kindref="compound">Timer</ref> &amp;</type>
+          <declname>timer</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="60" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="60" bodyend="62"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="15" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="15" bodyend="63"/>
+    <listofallmembers>
+      <member refid="classdynampi_1_1Timer_1af96f427e312f729ae8599b269c71f8d4" prot="private" virt="non-virtual"><scope>dynampi::Timer</scope><name>_elapsed_time</name></member>
+      <member refid="classdynampi_1_1Timer_1adaa9cb97d941d6858f74947e9e8813f1" prot="private" virt="non-virtual"><scope>dynampi::Timer</scope><name>_start_time</name></member>
+      <member refid="classdynampi_1_1Timer_1ac65ac565cd8109512958e83d7a401044" prot="public" virt="non-virtual"><scope>dynampi::Timer</scope><name>AutoStart</name></member>
+      <member refid="classdynampi_1_1Timer_1ae0c61ce303d7657ef46b47a330f2bb33" prot="public" virt="non-virtual"><scope>dynampi::Timer</scope><name>elapsed</name></member>
+      <member refid="classdynampi_1_1Timer_1a8e125e38ee1ec31b73d2e322c1ec93f2" prot="public" virt="non-virtual"><scope>dynampi::Timer</scope><name>operator&lt;&lt;</name></member>
+      <member refid="classdynampi_1_1Timer_1af63ac97c131c79c1466c7fa5836476f6" prot="public" virt="non-virtual"><scope>dynampi::Timer</scope><name>reset</name></member>
+      <member refid="classdynampi_1_1Timer_1a094bb6d98993adfa0d631835c97b4c73" prot="public" virt="non-virtual"><scope>dynampi::Timer</scope><name>start</name></member>
+      <member refid="classdynampi_1_1Timer_1a3b04edcd8eaa183021ad714541357260" prot="public" virt="non-virtual"><scope>dynampi::Timer</scope><name>stop</name></member>
+      <member refid="classdynampi_1_1Timer_1a48b49e58305af754d7bbb97be76ce2a0" prot="public" virt="non-virtual"><scope>dynampi::Timer</scope><name>Timer</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

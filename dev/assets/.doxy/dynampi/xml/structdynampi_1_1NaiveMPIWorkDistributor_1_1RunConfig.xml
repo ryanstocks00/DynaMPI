@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::NaiveMPIWorkDistributor::RunConfig</compoundname>
+    <includes refid="naive__distributor_8hpp" local="no">naive_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig_1a201f78a7308fdcb7941f0b29f9a6ed5a" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+        <definition>size_t dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::target_num_tasks</definition>
+        <argsstring></argsstring>
+        <name>target_num_tasks</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::RunConfig::target_num_tasks</qualifiedname>
+        <initializer>= std::numeric_limits&lt;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref>&gt;::max()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="43" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig_1a458213e051f4e378ee8e1b15af49091f" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <definition>bool dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::allow_more_than_target_tasks</definition>
+        <argsstring></argsstring>
+        <name>allow_more_than_target_tasks</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::RunConfig::allow_more_than_target_tasks</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="47" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig_1ac70dd38a256e427d71b24f8d2176afd0" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref> &gt;</type>
+        <definition>std::optional&lt;double&gt; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::max_seconds</definition>
+        <argsstring></argsstring>
+        <name>max_seconds</name>
+        <qualifiedname>dynampi::NaiveMPIWorkDistributor::RunConfig::max_seconds</qualifiedname>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="50" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="41" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="41" bodyend="51"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig_1a458213e051f4e378ee8e1b15af49091f" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor::RunConfig</scope><name>allow_more_than_target_tasks</name></member>
+      <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig_1ac70dd38a256e427d71b24f8d2176afd0" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor::RunConfig</scope><name>max_seconds</name></member>
+      <member refid="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig_1a201f78a7308fdcb7941f0b29f9a6ed5a" prot="public" virt="non-virtual"><scope>dynampi::NaiveMPIWorkDistributor::RunConfig</scope><name>target_num_tasks</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

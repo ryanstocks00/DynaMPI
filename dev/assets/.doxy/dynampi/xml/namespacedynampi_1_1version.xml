@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="namespacedynampi_1_1version" kind="namespace" language="C++">
+    <compoundname>dynampi::version</compoundname>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="namespacedynampi_1_1version_1a6bc0be0e262bac9bf3396ca2faad7e9f" prot="public" static="no" constexpr="yes" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>constexpr int dynampi::version::major</definition>
+        <argsstring></argsstring>
+        <name>major</name>
+        <qualifiedname>dynampi::version::major</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">DYNAMPI_VERSION_MAJOR</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" line="25" column="22" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacedynampi_1_1version_1a96fba606cba8678a6bcceef4ba3c8111" prot="public" static="no" constexpr="yes" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>constexpr int dynampi::version::minor</definition>
+        <argsstring></argsstring>
+        <name>minor</name>
+        <qualifiedname>dynampi::version::minor</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">DYNAMPI_VERSION_MINOR</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" line="26" column="22" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacedynampi_1_1version_1a23be4013e62698563d03303ab3550ee0" prot="public" static="no" constexpr="yes" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <definition>constexpr int dynampi::version::patch</definition>
+        <argsstring></argsstring>
+        <name>patch</name>
+        <qualifiedname>dynampi::version::patch</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">DYNAMPI_VERSION_PATCH</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" line="27" column="22" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacedynampi_1_1version_1aee9460a2a8eb2d1e646d8f65f8918bf1" prot="public" static="no" constexpr="yes" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> std::string_view</type>
+        <definition>constexpr std::string_view dynampi::version::string</definition>
+        <argsstring></argsstring>
+        <name>string</name>
+        <qualifiedname>dynampi::version::string</qualifiedname>
+        <initializer>= <ref refid="dynampi_8hpp_1a4bfff23c065ba8372b4d35dcd79cf2d2" kindref="member">DYNAMPI_VERSION_STRING</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" line="36" column="35" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" bodystart="36" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespacedynampi_1_1version_1a97ebeb88cb74b845e9061e51ef2b08c8" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <definition>constexpr bool dynampi::version::is_at_least</definition>
+        <argsstring>(int v_major, int v_minor, int v_patch)</argsstring>
+        <name>is_at_least</name>
+        <qualifiedname>dynampi::version::is_at_least</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>v_major</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>v_minor</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <declname>v_patch</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" line="38" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" bodystart="38" bodyend="40"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1_1version_1adcad9661257f4dfe00d23817a032644f" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> std::string_view</type>
+        <definition>constexpr std::string_view dynampi::version::compile_date</definition>
+        <argsstring>()</argsstring>
+        <name>compile_date</name>
+        <qualifiedname>dynampi::version::compile_date</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" line="42" column="36" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" bodystart="42" bodyend="42"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedynampi_1_1version_1a6f74ef38beb6132301fb791c009d0864" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> std::string_view</type>
+        <definition>constexpr std::string_view dynampi::version::commit_hash</definition>
+        <argsstring>()</argsstring>
+        <name>commit_hash</name>
+        <qualifiedname>dynampi::version::commit_hash</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" line="44" column="36" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" bodystart="44" bodyend="44"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp" line="23" column="1"/>
+  </compounddef>
+</doxygen>

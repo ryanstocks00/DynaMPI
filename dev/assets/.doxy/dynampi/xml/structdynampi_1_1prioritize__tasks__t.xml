@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1prioritize__tasks__t" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::prioritize_tasks_t</compoundname>
+    <derivedcompoundref refid="structdynampi_1_1enable__prioritization" prot="public" virt="non-virtual">dynampi::enable_prioritization</derivedcompoundref>
+    <includes refid="base__distributor_8hpp" local="no">base_distributor.hpp</includes>
+    <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1prioritize__tasks__t_1a24862588f73da6625c53bb543745cbd9" prot="public" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <definition>constexpr bool dynampi::prioritize_tasks_t::value</definition>
+        <argsstring></argsstring>
+        <name>value</name>
+        <qualifiedname>dynampi::prioritize_tasks_t::value</qualifiedname>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">false</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp" line="18" column="25" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp" bodystart="18" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>dynampi::enable_prioritization</label>
+        <link refid="structdynampi_1_1enable__prioritization"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>dynampi::prioritize_tasks_t</label>
+        <link refid="structdynampi_1_1prioritize__tasks__t"/>
+      </node>
+    </inheritancegraph>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp" line="17" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/base_distributor.hpp" bodystart="17" bodyend="19"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1prioritize__tasks__t_1a24862588f73da6625c53bb543745cbd9" prot="public" virt="non-virtual"><scope>dynampi::prioritize_tasks_t</scope><name>value</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
