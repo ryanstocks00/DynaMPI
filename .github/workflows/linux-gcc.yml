@@ -13,17 +13,21 @@ env:
 jobs:
   linux-gcc:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
+      max-parallel: 5
       matrix:
         gcc-version: [11, 12, 13, 14]
         build-type: [Debug, Release]
     steps:
       - uses: actions/checkout@v4
+      - name: Configure apt mirror fallbacks
+        uses: ./.github/actions/apt-mirror
       - name: Install GCC ${{ matrix.gcc-version }}
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++-${{ matrix.gcc-version }} cmake
+          sudo apt-get install -y --no-install-recommends g++-${{ matrix.gcc-version }} cmake
           echo "CC=gcc-${{ matrix.gcc-version }}" >> $GITHUB_ENV
           echo "CXX=g++-${{ matrix.gcc-version }}" >> $GITHUB_ENV
       - name: Install MPI
@@ -31,11 +35,11 @@ jobs:
         run: |
           if [ "${{ matrix.gcc-version }}" == "11" ]; then
             # OpenMPI for GCC 11
-            sudo apt-get install -y libopenmpi-dev openmpi-bin
+            sudo apt-get install -y --no-install-recommends libopenmpi-dev openmpi-bin
             echo "MPI_TYPE=OpenMPI" >> $GITHUB_ENV
           elif [ "${{ matrix.gcc-version }}" == "12" ]; then
             # MPICH for GCC 12
-            sudo apt-get install -y libmpich-dev mpich
+            sudo apt-get install -y --no-install-recommends libmpich-dev mpich
             # Verify MPICH installation
             which mpicc || echo "mpicc not found"
             which mpicxx || echo "mpicxx not found"
@@ -50,6 +54,8 @@ jobs:
             echo "MPI_C_COMPILER=/usr/bin/mpicc" >> $GITHUB_ENV
             echo "MPI_CXX_COMPILER=/usr/bin/mpicxx" >> $GITHUB_ENV
             echo "MPI_TYPE=MPICH" >> $GITHUB_ENV
+            # GH runners have no IB; UCX must not probe mlx5/verbs or MPI_Init fails.
+            echo "UCX_TLS=tcp,sm,self" >> $GITHUB_ENV
           else
             # Intel MPI for GCC 13+
             wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
@@ -57,7 +63,7 @@ jobs:
             echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg]\
                   https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
             sudo apt-get update
-            sudo apt-get install -y intel-oneapi-mpi-devel
+            sudo apt-get install -y --no-install-recommends intel-oneapi-mpi-devel
             echo "MPI_TYPE=Intel MPI" >> $GITHUB_ENV
           fi
       - name: Configure CMake
@@ -77,7 +83,8 @@ jobs:
             -DCMAKE_C_COMPILER=$CC \
             -DCMAKE_CXX_COMPILER=$CXX \
             -DDYNAMPI_BUILD_TESTS=ON \
-            -DDYNAMPI_BUILD_BENCHMARKS=ON"
+            -DDYNAMPI_BUILD_BENCHMARKS=ON \
+            -DDYNAMPI_MAX_MPI_RANK=8"
           if [ "$MPI_TYPE" == "MPICH" ]; then
             CMAKE_ARGS="$CMAKE_ARGS -DMPI_C_COMPILER=$MPI_C_COMPILER -DMPI_CXX_COMPILER=$MPI_CXX_COMPILER"
           fi
@@ -97,4 +104,5 @@ jobs:
           fi
           cd build
           echo "Testing with $MPI_TYPE"
-          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
+          export DYNAMPI_MAX_MPI_RANK=8
+          ctest --output-on-failure -j 1 --timeout 180 -C ${{ matrix.build-type }}

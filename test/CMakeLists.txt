@@ -79,6 +79,11 @@ endif()
 
 # --------------------------------------------------------------------
 # Add MPI tests with varying ranks
+set(DYNAMPI_MAX_MPI_RANK 64 CACHE STRING "Max MPI ranks for ctest MPI runs")
+if(DEFINED ENV{DYNAMPI_MAX_MPI_RANK})
+  set(DYNAMPI_MAX_MPI_RANK "$ENV{DYNAMPI_MAX_MPI_RANK}")
+endif()
+
 function(add_mpi_test test_name num_procs)
   set(command
       ${MPIEXEC_EXECUTABLE}
@@ -91,6 +96,10 @@ function(add_mpi_test test_name num_procs)
   add_test(NAME ${test_name} COMMAND ${command})
 endfunction()
 
-foreach(rank 1 2 3 4 8)
+foreach(rank 1 2 3 4 8 16 64)
+  if(rank GREATER DYNAMPI_MAX_MPI_RANK)
+    message(STATUS "Skipping mpi_test_${rank}_rank (rank > ${DYNAMPI_MAX_MPI_RANK})")
+  else()
   add_mpi_test(mpi_test_${rank}_rank ${rank})
+  endif()
 endforeach()

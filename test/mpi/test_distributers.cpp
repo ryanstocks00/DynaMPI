@@ -6,26 +6,66 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <dynampi/dynampi.hpp>
+#include <type_traits>
 #include <vector>
 
 #include "dynampi/impl/hierarchical_distributor.hpp"
+#include "dynampi/impl/lockfree_distributor.hpp"
 #include "dynampi/mpi/mpi_communicator.hpp"
 #include "mpi_test_environment.hpp"
 
-// --- Configuration Wrapper ---
-template <template <typename, typename, typename...> class DistributorT, bool ImmediateRecv = false>
-struct TestConfig {
-  template <typename TaskT, typename ResultT, typename... Options>
-  using type = DistributorT<TaskT, ResultT, Options...>;
+template <template <typename...> class Template, typename T>
+struct is_specialization_of : std::false_type {};
 
-  static constexpr bool use_immediate_recv = ImmediateRecv;
+template <template <typename...> class Template, typename... Args>
+struct is_specialization_of<Template, Template<Args...>> : std::true_type {};
+
+template <template <typename, typename, typename...> class TT>
+struct DistributerTypeWrapper {
+  template <typename TaskT, typename ResultT, typename... Options>
+  using type = TT<TaskT, ResultT, Options...>;
+
+  static constexpr bool use_immediate_recv = false;
   static constexpr size_t max_result_size = 1024;
+
+  template <typename TaskT, typename ResultT, typename... Options>
+  static typename TT<TaskT, ResultT, Options...>::Config get_config() {
+    return typename TT<TaskT, ResultT, Options...>::Config{};
+  }
 };
 
-// --- Unified Test Fixture ---
+// Specialized wrapper for HierarchicalMPIWorkDistributor with coordinator_per_node config
+template <bool CoordinatorPerNode>
+struct HierarchicalDistributerTypeWrapper {
+  template <typename TaskT, typename ResultT, typename... Options>
+  using type = dynampi::HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>;
+
+  static constexpr bool use_immediate_recv = false;
+  static constexpr size_t max_result_size = 1024;
+
+  template <typename TaskT, typename ResultT, typename... Options>
+  static typename dynampi::HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>::Config
+  get_config() {
+    typename dynampi::HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>::Config config;
+    config.coordinator_per_node = CoordinatorPerNode;
+    return config;
+  }
+};
+
+// Helper to get config from wrapper
+template <typename Wrapper, typename TaskT, typename ResultT, typename... Options>
+auto get_distributer_config() {
+  return Wrapper::template get_config<TaskT, ResultT, Options...>();
+}
+
+template <typename Wrapper, typename... T>
+using DistributerOf = typename Wrapper::template type<T...>;
+
+// Test fixture
 template <typename T>
 class DynamicDistribution : public ::testing::Test {
  protected:
@@ -50,102 +90,285 @@ class DynamicDistribution : public ::testing::Test {
 };
 
 using DistributerTypes =
-    ::testing::Types<TestConfig<dynampi::NaiveMPIWorkDistributor, false>,
-                     TestConfig<dynampi::NaiveMPIWorkDistributor, true>,
-                     TestConfig<dynampi::HierarchicalMPIWorkDistributor, false>>;
+    ::testing::Types<DistributerTypeWrapper<dynampi::NaiveMPIWorkDistributor>,
+                     DistributerTypeWrapper<dynampi::LockFreeMPIWorkDistributor>,
+                     HierarchicalDistributerTypeWrapper<true>,
+                     HierarchicalDistributerTypeWrapper<false>>;
 
 TYPED_TEST_SUITE(DynamicDistribution, DistributerTypes);
 
 // --- Tests are now much leaner ---
 
 TYPED_TEST(DynamicDistribution, BasicFlow) {
-  auto worker_task = [](uint32_t task) -> double { return sqrt(static_cast<double>(task)); };
-  auto dist = this->template make_distributor<uint32_t, double>(worker_task);
+  using TaskT = int;
+  using Distributer = DistributerOf<TypeParam, TaskT, double>;
+  auto worker_task = [](TaskT task) -> double { return sqrt(static_cast<double>(task)); };
 
-  if (dist.is_root_manager()) {
-    for (int i = 0; i < 10; ++i) dist.insert_task(i);
-    auto results = dist.finish_remaining_tasks();
-    EXPECT_EQ(results.size(), 10);
+  auto config = get_distributer_config<TypeParam, TaskT, double>();
+  config.comm = MPI_COMM_WORLD;
+  config.auto_run_workers = false;
+  Distributer distributor(worker_task, config);
+
+  EXPECT_EQ(distributor.is_root_manager(), MPIEnvironment::world_comm_rank() == 0);
+
+  if (distributor.is_root_manager()) {
+    for (int i = 0; i < 10; ++i) distributor.insert_task(i);
+  }
+
+  if (distributor.is_root_manager()) {
+    auto results =
+        distributor.run_tasks({.target_num_tasks = 5, .allow_more_than_target_tasks = false});
+    EXPECT_EQ(results.size(), 5);
+    EXPECT_LE(distributor.remaining_tasks_count(), 5);
+    auto second_results = distributor.finish_remaining_tasks();
+    EXPECT_EQ(second_results.size(), 5);
+    EXPECT_EQ(distributor.remaining_tasks_count(), 0);
+    results.insert(results.end(), second_results.begin(), second_results.end());
+    if (!Distributer::ordered) {
+      std::sort(results.begin(), results.end());
+    }
     for (size_t i = 0; i < results.size(); ++i) {
       EXPECT_DOUBLE_EQ(results[i] * results[i], static_cast<double>(i));
     }
   } else {
-    dist.run_worker();
+    distributor.run_worker();
   }
 }
 
-TYPED_TEST(DynamicDistribution, MultiStageTasks) {
-  using Result = std::vector<int>;
-  auto worker_task = [](int task) -> Result { return {task, task * task, task * task * task}; };
-  auto dist = this->template make_distributor<int, Result>(worker_task);
+TYPED_TEST(DynamicDistribution, Naive2) {
+  using DistributerWrapper = TypeParam;
 
-  if (dist.is_root_manager()) {
-    dist.insert_tasks({1, 2, 3, 4, 5});
-    EXPECT_EQ(dist.finish_remaining_tasks().size(), 5);
+  auto worker_task = [](size_t task) -> char { return "Hi"[task]; };
 
-    dist.insert_tasks({6, 7, 8});
-    auto results = dist.finish_remaining_tasks();
-    EXPECT_EQ(results.size(), 8);
-    EXPECT_EQ(results.back(), (Result{8, 64, 512}));
+  auto result = dynampi::mpi_manager_worker_distribution<char, DistributerWrapper::template type>(
+      2, worker_task);
+
+  if (MPIEnvironment::world_comm_rank() == 0) {
+    ASSERT_TRUE(result.has_value());
+    if constexpr (!DistributerWrapper::template type<int, int>::ordered) {
+      std::sort(result->begin(), result->end());
+    }
+    EXPECT_EQ(result.value(), std::vector<char>({'H', 'i'}));
   } else {
-    dist.run_worker();
+    EXPECT_FALSE(result.has_value());
+  }
+}
+
+// Exercises manager_rank != 0 for both Naive and Hierarchical (e.g. idx_for_worker branches).
+TYPED_TEST(DynamicDistribution, ManagerRankNonZero) {
+  if (MPIEnvironment::world_comm_size() < 2) {
+    GTEST_SKIP() << "Need at least 2 ranks for non-zero manager rank";
+  }
+  const int manager_rank = 1;
+  using TaskT = int;
+  using ResultT = double;
+  using Distributer = DistributerOf<TypeParam, TaskT, ResultT>;
+  auto worker_task = [](TaskT task) -> ResultT { return sqrt(static_cast<double>(task)); };
+  auto config = get_distributer_config<TypeParam, TaskT, ResultT>();
+  config.comm = MPI_COMM_WORLD;
+  config.auto_run_workers = false;
+  config.manager_rank = manager_rank;
+  Distributer distributor(worker_task, config);
+
+  EXPECT_EQ(distributor.is_root_manager(), MPIEnvironment::world_comm_rank() == manager_rank);
+
+  if (distributor.is_root_manager()) {
+    for (int i = 0; i < 10; ++i) distributor.insert_task(i);
+    auto results = distributor.finish_remaining_tasks();
+    if (!Distributer::ordered) {
+      std::sort(results.begin(), results.end());
+    }
+    EXPECT_EQ(results.size(), 10u);
+    for (size_t i = 0; i < results.size(); ++i) {
+      EXPECT_DOUBLE_EQ(results[i] * results[i], static_cast<double>(i));
+    }
+  } else {
+    distributor.run_worker();
+  }
+}
+
+TYPED_TEST(DynamicDistribution, Example1) {
+  using DistributerWrapper = TypeParam;
+
+  for (int manager_rank : {0, MPIEnvironment::world_comm_size() - 1}) {
+    auto worker_task = [](size_t task) -> size_t { return task * task; };
+    auto result =
+        dynampi::mpi_manager_worker_distribution<size_t, DistributerWrapper::template type>(
+            4, worker_task, MPI_COMM_WORLD, manager_rank);
+    if (result.has_value()) {
+      if constexpr (!DistributerWrapper::template type<int, int>::ordered) {
+        std::sort(result->begin(), result->end());
+      }
+      EXPECT_EQ(MPIEnvironment::world_comm_rank(), manager_rank);
+      EXPECT_EQ(result, std::vector<size_t>({0, 1, 4, 9}));
+    }
+  }
+}
+
+TYPED_TEST(DynamicDistribution, Example2) {
+  using Task = int;
+  using Result = std::vector<int>;
+  using Distributer = DistributerOf<TypeParam, Task, Result>;
+  if constexpr (is_specialization_of<dynampi::HierarchicalMPIWorkDistributor, Distributer>::value) {
+    GTEST_SKIP() << "This test is not applicable for this distributor.";
+  } else {
+    auto worker_task = [](Task task) -> Result {
+      return Result{task, task * task, task * task * task};
+    };
+    {
+      auto config = get_distributer_config<TypeParam, Task, Result>();
+      Distributer work_distributer(worker_task, config);
+      if (work_distributer.is_root_manager()) {
+        work_distributer.insert_tasks({1, 2, 3, 4, 5});
+        auto results = work_distributer.finish_remaining_tasks();
+        EXPECT_EQ(results, (std::vector<std::vector<int>>{
+                               {1, 1, 1}, {2, 4, 8}, {3, 9, 27}, {4, 16, 64}, {5, 25, 125}}));
+        work_distributer.insert_tasks({6, 7, 8});
+        results = work_distributer.finish_remaining_tasks();
+        EXPECT_EQ(results,
+                  (std::vector<std::vector<int>>{{6, 36, 216}, {7, 49, 343}, {8, 64, 512}}));
+      }
+    }
+  }
+}
+
+TYPED_TEST(DynamicDistribution, RunTasksMaxTasks) {
+  using Task = int;
+  using Result = int;
+  using Distributer = DistributerOf<TypeParam, Task, Result>;
+
+  auto worker_task = [](Task task) -> Result { return task * 2; };
+
+  auto config = get_distributer_config<TypeParam, Task, Result>();
+  Distributer work_distributer(worker_task, config);
+  if (work_distributer.is_root_manager()) {
+    work_distributer.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+
+    typename Distributer::RunConfig run_config;
+    run_config.target_num_tasks = 3;
+    run_config.allow_more_than_target_tasks = false;
+    auto results = work_distributer.run_tasks(run_config);
+    EXPECT_EQ(results.size(), 3u);
+
+    run_config.target_num_tasks = 4;
+    auto more_results = work_distributer.run_tasks(run_config);
+    EXPECT_EQ(more_results.size(), 4u);
+
+    auto remaining_results = work_distributer.run_tasks();
+    EXPECT_EQ(remaining_results.size(), 3u);
+
+    std::vector<int> all_results;
+    all_results.insert(all_results.end(), results.begin(), results.end());
+    all_results.insert(all_results.end(), more_results.begin(), more_results.end());
+    all_results.insert(all_results.end(), remaining_results.begin(), remaining_results.end());
+    std::sort(all_results.begin(), all_results.end());
+    EXPECT_EQ(all_results, (std::vector<int>{2, 4, 6, 8, 10, 12, 14, 16, 18, 20}));
+  }
+}
+
+TYPED_TEST(DynamicDistribution, RunTasksMinTasksWithTimeLimit) {
+  using Task = int;
+  using Result = int;
+  using Distributer = DistributerOf<TypeParam, Task, Result>;
+
+  auto worker_task = [](Task task) -> Result { return task * 3; };
+
+  auto config = get_distributer_config<TypeParam, Task, Result>();
+  Distributer work_distributer(worker_task, config);
+  if (work_distributer.is_root_manager()) {
+    work_distributer.insert_tasks({1, 2, 3, 4, 5});
+
+    typename Distributer::RunConfig run_config;
+    run_config.target_num_tasks = 2;
+    run_config.max_seconds = 0.0;
+    auto results = work_distributer.run_tasks(run_config);
+    EXPECT_EQ(results.size(), 0u);
+
+    auto remaining_results = work_distributer.run_tasks();
+    EXPECT_EQ(results.size() + remaining_results.size(), 5u);
   }
 }
 
 TYPED_TEST(DynamicDistribution, PriorityQueue) {
-  auto worker_task = [](int task) -> int { return task * task; };
-  // Pass the priority option as a template argument to the factory
-  auto dist =
-      this->template make_distributor<int, int, dynampi::enable_prioritization>(worker_task);
-
-  if (dist.is_root_manager()) {
-    std::vector<std::pair<int, double>> tasks = {{1, 1.0}, {7, 7.0}, {3, 3.0}, {6, 6.0},
-                                                 {2, 2.0}, {4, 5.0}, {5, 4.0}};
-    for (auto& t : tasks) dist.insert_task(t.first, t.second);
-
-    auto result = dist.finish_remaining_tasks();
-    EXPECT_EQ(result, (std::vector<int>{49, 36, 16, 25, 9, 4, 1}));
-  } else {
-    dist.run_worker();
+  using Task = int;
+  using Result = int;
+  using Distributer = DistributerOf<TypeParam, Task, Result, dynampi::enable_prioritization>;
+  if (!Distributer::ordered ||
+      is_specialization_of<dynampi::LockFreeMPIWorkDistributor, Distributer>::value) {
+    GTEST_SKIP() << "This test requires ordered results with priority, which is not supported by "
+                    "this distributer.";
+  }
+  auto worker_task = [](Task task) -> Result { return task * task; };
+  {
+    auto config = get_distributer_config<TypeParam, Task, Result, dynampi::enable_prioritization>();
+    Distributer work_distributer(worker_task, config);
+    if (work_distributer.is_root_manager()) {
+      work_distributer.insert_task(1, 1.0);
+      work_distributer.insert_task(7, 7.0);
+      work_distributer.insert_task(3, 3.0);
+      work_distributer.insert_task(6, 6.0);
+      work_distributer.insert_task(2, 2.0);
+      work_distributer.insert_task(4, 5.0);
+      work_distributer.insert_task(5, 4.0);
+      auto result = work_distributer.finish_remaining_tasks();
+      EXPECT_EQ(result, (std::vector<int>{49, 36, 16, 25, 9, 4, 1}));
+    }
   }
 }
 
 TYPED_TEST(DynamicDistribution, Statistics) {
-  auto worker_task = [](int task) -> int { return task * task; };
-  using StatsOpt = dynampi::track_statistics<dynampi::StatisticsMode::Detailed>;
-  auto dist = this->template make_distributor<int, int, StatsOpt>(worker_task);
-
-  if (dist.is_root_manager()) {
-    dist.insert_tasks({1, 2, 3, 4, 5});
-    auto results = dist.finish_remaining_tasks();
-
-    size_t expected_size = (MPIEnvironment::world_comm_size() == 1) ? 0 : 5;
-    EXPECT_EQ(results, (std::vector<int>{1, 4, 9, 16, 25}));
-    EXPECT_EQ(dist.get_statistics().comm_statistics.send_count, expected_size);
-    EXPECT_EQ(dist.get_statistics().comm_statistics.bytes_sent, expected_size * sizeof(int));
-    EXPECT_EQ(dist.get_statistics().comm_statistics.recv_count,
-              expected_size + MPIEnvironment::world_comm_size() - 1);
-    EXPECT_EQ(dist.get_statistics().comm_statistics.bytes_received, expected_size * sizeof(int));
-
-    dist.finalize();
-    EXPECT_EQ(dist.get_statistics().comm_statistics.send_count,
-              expected_size + MPIEnvironment::world_comm_size() - 1);
-    EXPECT_EQ(dist.get_statistics().comm_statistics.bytes_sent, expected_size * sizeof(int));
-
-    double expected_num_bytes = 0;
-    if (MPIEnvironment::world_comm_size() > 1) {
-      expected_num_bytes = static_cast<double>(expected_size * sizeof(int)) /
-                           (expected_size + MPIEnvironment::world_comm_size() - 1);
+  using Task = int;
+  using Result = int;
+  using Distributer = DistributerOf<TypeParam, Task, Result,
+                                    dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>;
+  auto worker_task = [](Task task) -> Result { return task * task; };
+  {
+    auto config =
+        get_distributer_config<TypeParam, Task, Result,
+                               dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>();
+    Distributer work_distributer(worker_task, config);
+    if (work_distributer.is_root_manager()) {
+      work_distributer.insert_tasks({1, 2, 3, 4, 5});
+      auto results = work_distributer.finish_remaining_tasks();
+      size_t expected_size = 5;
+      if (MPIEnvironment::world_comm_size() == 1) {
+        expected_size = 0;
+      }
+      if constexpr (!Distributer::ordered) {
+        std::sort(results.begin(), results.end());
+      }
+      EXPECT_EQ(results, (std::vector<int>{1, 4, 9, 16, 25}));
+      EXPECT_EQ(work_distributer.get_statistics().comm_statistics.bytes_sent,
+                expected_size * sizeof(int));
+      if constexpr (is_specialization_of<dynampi::NaiveMPIWorkDistributor, Distributer>::value) {
+        EXPECT_EQ(work_distributer.get_statistics().comm_statistics.send_count, expected_size);
+        EXPECT_EQ(work_distributer.get_statistics().comm_statistics.recv_count,
+                  expected_size + MPIEnvironment::world_comm_size() - 1);
+        EXPECT_EQ(work_distributer.get_statistics().comm_statistics.bytes_received,
+                  expected_size * sizeof(int));
+      }
+      work_distributer.finalize();
+      EXPECT_EQ(work_distributer.get_statistics().comm_statistics.bytes_sent,
+                expected_size * sizeof(int));
+      if constexpr (is_specialization_of<dynampi::NaiveMPIWorkDistributor, Distributer>::value) {
+        EXPECT_EQ(work_distributer.get_statistics().comm_statistics.send_count,
+                  expected_size + MPIEnvironment::world_comm_size() - 1);
+        double expected_num_bytes = 0;
+        if (MPIEnvironment::world_comm_size() > 1) {
+          expected_num_bytes = static_cast<double>(expected_size * sizeof(int)) /
+                               (expected_size + MPIEnvironment::world_comm_size() - 1);
+        }
+        EXPECT_DOUBLE_EQ(work_distributer.get_statistics().comm_statistics.average_receive_size(),
+                         expected_num_bytes);
+        EXPECT_DOUBLE_EQ(work_distributer.get_statistics().comm_statistics.average_send_size(),
+                         expected_num_bytes);
+      }
     }
-    EXPECT_DOUBLE_EQ(dist.get_statistics().comm_statistics.average_receive_size(),
-                     expected_num_bytes);
-    EXPECT_DOUBLE_EQ(dist.get_statistics().comm_statistics.average_send_size(), expected_num_bytes);
-  } else {
-    dist.run_worker();
   }
 }
 
 TYPED_TEST(DynamicDistribution, AutoRunWorkers) {
+  using Distributer = DistributerOf<TypeParam, int, int>;
   auto worker_task = [](int task) -> int { return task * task; };
   // Test with auto_run_workers = true - workers should start automatically
   auto dist = this->template make_distributor<int, int>(worker_task, true);
@@ -154,7 +377,81 @@ TYPED_TEST(DynamicDistribution, AutoRunWorkers) {
     // Workers should already be running, so we can just insert tasks
     dist.insert_tasks({1, 2, 3, 4, 5});
     auto results = dist.finish_remaining_tasks();
+    if constexpr (!Distributer::ordered) {
+      std::sort(results.begin(), results.end());
+    }
     EXPECT_EQ(results, (std::vector<int>{1, 4, 9, 16, 25}));
   }
   // Workers run automatically in constructor, no need to call run_worker()
+}
+
+// --- MinimalLockFreeMPIWorkDistributor (index parallel-for) ---
+// This distributor has a distinct, collective API (run(n)), so it is tested
+// directly rather than through the generic DynamicDistribution suite.
+
+TEST(MinimalLockFree, ScalarResults) {
+  dynampi::MinimalLockFreeMPIWorkDistributor<double> dist(
+      [](size_t i) -> double { return std::sqrt(static_cast<double>(i)); });
+
+  auto results = dist.run(20);
+
+  if (MPIEnvironment::world_comm_rank() == 0) {
+    ASSERT_EQ(results.size(), 20u);
+    for (size_t i = 0; i < results.size(); ++i) {
+      EXPECT_DOUBLE_EQ(results[i] * results[i], static_cast<double>(i));
+    }
+  } else {
+    EXPECT_TRUE(results.empty());
+  }
+}
+
+TEST(MinimalLockFree, ManagerRankNonZero) {
+  if (MPIEnvironment::world_comm_size() < 2) {
+    GTEST_SKIP() << "Need at least 2 ranks for non-zero manager rank";
+  }
+  const int manager_rank = 1;
+  dynampi::MinimalLockFreeMPIWorkDistributor<size_t> dist(
+      [](size_t i) -> size_t { return i * i; },
+      {.comm = MPI_COMM_WORLD, .manager_rank = manager_rank});
+
+  auto results = dist.run(8);
+
+  if (MPIEnvironment::world_comm_rank() == manager_rank) {
+    ASSERT_EQ(results.size(), 8u);
+    for (size_t i = 0; i < results.size(); ++i) EXPECT_EQ(results[i], i * i);
+  } else {
+    EXPECT_TRUE(results.empty());
+  }
+}
+
+TEST(MinimalLockFree, VariableSizeResults) {
+  dynampi::MinimalLockFreeMPIWorkDistributor<std::vector<int>> dist(
+      [](size_t i) -> std::vector<int> {
+        int v = static_cast<int>(i);
+        return {v, v * v, v * v * v};
+      });
+
+  auto results = dist.run(5);
+
+  if (MPIEnvironment::world_comm_rank() == 0) {
+    ASSERT_EQ(results.size(), 5u);
+    for (size_t i = 0; i < results.size(); ++i) {
+      int v = static_cast<int>(i);
+      EXPECT_EQ(results[i], (std::vector<int>{v, v * v, v * v * v}));
+    }
+  }
+}
+
+TEST(MinimalLockFree, EmptyAndReusable) {
+  dynampi::MinimalLockFreeMPIWorkDistributor<int> dist(
+      [](size_t i) -> int { return static_cast<int>(i) + 1; });
+
+  auto empty = dist.run(0);
+  EXPECT_TRUE(empty.empty());
+
+  // The distributor can be reused for multiple independent runs.
+  auto results = dist.run(4);
+  if (MPIEnvironment::world_comm_rank() == 0) {
+    EXPECT_EQ(results, (std::vector<int>{1, 2, 3, 4}));
+  }
 }

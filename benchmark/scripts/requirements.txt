@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2026 Ryan Stocks
+# SPDX-License-Identifier: Apache-2.0
+#
+# Python dependencies for the benchmark plotting scripts
+# (plot_common.py, plot_strong_scaling.py, plot_shutdown_time.py).
+#
+# Install with:
+#   python -m pip install -r benchmark/scripts/requirements.txt
+matplotlib
+scienceplots

@@ -19,6 +19,7 @@ jobs:
   windows-msmpi:
     name: Windows MS-MPI (MPI 3.1)
     runs-on: windows-latest
+    timeout-minutes: 10
     strategy:
       matrix:
         build-type: [Debug, Release]
@@ -34,7 +35,8 @@ jobs:
           cmake -B build `
             -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} `
             -DDYNAMPI_BUILD_TESTS=ON `
-            -DDYNAMPI_BUILD_BENCHMARKS=ON
+            -DDYNAMPI_BUILD_BENCHMARKS=ON `
+            -DDYNAMPI_MAX_MPI_RANK=8
       - name: Build (MS-MPI)
         shell: pwsh
         run: cmake --build build --config ${{ matrix.build-type }} --parallel
@@ -43,10 +45,12 @@ jobs:
         run: |
           cd build
           echo "Testing with Microsoft MPI (MPI 3.1 features)"
-          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
+          $env:DYNAMPI_MAX_MPI_RANK = "8"
+          ctest --output-on-failure -j 1 --timeout 180 -C ${{ matrix.build-type }}
   windows-mingw:
     name: Windows MinGW
     runs-on: windows-latest
+    timeout-minutes: 10
     strategy:
       matrix:
         build-type: [Debug, Release]
@@ -97,7 +101,8 @@ jobs:
             -DMPI_C_LIBRARIES=/mingw64/lib/libmsmpi.a \
             -DMPI_CXX_LIBRARIES=/mingw64/lib/libmsmpi.a \
             -DDYNAMPI_BUILD_TESTS=ON \
-            -DDYNAMPI_BUILD_BENCHMARKS=ON
+            -DDYNAMPI_BUILD_BENCHMARKS=ON \
+            -DDYNAMPI_MAX_MPI_RANK=8
       - name: Build (MinGW)
         shell: msys2 {0}
         run: cmake --build build --config ${{ matrix.build-type }} --parallel
@@ -106,10 +111,12 @@ jobs:
         run: |
           cd build
           echo "Testing with $MPI_TYPE"
-          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
+          export DYNAMPI_MAX_MPI_RANK=8
+          ctest --output-on-failure -j 1 --timeout 180 -C ${{ matrix.build-type }}
   windows-intel-mpi:
     name: Windows Intel MPI (MPI 4.0)
     runs-on: windows-latest
+    timeout-minutes: 10
     strategy:
       matrix:
         build-type: [Debug, Release]
@@ -126,7 +133,8 @@ jobs:
           cmake -B build `
             -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} `
             -DDYNAMPI_BUILD_TESTS=ON `
-            -DDYNAMPI_BUILD_BENCHMARKS=ON
+            -DDYNAMPI_BUILD_BENCHMARKS=ON `
+            -DDYNAMPI_MAX_MPI_RANK=8
       - name: Build (Intel MPI)
         shell: pwsh
         run: cmake --build build --config ${{ matrix.build-type }} --parallel
@@ -135,4 +143,5 @@ jobs:
         run: |
           cd build
           echo "Testing with Intel MPI (MPI 4.0 support)"
-          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
+          $env:DYNAMPI_MAX_MPI_RANK = "8"
+          ctest --output-on-failure -j 1 --timeout 180 -C ${{ matrix.build-type }}

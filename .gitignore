@@ -8,3 +8,11 @@ bin
 Testing
 *.btr
 commands.txt
+core.*
+__pycache__/
+*.png
+
+# Docs build output (CI deploys via mike to gh-pages)
+docs/site/
+docs/_site/
+docs/Gemfile.lock

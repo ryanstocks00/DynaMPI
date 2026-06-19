@@ -1,0 +1,33 @@
+# SPDX-FileCopyrightText: 2026 Ryan Stocks
+# SPDX-License-Identifier: Apache-2.0
+---
+name: Apt mirror fallbacks
+description: >-
+  Prefer azure.archive.ubuntu.com but fall back to mirrors.ubuntu.com list when the
+  GitHub Actions apt proxy is slow or times out.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        set -euo pipefail
+        # https://github.com/actions/runner-images/issues/7048
+        tmp="$(mktemp)"
+        {
+          printf 'http://azure.archive.ubuntu.com/ubuntu\tpriority:1\n'
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            grep -v 'azure\.archive\.ubuntu\.com' /etc/apt/apt-mirrors.txt || true
+          fi
+          curl -fsSL --retry 3 --retry-delay 2 http://mirrors.ubuntu.com/mirrors.txt
+        } > "$tmp"
+        sudo cp "$tmp" /etc/apt/apt-mirrors.txt
+        rm -f "$tmp"
+        if [ -f /etc/apt/sources.list ]; then
+          sudo sed -i \
+            's~http://azure\.archive\.ubuntu\.com/ubuntu/~mirror+file:/etc/apt/apt-mirrors.txt~g' \
+            /etc/apt/sources.list
+        fi
+        {
+          echo 'Acquire::Retries "5";'
+          echo 'Acquire::http::Timeout "120";'
+        } | sudo tee /etc/apt/apt.conf.d/80-github-actions-retries > /dev/null
