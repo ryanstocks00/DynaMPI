@@ -39,8 +39,9 @@ foreach(_gtest_tgt gtest gtest_main gmock gmock_main)
   if(TARGET ${_gtest_tgt})
     target_compile_options(
       ${_gtest_tgt}
-      PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,Clang,AppleClang>:-Wno-error>
-              $<$<COMPILE_LANG_AND_ID:CXX,Clang,AppleClang>:-Wno-character-conversion>)
+      PRIVATE
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-error>
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-character-conversion>)
   endif()
 endforeach()
 
