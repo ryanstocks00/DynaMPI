@@ -19,7 +19,8 @@ std::optional<std::vector<ResultT>> mpi_manager_worker_distribution(
 ```
 
 The primary entry point.  Distributes `n_tasks` tasks (indices `0 .. n_tasks-1`)
-across the MPI communicator.
+across the MPI communicator.  The default `Distributor` template argument is
+`HierarchicalMPIWorkDistributor` (same type as `MPIDynamicWorkDistributor`).
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
@@ -129,6 +130,9 @@ dv::commit_hash();            // "abc1234" or "abc1234-dirty"
 
 ## Statistics
 
+`CommStatistics` is shared.  Each distributor defines its own nested
+`Statistics` type returned by `get_statistics()`:
+
 ```cpp
 struct CommStatistics {
     int send_count, recv_count, collective_count;
@@ -138,11 +142,22 @@ struct CommStatistics {
     double average_receive_size() const;
 };
 
+// NaiveMPIWorkDistributor / HierarchicalMPIWorkDistributor
 struct Statistics {
-    CommStatistics comm_statistics;              // or const reference, per distributor
-    std::vector<size_t> worker_task_counts;      // when Aggregated/Detailed tracking is on
+    const CommStatistics& comm_statistics;
+    std::vector<size_t> worker_task_counts;              // naive
+    // std::optional<std::vector<size_t>> worker_task_counts;  // hierarchical
+};
+
+// LockFreeMPIWorkDistributor
+struct Statistics {
+    CommStatistics comm_statistics;                      // by value
+    std::vector<size_t> worker_task_counts;
 };
 ```
+
+Prefer `auto& stats = dist.get_statistics();` and read the fields you need
+rather than depending on a single shared `Statistics` layout.
 
 ## Utilities
 

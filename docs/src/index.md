@@ -15,6 +15,9 @@ return results in task-index order; hierarchical does not).
 ## Quick Start
 
 ```cpp
+#include <cmath>
+#include <iostream>
+
 #include <dynampi/dynampi.hpp>
 
 auto work = [](size_t task) -> double {
@@ -62,7 +65,9 @@ workers.
 
 **Template parameters:**
 - `ResultT` — the type each task produces
-- `Distributor` — implementation to use (default: `MPIDynamicWorkDistributor`)
+- `Distributor` — implementation to use (default template argument is
+  `HierarchicalMPIWorkDistributor`, the same type as the public alias
+  `MPIDynamicWorkDistributor`)
 
 ### `dynampi::MPIDynamicWorkDistributor`
 
@@ -80,11 +85,13 @@ For fine-grained control (incremental task insertion, batch result
 collection, statistics):
 
 ```cpp
+#include <cmath>
+
 #include <dynampi/impl/naive_distributor.hpp>
 
 using Distributor = dynampi::NaiveMPIWorkDistributor<int, double>;
 
-auto work = [](int task) -> double { return std::sqrt(task); };
+auto work = [](int task) -> double { return std::sqrt(static_cast<double>(task)); };
 Distributor::Config cfg;
 cfg.comm = MPI_COMM_WORLD;
 cfg.auto_run_workers = false;

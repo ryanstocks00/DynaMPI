@@ -37,13 +37,15 @@ Licensed under the Apache License 2.0.
 ### Static number of tasks
 
 ```cpp
+#include <cassert>
 #include <dynampi/dynampi.hpp>
 
 auto worker_task = [](size_t task) -> size_t { return task * task; };
 auto result = dynampi::mpi_manager_worker_distribution<size_t>(4, worker_task);
 if (result.has_value()) {
-  // Manager: results for tasks 0..3. Default distributor is hierarchical
-  // (completion order is not guaranteed — sort if you need task-index order).
+  // Manager: one result per task. Default distributor is hierarchical and
+  // unordered — use NaiveMPIWorkDistributor or LockFreeMPIWorkDistributor
+  // if you need results in task-index order.
   assert(result->size() == 4);
 }
 ```
@@ -84,7 +86,7 @@ loop in the constructor. Optional compile-time features include task
 prioritization (naive distributor), statistics tracking, and custom MPI
 datatypes via `dynampi::MPI_Type`.
 
-See the [documentation](https://trailblaze-software.github.io/DynaMPI/) for
+See the [documentation](https://ryanstocks00.github.io/DynaMPI/) for
 distributor choice (naive, hierarchical, lock-free RMA) and configuration.
 
 ## Installation
