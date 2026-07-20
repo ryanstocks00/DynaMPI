@@ -9,19 +9,21 @@
 
 DynaMPI distributes tasks across MPI ranks at runtime.  A single *manager*
 rank holds a queue of tasks; *worker* ranks pull work as they become
-available.  The manager collects results in task-submission order.
+available.  Result ordering depends on the distributor (naive and lock-free
+return results in task-index order; hierarchical does not).
 
 ## Quick Start
 
 ```cpp
 #include <dynampi/dynampi.hpp>
 
-// Worker function: TaskT → ResultT
-auto work = [](int task) -> double { return std::sqrt(static_cast<double>(task)); };
+auto work = [](size_t task) -> double {
+  return std::sqrt(static_cast<double>(task));
+};
 
 // Single function call — manager gets results, workers return nullopt
 auto results = dynampi::mpi_manager_worker_distribution<double>(
-    100,    // number of tasks
+    100,    // number of tasks (indices 0 .. 99)
     work    // worker function
 );
 
@@ -47,7 +49,7 @@ std::optional<std::vector<ResultT>> mpi_manager_worker_distribution(
     int manager_rank = 0);
 ```
 
-Distributes `n_tasks` tasks (indices `0..n_tasks-1`) across the MPI
+Distributes `n_tasks` tasks (indices `0 .. n_tasks-1`) across the MPI
 communicator.  Returns the results on the manager rank, `std::nullopt` on
 workers.
 
@@ -60,11 +62,12 @@ workers.
 
 **Template parameters:**
 - `ResultT` — the type each task produces
-- `Distributor` — which distributor implementation to use (default: `HierarchicalMPIWorkDistributor`)
+- `Distributor` — implementation to use (default: `MPIDynamicWorkDistributor`)
 
 ### `dynampi::MPIDynamicWorkDistributor`
 
-Type alias for the default distributor:
+The default distributor (hierarchical tree of coordinators). Construct it
+directly when you need incremental `insert_task(s)` / `run_tasks`:
 
 ```cpp
 template <typename TaskT, typename ResultT, typename... Options>
@@ -106,7 +109,7 @@ if (dist.is_root_manager()) {
 
 #### Common Config Fields
 
-All distributors share these configuration fields:
+All full distributors share these configuration fields:
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
@@ -134,29 +137,28 @@ All distributors share these configuration fields:
 | `run_worker()` | `void` | Enter worker loop (non-manager ranks) |
 | `remaining_tasks_count()` | `size_t` | Tasks still in the queue (manager) |
 | `finalize()` | `void` | Signal shutdown to workers |
-| `get_statistics()` | `Statistics` | Communication statistics (required `track_statistics` option) |
+| `get_statistics()` | `Statistics` | Communication statistics (requires `track_statistics`) |
 
 ### Options
 
 Template options customise distributor behaviour:
 
 ```cpp
-// Enable task prioritisation
+// Enable task prioritisation (NaiveMPIWorkDistributor)
 using Dist = NaiveMPIWorkDistributor<int, double, dynampi::enable_prioritization>;
 
 // Enable statistics tracking
 using Dist = NaiveMPIWorkDistributor<int, double,
     dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>;
 
-// Combine options
-using Dist = HierarchicalMPIWorkDistributor<int, double,
-    dynampi::enable_prioritization,
+// Statistics on the default distributor
+using Dist = MPIDynamicWorkDistributor<int, double,
     dynampi::track_statistics<dynampi::StatisticsMode::Aggregated>>;
 ```
 
 | Option | Values | Description |
 |--------|--------|-------------|
-| `prioritize_tasks_t` | `enable_prioritization` | Tasks submitted with `insert_task(task, priority)` are processed in priority order |
+| `prioritize_tasks_t` | `enable_prioritization` | `insert_task(task, priority)` on distributors that support it (naive) |
 | `track_statistics_t` | `track_statistics<None>`, `<Aggregated>`, `<Detailed>` | Track communication volume and per-rank task counts |
 
 ### Version Info

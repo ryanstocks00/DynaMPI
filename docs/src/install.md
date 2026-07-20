@@ -27,7 +27,7 @@ target_link_libraries(my_target PRIVATE dynampi)
 include(FetchContent)
 FetchContent_Declare(
     DynaMPI
-    GIT_REPOSITORY https://github.com/Trailblaze-Software/DynaMPI.git
+    GIT_REPOSITORY https://github.com/ryanstocks00/DynaMPI.git
     GIT_TAG main
 )
 FetchContent_MakeAvailable(DynaMPI)
@@ -46,7 +46,7 @@ g++ -std=c++20 -I/path/to/DynaMPI/include my_program.cpp -lmpi
 ## Building Tests
 
 ```bash
-git clone https://github.com/Trailblaze-Software/DynaMPI.git
+git clone https://github.com/ryanstocks00/DynaMPI.git
 cd DynaMPI
 cmake -B build -DDYNAMPI_BUILD_TESTS=ON
 cmake --build build
