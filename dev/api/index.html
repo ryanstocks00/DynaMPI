@@ -8,7 +8,7 @@
       
       
       
-        <link rel="canonical" href="https://trailblaze-software.github.io/DynaMPI/dev/api/">
+        <link rel="canonical" href="https://ryanstocks00.github.io/DynaMPI/dev/api/">
       
       
         <link rel="prev" href="../install/">
@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -196,13 +196,13 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/Trailblaze-Software/DynaMPI" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/ryanstocks00/DynaMPI" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
-    Trailblaze-Software/DynaMPI
+    ryanstocks00/DynaMPI
   </div>
 </a>
       </div>
@@ -242,13 +242,13 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/Trailblaze-Software/DynaMPI" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/ryanstocks00/DynaMPI" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
-    Trailblaze-Software/DynaMPI
+    ryanstocks00/DynaMPI
   </div>
 </a>
     </div>
@@ -890,8 +890,9 @@
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="n">MPI_Comm</span><span class="w"> </span><span class="n">comm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MPI_COMM_WORLD</span><span class="p">,</span>
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">manager_rank</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
 </code></pre></div>
-<p>The primary entry point.  Distributes <code>n_tasks</code> tasks (indices <code>0..n_tasks-1</code>)
-across the MPI communicator.</p>
+<p>The primary entry point.  Distributes <code>n_tasks</code> tasks (indices <code>0 .. n_tasks-1</code>)
+across the MPI communicator.  The default <code>Distributor</code> template argument is
+<code>HierarchicalMPIWorkDistributor</code> (same type as <code>MPIDynamicWorkDistributor</code>).</p>
 <table>
 <thead>
 <tr>
@@ -904,7 +905,7 @@ across the MPI communicator.</p>
 <tr>
 <td><code>n_tasks</code></td>
 <td>—</td>
-<td>Number of tasks (0, 1, 2, ...)</td>
+<td>Number of tasks (0, 1, 2, …)</td>
 </tr>
 <tr>
 <td><code>worker_function</code></td>
@@ -929,16 +930,21 @@ across the MPI communicator.</p>
 </tbody>
 </table>
 <h2 id="dynampimpidynamicworkdistributor"><code>dynampi::MPIDynamicWorkDistributor</code></h2>
-<p>Type alias for the default distributor:</p>
+<p>The default distributor used by <code>mpi_manager_worker_distribution</code>. Hierarchical
+tree of coordinators; use this type for incremental task insertion:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">TaskT</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">ResultT</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="p">...</span><span class="w"> </span><span class="n">Options</span><span class="o">&gt;</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">using</span><span class="w"> </span><span class="n">MPIDynamicWorkDistributor</span><span class="w"> </span><span class="o">=</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">HierarchicalMPIWorkDistributor</span><span class="o">&lt;</span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="p">...</span><span class="o">&gt;</span><span class="p">;</span>
 </code></pre></div>
 <h2 id="distributor-classes">Distributor Classes</h2>
-<p>All distributors share a common interface.  The template signature is:</p>
+<p>Full distributors (<code>NaiveMPIWorkDistributor</code>, <code>MPIDynamicWorkDistributor</code>,
+<code>LockFreeMPIWorkDistributor</code>) share a common interface:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">TaskT</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">ResultT</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="p">...</span><span class="w"> </span><span class="n">Options</span><span class="o">&gt;</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Distributor</span><span class="p">;</span>
 </code></pre></div>
+<p><code>MinimalLockFreeMPIWorkDistributor&lt;ResultT&gt;</code> is a separate, smaller API for
+index-only parallel-for (<code>run(n_tasks)</code>); see
+<a href="../implementations/">Implementations</a>.</p>
 <h3 id="common-config-fields">Common <code>Config</code> Fields</h3>
 <table>
 <thead>
@@ -1066,7 +1072,7 @@ fields on each distributor class.</p>
 <h2 id="options">Options</h2>
 <p>Template options customise distributor behaviour via the <code>Options...</code>
 parameter pack:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Task prioritisation</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Task prioritisation (NaiveMPIWorkDistributor)</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">using</span><span class="w"> </span><span class="n">Dist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NaiveMPIWorkDistributor</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="p">,</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">dynampi</span><span class="o">::</span><span class="n">enable_prioritization</span><span class="o">&gt;</span><span class="p">;</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1">// Tasks inserted with insert_task(task, priority) are processed in</span>
@@ -1087,7 +1093,7 @@ parameter pack:</p>
 <tbody>
 <tr>
 <td><code>enable_prioritization</code></td>
-<td>Enables <code>insert_task(task, priority)</code></td>
+<td>Enables <code>insert_task(task, priority)</code> where supported (naive)</td>
 </tr>
 <tr>
 <td><code>track_statistics&lt;None&gt;</code></td>
@@ -1115,6 +1121,8 @@ parameter pack:</p>
 <a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">dv</span><span class="o">::</span><span class="n">commit_hash</span><span class="p">();</span><span class="w">            </span><span class="c1">// &quot;abc1234&quot; or &quot;abc1234-dirty&quot;</span>
 </code></pre></div>
 <h2 id="statistics">Statistics</h2>
+<p><code>CommStatistics</code> is shared.  Each distributor defines its own nested
+<code>Statistics</code> type returned by <code>get_statistics()</code>:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">struct</span><span class="w"> </span><span class="nc">CommStatistics</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">send_count</span><span class="p">,</span><span class="w"> </span><span class="n">recv_count</span><span class="p">,</span><span class="w"> </span><span class="n">collective_count</span><span class="p">;</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">bytes_sent</span><span class="p">,</span><span class="w"> </span><span class="n">bytes_received</span><span class="p">;</span>
@@ -1123,17 +1131,21 @@ parameter pack:</p>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="nf">average_receive_size</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="p">;</span>
 <a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">};</span>
 <a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="k">struct</span><span class="w"> </span><span class="nc">RMAStatistics</span><span class="w"> </span><span class="p">{</span><span class="w">          </span><span class="c1">// OneSided distributor only</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">put_count</span><span class="p">,</span><span class="w"> </span><span class="n">get_count</span><span class="p">;</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">bytes_put</span><span class="p">,</span><span class="w"> </span><span class="n">bytes_get</span><span class="p">;</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="p">};</span>
-<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
-<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="k">struct</span><span class="w"> </span><span class="nc">Statistics</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">    </span><span class="n">CommStatistics</span><span class="w"> </span><span class="n">comm_statistics</span><span class="p">;</span>
-<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">    </span><span class="n">RMAStatistics</span><span class="w"> </span><span class="n">rma_statistics</span><span class="p">;</span><span class="w">         </span><span class="c1">// zero for non-RMA distributors</span>
-<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">worker_task_counts</span><span class="p">;</span><span class="w">  </span><span class="c1">// per-rank task counts</span>
-<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="p">};</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="c1">// NaiveMPIWorkDistributor / HierarchicalMPIWorkDistributor</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="k">struct</span><span class="w"> </span><span class="nc">Statistics</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">CommStatistics</span><span class="o">&amp;</span><span class="w"> </span><span class="n">comm_statistics</span><span class="p">;</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">worker_task_counts</span><span class="p">;</span><span class="w">              </span><span class="c1">// naive</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="c1">// std::optional&lt;std::vector&lt;size_t&gt;&gt; worker_task_counts;  // hierarchical</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="p">};</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="c1">// LockFreeMPIWorkDistributor</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="k">struct</span><span class="w"> </span><span class="nc">Statistics</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">    </span><span class="n">CommStatistics</span><span class="w"> </span><span class="n">comm_statistics</span><span class="p">;</span><span class="w">                      </span><span class="c1">// by value</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">worker_task_counts</span><span class="p">;</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="p">};</span>
 </code></pre></div>
+<p>Prefer <code>auto&amp; stats = dist.get_statistics();</code> and read the fields you need
+rather than depending on a single shared <code>Statistics</code> layout.</p>
 <h2 id="utilities">Utilities</h2>
 <h3 id="timer">Timer</h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;dynampi/utilities/timer.hpp&gt;</span>
@@ -1229,7 +1241,7 @@ parameter pack:</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.indexes", "navigation.tracking", "navigation.top", "toc.follow", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
