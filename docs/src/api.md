@@ -18,12 +18,13 @@ std::optional<std::vector<ResultT>> mpi_manager_worker_distribution(
     int manager_rank = 0);
 ```
 
-The primary entry point.  Distributes `n_tasks` tasks (indices `0..n_tasks-1`)
-across the MPI communicator.
+The primary entry point.  Distributes `n_tasks` tasks (indices `0 .. n_tasks-1`)
+across the MPI communicator.  The default `Distributor` template argument is
+`HierarchicalMPIWorkDistributor` (same type as `MPIDynamicWorkDistributor`).
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `n_tasks` | — | Number of tasks (0, 1, 2, ...) |
+| `n_tasks` | — | Number of tasks (0, 1, 2, …) |
 | `worker_function` | — | `size_t → ResultT` |
 | `comm` | `MPI_COMM_WORLD` | MPI communicator |
 | `manager_rank` | `0` | Manager rank |
@@ -31,7 +32,8 @@ across the MPI communicator.
 
 ## `dynampi::MPIDynamicWorkDistributor`
 
-Type alias for the default distributor:
+The default distributor used by `mpi_manager_worker_distribution`. Hierarchical
+tree of coordinators; use this type for incremental task insertion:
 
 ```cpp
 template <typename TaskT, typename ResultT, typename... Options>
@@ -41,12 +43,17 @@ using MPIDynamicWorkDistributor =
 
 ## Distributor Classes
 
-All distributors share a common interface.  The template signature is:
+Full distributors (`NaiveMPIWorkDistributor`, `MPIDynamicWorkDistributor`,
+`LockFreeMPIWorkDistributor`) share a common interface:
 
 ```cpp
 template <typename TaskT, typename ResultT, typename... Options>
 class Distributor;
 ```
+
+`MinimalLockFreeMPIWorkDistributor<ResultT>` is a separate, smaller API for
+index-only parallel-for (`run(n_tasks)`); see
+[Implementations](implementations.md).
 
 ### Common `Config` Fields
 
@@ -88,7 +95,7 @@ Template options customise distributor behaviour via the `Options...`
 parameter pack:
 
 ```cpp
-// Task prioritisation
+// Task prioritisation (NaiveMPIWorkDistributor)
 using Dist = NaiveMPIWorkDistributor<int, double,
     dynampi::enable_prioritization>;
 // Tasks inserted with insert_task(task, priority) are processed in
@@ -102,7 +109,7 @@ using Dist = NaiveMPIWorkDistributor<int, double,
 
 | Option | Effect |
 |--------|--------|
-| `enable_prioritization` | Enables `insert_task(task, priority)` |
+| `enable_prioritization` | Enables `insert_task(task, priority)` where supported (naive) |
 | `track_statistics<None>` | No statistics (default) |
 | `track_statistics<Aggregated>` | Per-rank task counts |
 | `track_statistics<Detailed>` | Full communication statistics |
@@ -123,6 +130,9 @@ dv::commit_hash();            // "abc1234" or "abc1234-dirty"
 
 ## Statistics
 
+`CommStatistics` is shared.  Each distributor defines its own nested
+`Statistics` type returned by `get_statistics()`:
+
 ```cpp
 struct CommStatistics {
     int send_count, recv_count, collective_count;
@@ -132,17 +142,22 @@ struct CommStatistics {
     double average_receive_size() const;
 };
 
-struct RMAStatistics {          // OneSided distributor only
-    int put_count, get_count;
-    size_t bytes_put, bytes_get;
+// NaiveMPIWorkDistributor / HierarchicalMPIWorkDistributor
+struct Statistics {
+    const CommStatistics& comm_statistics;
+    std::vector<size_t> worker_task_counts;              // naive
+    // std::optional<std::vector<size_t>> worker_task_counts;  // hierarchical
 };
 
+// LockFreeMPIWorkDistributor
 struct Statistics {
-    CommStatistics comm_statistics;
-    RMAStatistics rma_statistics;         // zero for non-RMA distributors
-    std::vector<size_t> worker_task_counts;  // per-rank task counts
+    CommStatistics comm_statistics;                      // by value
+    std::vector<size_t> worker_task_counts;
 };
 ```
+
+Prefer `auto& stats = dist.get_statistics();` and read the fields you need
+rather than depending on a single shared `Statistics` layout.
 
 ## Utilities
 
