@@ -24,22 +24,25 @@ option(DYNAMPI_BUILD_BENCHMARKS "Build benchmarks for DynaMPI"
 
 execute_process(
   COMMAND git rev-parse HEAD
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   OUTPUT_VARIABLE GIT_COMMIT_HASH
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  ERROR_QUIET)
 
 # Check for uncommitted changes
 execute_process(
   COMMAND git diff-index --quiet HEAD --
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  RESULT_VARIABLE GIT_DIRTY)
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  RESULT_VARIABLE GIT_DIRTY
+  ERROR_QUIET)
 
 # Append '-dirty' if there are changes
 if(NOT GIT_DIRTY EQUAL 0)
   set(GIT_COMMIT_HASH "${GIT_COMMIT_HASH}-dirty")
 endif()
-
-add_definitions(-DDYNAMPI_COMMIT_HASH="${GIT_COMMIT_HASH}")
+if(NOT GIT_COMMIT_HASH)
+  set(GIT_COMMIT_HASH "unknown")
+endif()
 
 find_package(MPI REQUIRED)
 
@@ -51,18 +54,21 @@ target_compile_definitions(
   dynampi
   INTERFACE DYNAMPI_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
             DYNAMPI_VERSION_MINOR=${PROJECT_VERSION_MINOR}
-            DYNAMPI_VERSION_PATCH=${PROJECT_VERSION_PATCH})
+            DYNAMPI_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+            DYNAMPI_COMMIT_HASH="${GIT_COMMIT_HASH}")
 if(NOT CMAKE_CXX_COMPILER MATCHES "smpicxx")
   target_link_libraries(dynampi INTERFACE MPI::MPI_CXX)
 endif()
 
-if(MSVC)
-  add_compile_options(/W4 /WX)
-else()
-  add_compile_options(-Wall -Wextra -Wpedantic -Werror -fno-ms-extensions)
-endif()
-if(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
-  add_compile_options(-diag-disable=10430 -Wno-unknown-warning-option)
+if(IS_BASE_PROJECT)
+  if(MSVC)
+    add_compile_options(/W4 /WX)
+  else()
+    add_compile_options(-Wall -Wextra -Wpedantic -Werror -fno-ms-extensions)
+  endif()
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+    add_compile_options(-diag-disable=10430 -Wno-unknown-warning-option)
+  endif()
 endif()
 
 set(CMAKE_CXX_FLAGS_COVERAGE "-O0 -g -coverage -fprofile-arcs -ftest-coverage \

@@ -629,9 +629,10 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   void receive_result_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
                            CommLayer layer) {
     m_results.push_back(ResultT{});
-    if (result_mpi_type::resize_required) {
-      DYNAMPI_UNIMPLEMENTED(  // LCOV_EXCL_LINE
-          "Dynamic resizing of results is not supported in hierarchical distribution");
+    if constexpr (result_mpi_type::resize_required) {
+      int count = 0;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, result_mpi_type::value, &count));
+      result_mpi_type::resize(m_results.back(), count);
     }
     // With groups, always use global communicator and determine layer from source rank
     int world_source = status.MPI_SOURCE;
