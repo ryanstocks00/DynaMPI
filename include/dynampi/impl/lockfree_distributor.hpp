@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <functional>
@@ -23,6 +24,7 @@
 #include "../mpi/mpi_types.hpp"
 #include "dynampi/impl/base_distributor.hpp"
 #include "dynampi/mpi/mpi_error.hpp"
+#include "dynampi/utilities/timer.hpp"
 
 namespace dynampi {
 
@@ -288,6 +290,7 @@ class LockFreeMPIWorkDistributor {
     int max_tasks = 8192;        // capacity of the task/result tables (lifetime total)
     int max_task_count = 256;    // max elements per task (only for resizable TaskT)
     int max_result_count = 256;  // max elements per result (only for resizable ResultT)
+    int claim_batch_size = 8;    // tasks claimed per RMA round trip (see run_worker())
   };
 
   struct RunConfig {
@@ -379,6 +382,28 @@ class LockFreeMPIWorkDistributor {
 
   [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() { return run_tasks({}); }
 
+  // Requests exactly one gather round and returns whatever results have been
+  // staged by workers so far -- possibly none, possibly all outstanding
+  // tasks, depending on how far workers have gotten. Unlike run_tasks() /
+  // finish_remaining_tasks(), this does not loop retrying until every
+  // outstanding task is collected: each call to those pays for a
+  // MPI_Barrier + MPI_Gather/MPI_Gatherv across the whole communicator on
+  // *every* internal retry (see try_gather_results()), which at high rank
+  // counts can dominate over actual task execution time for fine-grained
+  // tasks. Call this instead when the caller wants to control synchronization
+  // frequency directly -- e.g. insert a large batch, let workers churn
+  // uninterrupted for a while, then take a single snapshot with one call
+  // here rather than one call per outstanding task.
+  [[nodiscard]] std::vector<ResultT> gather_once() {
+    assert(is_root_manager());
+    if (num_workers() == 0) {
+      while (m_collected_count < static_cast<size_t>(m_total_tasks)) run_one_task_locally();
+    } else {
+      request_gather();
+    }
+    return drain_results(std::numeric_limits<size_t>::max());
+  }
+
   void finalize() {
     assert(!m_finalized);
     if (is_root_manager()) {
@@ -434,23 +459,126 @@ class LockFreeMPIWorkDistributor {
   void run_worker() {
     assert(!is_root_manager());
 
+    // Fetch-and-add claiming instead of compare-and-swap: FAA can't lose a
+    // race (there's nothing to compare against), so under contention it
+    // wastes none of the throughput CAS gives up to failed attempts --
+    // rma_atomic_microbench measured CAS success rates as low as 3%
+    // (32-way contention) to under 1% (128-way), while FAA always succeeds.
+    //
+    // Unlike compare_and_swap, FAA can't be told "only add up to what's
+    // published" -- it always grants exactly what you ask for, with no way
+    // to verify that against TOTAL_OFF atomically. The naive fix (always
+    // request claim_batch_size, unconditionally) was tried and made things
+    // *worse*, not better: every worker instantly races HEAD far ahead of
+    // TOTAL regardless of real publish rate, so nearly every claim lands in
+    // the slow wait-and-poll path instead of the fast immediate-process
+    // path -- the CAS version's habit of bounding its request to
+    // min(claim_batch_size, total-head) *before* claiming was quietly doing
+    // most of the work, not the compare-and-swap itself. So this still
+    // bounds the requested size the same way CAS did (cached_head/
+    // cached_total, refreshed lazily) -- the difference is only that FAA
+    // can't *verify* cached_head is still accurate the way CAS's compare
+    // does, so a claim can occasionally still straddle the published
+    // boundary if another worker advanced HEAD since our last observation
+    // of it. That's rare and small (bounded by how stale cached_head is),
+    // not the systematic full-batch overshoot of the unconditional version.
+    //
+    // pending_start/pending_end track the unresolved remainder of such a
+    // straddling claim across iterations. The one subtlety that isn't
+    // optional: a worker with a pending tail MUST still process whatever
+    // *prefix* of its claim is already valid immediately, rather than
+    // blocking until the whole range resolves. finalize() can't set
+    // FINISHED_OFF until it has collected every result -- including this
+    // worker's already-ready prefix -- so blocking on the unready remainder
+    // before staging that prefix would deadlock: the manager waiting on
+    // results this worker refuses to compute until FINISHED, which the
+    // manager won't set until it has them. Processing the ready prefix on
+    // the spot (both in the fresh-claim branch and the pending-tail branch
+    // below) avoids that entirely -- only the genuinely-not-yet-published
+    // remainder ever waits.
+    int64_t cached_head = 0;
+    int64_t cached_total = 0;
+    int64_t pending_start = -1;
+    int64_t pending_end = -1;
+    bool finished_seen = false;
+
+    auto process_range = [&](int64_t start, int64_t count) {
+      std::vector<TaskT> tasks = read_task_batch(start, count);
+      for (int64_t i = 0; i < count; ++i) {
+        ResultT result = m_worker_function(std::move(tasks[static_cast<size_t>(i)]));
+        store_result(start + i, std::move(result));
+      }
+    };
+
     while (true) {
       maybe_participate_in_gather();
+      bool made_progress = false;
 
-      const int64_t total = atomic_read(TOTAL_OFF);
-      const int64_t head = atomic_read(HEAD_OFF);
-
-      if (head < total) {
-        // Claim this index with a compare-and-swap so no index is ever skipped.
-        if (compare_and_swap(HEAD_OFF, head, head + 1) != head) continue;
-        const int64_t index = head;
-
-        TaskT task = read_task(index);
-        ResultT result = m_worker_function(std::move(task));
-        store_result(index, std::move(result));
-      } else if (atomic_read(FINISHED_OFF) != 0) {
-        break;
+      if (pending_start != -1) {
+        const int64_t total = atomic_read(TOTAL_OFF);
+        const int64_t ready = std::min(pending_end, total);
+        if (ready > pending_start) {
+          process_range(pending_start, ready - pending_start);
+          pending_start = ready;
+          made_progress = true;
+        }
+        if (pending_start >= pending_end) {
+          pending_start = -1;  // fully resolved
+        } else if (finished_seen) {
+          pending_start = -1;  // total is final and short of pending_end: that remainder never existed
+        }
       } else {
+        // Deliberately NOT gated on !finished_seen: finished_seen only means
+        // "TOTAL_OFF won't grow anymore", not "stop claiming what's already
+        // known to be available". Gating this whole branch on !finished_seen
+        // meant that once finished_seen went true, nothing could ever claim
+        // again -- a worker sitting on a real, never-claimed gap between
+        // cached_head and a just-learned final_total (see the exit check
+        // below, which discovers and records that gap into cached_total)
+        // would spin forever re-discovering it with no way to act on it.
+        // Confirmed via gdb backtraces on a caught hang in the sibling
+        // AsyncPutLockFreeMPIWorkDistributor, which shares this exact
+        // claim-loop structure: 15/16 ranks parked in the destructor's
+        // teardown barrier while the 16th sat in an idle-wait loop forever.
+        if (cached_head >= cached_total && !finished_seen) cached_total = atomic_read(TOTAL_OFF);
+
+        if (cached_head < cached_total) {
+          const int64_t claim =
+              std::min<int64_t>(m_config.claim_batch_size, cached_total - cached_head);
+          const int64_t start = fetch_add(HEAD_OFF, claim);
+          const int64_t end = start + claim;
+          cached_head = end;  // best local estimate; may be stale vs. concurrent claimants, see above
+
+          // Usually ready == end (cached_total was accurate); only re-reads
+          // TOTAL_OFF when start turned out higher than expected (another
+          // worker claimed since our last observation), which is the rare
+          // case this whole scheme is built to tolerate rather than prevent.
+          const int64_t total = (start + claim <= cached_total) ? cached_total : atomic_read(TOTAL_OFF);
+          const int64_t ready = std::min(end, total);
+          if (ready > start) {
+            process_range(start, ready - start);
+            made_progress = true;
+          }
+          if (ready < end) {
+            pending_start = ready;
+            pending_end = end;
+          }
+        }
+      }
+
+      if (!finished_seen && atomic_read(FINISHED_OFF) != 0) finished_seen = true;
+
+      if (pending_start == -1 && finished_seen) {
+        // cached_total can be stale relative to when TOTAL_OFF actually
+        // stopped growing (publishing finishes well before FINISHED_OFF
+        // becomes visible here), so a fresh read is needed before trusting
+        // "nothing left" -- otherwise this could exit while real,
+        // never-claimed work still exists.
+        const int64_t final_total = atomic_read(TOTAL_OFF);
+        if (cached_head >= final_total) break;
+        cached_total = final_total;  // real unclaimed work remains; go claim it next iteration
+      }
+      if (!made_progress) {
         maybe_participate_in_gather();
         detail::rma_wait_idle(m_window);
       }
@@ -552,25 +680,53 @@ class LockFreeMPIWorkDistributor {
     flush(m_config.manager_rank);
   }
 
-  int64_t compare_and_swap(MPI_Aint offset, int64_t expected, int64_t desired) {
-    int64_t comp = expected, des = desired, out;
-    DYNAMPI_MPI_CHECK(MPI_Compare_and_swap,
-                      (&des, &comp, &out, MPI_INT64_T, m_config.manager_rank, offset, m_window));
+  // Unlike compare_and_swap (see run_worker()'s doc comment for why it was
+  // dropped), fetch_add can't lose a race -- there's nothing to compare, it
+  // unconditionally reserves `increment` slots starting at whatever HEAD_OFF
+  // currently is and hands that starting point back.
+  int64_t fetch_add(MPI_Aint offset, int64_t increment) {
+    int64_t in = increment, out;
+    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op,
+                      (&in, &out, MPI_INT64_T, m_config.manager_rank, offset, MPI_SUM, m_window));
     flush(m_config.manager_rank);
     return out;
   }
 
+  // MPI_Put/MPI_Get take a plain `int` count, but n (a byte length derived
+  // from task/result-table capacities that can legitimately reach into the
+  // hundreds of millions of slots) can exceed INT_MAX. static_cast<int>(n)
+  // on an over-INT_MAX n silently wraps -- see the identical fix (and its
+  // fuller rationale) in hierarchical_async_put_lockfree_distributor.hpp's
+  // put_bytes()/get_bytes(). Chunk into INT_MAX-bounded pieces so no single
+  // MPI_Put/MPI_Get call is ever handed a count that doesn't fit in `int`.
+  static constexpr size_t kMaxRmaChunkBytes = static_cast<size_t>(std::numeric_limits<int>::max());
+
   void put_bytes(const void* src, size_t n, MPI_Aint offset) {
-    DYNAMPI_MPI_CHECK(MPI_Put, (src, static_cast<int>(n), MPI_BYTE, m_config.manager_rank, offset,
-                                static_cast<int>(n), MPI_BYTE, m_window));
+    if (n == 0) return;
+    const auto* bytes = static_cast<const std::byte*>(src);
+    size_t done = 0;
+    while (done < n) {
+      const size_t chunk = std::min(kMaxRmaChunkBytes, n - done);
+      DYNAMPI_MPI_CHECK(MPI_Put, (bytes + done, static_cast<int>(chunk), MPI_BYTE,
+                                  m_config.manager_rank, offset + static_cast<MPI_Aint>(done),
+                                  static_cast<int>(chunk), MPI_BYTE, m_window));
+      done += chunk;
+    }
     flush(m_config.manager_rank);
   }
 
   // Workers read the manager's window.
   void get_bytes(void* dst, size_t n, MPI_Aint offset) {
     if (n == 0) return;
-    DYNAMPI_MPI_CHECK(MPI_Get, (dst, static_cast<int>(n), MPI_BYTE, m_config.manager_rank, offset,
-                                static_cast<int>(n), MPI_BYTE, m_window));
+    auto* bytes = static_cast<std::byte*>(dst);
+    size_t done = 0;
+    while (done < n) {
+      const size_t chunk = std::min(kMaxRmaChunkBytes, n - done);
+      DYNAMPI_MPI_CHECK(MPI_Get, (bytes + done, static_cast<int>(chunk), MPI_BYTE,
+                                  m_config.manager_rank, offset + static_cast<MPI_Aint>(done),
+                                  static_cast<int>(chunk), MPI_BYTE, m_window));
+      done += chunk;
+    }
     flush(m_config.manager_rank);
   }
 
@@ -609,15 +765,31 @@ class LockFreeMPIWorkDistributor {
     atomic_set(TOTAL_OFF, m_total_tasks);  // publish to workers
   }
 
-  TaskT read_task(int64_t index) {
-    int64_t count = 0;
-    get_bytes(&count, 8, task_slot(index) + static_cast<MPI_Aint>(T_COUNT));
-    TaskT task{};
-    if constexpr (MPI_Type<TaskT>::resize_required)
-      MPI_Type<TaskT>::resize(task, static_cast<int>(count));
-    get_bytes(MPI_Type<TaskT>::ptr(task), static_cast<size_t>(count) * m_task_elem,
-              task_slot(index) + static_cast<MPI_Aint>(T_DATA));
-    return task;
+  // Reads `count` contiguous task slots starting at `index` in a single RMA
+  // Get spanning the whole range (rather than one Get per task, or two for
+  // resizable TaskT), then parses each fixed-stride slot out of that one
+  // buffer locally. Transfers some unused padding for resizable TaskT whose
+  // actual size is below max_task_count, but for a claimed batch that's a
+  // bandwidth cost, not a round-trip cost -- round trips are what dominate
+  // here (see run_worker()).
+  std::vector<TaskT> read_task_batch(int64_t index, int64_t count) {
+    const size_t bytes = static_cast<size_t>(count) * m_task_slot_stride;
+    std::vector<std::byte> buf(bytes);
+    get_bytes(buf.data(), bytes, task_slot(index));
+
+    std::vector<TaskT> tasks;
+    tasks.reserve(static_cast<size_t>(count));
+    for (int64_t i = 0; i < count; ++i) {
+      const size_t slot_offset = static_cast<size_t>(i) * m_task_slot_stride;
+      const int64_t elem_count = detail::read_i64(buf.data(), buf.size(), slot_offset + T_COUNT);
+      TaskT task{};
+      if constexpr (MPI_Type<TaskT>::resize_required)
+        MPI_Type<TaskT>::resize(task, static_cast<int>(elem_count));
+      const size_t data_bytes = static_cast<size_t>(elem_count) * m_task_elem;
+      detail::read_result_bytes(buf.data(), buf.size(), slot_offset + T_DATA, task, data_bytes);
+      tasks.push_back(std::move(task));
+    }
+    return tasks;
   }
 
   void store_result(int64_t index, ResultT result) {

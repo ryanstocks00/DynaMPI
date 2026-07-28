@@ -21,8 +21,14 @@ FILESYSTEMS="${FILESYSTEMS:-flare}"
 NCPUS_PER_NODE="${NCPUS_PER_NODE:-102}"
 
 WALLTIME="${WALLTIME:-00:15:00}"
+DURATION_S="${DURATION_S:-}"
 LAUNCHER="${LAUNCHER:-}"
 LAUNCHER_ARGS="${LAUNCHER_ARGS:-}"
+DISTRIBUTIONS="${DISTRIBUTIONS:-}"
+TASK_US_LIST="${TASK_US_LIST:-}"
+MODES="${MODES:-}"
+MAX_UPPER_FANOUT="${MAX_UPPER_FANOUT:-}"
+MAX_UPPER_FANOUT_LIST="${MAX_UPPER_FANOUT_LIST:-}"
 OUTPUT_BASE="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 
 for nodes in "${NODE_LIST[@]}"; do
@@ -45,12 +51,27 @@ export NODE_LIST=\"${nodes}\"
 export LAUNCHER=\"${LAUNCHER}\"
 export LAUNCHER_ARGS=\"${LAUNCHER_ARGS}\"
 export CORES_PER_NODE=\"${NCPUS_PER_NODE}\"
+export DISTRIBUTIONS=\"${DISTRIBUTIONS}\"
+export TASK_US_LIST=\"${TASK_US_LIST}\"
+export MODES=\"${MODES}\"
+export DURATION_S=\"${DURATION_S}\"
+export MAX_UPPER_FANOUT=\"${MAX_UPPER_FANOUT}\"
+export MAX_UPPER_FANOUT_LIST=\"${MAX_UPPER_FANOUT_LIST}\"
 export OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${PBS_JOBID_SHORT:-manual}\"
 ${SCRIPT}
 "
   echo "qsub ${submit_args[*]} -N \"${job_name}\" -l \"select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}\" -l \"walltime=${WALLTIME}\" -l \"filesystems=${FILESYSTEMS}\" <<'QSUBEOF'"
   echo "${job_script}"
   echo "QSUBEOF"
-  qsub "${submit_args[@]}" -N "${job_name}" -l "select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}" -l "walltime=${WALLTIME}" \
-    -l "filesystems=${FILESYSTEMS}" <<< "${job_script}"
+  # The account can have OTHER unrelated jobs (different projects) sitting in
+  # the queue that count against a per-user "jobs in Q state" limit enforced
+  # by PBS itself (independent of wait_for_aurora_queue_space's running/
+  # debug-scaling checks, which only look at running-count and debug-scaling
+  # occupancy). qsub fails outright when that limit is hit -- retry with
+  # backoff instead of letting `set -e` abort the whole node-count sweep.
+  until qsub "${submit_args[@]}" -N "${job_name}" -l "select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}" \
+    -l "walltime=${WALLTIME}" -l "filesystems=${FILESYSTEMS}" <<< "${job_script}"; do
+    echo "qsub failed (queue limit?) for nodes=${nodes}; retrying in ${AURORA_QUEUE_POLL_INTERVAL}s ..." >&2
+    sleep "${AURORA_QUEUE_POLL_INTERVAL}"
+  done
 done

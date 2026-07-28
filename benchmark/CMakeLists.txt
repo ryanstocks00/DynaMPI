@@ -14,7 +14,9 @@ set(benchmarks
     strong_scaling_distribution_rate
     pingpong
     timer_resolution
-    naive_shutdown_time
+    shutdown_time
+    rma_atomic_microbench
+    async_put_lockfree_isolated_bench
 )
 
 foreach(benchmark IN LISTS benchmarks)

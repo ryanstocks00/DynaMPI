@@ -28,8 +28,34 @@
 
 namespace dynampi {
 
+// ---------------------------------------------------------------------------
+// HierarchicalNonBlockingMPIWorkDistributor
+//
+// Identical topology, protocol, and pipelining logic to
+// HierarchicalMPIWorkDistributor (see that file) -- this is a copy with one
+// change: every outgoing message (TASK, TASK_BATCH, RESULT, RESULT_BATCH,
+// REQUEST_BATCH) is sent via MPI_Isend instead of a blocking MPI_Send, so a
+// coordinator posting a reply to one child never stalls before it can move
+// on to serve the next. Each async send's buffer is kept alive in a small
+// per-type pool (AsyncSendPool below) until MPI confirms it, reaped
+// opportunistically whenever a new send of that type is posted.
+//
+// Receiving is unchanged (still a blocking MPI_Probe + matching MPI_Recv):
+// every call site that waits on it already has nothing else productive to
+// do at that exact point (see run_worker()), so converting it to a
+// proactively-posted MPI_Irecv would need a byte-count-then-data staging
+// protocol for the variable-length TASK_BATCH/RESULT_BATCH messages (sizes
+// aren't known until the sender tells you) without a clear benefit here --
+// this variant isolates the question of whether the *send* side blocking
+// was costing anything.
+//
+// Empty messages (REQUEST, DONE -- zero payload bytes) skip the pool
+// entirely: with no buffer to keep alive, MPI_Isend + MPI_Request_free is a
+// safe, genuine fire-and-forget.
+// ---------------------------------------------------------------------------
 template <typename TaskT, typename ResultT, typename... Options>
-class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, ResultT, Options...> {
+class HierarchicalNonBlockingMPIWorkDistributor
+    : public BaseMPIWorkDistributor<TaskT, ResultT, Options...> {
   using Base = BaseMPIWorkDistributor<TaskT, ResultT, Options...>;
 
  public:
@@ -130,6 +156,64 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   // Cached parent target to avoid repeated MPI_Group_translate_ranks calls
   mutable std::optional<std::pair<int, CommLayer>> m_cached_parent_target;
+
+  // Keeps a non-blocking send's buffer alive until MPI confirms the send,
+  // without ever blocking the poster on that confirmation. post() reaps
+  // already-completed entries (via MPI_Test, not Wait) before adding the
+  // new one -- an amortized, non-blocking cleanup rather than a separate
+  // sweep -- so the pool stays close to "however many of this message type
+  // are genuinely in flight right now," not unboundedly growing.
+  template <typename T>
+  class AsyncSendPool {
+   public:
+    void post(MPICommunicator& comm, T value, int dest, int tag) {
+      reap();
+      pending.emplace_back(std::move(value), MPI_Request{});
+      auto& [buf, req] = pending.back();
+      using mpi_type = MPI_Type<T>;
+      DYNAMPI_MPI_CHECK(MPI_Isend, (mpi_type::ptr(buf), mpi_type::count(buf), mpi_type::value,
+                                    dest, tag, comm.get(), &req));
+    }
+
+    // Must be called before this rank's process moves toward destruction:
+    // an Isend's buffer has to stay valid and its request has to be
+    // completed (Wait or Test-until-true) before it's safe to let go of
+    // either -- see the call sites in run_worker()/finalize().
+    void wait_all() {
+      for (auto& [buf, req] : pending) {
+        DYNAMPI_MPI_CHECK(MPI_Wait, (&req, MPI_STATUS_IGNORE));
+      }
+      pending.clear();
+    }
+
+   private:
+    void reap() {
+      for (auto it = pending.begin(); it != pending.end();) {
+        int flag = 0;
+        DYNAMPI_MPI_CHECK(MPI_Test, (&it->second, &flag, MPI_STATUS_IGNORE));
+        if (flag) {
+          it = pending.erase(it);
+        } else {
+          ++it;
+        }
+      }
+    }
+    std::deque<std::pair<T, MPI_Request>> pending;
+  };
+
+  AsyncSendPool<int> m_pending_int_sends;                        // REQUEST_BATCH
+  AsyncSendPool<TaskT> m_pending_task_sends;                      // TASK
+  AsyncSendPool<ResultT> m_pending_result_sends;                  // RESULT
+  AsyncSendPool<std::vector<TaskT>> m_pending_task_batch_sends;   // TASK_BATCH
+  AsyncSendPool<std::vector<ResultT>> m_pending_result_batch_sends;  // RESULT_BATCH
+
+  void wait_all_pending_sends() {
+    m_pending_int_sends.wait_all();
+    m_pending_task_sends.wait_all();
+    m_pending_result_sends.wait_all();
+    m_pending_task_batch_sends.wait_all();
+    m_pending_result_batch_sends.wait_all();
+  }
 
   // --- Topology Helper Methods ---
 
@@ -278,7 +362,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   }
 
  public:
-  explicit HierarchicalMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
+  explicit HierarchicalNonBlockingMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
                                           Config runtime_config = Config{})
       : m_communicator(runtime_config.comm, MPICommunicator::Duplicate),
         m_world_group(m_communicator),
@@ -344,6 +428,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       while (!m_done) {
         receive_from_anyone();
       }
+      wait_all_pending_sends();
     } else {
       // Intermediate nodes (Node Coordinators)
       int num_children = num_direct_children();
@@ -391,31 +476,18 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
           }
         }
 
-        // If we have no tasks to give, wait for tasks from parent. Flush
-        // any results gained while waiting -- a real, confirmed deadlock
-        // otherwise: once this coordinator has distributed everything it
-        // currently has, this loop is the ONLY place it spends time until
-        // its parent sends more (which may never happen, e.g. once the
-        // parent's own task supply is exhausted but m_done hasn't arrived
-        // yet). Straggler results trickling in via receive_from_anyone()
-        // here would sit in m_results forever with no other flush point to
-        // reach -- and the parent's own exhaustion check depends on
-        // eventually seeing them, so both ends would wait on each other
-        // permanently. Flushing here closes that gap the same way the
-        // round-boundary flush does for the normal case.
+        // If we have no tasks to give, wait for tasks from parent
         while (!m_done && m_unallocated_task_queue.empty()) {
           receive_from_anyone();
-          if (!m_results.empty()) {
-            send_results_to_parent();
-          }
         }
         if (m_done) break;
 
+        size_t num_tasks_should_be_received = m_unallocated_task_queue.size();
         // While this round is active, any TASK_BATCH that arrives (a reply
         // to a pipelined request) is quarantined in m_prefetched_tasks
         // rather than merged into m_unallocated_task_queue, so this round's
-        // distribution loop can never overshoot past this round's own
-        // starting queue size into next round's tasks.
+        // distribution loop can never overshoot past
+        // num_tasks_should_be_received into next round's tasks.
         m_round_active = true;
 
         // Pipelining: top up outstanding requests to pipeline_depth-1 (the
@@ -436,7 +508,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         // newly-arriving TASK_BATCH into m_prefetched_tasks, nothing new
         // can leak into m_unallocated_task_queue here -- so finishing it
         // out is always safe, and required: abandoning it would silently
-        // drop this round's tasks.
+        // drop this round's tasks (DYNAMPI_ASSERT_EQ below compiles to
+        // nothing under NDEBUG/Release, so this would fail silently, not
+        // loudly).
         while (!m_unallocated_task_queue.empty()) {
           if (m_free_worker_indices.empty()) {
             // Must wait for a worker to become free
@@ -446,27 +520,19 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
           }
         }
 
+        // Wait for results from children -- also not gated on m_done, for
+        // the same reason as above: this round's already-dispatched tasks
+        // must be collected before we can honor a DONE observed mid-round.
+        while (m_tasks_sent_to_child > m_results_received_from_child) {
+          receive_from_anyone();
+        }
+
         m_round_active = false;
 
-        // Deliberately NOT gated on every result from this round having
-        // arrived: this class is unordered (see `static const bool ordered
-        // = false` above), so nothing downstream cares which round a result
-        // came from. Waiting here for a round's slowest straggler used to
-        // block send_results_to_parent() entirely -- even results from
-        // OTHER children that finished long ago sat unsent the whole time.
-        // Sending whatever has accumulated so far (possibly nothing, if
-        // every child in this round is still working) and moving straight
-        // on to distributing the next round lets fast children's results
-        // flow upward immediately and lets those same children pick up
-        // next-round work right away (allocate_task_to_child() only needs a
-        // free worker, not a fully-drained round) instead of sitting idle
-        // behind one slow sibling. Any straggler's result still gets
-        // collected and forwarded eventually -- either by a later round's
-        // flush below, or by the final drain after send_done_to_children_
-        // when_free() if it lands after the last round.
-        if (!m_results.empty()) {
-          send_results_to_parent();
-        }
+        (void)num_tasks_should_be_received;
+        DYNAMPI_ASSERT_EQ(m_results.size(), num_tasks_should_be_received);
+
+        send_results_to_parent();
 
         // Minimum-progress guarantee: ensure at least one request is
         // outstanding before we loop back to wait for the next round.
@@ -482,26 +548,12 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         // round finishes, and needs the same top-up to keep the pipeline
         // fed afterward.
         top_up_pipeline(1);
-        // Safe to honor m_done now: this round is fully distributed and
-        // whatever was ready has been flushed to our parent. Any results
-        // still outstanding (stragglers) are picked up by
-        // send_done_to_children_when_free()'s own draining below, and
-        // flushed by the final send_results_to_parent() after it.
+        // Safe to honor m_done now: this round is fully distributed,
+        // collected, and flushed to our parent.
         if (m_done) break;
       }
       send_done_to_children_when_free();
-      // send_done_to_children_when_free() only returns once every child is
-      // free, which (see receive_result_from/receive_result_batch_from)
-      // requires having received that child's result first -- so by this
-      // point every result this coordinator will ever collect has arrived.
-      // The round loop above only flushes at round boundaries, so a
-      // straggler landing after the last round's flush (including one only
-      // observed here, during the done-notification drain) would otherwise
-      // never be forwarded, permanently violating finalize()'s
-      // m_results_sent_to_parent == m_tasks_received_from_parent invariant.
-      if (!m_results.empty()) {
-        send_results_to_parent();
-      }
+      wait_all_pending_sends();
     }
   }
 
@@ -663,6 +715,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     DYNAMPI_ASSERT(!m_finalized, "Work distribution already finalized");
     if (is_root_manager()) {
       send_done_to_children_when_free();
+      wait_all_pending_sends();
     }
     m_finalized = true;
     if constexpr (statistics_mode != StatisticsMode::None) {
@@ -677,7 +730,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     }
   }
 
-  ~HierarchicalMPIWorkDistributor() {
+  ~HierarchicalNonBlockingMPIWorkDistributor() {
     if (!m_finalized) {
       finalize();
     }
@@ -743,15 +796,43 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   void send_to_parent(const T& data, Tag tag) {
     auto [target, layer] = get_parent_target();
     DYNAMPI_ASSERT_NE(target, -1, "Root cannot send to parent");
-
-    // With groups, target is always a world rank, so use global communicator
-    m_communicator.send(data, target, tag);
+    send_async(data, target, tag);
   }
 
   template <typename T>
   void send_to_worker(const T& data, int rank, Tag tag, [[maybe_unused]] CommLayer layer) {
-    // With groups, rank is stored as world rank in TaskRequest, so use global communicator
-    m_communicator.send(data, rank, tag);
+    send_async(data, rank, tag);
+  }
+
+  // Routes to the pool matching T (see AsyncSendPool above), or a genuine
+  // fire-and-forget Isend+Request_free for zero-payload messages. If
+  // TaskT == ResultT (e.g. both uint32_t, as in the benchmarks), a TaskT
+  // send and a ResultT send are the same instantiation and both land in
+  // m_pending_task_sends -- harmless: pool identity is only a buffer-
+  // lifetime bookkeeping detail, not part of what goes out on the wire
+  // (dest/tag/data are whatever the caller passed regardless of which pool
+  // holds the buffer).
+  template <typename T>
+  void send_async(const T& data, int dest, Tag tag) {
+    if constexpr (std::is_same_v<T, std::nullptr_t>) {
+      using mpi_type = MPI_Type<std::nullptr_t>;
+      MPI_Request req;
+      DYNAMPI_MPI_CHECK(MPI_Isend, (nullptr, mpi_type::count(nullptr), mpi_type::value, dest,
+                                    static_cast<int>(tag), m_communicator.get(), &req));
+      DYNAMPI_MPI_CHECK(MPI_Request_free, (&req));
+    } else if constexpr (std::is_same_v<T, std::vector<TaskT>>) {
+      m_pending_task_batch_sends.post(m_communicator, data, dest, static_cast<int>(tag));
+    } else if constexpr (std::is_same_v<T, std::vector<ResultT>>) {
+      m_pending_result_batch_sends.post(m_communicator, data, dest, static_cast<int>(tag));
+    } else if constexpr (std::is_same_v<T, TaskT>) {
+      m_pending_task_sends.post(m_communicator, data, dest, static_cast<int>(tag));
+    } else if constexpr (std::is_same_v<T, ResultT>) {
+      m_pending_result_sends.post(m_communicator, data, dest, static_cast<int>(tag));
+    } else if constexpr (std::is_same_v<T, int>) {
+      m_pending_int_sends.post(m_communicator, data, dest, static_cast<int>(tag));
+    } else {
+      static_assert(!sizeof(T*), "send_async: unsupported type");
+    }
   }
 
   void send_done_to_children_when_free() {
@@ -832,7 +913,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     ResultT result = m_worker_function(message);
     m_tasks_executed++;
     // Reply on the global communicator
-    m_communicator.send(result, world_source, Tag::RESULT);
+    send_async(result, world_source, Tag::RESULT);
     m_results_sent_to_parent++;
   }
 

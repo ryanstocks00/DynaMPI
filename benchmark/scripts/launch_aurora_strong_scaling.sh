@@ -17,6 +17,11 @@ IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-1 10 100 1000 10000 100000 
 IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
 IFS=' ' read -r -a MODES <<< "${MODES:-fixed random}"
 DURATION_S="${DURATION_S:-10}"
+# hierarchical_async_put_lockfree only: forwarded as --max_upper_fanout (ignored by
+# every other distributor, which is run exactly once regardless of how many values
+# are listed here). 0 = single unbounded coordinator level (default). Set multiple
+# space-separated values to sweep hierarchy branching factor within one job.
+IFS=' ' read -r -a MAX_UPPER_FANOUT_LIST <<< "${MAX_UPPER_FANOUT_LIST:-${MAX_UPPER_FANOUT:-0}}"
 IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-core}"
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
@@ -55,7 +60,10 @@ echo "Allocated cores per node: ${ALLOC_CORES_PER_NODE}"
 export FI_CXI_RX_MATCH_MODE=software
 
 mkdir -p "${OUTPUT_DIR}"
-CSV="${OUTPUT_DIR}/strong_scaling_${SYSTEM}.csv"
+# v2: distinct filename from the pre-max_upper_fanout strong_scaling_${SYSTEM}.csv --
+# that file's header has no max_upper_fanout column, so appending new rows to it
+# would silently misalign columns.
+CSV="${OUTPUT_DIR}/strong_scaling_v2_${SYSTEM}.csv"
 
 for nodes in "${NODE_LIST[@]}"; do
   for rpn in "${RANKS_PER_NODE_LIST[@]}"; do
@@ -70,13 +78,18 @@ for nodes in "${NODE_LIST[@]}"; do
     fi
     total_ranks=$((nodes * ranks_per_node))
     for dist in "${DISTRIBUTIONS[@]}"; do
-      # For Aurora, restrict to hierarchical distributor on 2048 nodes and above
-      if [[ "${SYSTEM}" == "aurora" && "${nodes}" -ge 2048 && "${dist}" != "hierarchical" ]]; then
-        continue
+      # Only hierarchical_async_put_lockfree's behavior depends on max_upper_fanout;
+      # every other distributor would just repeat identical runs, so collapse its
+      # fanout list down to one (the first) value.
+      if [[ "${dist}" == "hierarchical_async_put_lockfree" ]]; then
+        fanouts=("${MAX_UPPER_FANOUT_LIST[@]}")
+      else
+        fanouts=("${MAX_UPPER_FANOUT_LIST[0]}")
       fi
+      for fanout in "${fanouts[@]}"; do
       for mode in "${MODES[@]}"; do
       for expected_us in "${TASK_US_LIST[@]}"; do
-          echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist} mode=${mode} expected_us=${expected_us}"
+          echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist} mode=${mode} expected_us=${expected_us} max_upper_fanout=${fanout}"
         launcher_base="$(basename "${LAUNCHER}")"
         if [[ "${launcher_base}" == mpiexec || "${launcher_base}" == mpirun ]]; then
           "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -n "${total_ranks}" --ppn "${ranks_per_node}" \
@@ -87,6 +100,7 @@ for nodes in "${NODE_LIST[@]}"; do
             --duration_s "${DURATION_S}" \
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
+            --max_upper_fanout "${fanout}" \
             --output "${CSV}"
         else
           "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -N "${nodes}" -n "${total_ranks}" \
@@ -98,9 +112,11 @@ for nodes in "${NODE_LIST[@]}"; do
             --duration_s "${DURATION_S}" \
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
+            --max_upper_fanout "${fanout}" \
             --output "${CSV}"
         fi
         done
+      done
       done
     done
   done

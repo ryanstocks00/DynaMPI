@@ -7,7 +7,7 @@ set -euo pipefail
 #   ./benchmark/scripts/launch_local_naive_shutdown.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-APP="${APP:-${ROOT_DIR}/build/benchmark/naive_shutdown_time}"
+APP="${APP:-${ROOT_DIR}/build/benchmark/shutdown_time}"
 OUTPUT_DIR="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 SYSTEM="local"
 
@@ -27,7 +27,7 @@ if [[ -z "${LAUNCHER}" ]]; then
 fi
 
 mkdir -p "${OUTPUT_DIR}"
-CSV="${OUTPUT_DIR}/naive_shutdown_${SYSTEM}.csv"
+CSV="${OUTPUT_DIR}/shutdown_${SYSTEM}.csv"
 
 for ranks in "${RANK_LIST[@]}"; do
   echo "Running ${SYSTEM} ranks=${ranks}"

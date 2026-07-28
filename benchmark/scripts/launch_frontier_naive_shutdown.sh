@@ -7,7 +7,7 @@ set -euo pipefail
 #   sbatch --nodes=512 --time=00:15:00 launch_frontier_naive_shutdown.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-APP="${APP:-${ROOT_DIR}/build/benchmark/naive_shutdown_time}"
+APP="${APP:-${ROOT_DIR}/build/benchmark/shutdown_time}"
 OUTPUT_DIR="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 SYSTEM="frontier"
 
@@ -29,7 +29,7 @@ if [[ -z "${LAUNCHER}" ]]; then
 fi
 
 mkdir -p "${OUTPUT_DIR}"
-CSV="${OUTPUT_DIR}/naive_shutdown_${SYSTEM}.csv"
+CSV="${OUTPUT_DIR}/shutdown_${SYSTEM}.csv"
 
 for nodes in "${NODE_LIST[@]}"; do
   for rpn in "${RANKS_PER_NODE_LIST[@]}"; do
