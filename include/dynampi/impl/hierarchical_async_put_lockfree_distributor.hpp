@@ -9,10 +9,12 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <deque>
 #include <functional>
 #include <limits>
 #include <optional>
+#include <thread>
 #include <vector>
 
 #include "../mpi/mpi_communicator.hpp"
@@ -95,7 +97,16 @@ class AsyncPutLevel {
   int comm_rank() const { return m_comm.rank(); }
   int comm_size() const { return m_comm.size(); }
 
-  void idle_wait() { detail::rma_wait_idle(m_window); }
+  void idle_wait() {
+    if (m_window == MPI_WIN_NULL) {
+      // Size-1 local path: no RMA window (Open MPI rejects Win_create on
+      // singleton communicators). Still yield so a tight owner/claimant
+      // spin doesn't burn a core.
+      std::this_thread::yield();
+      return;
+    }
+    detail::rma_wait_idle(m_window, m_comm.get());
+  }
 
   // How many tasks a single try_claim() asks for at a time -- exposed so a
   // caller managing several levels (see HierarchicalAsyncPutLockFreeMPIWork
@@ -412,15 +423,22 @@ class AsyncPutLevel {
     m_log_base = m_result_base + capacity * m_result_slot_stride;
     const size_t owner_window_bytes = m_log_base + capacity * LOG_ENTRY_BYTES;
 
-    // Always create a window -- including size-1 communicators. Under
-    // max_upper_fanout grouping, a solo group leader owns a size-1 level and
-    // also self-claims from it via RMA; skipping Win_create left m_window
-    // null and Fetch_and_op hung/failed (seen under SMPI with one rank per
-    // host, where fanout=2 actually builds that tree).
+    // Owner always hosts the slot layout in m_window_buffer. Size-1
+    // communicators deliberately skip MPI_Win_create: Open MPI (and some
+    // other stacks) fail Win_create on singleton communicators with
+    // MPI_ERR_WIN, which broke HierarchicalAsyncPut BasicFlow whenever the
+    // only non-manager on a node got a size-1 local_comm. Under
+    // max_upper_fanout grouping, a solo group leader still self-claims from
+    // its size-1 level -- that path uses the local helpers below (same
+    // process, so plain loads/stores are correct; no SEPARATE issue).
+    if (is_owner()) {
+      m_window_buffer.resize(owner_window_bytes);
+    }
+    if (comm_size() == 1) return;
+
     void* base = nullptr;
     MPI_Aint bsize = 0;
     if (is_owner()) {
-      m_window_buffer.resize(owner_window_bytes);
       base = m_window_buffer.data();
       bsize = static_cast<MPI_Aint>(m_window_buffer.size());
     } else {
@@ -443,18 +461,40 @@ class AsyncPutLevel {
 
   void flush(int rank) { DYNAMPI_MPI_CHECK(MPI_Win_flush, (rank, m_window)); }
 
+  // Size-1 levels have no MPI window; owner buffer is the sole storage.
+  bool local_only() const { return m_window == MPI_WIN_NULL; }
+
+  int64_t local_load_i64(MPI_Aint offset) const {
+    int64_t out = 0;
+    std::memcpy(&out, m_window_buffer.data() + static_cast<size_t>(offset), sizeof(out));
+    return out;
+  }
+  void local_store_i64(MPI_Aint offset, int64_t value) {
+    std::memcpy(m_window_buffer.data() + static_cast<size_t>(offset), &value, sizeof(value));
+  }
+
   int64_t atomic_read(MPI_Aint offset) {
+    if (local_only()) return local_load_i64(offset);
     int64_t in = 0, out;
     m_comm.fetch_and_op(in, out, m_config.owner_rank, offset, MPI_NO_OP, m_window);
     flush(m_config.owner_rank);
     return out;
   }
   void atomic_set(MPI_Aint offset, int64_t value) {
+    if (local_only()) {
+      local_store_i64(offset, value);
+      return;
+    }
     int64_t in = value, out;
     m_comm.fetch_and_op(in, out, m_config.owner_rank, offset, MPI_REPLACE, m_window);
     flush(m_config.owner_rank);
   }
   int64_t fetch_add(MPI_Aint offset, int64_t increment) {
+    if (local_only()) {
+      const int64_t out = local_load_i64(offset);
+      local_store_i64(offset, out + increment);
+      return out;
+    }
     int64_t in = increment, out;
     m_comm.fetch_and_op(in, out, m_config.owner_rank, offset, MPI_SUM, m_window);
     flush(m_config.owner_rank);
@@ -462,10 +502,22 @@ class AsyncPutLevel {
   }
 
   void put_bytes(const void* src, size_t n, MPI_Aint offset) {
+    if (local_only()) {
+      if (n > 0) {
+        std::memcpy(m_window_buffer.data() + static_cast<size_t>(offset), src, n);
+      }
+      return;
+    }
     m_comm.put_bytes(src, n, m_config.owner_rank, offset, m_window);
     flush(m_config.owner_rank);
   }
   void get_bytes(void* dst, size_t n, MPI_Aint offset) {
+    if (local_only()) {
+      if (n > 0) {
+        std::memcpy(dst, m_window_buffer.data() + static_cast<size_t>(offset), n);
+      }
+      return;
+    }
     m_comm.get_bytes(dst, n, m_config.owner_rank, offset, m_window);
     flush(m_config.owner_rank);
   }
@@ -919,7 +971,12 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   }
 
   void setup_levels() {
-    if (m_local_comm.has_value()) {
+    // Size-1 local_comm means this rank is alone on its node (manager excluded
+    // from the local split). Leaf leader-workers claim/compute against the
+    // upper chain directly and never use a local_level, so skip constructing
+    // one -- including avoiding a size-1 AsyncPutLevel that some MPIs cannot
+    // Win_create for.
+    if (m_local_comm.has_value() && m_local_comm->size() > 1) {
       typename detail::AsyncPutLevel<TaskT, ResultT>::Config local_cfg;
       local_cfg.comm = m_local_comm->get();
       local_cfg.owner_rank = 0;
@@ -1129,9 +1186,8 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
 
       // See step_bridge_hop()'s comment: only back off when NONE of this
       // rank's hops made progress against their own parent -- any single
-      // hop's window works fine as the backoff's flush target (see
-      // AsyncPutLevel::idle_wait(); the window argument is unused outside
-      // MS-MPI, where every window needs the same periodic flush anyway).
+      // hop's parent works fine as the backoff target (flush + Iprobe via
+      // AsyncPutLevel::idle_wait()).
       if (!any_progress) hops.front().parent->idle_wait();
     }
   }

@@ -176,7 +176,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
         if (m_collected_count >= static_cast<size_t>(m_total_tasks)) break;
         const size_t before = m_collected_count;
         harvest_ready_results();
-        if (m_collected_count == before) detail::rma_wait_idle(m_window);
+        if (m_collected_count == before) detail::rma_wait_idle(m_window, m_comm.get());
       }
     }
 
@@ -218,10 +218,10 @@ class AsyncPutLockFreeMPIWorkDistributor {
         while (m_collected_count < static_cast<size_t>(m_total_tasks)) {
           const size_t before = m_collected_count;
           harvest_ready_results();
-          if (m_collected_count == before) detail::rma_wait_idle(m_window);
+          if (m_collected_count == before) detail::rma_wait_idle(m_window, m_comm.get());
         }
         atomic_set(FINISHED_OFF, 1);  // tell workers to stop
-        detail::rma_wait_idle(m_window);
+        detail::rma_wait_idle(m_window, m_comm.get());
       }
     }
     m_finalized = true;
@@ -323,7 +323,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
         if (cached_head >= final_total) break;
         cached_total = final_total;
       }
-      if (!made_progress) detail::rma_wait_idle(m_window);
+      if (!made_progress) detail::rma_wait_idle(m_window, m_comm.get());
     }
   }
 
@@ -579,6 +579,11 @@ class AsyncPutLockFreeMPIWorkDistributor {
   // MPI_WIN_UNIFIED, not MPI_WIN_SEPARATE, and the RMA API is correct
   // either way. Confirmed necessary via a caught hang earlier: plain local
   // loads on m_window_buffer never observed workers' writes at all.
+  //
+  // On MS-MPI (always SEPARATE), even these self-targeted Gets need the
+  // two-sided progress engine driven between polls -- see detail::rma_wait_idle
+  // (MPI_Iprobe). flush_all alone is not enough; without Iprobe the manager
+  // harvest loop spins forever seeing HEAD/log as unchanged.
   void harvest_ready_results() {
     assert(is_root_manager());
     const int64_t head_now = atomic_read(HEAD_OFF);

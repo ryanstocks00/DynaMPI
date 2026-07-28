@@ -84,15 +84,23 @@ inline void read_result_bytes(const std::byte* buffer, size_t buffer_size, size_
   }
 }
 
-// Passive-target RMA on MS-MPI needs explicit flush progress while spinning.
-inline void rma_wait_idle(MPI_Win window) {
-#if defined(_WIN32)
+// Drive progress while a rank is spinning on one-sided completion.
+//
+// Under MPI_WIN_SEPARATE (MS-MPI always; some other stacks too), remote Puts
+// into this rank's window are not observed by self-targeted Get/Fetch_and_op
+// unless the two-sided progress engine runs. MPI_Win_flush_all and sleeping
+// are not enough -- MPI_Iprobe is (same pattern as pump_mpi_progress in the
+// strong-scaling / isolated AsyncPut benches). Without this, AsyncPut's
+// manager harvest loop never sees worker completion-log updates and hangs.
+inline void rma_wait_idle(MPI_Win window, MPI_Comm comm) {
   if (window != MPI_WIN_NULL) {
     DYNAMPI_MPI_CHECK(MPI_Win_flush_all, (window));
   }
+  int flag = 0;
+  DYNAMPI_MPI_CHECK(MPI_Iprobe, (MPI_ANY_SOURCE, MPI_ANY_TAG, comm, &flag, MPI_STATUS_IGNORE));
+#if defined(_WIN32)
   std::this_thread::yield();
 #else
-  (void)window;
   std::this_thread::sleep_for(std::chrono::microseconds(50));
 #endif
 }
@@ -422,7 +430,7 @@ class LockFreeMPIWorkDistributor {
           try_gather_results();
         }
         atomic_set(FINISHED_OFF, 1);  // tell workers to stop
-        detail::rma_wait_idle(m_window);
+        detail::rma_wait_idle(m_window, m_comm.get());
       }
     }
     m_finalized = true;
@@ -595,7 +603,7 @@ class LockFreeMPIWorkDistributor {
       }
       if (!made_progress) {
         maybe_participate_in_gather();
-        detail::rma_wait_idle(m_window);
+        detail::rma_wait_idle(m_window, m_comm.get());
       }
     }
   }
@@ -791,14 +799,14 @@ class LockFreeMPIWorkDistributor {
 
   void request_gather() {
     atomic_set(GATHER_SEQ_OFF, ++m_gather_seq);
-    detail::rma_wait_idle(m_window);
+    detail::rma_wait_idle(m_window, m_comm.get());
     maybe_participate_in_gather();
   }
 
   void try_gather_results() {
     const size_t before = m_collected_count;
     request_gather();
-    if (m_collected_count == before) detail::rma_wait_idle(m_window);
+    if (m_collected_count == before) detail::rma_wait_idle(m_window, m_comm.get());
   }
 
   void exchange_gathered_results() {
