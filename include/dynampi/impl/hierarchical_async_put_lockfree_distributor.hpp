@@ -590,7 +590,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     int manager_rank = 0;
     bool auto_run_workers = true;
     int leader_batch_multiplier = 2;  // coordinators claim (local peers)*multiplier tasks at once
-    int max_tasks = 8192;      // leader-level task table capacity (lifetime total)
+    int max_tasks = 8192;             // leader-level task table capacity (lifetime total)
     int max_local_tasks = 8192;  // per-node local task table capacity (lifetime total, per node)
     int max_task_count = 256;
     int max_result_count = 256;
@@ -631,6 +631,24 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
 
   ~HierarchicalAsyncPutLockFreeMPIWorkDistributor() {
     if (!m_finalized) finalize();
+    if (!m_solo) {
+      // AsyncPutLevel teardown is collective only over that level's
+      // communicator.  Without a final world-wide rendezvous, ranks that
+      // participate in fewer levels can start constructing the next
+      // distributor while coordinators are still freeing subgroup windows.
+      // MS-MPI can then stop making progress (or abort) as the old and new
+      // window lifecycles overlap.
+      //
+      // Destroy the levels explicitly while m_world_comm is still alive,
+      // preserving their natural top-to-bottom member teardown order, then
+      // keep every rank in this distributor until all windows are gone.
+      m_parent_level.reset();
+      m_owned_upper_levels.clear();
+      m_local_level.reset();
+      m_upper_comms.clear();
+      m_local_comm.reset();
+      DYNAMPI_MPI_CHECK(MPI_Barrier, (m_world_comm.get()));
+    }
   }
 
   bool is_root_manager() const { return m_world_comm.rank() == m_config.manager_rank; }
@@ -1202,10 +1220,11 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
       if (all_done) break;
 
       // See step_bridge_hop()'s comment: only back off when NONE of this
-      // rank's hops made progress against their own parent -- any single
-      // hop's parent works fine as the backoff target (flush + Iprobe via
-      // AsyncPutLevel::idle_wait()).
-      if (!any_progress) hops.front().parent->idle_wait();
+      // rank's hops made progress. Drive progress on the terminal child,
+      // where local workers' result Puts are in flight. This distinction is
+      // required by MS-MPI: probing only the upper parent communicator can
+      // leave the local window's completion traffic stalled indefinitely.
+      if (!any_progress) hops.back().child->idle_wait();
     }
   }
 

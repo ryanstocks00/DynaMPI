@@ -102,10 +102,9 @@ static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts,
   const double throughput =
       result.elapsed_s > 0.0 ? static_cast<double>(result.total_tasks) / result.elapsed_s : 0.0;
   os << opts.system << "," << to_string(opts.distributor) << "," << to_string(opts.duration_mode)
-     << "," << opts.expected_us << "," << opts.duration_s
-     << "," << opts.nodes << "," << result.world_size << "," << result.workers << ","
-     << opts.max_upper_fanout << "," << result.total_tasks << "," << result.elapsed_s << ","
-     << throughput << "\n";
+     << "," << opts.expected_us << "," << opts.duration_s << "," << opts.nodes << ","
+     << result.world_size << "," << result.workers << "," << opts.max_upper_fanout << ","
+     << result.total_tasks << "," << result.elapsed_s << "," << throughput << "\n";
 }
 
 struct WorkerFunctor {
