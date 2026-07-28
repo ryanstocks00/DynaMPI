@@ -104,6 +104,11 @@ if(DEFINED ENV{DYNAMPI_MAX_MPI_RANK})
 endif()
 
 function(add_mpi_test test_name num_procs)
+  set(gtest_args "")
+  if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND)
+    list(APPEND gtest_args
+         "--gtest_filter=-HierarchicalAsyncPutLockFree.GroupedUpperHierarchy")
+  endif()
   set(command
       ${MPIEXEC_EXECUTABLE}
       ${MPIEXEC_NUMPROC_FLAG}
@@ -111,15 +116,9 @@ function(add_mpi_test test_name num_procs)
       ${MPI_OVERSUBSCRIBE_FLAG}
       ${MPIEXEC_PREFLAGS}
       $<TARGET_FILE:mpi_test>
+      ${gtest_args}
       ${MPIEXEC_POSTFLAGS})
   add_test(NAME ${test_name} COMMAND ${command})
-  # Open MPI 4's osc/rdma component can race while creating windows on
-  # disjoint communicators from one shared-memory node. The grouped hierarchy
-  # test intentionally exercises exactly that topology. Open MPI 5 fixed the
-  # rdma path and removed the legacy pt2pt fallback.
-  if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND)
-    set_tests_properties(${test_name} PROPERTIES ENVIRONMENT "OMPI_MCA_osc=pt2pt")
-  endif()
 endfunction()
 
 foreach(rank 1 2 3 4 8 16 64)
@@ -129,3 +128,24 @@ foreach(rank 1 2 3 4 8 16 64)
   add_mpi_test(mpi_test_${rank}_rank ${rank})
   endif()
 endforeach()
+
+# Open MPI 4's osc/rdma component can race while creating windows on disjoint
+# communicators from one shared-memory node. Run only the synthetic grouped
+# topology test with osc/pt2pt; forcing that legacy backend on the full
+# lock-free suite can stall at high rank counts. Open MPI 5 fixed the rdma path
+# and removed the pt2pt fallback.
+if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND AND DYNAMPI_MAX_MPI_RANK GREATER_EQUAL 8)
+  add_test(
+    NAME mpi_test_8_rank_grouped
+    COMMAND
+      ${MPIEXEC_EXECUTABLE}
+      ${MPIEXEC_NUMPROC_FLAG}
+      8
+      ${MPI_OVERSUBSCRIBE_FLAG}
+      ${MPIEXEC_PREFLAGS}
+      $<TARGET_FILE:mpi_test>
+      "--gtest_filter=HierarchicalAsyncPutLockFree.GroupedUpperHierarchy"
+      ${MPIEXEC_POSTFLAGS})
+  set_tests_properties(mpi_test_8_rank_grouped
+                       PROPERTIES ENVIRONMENT "OMPI_MCA_osc=pt2pt")
+endif()
