@@ -564,14 +564,17 @@ TEST(AsyncPutLevel, SingletonCommunicator) {
   config.comm = MPI_COMM_SELF;
   config.owner_rank = 0;
   config.max_tasks = 4;
-  config.claim_batch_size = 2;
   Level level(config);
 
   level.publish_tasks({2, 3});
-  auto claimed = level.try_claim();
-  ASSERT_EQ(claimed.start, 0);
-  EXPECT_EQ(claimed.tasks, (std::vector<int>{2, 3}));
-  level.write_result_range(claimed.start, {4, 9});
+  auto first = level.try_claim();
+  ASSERT_EQ(first.start, 0);
+  EXPECT_EQ(first.tasks, (std::vector<int>{2}));
+  level.write_result_range(first.start, {4});
+  auto second = level.try_claim();
+  ASSERT_EQ(second.start, 1);
+  EXPECT_EQ(second.tasks, (std::vector<int>{3}));
+  level.write_result_range(second.start, {9});
   EXPECT_EQ(level.harvest_ready_results(), (std::vector<int>{4, 9}));
   level.mark_finished();
   EXPECT_TRUE(level.drained());
@@ -796,7 +799,7 @@ TEST(HierarchicalAsyncPutLockFree, GatherOnce) {
   }
 }
 
-TEST(LockFreeFinalization, DrainsOutstandingWork) {
+TEST(LockFreeFinalization, FlatDrainsOutstandingWork) {
   if (MPIEnvironment::world_comm_size() < 2) {
     GTEST_SKIP() << "Need a worker rank to exercise remote finalization";
   }
@@ -812,6 +815,17 @@ TEST(LockFreeFinalization, DrainsOutstandingWork) {
     if (dist.is_root_manager()) dist.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8});
     dist.finalize();
   }
+}
+
+TEST(LockFreeFinalization, HierarchicalDrainsOutstandingWork) {
+  if (MPIEnvironment::world_comm_size() < 2) {
+    GTEST_SKIP() << "Need a worker rank to exercise remote finalization";
+  }
+
+  auto slow_worker = [](int task) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    return task;
+  };
 
   {
     using Distributor = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;

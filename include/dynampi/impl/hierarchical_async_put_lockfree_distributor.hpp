@@ -66,7 +66,6 @@ class AsyncPutLevel {
     int max_tasks = 8192;
     int max_task_count = 256;
     int max_result_count = 256;
-    int claim_batch_size = 8;
   };
 
   struct ClaimedRange {
@@ -75,8 +74,10 @@ class AsyncPutLevel {
     std::vector<TaskT> tasks;
   };
 
-  explicit AsyncPutLevel(Config config)
-      : m_config(config), m_comm(m_config.comm, MPICommunicator<>::Reference) {
+  explicit AsyncPutLevel(Config config, int claim_width = 1)
+      : m_config(config),
+        m_claim_width(std::max(1, claim_width)),
+        m_comm(m_config.comm, MPICommunicator<>::Reference) {
     initialize_window();
   }
 
@@ -95,6 +96,7 @@ class AsyncPutLevel {
   bool is_owner() const { return m_comm.rank() == m_config.owner_rank; }
   int comm_rank() const { return m_comm.rank(); }
   int comm_size() const { return m_comm.size(); }
+  int claim_width() const { return m_claim_width; }
 
   void idle_wait() {
     if (m_window == MPI_WIN_NULL) {
@@ -106,12 +108,6 @@ class AsyncPutLevel {
     }
     detail::rma_wait_idle(m_window, m_comm.get());
   }
-
-  // How many tasks a single try_claim() asks for at a time -- exposed so a
-  // caller managing several levels (see HierarchicalAsyncPutLockFreeMPIWork
-  // Distributor's step_bridge_hop()) can size a claim-ahead backpressure cap
-  // relative to this level's own configured granularity.
-  int claim_batch_size() const { return m_config.claim_batch_size; }
 
   // --- Owner-side API ---
 
@@ -271,8 +267,7 @@ class AsyncPutLevel {
       m_cached_total = atomic_read(TOTAL_OFF);
 
     if (m_cached_head < m_cached_total) {
-      const int64_t claim =
-          std::min<int64_t>(m_config.claim_batch_size, m_cached_total - m_cached_head);
+      const int64_t claim = std::min<int64_t>(m_claim_width, m_cached_total - m_cached_head);
       const int64_t start = fetch_add(HEAD_OFF, claim);
       const int64_t end = start + claim;
       m_cached_head = end;
@@ -378,6 +373,7 @@ class AsyncPutLevel {
   static constexpr size_t LOG_ENTRY_BYTES = 8;
 
   Config m_config;
+  int m_claim_width;
   MPICommunicator<> m_comm;
   MPI_Win m_window = MPI_WIN_NULL;
   std::vector<std::byte> m_window_buffer;
@@ -589,8 +585,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     MPI_Comm comm = MPI_COMM_WORLD;
     int manager_rank = 0;
     bool auto_run_workers = true;
-    int leader_batch_multiplier = 2;  // coordinators claim (local peers)*multiplier tasks at once
-    int max_tasks = 8192;             // leader-level task table capacity (lifetime total)
+    int max_tasks = 8192;        // leader-level task table capacity (lifetime total)
     int max_local_tasks = 8192;  // per-node local task table capacity (lifetime total, per node)
     int max_task_count = 256;
     int max_result_count = 256;
@@ -838,7 +833,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   // Appends one AsyncPutLevel this rank OWNS (and, per the class comment on
   // AsyncPutLevel's claimant-side API, will also claim from -- its own
   // subtree still needs feeding) to m_owned_upper_levels.
-  void emplace_owned_upper_level(MPICommunicator<> comm, int owner_rank, int claim_batch_size) {
+  void emplace_owned_upper_level(MPICommunicator<> comm, int owner_rank, int claim_width) {
     m_upper_comms.push_back(std::move(comm));
     typename detail::AsyncPutLevel<TaskT, ResultT>::Config cfg;
     cfg.comm = m_upper_comms.back().get();
@@ -846,13 +841,12 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     cfg.max_tasks = m_config.max_tasks;
     cfg.max_task_count = m_config.max_task_count;
     cfg.max_result_count = m_config.max_result_count;
-    cfg.claim_batch_size = claim_batch_size;
-    m_owned_upper_levels.emplace_back(cfg);
+    m_owned_upper_levels.emplace_back(cfg, claim_width);
   }
 
   // Sets m_parent_level: the one level this rank is a pure claimant of
   // (never owns) -- its immediate parent in the tree.
-  void emplace_parent_level(MPICommunicator<> comm, int owner_rank, int claim_batch_size) {
+  void emplace_parent_level(MPICommunicator<> comm, int owner_rank, int claim_width) {
     m_upper_comms.push_back(std::move(comm));
     typename detail::AsyncPutLevel<TaskT, ResultT>::Config cfg;
     cfg.comm = m_upper_comms.back().get();
@@ -860,8 +854,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     cfg.max_tasks = m_config.max_tasks;
     cfg.max_task_count = m_config.max_task_count;
     cfg.max_result_count = m_config.max_result_count;
-    cfg.claim_batch_size = claim_batch_size;
-    m_parent_level.emplace(cfg);
+    m_parent_level.emplace(cfg, claim_width);
   }
 
   // Builds this rank's view of the upper hierarchy (everything above the
@@ -898,19 +891,10 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   // promoted early (see the inline notes at each split).
   void setup_upper_chain(MPICommunicator<> flat_comm, bool is_manager) {
     MPIGroup world_group(m_world_comm);
-    const int local_peers = m_local_comm.has_value() ? std::max(0, m_local_comm->size() - 1) : 0;
-    const int multiplier = std::max(1, m_config.leader_batch_multiplier);
-    // A real node coordinator (local_peers > 0) claims from its parent in
-    // batches sized by its own downstream fan-out, to keep its local workers
-    // fed -- that's still "further up the chain" batching, on behalf of
-    // many claimants below it. A leaf leader-worker (local_peers == 0, no
-    // local_level at all) has no one to relay for: it claims and computes
-    // directly against this same level itself, so per the leaf-claims-one
-    // rule (see run_leaf_leader_worker()) that claim must be 1, not a
-    // multiplier-sized batch. Anything feeding an *intermediate* group level
-    // instead is sized by that group's raw membership -- see feed_size's
-    // updates below.
-    const int leaf_claim = local_peers > 0 ? std::max(1, local_peers * multiplier) : 1;
+    const int local_children = m_local_comm.has_value() ? std::max(0, m_local_comm->size() - 1) : 0;
+    // A leaf executes one task per claim. Each non-leaf claims enough tasks
+    // to feed one task to every child in its immediate subtree.
+    const int leaf_claim_width = std::max(1, local_children);
 
     const int effective_fanout =
         m_config.max_upper_fanout > 0 ? m_config.max_upper_fanout : std::numeric_limits<int>::max();
@@ -922,9 +906,9 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
       MPIGroup flat_group(flat_comm);
       const int owner_rank = world_group.translate_rank(m_config.manager_rank, flat_group);
       if (flat_comm.rank() == owner_rank) {
-        emplace_owned_upper_level(std::move(flat_comm), owner_rank, leaf_claim);
+        emplace_owned_upper_level(std::move(flat_comm), owner_rank, leaf_claim_width);
       } else {
-        emplace_parent_level(std::move(flat_comm), owner_rank, leaf_claim);
+        emplace_parent_level(std::move(flat_comm), owner_rank, leaf_claim_width);
       }
       return;
     }
@@ -935,8 +919,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     auto coordinators_opt = flat_comm.split(is_manager ? MPI_UNDEFINED : 0, flat_comm.rank());
 
     bool is_final_round_leader = false;
-    int feed_size =
-        leaf_claim;  // claim size for the NEXT level to be discovered, updated per round
+    int feed_width = leaf_claim_width;
     if (!is_manager) {
       // std::optional, not a bare MPICommunicator: MPICommunicator has no
       // move assignment (only move construction -- see its deleted
@@ -956,7 +939,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
         auto group_opt = round_comm->split(color, round_comm->rank());
         MPICommunicator<> group_comm = std::move(*group_opt);
         const bool is_group_leader = (group_comm.rank() == 0);
-        const int group_size = group_comm.size();
+        const int child_count = group_comm.size();
 
         // Collective over round_comm: every member (leader or not) calls
         // this together, before acting on their differing result below.
@@ -964,24 +947,11 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
             round_comm->split(is_group_leader ? 0 : MPI_UNDEFINED, round_comm->rank());
 
         if (!is_group_leader) {
-          emplace_parent_level(std::move(group_comm), 0, feed_size);
+          emplace_parent_level(std::move(group_comm), 0, feed_width);
           break;
         }
-        emplace_owned_upper_level(std::move(group_comm), 0, feed_size);
-        // Compound by this round's group_size rather than resetting to
-        // group_size*multiplier: feed_size is the claim_batch_size every
-        // level ABOVE this one will use (see step_bridge_hop()'s
-        // pending_cap = claim_batch_size*kMaxPendingRounds), so it must
-        // reflect the full subtree feeding through this leader, not just
-        // this one group's immediate fanout. A flat reset here was a real,
-        // confirmed bug: it pinned every intermediate hop's flow-control
-        // window at a tiny constant (group_size*multiplier, e.g. 4 for
-        // fanout=2) regardless of how many leaf workers actually feed it,
-        // collapsing throughput by orders of magnitude as depth increased
-        // (observed: an 8-node/816-rank run's top-level drain rate fell to
-        // ~5,370 tasks/s -- turning a 44M-task run that should finish in
-        // seconds into a multi-hour drain that reads as a hang).
-        feed_size = std::max(1, group_size * feed_size);
+        emplace_owned_upper_level(std::move(group_comm), 0, feed_width);
+        feed_width = std::max(1, child_count * feed_width);
         round_comm.emplace(std::move(*leaders_opt));
       }
     }
@@ -995,9 +965,9 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
       MPIGroup top_group(*top_opt);
       const int owner_rank = world_group.translate_rank(m_config.manager_rank, top_group);
       if (is_manager) {
-        emplace_owned_upper_level(std::move(*top_opt), owner_rank, feed_size);
+        emplace_owned_upper_level(std::move(*top_opt), owner_rank, feed_width);
       } else {
-        emplace_parent_level(std::move(*top_opt), owner_rank, feed_size);
+        emplace_parent_level(std::move(*top_opt), owner_rank, feed_width);
       }
     }
   }
@@ -1015,15 +985,11 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
       local_cfg.max_tasks = m_config.max_local_tasks;
       local_cfg.max_task_count = m_config.max_task_count;
       local_cfg.max_result_count = m_config.max_result_count;
-      // Local workers claim one task at a time from their node coordinator
-      // (same-node RMA -- cheap; batching belongs further up the chain, at
-      // a coordinator's own claim from its parent, not at this leaf level).
-      local_cfg.claim_batch_size = 1;
       m_local_level.emplace(local_cfg);
     }
   }
 
-  // One (parent, child) bridge relationship: claim task batches from
+  // One (parent, child) bridge relationship: claim tasks from
   // `parent` and republish them into `child` (a *different* AsyncPutLevel
   // this rank owns), relaying completed results back to `parent` once
   // they're confirmed. This is the single-hop unit run_node_coordinator()
@@ -1109,8 +1075,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     // slack) without letting the queue -- and therefore the worst-case relay
     // latency -- grow without bound.
     constexpr int64_t kMaxPendingRounds = 8;
-    const int64_t pending_cap =
-        static_cast<int64_t>(hop.parent->claim_batch_size()) * kMaxPendingRounds;
+    const int64_t pending_cap = static_cast<int64_t>(hop.parent->claim_width()) * kMaxPendingRounds;
     if (!parent_drained && hop.pending_task_count < pending_cap) {
       auto claimed = hop.parent->try_claim();
       if (claimed.start != -1) {
@@ -1168,7 +1133,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
 
   // A hop is done once child's claimants have been told to stop
   // (finish_marked, not a re-derived parent->drained() -- see
-  // step_bridge_hop()'s comment) and every claimed batch has been relayed
+  // step_bridge_hop()'s comment) and every claimed task has been relayed
   // back upward.
   static bool bridge_hop_done(const BridgeHop& hop) {
     return hop.finish_marked && hop.pending_relays.empty();
@@ -1199,7 +1164,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     return m_owned_upper_levels.empty() ? *m_parent_level : m_owned_upper_levels.back();
   }
 
-  // A node coordinator: bridges its parent level (claiming task batches
+  // A node coordinator: bridges its parent level (claiming tasks
   // from the manager or an intermediate group level -- see
   // setup_upper_chain()) down to its local level (its own window, published
   // to for its local workers to claim from), and, if promoted to lead one
@@ -1228,7 +1193,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     }
   }
 
-  // A plain local worker: claims batches from its node coordinator, computes
+  // A plain local worker: claims tasks from its node coordinator, computes
   // them inline, writes results back -- the same claim/write pattern
   // AsyncPutLockFreeMPIWorkDistributor::run_worker() uses against its one
   // flat window, here against the local level instead.

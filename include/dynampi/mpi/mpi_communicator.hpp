@@ -305,6 +305,9 @@ class MPICommunicator {
 
   // --- One-sided RMA (window is owned by the caller) ---
   //
+  // Displacements are byte offsets. The target rank's window must have
+  // been created with disp_unit == 1 when using put_bytes/get_bytes.
+  //
   // put_bytes/get_bytes chunk transfers larger than INT_MAX so MPI's plain
   // `int` count argument never silently wraps. Statistics count one logical
   // transfer (send_count/recv_count += 1, bytes = total n), not one entry
