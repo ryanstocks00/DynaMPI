@@ -56,7 +56,8 @@ inline void write_bytes(std::byte* buffer, size_t buffer_size, size_t offset, co
 }
 
 // Bounds-checked copy out of a sized source buffer into a sized destination
-// (mirrors write_bytes; keeps Codacy CWE-120 / fortified memcpy happy).
+// (mirrors write_bytes). Codacy CWE-120 does not treat DYNAMPI_FAIL as
+// noreturn, so the memcpy length is also clamped to dst_capacity.
 inline void read_bytes(void* dst, size_t dst_capacity, const std::byte* buffer, size_t buffer_size,
                        size_t offset, size_t nbytes) {
   if (nbytes == 0) return;
@@ -65,7 +66,8 @@ inline void read_bytes(void* dst, size_t dst_capacity, const std::byte* buffer, 
       nbytes > buffer_size - offset) {
     DYNAMPI_FAIL("read_bytes out of range");  // LCOV_EXCL_LINE
   }
-  std::memcpy(dst, buffer + offset, nbytes);
+  const size_t copy_n = std::min(nbytes, dst_capacity);
+  std::memcpy(dst, buffer + offset, copy_n);
 }
 
 inline int64_t read_i64(const std::byte* buffer, [[maybe_unused]] size_t buffer_size,
