@@ -39,7 +39,7 @@ Inherited by the following classes: [dynampi::enable\_prioritization](structdyna
 
 | Type | Name |
 | ---: | :--- |
-|  constexpr bool | [**value**](#variable-value)   = `false`<br> |
+|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**value**](#variable-value)   = `[**false**](structdynampi_1_1MPI__Type.md)`<br> |
 
 
 

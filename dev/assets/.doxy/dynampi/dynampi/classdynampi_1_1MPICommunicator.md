@@ -59,28 +59,28 @@
 
 | Type | Name |
 | ---: | :--- |
-|   | [**MPICommunicator**](#function-mpicommunicator-13) (MPI\_Comm comm, [**Ownership**](classdynampi_1_1MPICommunicator.md#enum-ownership) ownership=Duplicate) <br> |
-|   | [**MPICommunicator**](#function-mpicommunicator-23) (const [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & other) = delete<br> |
+|   | [**MPICommunicator**](#function-mpicommunicator-13) ([**MPI\_Comm**](structdynampi_1_1MPI__Type.md) comm, [**Ownership**](classdynampi_1_1MPICommunicator.md#enum-ownership) ownership=Duplicate) <br> |
+|   | [**MPICommunicator**](#function-mpicommunicator-23) ([**const**](structdynampi_1_1MPI__Type.md) [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & other) = delete<br> |
 |   | [**MPICommunicator**](#function-mpicommunicator-33) ([**MPICommunicator**](classdynampi_1_1MPICommunicator.md) && other) noexcept<br> |
-|  void | [**broadcast**](#function-broadcast) (T & data, int root=0) <br> |
-|  void | [**gather**](#function-gather) (const T & data, std::vector&lt; T &gt; \* result, int root=0) <br> |
-|  MPI\_Comm | [**get**](#function-get) () const<br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**broadcast**](#function-broadcast) ([**T**](structdynampi_1_1MPI__Type.md) & data, [**int**](structdynampi_1_1MPI__Type.md) root=0) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**gather**](#function-gather) ([**const**](structdynampi_1_1MPI__Type.md) [**T**](structdynampi_1_1MPI__Type.md) & data, std::vector&lt; [**T**](structdynampi_1_1MPI__Type.md) &gt; \* result, [**int**](structdynampi_1_1MPI__Type.md) root=0) <br> |
+|  [**MPI\_Comm**](structdynampi_1_1MPI__Type.md) | [**get**](#function-get) () const<br> |
 |  [**MPIGroup**](classdynampi_1_1MPIGroup.md) | [**get\_group**](#function-get_group) () const<br> |
-|  const [**CommStatistics**](structdynampi_1_1CommStatistics.md) & | [**get\_statistics**](#function-get_statistics) () const<br> |
-|  std::optional&lt; MPI\_Status &gt; | [**iprobe**](#function-iprobe) (int source=MPI\_ANY\_SOURCE, int tag=MPI\_ANY\_TAG) <br> |
+|  [**const**](structdynampi_1_1MPI__Type.md) [**CommStatistics**](structdynampi_1_1CommStatistics.md) & | [**get\_statistics**](#function-get_statistics) () const<br> |
+|  std::optional&lt; [**MPI\_Status**](structdynampi_1_1MPI__Type.md) &gt; | [**iprobe**](#function-iprobe) ([**int**](structdynampi_1_1MPI__Type.md) source=[**MPI\_ANY\_SOURCE**](structdynampi_1_1MPI__Type.md), [**int**](structdynampi_1_1MPI__Type.md) tag=[**MPI\_ANY\_TAG**](structdynampi_1_1MPI__Type.md)) <br> |
 |   | [**operator MPI\_Comm**](#function-operator-mpi_comm) () const<br> |
-|  [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & | [**operator=**](#function-operator) (const [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & other) = delete<br> |
+|  [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & | [**operator=**](#function-operator) ([**const**](structdynampi_1_1MPI__Type.md) [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & other) = delete<br> |
 |  [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & | [**operator=**](#function-operator_1) ([**MPICommunicator**](classdynampi_1_1MPICommunicator.md) && other) = delete<br> |
-|  MPI\_Status | [**probe**](#function-probe) (int source=MPI\_ANY\_SOURCE, int tag=MPI\_ANY\_TAG) <br> |
-|  int | [**rank**](#function-rank) () const<br> |
-|  void | [**recv**](#function-recv) (T & data, int source, int tag=0) <br> |
-|  MPI\_Status | [**recv\_any**](#function-recv_any) (T & data, int source=MPI\_ANY\_SOURCE, int tag=MPI\_ANY\_TAG) <br> |
-|  void | [**recv\_empty**](#function-recv_empty) (int source, int tag=0) <br>_Receives 0 elements of type T. Use when the sender used send\_empty&lt;T&gt;._  |
-|  void | [**recv\_empty\_message**](#function-recv_empty_message) (int source, int tag=0) <br> |
-|  void | [**send**](#function-send) (const T & data, int dest, int tag=0) <br> |
-|  void | [**send\_empty**](#function-send_empty) (int dest, int tag=0) <br> |
-|  int | [**size**](#function-size) () const<br> |
-|  std::optional&lt; [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) &gt; | [**split**](#function-split) (int color, int key=0) const<br> |
+|  [**MPI\_Status**](structdynampi_1_1MPI__Type.md) | [**probe**](#function-probe) ([**int**](structdynampi_1_1MPI__Type.md) source=[**MPI\_ANY\_SOURCE**](structdynampi_1_1MPI__Type.md), [**int**](structdynampi_1_1MPI__Type.md) tag=[**MPI\_ANY\_TAG**](structdynampi_1_1MPI__Type.md)) <br> |
+|  [**int**](structdynampi_1_1MPI__Type.md) | [**rank**](#function-rank) () const<br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**recv**](#function-recv) ([**T**](structdynampi_1_1MPI__Type.md) & data, [**int**](structdynampi_1_1MPI__Type.md) source, [**int**](structdynampi_1_1MPI__Type.md) tag=0) <br> |
+|  [**MPI\_Status**](structdynampi_1_1MPI__Type.md) | [**recv\_any**](#function-recv_any) ([**T**](structdynampi_1_1MPI__Type.md) & data, [**int**](structdynampi_1_1MPI__Type.md) source=[**MPI\_ANY\_SOURCE**](structdynampi_1_1MPI__Type.md), [**int**](structdynampi_1_1MPI__Type.md) tag=[**MPI\_ANY\_TAG**](structdynampi_1_1MPI__Type.md)) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**recv\_empty**](#function-recv_empty) ([**int**](structdynampi_1_1MPI__Type.md) source, [**int**](structdynampi_1_1MPI__Type.md) tag=0) <br>_Receives 0 elements of type T. Use when the sender used send\_empty&lt;T&gt;._  |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**recv\_empty\_message**](#function-recv_empty_message) ([**int**](structdynampi_1_1MPI__Type.md) source, [**int**](structdynampi_1_1MPI__Type.md) tag=0) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**send**](#function-send) ([**const**](structdynampi_1_1MPI__Type.md) [**T**](structdynampi_1_1MPI__Type.md) & data, [**int**](structdynampi_1_1MPI__Type.md) dest, [**int**](structdynampi_1_1MPI__Type.md) tag=0) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**send\_empty**](#function-send_empty) ([**int**](structdynampi_1_1MPI__Type.md) dest, [**int**](structdynampi_1_1MPI__Type.md) tag=0) <br> |
+|  [**int**](structdynampi_1_1MPI__Type.md) | [**size**](#function-size) () const<br> |
+|  std::optional&lt; [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) &gt; | [**split**](#function-split) ([**int**](structdynampi_1_1MPI__Type.md) color, [**int**](structdynampi_1_1MPI__Type.md) key=0) const<br> |
 |  [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) | [**split\_by\_node**](#function-split_by_node) () const<br> |
 |   | [**~MPICommunicator**](#function-mpicommunicator) () <br> |
 
@@ -155,7 +155,7 @@ inline dynampi::MPICommunicator::MPICommunicator (
 
 ```C++
 dynampi::MPICommunicator::MPICommunicator (
-    const MPICommunicator & other
+    const  MPICommunicator & other
 ) = delete
 ```
 
@@ -184,7 +184,7 @@ inline dynampi::MPICommunicator::MPICommunicator (
 ### function broadcast 
 
 ```C++
-template<typename T>
+template<typename  T>
 inline void dynampi::MPICommunicator::broadcast (
     T & data,
     int root=0
@@ -201,9 +201,9 @@ inline void dynampi::MPICommunicator::broadcast (
 ### function gather 
 
 ```C++
-template<typename T>
+template<typename  T>
 inline void dynampi::MPICommunicator::gather (
-    const T & data,
+    const  T & data,
     std::vector< T > * result,
     int root=0
 ) 
@@ -245,7 +245,7 @@ inline MPIGroup dynampi::MPICommunicator::get_group () const
 ### function get\_statistics 
 
 ```C++
-inline const CommStatistics & dynampi::MPICommunicator::get_statistics () const
+inline const  CommStatistics & dynampi::MPICommunicator::get_statistics () const
 ```
 
 
@@ -288,7 +288,7 @@ inline dynampi::MPICommunicator::operator MPI_Comm () const
 
 ```C++
 MPICommunicator & dynampi::MPICommunicator::operator= (
-    const MPICommunicator & other
+    const  MPICommunicator & other
 ) = delete
 ```
 
@@ -346,7 +346,7 @@ inline int dynampi::MPICommunicator::rank () const
 ### function recv 
 
 ```C++
-template<typename T>
+template<typename  T>
 inline void dynampi::MPICommunicator::recv (
     T & data,
     int source,
@@ -364,7 +364,7 @@ inline void dynampi::MPICommunicator::recv (
 ### function recv\_any 
 
 ```C++
-template<typename T>
+template<typename  T>
 inline MPI_Status dynampi::MPICommunicator::recv_any (
     T & data,
     int source=MPI_ANY_SOURCE,
@@ -383,7 +383,7 @@ inline MPI_Status dynampi::MPICommunicator::recv_any (
 
 _Receives 0 elements of type T. Use when the sender used send\_empty&lt;T&gt;._ 
 ```C++
-template<typename T>
+template<typename  T>
 inline void dynampi::MPICommunicator::recv_empty (
     int source,
     int tag=0
@@ -416,9 +416,9 @@ inline void dynampi::MPICommunicator::recv_empty_message (
 ### function send 
 
 ```C++
-template<typename T>
+template<typename  T>
 inline void dynampi::MPICommunicator::send (
-    const T & data,
+    const  T & data,
     int dest,
     int tag=0
 ) 
@@ -434,7 +434,7 @@ inline void dynampi::MPICommunicator::send (
 ### function send\_empty 
 
 ```C++
-template<typename T>
+template<typename  T>
 inline void dynampi::MPICommunicator::send_empty (
     int dest,
     int tag=0

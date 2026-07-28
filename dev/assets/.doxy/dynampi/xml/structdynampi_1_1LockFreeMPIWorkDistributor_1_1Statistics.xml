@@ -16,10 +16,10 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="323" column="20" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="323" bodyend="-1"/>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="320" column="20" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="320" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics_1aa762d2bdb452502b3c974d3c1275689b" prot="public" static="no" mutable="no">
-        <type>std::vector&lt; size_t &gt;</type>
+        <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref> &gt;</type>
         <definition>std::vector&lt;size_t&gt; dynampi::LockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics::worker_task_counts</definition>
         <argsstring></argsstring>
         <name>worker_task_counts</name>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="324" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="324" bodyend="-1"/>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="321" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="321" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -50,7 +50,7 @@
         </childnode>
       </node>
     </collaborationgraph>
-    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="322" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="322" bodyend="325"/>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" line="319" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp" bodystart="319" bodyend="322"/>
     <listofallmembers>
       <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics_1a2b04f3870064b3fd2eff15848a67f4b9" prot="public" virt="non-virtual"><scope>dynampi::LockFreeMPIWorkDistributor::Statistics</scope><name>comm_statistics</name></member>
       <member refid="structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics_1aa762d2bdb452502b3c974d3c1275689b" prot="public" virt="non-virtual"><scope>dynampi::LockFreeMPIWorkDistributor::Statistics</scope><name>worker_task_counts</name></member>

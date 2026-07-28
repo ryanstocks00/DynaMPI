@@ -2,7 +2,7 @@
 
 # Class dynampi::HierarchicalMPIWorkDistributor
 
-**template &lt;typename TaskT, typename ResultT, typename... Options&gt;**
+**template &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**TaskT**](structdynampi_1_1MPI__Type.md), [**typename**](structdynampi_1_1MPI__Type.md) [**ResultT**](structdynampi_1_1MPI__Type.md), typename... Options&gt;**
 
 
 
@@ -53,8 +53,8 @@ Inherits the following classes: [dynampi::BaseMPIWorkDistributor](classdynampi_1
 
 | Type | Name |
 | ---: | :--- |
-|  const bool | [**ordered**](#variable-ordered)   = `false`<br> |
-|  constexpr bool | [**prioritize\_tasks**](#variable-prioritize_tasks)   = `Base::prioritize\_tasks`<br> |
+|  [**const**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**ordered**](#variable-ordered)   = `[**false**](structdynampi_1_1MPI__Type.md)`<br> |
+|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**prioritize\_tasks**](#variable-prioritize_tasks)   = `Base::prioritize\_tasks`<br> |
 
 
 
@@ -87,20 +87,20 @@ Inherits the following classes: [dynampi::BaseMPIWorkDistributor](classdynampi_1
 
 | Type | Name |
 | ---: | :--- |
-|   | [**HierarchicalMPIWorkDistributor**](#function-hierarchicalmpiworkdistributor) (std::function&lt; ResultT(TaskT)&gt; worker\_function, [**Config**](structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config.md) runtime\_config=[**Config**](structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config.md){}) <br> |
-|  void | [**allocate\_task\_to\_child**](#function-allocate_task_to_child) () <br> |
-|  void | [**finalize**](#function-finalize) () <br> |
-|  std::vector&lt; ResultT &gt; | [**finish\_remaining\_tasks**](#function-finish_remaining_tasks) () <br> |
-|  const StatisticsT & | [**get\_statistics**](#function-get_statistics) () const<br> |
-|  void | [**insert\_task**](#function-insert_task-12) (TaskT task) <br> |
-|  void | [**insert\_task**](#function-insert_task-22) (const TaskT & task, double priority) <br> |
-|  void | [**insert\_tasks**](#function-insert_tasks-12) (const Range & tasks) <br> |
-|  void | [**insert\_tasks**](#function-insert_tasks-22) (const std::vector&lt; TaskT &gt; & tasks) <br> |
-|  bool | [**is\_root\_manager**](#function-is_root_manager) () const<br> |
-|  size\_t | [**remaining\_tasks\_count**](#function-remaining_tasks_count) () const<br> |
-|  std::vector&lt; ResultT &gt; | [**run\_tasks**](#function-run_tasks) (const [**RunConfig**](structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig.md) & config=[**RunConfig**](structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig.md){}) <br> |
-|  void | [**run\_worker**](#function-run_worker) () <br> |
-|  void | [**send\_results\_to\_parent**](#function-send_results_to_parent) () <br> |
+|   | [**HierarchicalMPIWorkDistributor**](#function-hierarchicalmpiworkdistributor) (std::function&lt; [**ResultT**](structdynampi_1_1MPI__Type.md)([**TaskT**](structdynampi_1_1MPI__Type.md))&gt; worker\_function, [**Config**](structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config.md) runtime\_config=[**Config**](structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config.md){}) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**allocate\_task\_to\_child**](#function-allocate_task_to_child) () <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**finalize**](#function-finalize) () <br> |
+|  std::vector&lt; [**ResultT**](structdynampi_1_1MPI__Type.md) &gt; | [**finish\_remaining\_tasks**](#function-finish_remaining_tasks) () <br> |
+|  [**const**](structdynampi_1_1MPI__Type.md) StatisticsT & | [**get\_statistics**](#function-get_statistics) () const<br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**insert\_task**](#function-insert_task-12) ([**TaskT**](structdynampi_1_1MPI__Type.md) task) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**insert\_task**](#function-insert_task-22) ([**const**](structdynampi_1_1MPI__Type.md) [**TaskT**](structdynampi_1_1MPI__Type.md) & task, [**double**](structdynampi_1_1MPI__Type.md) priority) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**insert\_tasks**](#function-insert_tasks-12) ([**const**](structdynampi_1_1MPI__Type.md) [**Range**](structdynampi_1_1MPI__Type.md) & tasks) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**insert\_tasks**](#function-insert_tasks-22) ([**const**](structdynampi_1_1MPI__Type.md) std::vector&lt; [**TaskT**](structdynampi_1_1MPI__Type.md) &gt; & tasks) <br> |
+|  [**bool**](structdynampi_1_1MPI__Type.md) | [**is\_root\_manager**](#function-is_root_manager) () const<br> |
+|  [**size\_t**](structdynampi_1_1MPI__Type.md) | [**remaining\_tasks\_count**](#function-remaining_tasks_count) () const<br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**return\_results\_and\_request\_next\_batch\_from\_manager**](#function-return_results_and_request_next_batch_from_manager) () <br> |
+|  std::vector&lt; [**ResultT**](structdynampi_1_1MPI__Type.md) &gt; | [**run\_tasks**](#function-run_tasks) ([**const**](structdynampi_1_1MPI__Type.md) [**RunConfig**](structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig.md) & config=[**RunConfig**](structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig.md){}) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**run\_worker**](#function-run_worker) () <br> |
 |   | [**~HierarchicalMPIWorkDistributor**](#function-hierarchicalmpiworkdistributor) () <br> |
 
 
@@ -118,7 +118,7 @@ See [dynampi::BaseMPIWorkDistributor](classdynampi_1_1BaseMPIWorkDistributor.md)
 
 | Type | Name |
 | ---: | :--- |
-| typedef std::conditional\_t&lt; [**prioritize\_tasks**](classdynampi_1_1BaseMPIWorkDistributor.md#variable-prioritize_tasks), std::priority\_queue&lt; std::pair&lt; double, TaskT &gt; &gt;, std::deque&lt; TaskT &gt; &gt; | [**QueueT**](classdynampi_1_1BaseMPIWorkDistributor.md#typedef-queuet)  <br> |
+| typedef std::conditional\_t&lt; [**prioritize\_tasks**](classdynampi_1_1BaseMPIWorkDistributor.md#variable-prioritize_tasks), std::priority\_queue&lt; std::pair&lt; [**double**](structdynampi_1_1MPI__Type.md), [**TaskT**](structdynampi_1_1MPI__Type.md) &gt; &gt;, std::deque&lt; [**TaskT**](structdynampi_1_1MPI__Type.md) &gt; &gt; | [**QueueT**](classdynampi_1_1BaseMPIWorkDistributor.md#typedef-queuet)  <br> |
 
 
 
@@ -137,7 +137,7 @@ See [dynampi::BaseMPIWorkDistributor](classdynampi_1_1BaseMPIWorkDistributor.md)
 
 | Type | Name |
 | ---: | :--- |
-|  constexpr bool | [**prioritize\_tasks**](classdynampi_1_1BaseMPIWorkDistributor.md#variable-prioritize_tasks)   = `[**get\_option\_value**](template__options_8hpp.md#function-get_option_value)&lt;[**prioritize\_tasks\_t**](structdynampi_1_1prioritize__tasks__t.md), Options...&gt;()`<br> |
+|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**prioritize\_tasks**](classdynampi_1_1BaseMPIWorkDistributor.md#variable-prioritize_tasks)   = `[**get\_option\_value**](template__options_8hpp.md#function-get_option_value)&lt;[**prioritize\_tasks\_t**](structdynampi_1_1prioritize__tasks__t.md), Options...&gt;()`<br> |
 
 
 
@@ -209,7 +209,7 @@ constexpr bool dynampi::HierarchicalMPIWorkDistributor< TaskT, ResultT, Options 
 
 ```C++
 inline explicit dynampi::HierarchicalMPIWorkDistributor::HierarchicalMPIWorkDistributor (
-    std::function< ResultT(TaskT)> worker_function,
+    std::function< ResultT ( TaskT )> worker_function,
     Config runtime_config=Config {}
 ) 
 ```
@@ -292,7 +292,7 @@ inline void dynampi::HierarchicalMPIWorkDistributor::insert_task (
 
 ```C++
 inline void dynampi::HierarchicalMPIWorkDistributor::insert_task (
-    const TaskT & task,
+    const  TaskT & task,
     double priority
 ) 
 ```
@@ -307,9 +307,9 @@ inline void dynampi::HierarchicalMPIWorkDistributor::insert_task (
 ### function insert\_tasks [1/2]
 
 ```C++
-template<typename Range>
+template<typename  Range>
 inline void dynampi::HierarchicalMPIWorkDistributor::insert_tasks (
-    const Range & tasks
+    const  Range & tasks
 ) 
 ```
 
@@ -361,11 +361,24 @@ inline size_t dynampi::HierarchicalMPIWorkDistributor::remaining_tasks_count () 
 
 
 
+### function return\_results\_and\_request\_next\_batch\_from\_manager 
+
+```C++
+inline void dynampi::HierarchicalMPIWorkDistributor::return_results_and_request_next_batch_from_manager () 
+```
+
+
+
+
+<hr>
+
+
+
 ### function run\_tasks 
 
 ```C++
 inline std::vector< ResultT > dynampi::HierarchicalMPIWorkDistributor::run_tasks (
-    const RunConfig & config=RunConfig {}
+    const  RunConfig & config=RunConfig {}
 ) 
 ```
 
@@ -380,19 +393,6 @@ inline std::vector< ResultT > dynampi::HierarchicalMPIWorkDistributor::run_tasks
 
 ```C++
 inline void dynampi::HierarchicalMPIWorkDistributor::run_worker () 
-```
-
-
-
-
-<hr>
-
-
-
-### function send\_results\_to\_parent 
-
-```C++
-inline void dynampi::HierarchicalMPIWorkDistributor::send_results_to_parent () 
 ```
 
 

@@ -14,12 +14,12 @@
     </templateparamlist>
     <sectiondef kind="public-static-attrib">
       <memberdef kind="variable" id="structdynampi_1_1track__statistics_1a97b405ebe28f951a671e89db3eeb310f" prot="public" static="yes" constexpr="yes" mutable="no">
-        <type>constexpr <ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
         <definition>constexpr StatisticsMode dynampi::track_statistics&lt; Mode &gt;::value</definition>
         <argsstring></argsstring>
         <name>value</name>
         <qualifiedname>dynampi::track_statistics::value</qualifiedname>
-        <initializer>= Mode</initializer>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">Mode</ref></initializer>
         <briefdescription>
         </briefdescription>
         <detaileddescription>

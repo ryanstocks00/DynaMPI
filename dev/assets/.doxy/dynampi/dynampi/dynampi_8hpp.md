@@ -18,7 +18,6 @@
 * `#include <tuple>`
 * `#include <vector>`
 * `#include "dynampi/impl/hierarchical_distributor.hpp"`
-* `#include "dynampi/impl/hierarchical_lockfree_distributor.hpp"`
 * `#include "dynampi/impl/lockfree_distributor.hpp"`
 * `#include "dynampi/impl/naive_distributor.hpp"`
 

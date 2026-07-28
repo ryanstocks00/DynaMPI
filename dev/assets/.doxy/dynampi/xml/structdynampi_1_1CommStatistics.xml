@@ -5,7 +5,7 @@
     <includes refid="mpi__communicator_8hpp" local="no">mpi_communicator.hpp</includes>
     <sectiondef kind="public-attrib">
       <memberdef kind="variable" id="structdynampi_1_1CommStatistics_1aedbf769de2b5252a313a25090032548a" prot="public" static="no" mutable="no">
-        <type>int</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
         <definition>int dynampi::CommStatistics::send_count</definition>
         <argsstring></argsstring>
         <name>send_count</name>
@@ -20,7 +20,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="37" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="37" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1CommStatistics_1ab521b0246078ebb8844e55a54a627e08" prot="public" static="no" mutable="no">
-        <type>int</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
         <definition>int dynampi::CommStatistics::recv_count</definition>
         <argsstring></argsstring>
         <name>recv_count</name>
@@ -35,7 +35,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="38" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="38" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1CommStatistics_1ac6e8d795792906c7a454362256e7395d" prot="public" static="no" mutable="no">
-        <type>int</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
         <definition>int dynampi::CommStatistics::collective_count</definition>
         <argsstring></argsstring>
         <name>collective_count</name>
@@ -50,7 +50,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="39" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="39" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1CommStatistics_1ad65a6956c56ba8950d7d1b3c5b7479f0" prot="public" static="no" mutable="no">
-        <type>size_t</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
         <definition>size_t dynampi::CommStatistics::bytes_sent</definition>
         <argsstring></argsstring>
         <name>bytes_sent</name>
@@ -65,7 +65,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="40" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="40" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1CommStatistics_1a2707f481b091116e0e101a7b6a1854ab" prot="public" static="no" mutable="no">
-        <type>size_t</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
         <definition>size_t dynampi::CommStatistics::bytes_received</definition>
         <argsstring></argsstring>
         <name>bytes_received</name>
@@ -80,7 +80,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="41" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="41" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1CommStatistics_1a634d154e522a2d1ceb44547877e0c5ff" prot="public" static="no" mutable="no">
-        <type>double</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref></type>
         <definition>double dynampi::CommStatistics::send_time</definition>
         <argsstring></argsstring>
         <name>send_time</name>
@@ -95,7 +95,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="42" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="42" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1CommStatistics_1a165aae2d4036c28fbc0f587300359ffa" prot="public" static="no" mutable="no">
-        <type>double</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref></type>
         <definition>double dynampi::CommStatistics::recv_time</definition>
         <argsstring></argsstring>
         <name>recv_time</name>
@@ -112,7 +112,7 @@
     </sectiondef>
     <sectiondef kind="public-func">
       <memberdef kind="function" id="structdynampi_1_1CommStatistics_1a434695cb6f0afa458b645300ecf80526" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
-        <type>void</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
         <definition>void dynampi::CommStatistics::reset</definition>
         <argsstring>()</argsstring>
         <name>reset</name>
@@ -126,7 +126,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="45" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="45" bodyend="50"/>
       </memberdef>
       <memberdef kind="function" id="structdynampi_1_1CommStatistics_1a382e28b4fd5dba8e535a4e007c3688ca" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
-        <type>double</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref></type>
         <definition>double dynampi::CommStatistics::average_send_size</definition>
         <argsstring>() const</argsstring>
         <name>average_send_size</name>
@@ -140,7 +140,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="52" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="52" bodyend="55"/>
       </memberdef>
       <memberdef kind="function" id="structdynampi_1_1CommStatistics_1a7cea11f39d408736bd58fe99dcd55ca2" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
-        <type>double</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref></type>
         <definition>double dynampi::CommStatistics::average_receive_size</definition>
         <argsstring>() const</argsstring>
         <name>average_receive_size</name>

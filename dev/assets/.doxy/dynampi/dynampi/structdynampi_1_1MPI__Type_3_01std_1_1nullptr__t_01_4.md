@@ -40,8 +40,8 @@
 
 | Type | Name |
 | ---: | :--- |
-|  const bool | [**resize\_required**](#variable-resize_required)   = `false`<br> |
-|  const MPI\_Datatype | [**value**](#variable-value)   = `MPI\_PACKED`<br> |
+|  [**const**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**resize\_required**](#variable-resize_required)   = `[**false**](structdynampi_1_1MPI__Type.md)`<br> |
+|  [**const**](structdynampi_1_1MPI__Type.md) [**MPI\_Datatype**](structdynampi_1_1MPI__Type.md) | [**value**](#variable-value)   = `[**MPI\_PACKED**](structdynampi_1_1MPI__Type.md)`<br> |
 
 
 
@@ -62,10 +62,10 @@
 
 | Type | Name |
 | ---: | :--- |
-|  int | [**count**](#function-count) (const std::nullptr\_t &) noexcept<br> |
-|  void \* | [**ptr**](#function-ptr-12) (std::nullptr\_t &) noexcept<br> |
-|  const void \* | [**ptr**](#function-ptr-22) (const std::nullptr\_t &) noexcept<br> |
-|  void | [**resize**](#function-resize) (std::nullptr\_t &, int new\_size) noexcept<br> |
+|  [**int**](structdynampi_1_1MPI__Type.md) | [**count**](#function-count) ([**const**](structdynampi_1_1MPI__Type.md) std::nullptr\_t &) noexcept<br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) \* | [**ptr**](#function-ptr-12) (std::nullptr\_t &) noexcept<br> |
+|  [**const**](structdynampi_1_1MPI__Type.md) [**void**](structdynampi_1_1MPI__Type.md) \* | [**ptr**](#function-ptr-22) ([**const**](structdynampi_1_1MPI__Type.md) std::nullptr\_t &) noexcept<br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**resize**](#function-resize) (std::nullptr\_t &, [**int**](structdynampi_1_1MPI__Type.md) new\_size) noexcept<br> |
 
 
 
@@ -158,7 +158,7 @@ static inline void * dynampi::MPI_Type< std::nullptr_t >::ptr (
 ### function ptr [2/2]
 
 ```C++
-static inline const void * dynampi::MPI_Type< std::nullptr_t >::ptr (
+static inline const  void * dynampi::MPI_Type< std::nullptr_t >::ptr (
     const std::nullptr_t &
 ) noexcept
 ```

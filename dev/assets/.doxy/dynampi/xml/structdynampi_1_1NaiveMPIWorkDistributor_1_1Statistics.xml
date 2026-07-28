@@ -5,7 +5,7 @@
     <includes refid="naive__distributor_8hpp" local="no">naive_distributor.hpp</includes>
     <sectiondef kind="public-attrib">
       <memberdef kind="variable" id="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics_1a67c2180de30ea30920a755ec986ac288" prot="public" static="no" mutable="no">
-        <type>const <ref refid="structdynampi_1_1CommStatistics" kindref="compound">CommStatistics</ref> &amp;</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1CommStatistics" kindref="compound">CommStatistics</ref> &amp;</type>
         <definition>const CommStatistics&amp; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics::comm_statistics</definition>
         <argsstring></argsstring>
         <name>comm_statistics</name>
@@ -19,7 +19,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="92" column="26" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="92" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics_1adf952f820977528dd6be4954a4a99bf3" prot="public" static="no" mutable="no">
-        <type>std::vector&lt; size_t &gt;</type>
+        <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref> &gt;</type>
         <definition>std::vector&lt;size_t&gt; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics::worker_task_counts</definition>
         <argsstring></argsstring>
         <name>worker_task_counts</name>

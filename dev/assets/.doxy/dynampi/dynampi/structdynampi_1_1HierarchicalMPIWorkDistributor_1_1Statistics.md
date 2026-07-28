@@ -35,8 +35,8 @@
 
 | Type | Name |
 | ---: | :--- |
-|  const [**CommStatistics**](structdynampi_1_1CommStatistics.md) & | [**comm\_statistics**](#variable-comm_statistics)  <br> |
-|  std::optional&lt; std::vector&lt; size\_t &gt; &gt; | [**worker\_task\_counts**](#variable-worker_task_counts)   = `{}`<br> |
+|  [**const**](structdynampi_1_1MPI__Type.md) [**CommStatistics**](structdynampi_1_1CommStatistics.md) & | [**comm\_statistics**](#variable-comm_statistics)  <br> |
+|  std::optional&lt; std::vector&lt; [**size\_t**](structdynampi_1_1MPI__Type.md) &gt; &gt; | [**worker\_task\_counts**](#variable-worker_task_counts)   = `{}`<br> |
 
 
 

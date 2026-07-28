@@ -58,10 +58,10 @@
 | Type | Name |
 | ---: | :--- |
 |   | [**Timer**](#function-timer) ([**AutoStart**](classdynampi_1_1Timer.md#enum-autostart) auto\_start=AutoStart::Yes) <br> |
-|  std::chrono::duration&lt; double &gt; | [**elapsed**](#function-elapsed) () const<br> |
-|  void | [**reset**](#function-reset) ([**AutoStart**](classdynampi_1_1Timer.md#enum-autostart) auto\_start=AutoStart::Yes) <br> |
-|  void | [**start**](#function-start) () <br> |
-|  std::chrono::duration&lt; double &gt; | [**stop**](#function-stop) () <br> |
+|  std::chrono::duration&lt; [**double**](structdynampi_1_1MPI__Type.md) &gt; | [**elapsed**](#function-elapsed) () const<br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**reset**](#function-reset) ([**AutoStart**](classdynampi_1_1Timer.md#enum-autostart) auto\_start=AutoStart::Yes) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**start**](#function-start) () <br> |
+|  std::chrono::duration&lt; [**double**](structdynampi_1_1MPI__Type.md) &gt; | [**stop**](#function-stop) () <br> |
 
 
 
@@ -189,7 +189,7 @@ inline std::chrono::duration< double > dynampi::Timer::stop ()
 ```C++
 inline std::ostream & dynampi::Timer::operator<< (
     std::ostream & os,
-    const Timer & timer
+    const  Timer & timer
 ) 
 ```
 

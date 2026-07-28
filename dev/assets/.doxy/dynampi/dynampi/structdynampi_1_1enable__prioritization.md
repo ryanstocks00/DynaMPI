@@ -45,7 +45,7 @@ Inherits the following classes: [dynampi::prioritize\_tasks\_t](structdynampi_1_
 
 | Type | Name |
 | ---: | :--- |
-|  constexpr bool | [**value**](#variable-value)   = `true`<br> |
+|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**value**](#variable-value)   = `[**true**](structdynampi_1_1MPI__Type.md)`<br> |
 
 
 ## Public Static Attributes inherited from dynampi::prioritize_tasks_t
@@ -54,7 +54,7 @@ See [dynampi::prioritize\_tasks\_t](structdynampi_1_1prioritize__tasks__t.md)
 
 | Type | Name |
 | ---: | :--- |
-|  constexpr bool | [**value**](structdynampi_1_1prioritize__tasks__t.md#variable-value)   = `false`<br> |
+|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**value**](structdynampi_1_1prioritize__tasks__t.md#variable-value)   = `[**false**](structdynampi_1_1MPI__Type.md)`<br> |
 
 
 

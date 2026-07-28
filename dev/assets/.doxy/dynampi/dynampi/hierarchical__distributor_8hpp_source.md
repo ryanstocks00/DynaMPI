@@ -18,13 +18,11 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <deque>
 #include <functional>
 #include <iostream>
 #include <iterator>
 #include <limits>
 #include <ranges>
-#include <set>
 #include <span>
 #include <stack>
 #include <type_traits>
@@ -50,19 +48,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     std::optional<size_t> message_batch_size = std::nullopt;
     std::optional<int> max_workers_per_coordinator = std::nullopt;
     int batch_size_multiplier = 2;
-
-    // How many batches' worth of tasks/requests a coordinator tries to keep
-    // in the pipeline at once, including the one currently being
-    // distributed to its children. 1 disables prefetching entirely (a
-    // coordinator only asks for its next batch after fully finishing the
-    // current one). 2 is double-buffering: one batch active, one already
-    // requested (or in flight) so children never wait a full round trip
-    // between batches. Values above 2 keep additional batches' worth of
-    // requests outstanding simultaneously, trading more slack against
-    // round-trip latency variance for coarser load-balancing granularity
-    // (tasks committed this far ahead can't be reassigned to an idle
-    // sibling coordinator).
-    int pipeline_depth = 2;
 
     // If true, topology is strictly mapped to physical nodes:
     // Manager <-> Node Coordinators <-> Local Workers
@@ -108,21 +93,6 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   bool m_finalized = false;
   bool m_done = false;
-
-  // Pipelining (see run_worker()'s intermediate-coordinator branch):
-  // tasks that arrive as a reply to a proactive next-batch request sent
-  // while the current round is still active are quarantined here and only
-  // released into m_unallocated_task_queue at the next round boundary, so
-  // the current round's distribution loop can never overshoot into the
-  // next round's tasks. Replies stay in arrival order (FIFO) regardless of
-  // which of possibly several outstanding requests they answer.
-  bool m_round_active = false;
-  std::deque<TaskT> m_prefetched_tasks;
-  // Requests sent to our parent (Tag::REQUEST_BATCH) whose reply --
-  // Tag::TASK_BATCH into m_prefetched_tasks/m_unallocated_task_queue, or
-  // Tag::DONE -- hasn't arrived yet. Kept below Config::pipeline_depth (see
-  // top_up_pipeline()).
-  int m_outstanding_requests = 0;
 
   static constexpr StatisticsMode statistics_mode =
       get_option_value<track_statistics_t, Options...>();
@@ -358,96 +328,22 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       // Intermediate nodes (Node Coordinators)
       int num_children = num_direct_children();
       int prefetch = num_children * m_config.batch_size_multiplier;
-      const int pipeline_depth = std::max(1, m_config.pipeline_depth);
 
-      // Keeps up to `target` batches' worth of requests outstanding with
-      // our parent at once (see Config::pipeline_depth), sending only as
-      // many new ones as needed to close the gap -- so calling this
-      // repeatedly as replies trickle in and reduce m_outstanding_requests
-      // never over-sends. No-ops once m_done is known: the manager has
-      // stopped listening (finalize() only answers each child once -- see
-      // send_done_to_children_when_free()), so a request sent after that
-      // would never be received.
-      auto top_up_pipeline = [&](int target) {
-        while (!m_done && m_outstanding_requests < target) {
-          send_to_parent(prefetch, Tag::REQUEST_BATCH);
-          m_outstanding_requests++;
-        }
-      };
-
-      // Prime with exactly one request, not the full pipeline_depth: while
-      // we're waiting for this very first reply, m_round_active is still
-      // false, so receive_task_batch_from() has no round to quarantine
-      // against yet and routes any reply straight into
-      // m_unallocated_task_queue (see below). Priming with more than one
-      // would risk several replies landing there before we ever set
-      // m_round_active, merging what should be separate rounds into one
-      // oversized first batch. Sending only one guarantees at most one
-      // reply is pending during this wait; the rest of the pipeline_depth
-      // is built up below, entirely after m_round_active is true.
-      top_up_pipeline(1);
+      // Initial request to parent (Manager)
+      send_to_parent(prefetch, Tag::REQUEST_BATCH);
 
       while (!m_done) {
-        // A batch prefetched during the previous round (see below) is
-        // already sitting here, ready to go, with no round trip needed.
-        // (Prioritized task queues don't support batch prefetching; see
-        // receive_task_batch_from.)
-        if constexpr (!prioritize_tasks) {
-          if (!m_prefetched_tasks.empty()) {
-            for (auto& task : m_prefetched_tasks) {
-              m_unallocated_task_queue.push_back(std::move(task));
-            }
-            m_prefetched_tasks.clear();
-          }
-        }
-
-        // If we have no tasks to give, wait for tasks from parent. Flush
-        // any results gained while waiting -- a real, confirmed deadlock
-        // otherwise: once this coordinator has distributed everything it
-        // currently has, this loop is the ONLY place it spends time until
-        // its parent sends more (which may never happen, e.g. once the
-        // parent's own task supply is exhausted but m_done hasn't arrived
-        // yet). Straggler results trickling in via receive_from_anyone()
-        // here would sit in m_results forever with no other flush point to
-        // reach -- and the parent's own exhaustion check depends on
-        // eventually seeing them, so both ends would wait on each other
-        // permanently. Flushing here closes that gap the same way the
-        // round-boundary flush does for the normal case.
+        // If we have no tasks to give, wait for tasks from parent
         while (!m_done && m_unallocated_task_queue.empty()) {
           receive_from_anyone();
-          if (!m_results.empty()) {
-            send_results_to_parent();
-          }
         }
-        if (m_done) break;
 
-        // While this round is active, any TASK_BATCH that arrives (a reply
-        // to a pipelined request) is quarantined in m_prefetched_tasks
-        // rather than merged into m_unallocated_task_queue, so this round's
-        // distribution loop can never overshoot past this round's own
-        // starting queue size into next round's tasks.
-        m_round_active = true;
+        size_t num_tasks_should_be_received = m_unallocated_task_queue.size();
 
-        // Pipelining: top up outstanding requests to pipeline_depth-1 (the
-        // "-1" is this now-active round itself) as soon as we start working
-        // it, rather than only after its results have been fully collected
-        // and sent upstream. Requests and result returns are independent
-        // messages (see receive_request_batch_from / receive_result_batch_from),
-        // so replies can already be arriving while we're still distributing
-        // or awaiting results for this round. Without this, children sit
-        // idle for a full parent round trip between batches.
-        top_up_pipeline(pipeline_depth - 1);
-
-        // Process tasks: Give to workers or execute ourselves if needed.
-        // Deliberately does NOT break on m_done: a pipelined request can be
-        // answered with DONE (if the manager has nothing left and
-        // finalize() runs) while THIS round is still being handed out to
-        // our own children. Since m_round_active already quarantines any
-        // newly-arriving TASK_BATCH into m_prefetched_tasks, nothing new
-        // can leak into m_unallocated_task_queue here -- so finishing it
-        // out is always safe, and required: abandoning it would silently
-        // drop this round's tasks.
+        // Process tasks: Give to workers or execute ourselves if needed
         while (!m_unallocated_task_queue.empty()) {
+          if (m_done) break;
+
           if (m_free_worker_indices.empty()) {
             // Must wait for a worker to become free
             receive_from_anyone();
@@ -456,66 +352,23 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
           }
         }
 
-        m_round_active = false;
-
-        // Deliberately NOT gated on every result from this round having
-        // arrived: this class is unordered (see `static const bool ordered
-        // = false` above), so nothing downstream cares which round a result
-        // came from. Waiting here for a round's slowest straggler used to
-        // block send_results_to_parent() entirely -- even results from
-        // OTHER children that finished long ago sat unsent the whole time.
-        // Sending whatever has accumulated so far (possibly nothing, if
-        // every child in this round is still working) and moving straight
-        // on to distributing the next round lets fast children's results
-        // flow upward immediately and lets those same children pick up
-        // next-round work right away (allocate_task_to_child() only needs a
-        // free worker, not a fully-drained round) instead of sitting idle
-        // behind one slow sibling. Any straggler's result still gets
-        // collected and forwarded eventually -- either by a later round's
-        // flush below, or by the final drain after send_done_to_children_
-        // when_free() if it lands after the last round.
-        if (!m_results.empty()) {
-          send_results_to_parent();
+        // Wait for results from children
+        while (m_tasks_sent_to_child > m_results_received_from_child) {
+          receive_from_anyone();
         }
 
-        // Minimum-progress guarantee: ensure at least one request is
-        // outstanding before we loop back to wait for the next round.
-        // Without this, pipeline_depth == 1 (top_up_pipeline(pipeline_depth
-        // - 1) above is a no-op at 0) would never ask for a next batch at
-        // all -- unlike the old implicit protocol this replaced, where
-        // sending RESULT_BATCH itself doubled as a request (see
-        // receive_result_batch_from), nothing here sends a request except
-        // top_up_pipeline. This is also not just a depth==1 special case:
-        // even at higher depths, a long round can fully drain
-        // m_outstanding_requests to 0 (every previously-sent request
-        // already answered and parked in m_prefetched_tasks) before the
-        // round finishes, and needs the same top-up to keep the pipeline
-        // fed afterward.
-        top_up_pipeline(1);
-        // Safe to honor m_done now: this round is fully distributed and
-        // whatever was ready has been flushed to our parent. Any results
-        // still outstanding (stragglers) are picked up by
-        // send_done_to_children_when_free()'s own draining below, and
-        // flushed by the final send_results_to_parent() after it.
         if (m_done) break;
+
+        (void)num_tasks_should_be_received;
+        DYNAMPI_ASSERT_EQ(m_results.size(), num_tasks_should_be_received);
+
+        return_results_and_request_next_batch_from_manager();
       }
       send_done_to_children_when_free();
-      // send_done_to_children_when_free() only returns once every child is
-      // free, which (see receive_result_from/receive_result_batch_from)
-      // requires having received that child's result first -- so by this
-      // point every result this coordinator will ever collect has arrived.
-      // The round loop above only flushes at round boundaries, so a
-      // straggler landing after the last round's flush (including one only
-      // observed here, during the done-notification drain) would otherwise
-      // never be forwarded, permanently violating finalize()'s
-      // m_results_sent_to_parent == m_tasks_received_from_parent invariant.
-      if (!m_results.empty()) {
-        send_results_to_parent();
-      }
     }
   }
 
-  void send_results_to_parent() {
+  void return_results_and_request_next_batch_from_manager() {
     DYNAMPI_ASSERT(!is_leaf_worker(), "Leaf workers should not return results directly");
     DYNAMPI_ASSERT_NE(m_communicator.rank(), m_config.manager_rank,
                       "Manager should not request tasks from itself");
@@ -766,15 +619,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   void send_done_to_children_when_free() {
     const int direct_children = num_direct_children();
-    // Tracks unique children notified, not requests answered: with
-    // pipeline_depth > 1 (see run_worker()) a single child can have several
-    // outstanding requests queued here at once, all requesting the same
-    // "no more work" answer. Counting requests instead of children would let
-    // one over-represented child consume the whole direct_children budget,
-    // leaving others never told to stop -- a real deadlock, not a
-    // theoretical one, once more than one request per child is possible.
-    std::set<int> notified;
-    while (static_cast<int>(notified.size()) < direct_children) {
+    int done_sent_count = 0;
+    while (done_sent_count < direct_children) {
       if (m_free_worker_indices.empty()) {
         receive_from_anyone();
         continue;
@@ -782,13 +628,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       TaskRequest request = m_free_worker_indices.top();
       m_free_worker_indices.pop();
 
-      if (notified.contains(request.worker_rank)) {
-        // Already told this child; it doesn't need (or expect) a separate
-        // reply per request it happened to have outstanding.
-        continue;
-      }
       send_to_worker(nullptr, request.worker_rank, Tag::DONE, request.source_layer);
-      notified.insert(request.worker_rank);
+      done_sent_count++;
     }
   }
 
@@ -813,17 +654,21 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   }
 
   void receive_result_batch_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
-                                 [[maybe_unused]] CommLayer layer) {
+                                 CommLayer layer) {
     using message_type = MPI_Type<std::vector<ResultT>>;
     int count;
     DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
     std::vector<ResultT> results;
     message_type::resize(results, count);
+    // With groups, always use global communicator and determine layer from source rank
     int world_source = status.MPI_SOURCE;
+    if (m_config.coordinator_per_node) {
+      layer = determine_layer_from_world_rank(world_source);
+    }
     m_communicator.recv(results, world_source, Tag::RESULT_BATCH);
-    // Results and next-batch requests are independent messages (see the
-    // double-buffering refill in run_worker()), so receiving results here
-    // has no side effect on task allocation for this child.
+    m_free_worker_indices.push({.worker_rank = world_source,
+                                .source_layer = layer,
+                                .num_tasks_requested = static_cast<int>(results.size())});
     std::copy(results.begin(), results.end(), std::back_inserter(m_results));
     m_results_received_from_child += results.size();
   }
@@ -860,17 +705,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       int world_source = status.MPI_SOURCE;
       m_communicator.recv(tasks, world_source, Tag::TASK_BATCH);
       m_tasks_received_from_parent += tasks.size();
-      // This reply fulfills one of our outstanding pipelined requests (see
-      // run_worker()'s top_up_pipeline()); only intermediate coordinators
-      // (never leaf workers, which use the unbatched TASK/RESULT protocol)
-      // send REQUEST_BATCH, so only they receive TASK_BATCH replies here.
-      if (m_outstanding_requests > 0) --m_outstanding_requests;
-      // While a round is active, this is the reply to a request for a
-      // *future* round: quarantine it so the current round's distribution
-      // loop can't overshoot into it (see run_worker()).
-      auto& target = m_round_active ? m_prefetched_tasks : m_unallocated_task_queue;
       for (const auto& task : tasks) {
-        target.push_back(task);
+        m_unallocated_task_queue.push_back(task);
       }
     }
   }

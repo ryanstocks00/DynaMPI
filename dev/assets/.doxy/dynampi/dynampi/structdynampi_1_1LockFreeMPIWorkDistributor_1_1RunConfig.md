@@ -36,9 +36,9 @@
 
 | Type | Name |
 | ---: | :--- |
-|  bool | [**allow\_more\_than\_target\_tasks**](#variable-allow_more_than_target_tasks)   = `true`<br> |
-|  std::optional&lt; double &gt; | [**max\_seconds**](#variable-max_seconds)   = `std::nullopt`<br> |
-|  size\_t | [**target\_num\_tasks**](#variable-target_num_tasks)   = `std::numeric\_limits&lt;size\_t&gt;::max()`<br> |
+|  [**bool**](structdynampi_1_1MPI__Type.md) | [**allow\_more\_than\_target\_tasks**](#variable-allow_more_than_target_tasks)   = `[**true**](structdynampi_1_1MPI__Type.md)`<br> |
+|  std::optional&lt; [**double**](structdynampi_1_1MPI__Type.md) &gt; | [**max\_seconds**](#variable-max_seconds)   = `std::nullopt`<br> |
+|  [**size\_t**](structdynampi_1_1MPI__Type.md) | [**target\_num\_tasks**](#variable-target_num_tasks)   = `std::numeric\_limits&lt;[**size\_t**](structdynampi_1_1MPI__Type.md)&gt;::max()`<br> |
 
 
 

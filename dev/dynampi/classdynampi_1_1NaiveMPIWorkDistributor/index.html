@@ -741,7 +741,7 @@
 
 
 <h1 id="class-dynampinaivempiworkdistributor">Class dynampi::NaiveMPIWorkDistributor</h1>
-<p><strong>template &lt;typename TaskT, typename ResultT, typename... Options&gt;</strong></p>
+<p><strong>template &lt;<a href="../structdynampi_1_1MPI__Type/"><strong>typename</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>TaskT</strong></a>, <a href="../structdynampi_1_1MPI__Type/"><strong>typename</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>ResultT</strong></a>, typename... Options&gt;</strong></p>
 <p><a href="../annotated/"><strong>ClassList</strong></a> <strong>&gt;</strong> <a href="../namespacedynampi/"><strong>dynampi</strong></a> <strong>&gt;</strong> <a href="./"><strong>NaiveMPIWorkDistributor</strong></a></p>
 <ul>
 <li><code>#include &lt;naive_distributor.hpp&gt;</code></li>
@@ -794,8 +794,8 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;">const bool</td>
-<td style="text-align: left;"><a href="#variable-ordered"><strong>ordered</strong></a>   = <code>true</code><br></td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>bool</strong></a></td>
+<td style="text-align: left;"><a href="#variable-ordered"><strong>ordered</strong></a>   = <code>[**true**](structdynampi_1_1MPI__Type.md)</code><br></td>
 </tr>
 </tbody>
 </table>
@@ -810,46 +810,46 @@
 <tbody>
 <tr>
 <td style="text-align: right;"></td>
-<td style="text-align: left;"><a href="#function-naivempiworkdistributor"><strong>NaiveMPIWorkDistributor</strong></a> (std::function&lt; ResultT(TaskT)&gt; worker_function, <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Config/"><strong>Config</strong></a> runtime_config=<a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Config/"><strong>Config</strong></a>{}) <br></td>
+<td style="text-align: left;"><a href="#function-naivempiworkdistributor"><strong>NaiveMPIWorkDistributor</strong></a> (std::function&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>ResultT</strong></a>(<a href="../structdynampi_1_1MPI__Type/"><strong>TaskT</strong></a>)&gt; worker_function, <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Config/"><strong>Config</strong></a> runtime_config=<a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Config/"><strong>Config</strong></a>{}) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;">void</td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
 <td style="text-align: left;"><a href="#function-finalize"><strong>finalize</strong></a> () <br></td>
 </tr>
 <tr>
-<td style="text-align: right;">std::vector&lt; ResultT &gt;</td>
+<td style="text-align: right;">std::vector&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>ResultT</strong></a> &gt;</td>
 <td style="text-align: left;"><a href="#function-finish_remaining_tasks"><strong>finish_remaining_tasks</strong></a> () <br></td>
 </tr>
 <tr>
-<td style="text-align: right;">const <a href="./#typedef-statisticst"><strong>StatisticsT</strong></a> &amp;</td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> <a href="./#typedef-statisticst"><strong>StatisticsT</strong></a> &amp;</td>
 <td style="text-align: left;"><a href="#function-get_statistics"><strong>get_statistics</strong></a> () const<br></td>
 </tr>
 <tr>
-<td style="text-align: right;">void</td>
-<td style="text-align: left;"><a href="#function-insert_task-12"><strong>insert_task</strong></a> (TaskT task) <br></td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
+<td style="text-align: left;"><a href="#function-insert_task-12"><strong>insert_task</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>TaskT</strong></a> task) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;">void</td>
-<td style="text-align: left;"><a href="#function-insert_task-22"><strong>insert_task</strong></a> (const TaskT &amp; task, double priority) <br></td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
+<td style="text-align: left;"><a href="#function-insert_task-22"><strong>insert_task</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>TaskT</strong></a> &amp; task, <a href="../structdynampi_1_1MPI__Type/"><strong>double</strong></a> priority) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;">void</td>
-<td style="text-align: left;"><a href="#function-insert_tasks"><strong>insert_tasks</strong></a> (const std::vector&lt; TaskT &gt; &amp; tasks) <br></td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
+<td style="text-align: left;"><a href="#function-insert_tasks"><strong>insert_tasks</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> std::vector&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>TaskT</strong></a> &gt; &amp; tasks) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;">bool</td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>bool</strong></a></td>
 <td style="text-align: left;"><a href="#function-is_root_manager"><strong>is_root_manager</strong></a> () const<br></td>
 </tr>
 <tr>
-<td style="text-align: right;">size_t</td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>size_t</strong></a></td>
 <td style="text-align: left;"><a href="#function-remaining_tasks_count"><strong>remaining_tasks_count</strong></a> () const<br></td>
 </tr>
 <tr>
-<td style="text-align: right;">std::vector&lt; ResultT &gt;</td>
+<td style="text-align: right;">std::vector&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>ResultT</strong></a> &gt;</td>
 <td style="text-align: left;"><a href="#function-run_tasks"><strong>run_tasks</strong></a> (<a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig/"><strong>RunConfig</strong></a> config=<a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig/"><strong>RunConfig</strong></a>{}) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;">void</td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
 <td style="text-align: left;"><a href="#function-run_worker"><strong>run_worker</strong></a> () <br></td>
 </tr>
 <tr>
@@ -871,7 +871,7 @@
 <h2 id="public-functions-documentation">Public Functions Documentation</h2>
 <h3 id="function-naivempiworkdistributor">function NaiveMPIWorkDistributor</h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kr">inline</span><span class="w"> </span><span class="k">explicit</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">NaiveMPIWorkDistributor</span><span class="o">::</span><span class="n">NaiveMPIWorkDistributor</span><span class="w"> </span><span class="p">(</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="w"> </span><span class="n">ResultT</span><span class="p">(</span><span class="n">TaskT</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">worker_function</span><span class="p">,</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="w"> </span><span class="n">ResultT</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">TaskT</span><span class="w"> </span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">worker_function</span><span class="p">,</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">Config</span><span class="w"> </span><span class="n">runtime_config</span><span class="o">=</span><span class="n">Config</span><span class="w"> </span><span class="p">{}</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">)</span><span class="w"> </span>
 </code></pre></div>
@@ -888,7 +888,7 @@
 <hr>
 
 <h3 id="function-get_statistics">function get_statistics</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kr">inline</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">StatisticsT</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">NaiveMPIWorkDistributor</span><span class="o">::</span><span class="n">get_statistics</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kr">inline</span><span class="w"> </span><span class="k">const</span><span class="w">  </span><span class="n">StatisticsT</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">NaiveMPIWorkDistributor</span><span class="o">::</span><span class="n">get_statistics</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
 </code></pre></div>
 <hr>
 
@@ -901,7 +901,7 @@
 
 <h3 id="function-insert_task-22">function insert_task [2/2]</h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">NaiveMPIWorkDistributor</span><span class="o">::</span><span class="n">insert_task</span><span class="w"> </span><span class="p">(</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">TaskT</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">task</span><span class="p">,</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="k">const</span><span class="w">  </span><span class="n">TaskT</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">task</span><span class="p">,</span>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">priority</span>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="p">)</span><span class="w"> </span>
 </code></pre></div>

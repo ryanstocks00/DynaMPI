@@ -13,13 +13,11 @@
 * `#include <algorithm>`
 * `#include <cassert>`
 * `#include <cmath>`
-* `#include <deque>`
 * `#include <functional>`
 * `#include <iostream>`
 * `#include <iterator>`
 * `#include <limits>`
 * `#include <ranges>`
-* `#include <set>`
 * `#include <span>`
 * `#include <stack>`
 * `#include <type_traits>`
@@ -53,7 +51,7 @@
 
 | Type | Name |
 | ---: | :--- |
-| class | [**HierarchicalMPIWorkDistributor**](classdynampi_1_1HierarchicalMPIWorkDistributor.md) &lt;typename TaskT, typename ResultT, Options&gt;<br> |
+| class | [**HierarchicalMPIWorkDistributor**](classdynampi_1_1HierarchicalMPIWorkDistributor.md) &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**TaskT**](structdynampi_1_1MPI__Type.md), [**typename**](structdynampi_1_1MPI__Type.md) [**ResultT**](structdynampi_1_1MPI__Type.md), Options&gt;<br> |
 | struct | [**Config**](structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config.md) <br> |
 | struct | [**RunConfig**](structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig.md) <br> |
 

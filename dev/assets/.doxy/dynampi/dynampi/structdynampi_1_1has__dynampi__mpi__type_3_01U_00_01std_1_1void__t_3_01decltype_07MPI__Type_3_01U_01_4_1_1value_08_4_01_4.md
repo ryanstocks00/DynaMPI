@@ -2,7 +2,7 @@
 
 # Struct dynampi::has\_dynampi\_mpi\_type&lt; U, std::void\_t&lt; decltype(MPI\_Type&lt; U &gt;::value)&gt; &gt;
 
-**template &lt;typename U&gt;**
+**template &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**U**](structdynampi_1_1MPI__Type.md)&gt;**
 
 
 

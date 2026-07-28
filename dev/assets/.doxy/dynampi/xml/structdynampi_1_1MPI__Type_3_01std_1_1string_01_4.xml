@@ -7,12 +7,12 @@
     </templateparamlist>
     <sectiondef kind="public-static-attrib">
       <memberdef kind="variable" id="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4_1a630be445749df516264cb01ca03f88e7" prot="public" static="yes" mutable="no">
-        <type>const MPI_Datatype</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Datatype</ref></type>
         <definition>const MPI_Datatype dynampi::MPI_Type&lt; std::string &gt;::value</definition>
         <argsstring></argsstring>
         <name>value</name>
         <qualifiedname>dynampi::MPI_Type&lt; std::string &gt;::value</qualifiedname>
-        <initializer>= MPI_CHAR</initializer>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_CHAR</ref></initializer>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -22,12 +22,12 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="107" column="36" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" bodystart="107" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4_1a2b3d463b9aad40010da8ade31ec0dab6" prot="public" static="yes" mutable="no">
-        <type>const bool</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
         <definition>const bool dynampi::MPI_Type&lt; std::string &gt;::resize_required</definition>
         <argsstring></argsstring>
         <name>resize_required</name>
         <qualifiedname>dynampi::MPI_Type&lt; std::string &gt;::resize_required</qualifiedname>
-        <initializer>= true</initializer>
+        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">true</ref></initializer>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -39,13 +39,13 @@
     </sectiondef>
     <sectiondef kind="public-static-func">
       <memberdef kind="function" id="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4_1a57d3720736970b111e5060cdf0e6d513" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
-        <type>int</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
         <definition>static int dynampi::MPI_Type&lt; std::string &gt;::count</definition>
         <argsstring>(const std::string &amp;str)</argsstring>
         <name>count</name>
         <qualifiedname>dynampi::MPI_Type&lt; std::string &gt;::count</qualifiedname>
         <param>
-          <type>const std::string &amp;</type>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::string &amp;</type>
           <declname>str</declname>
         </param>
         <briefdescription>
@@ -57,7 +57,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="110" column="14" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" bodystart="110" bodyend="110"/>
       </memberdef>
       <memberdef kind="function" id="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4_1a5d7d7adfad4dbabffa34d975448ffa31" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
-        <type>void</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
         <definition>static void dynampi::MPI_Type&lt; std::string &gt;::resize</definition>
         <argsstring>(std::string &amp;str, int new_size)</argsstring>
         <name>resize</name>
@@ -67,7 +67,7 @@
           <declname>str</declname>
         </param>
         <param>
-          <type>int</type>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
           <declname>new_size</declname>
         </param>
         <briefdescription>
@@ -79,7 +79,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="111" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" bodystart="111" bodyend="111"/>
       </memberdef>
       <memberdef kind="function" id="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4_1a347e34a08cd84b90dd9046b28beb8487" prot="public" static="yes" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
-        <type>void *</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref> *</type>
         <definition>static void * dynampi::MPI_Type&lt; std::string &gt;::ptr</definition>
         <argsstring>(std::string &amp;str) noexcept</argsstring>
         <name>ptr</name>
@@ -97,13 +97,13 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" line="112" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_types.hpp" bodystart="112" bodyend="112"/>
       </memberdef>
       <memberdef kind="function" id="structdynampi_1_1MPI__Type_3_01std_1_1string_01_4_1acdd01f57b3664186ccfec39966e00210" prot="public" static="yes" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
-        <type>const void *</type>
+        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref> *</type>
         <definition>static const void * dynampi::MPI_Type&lt; std::string &gt;::ptr</definition>
         <argsstring>(const std::string &amp;str) noexcept</argsstring>
         <name>ptr</name>
         <qualifiedname>dynampi::MPI_Type&lt; std::string &gt;::ptr</qualifiedname>
         <param>
-          <type>const std::string &amp;</type>
+          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> std::string &amp;</type>
           <declname>str</declname>
         </param>
         <briefdescription>

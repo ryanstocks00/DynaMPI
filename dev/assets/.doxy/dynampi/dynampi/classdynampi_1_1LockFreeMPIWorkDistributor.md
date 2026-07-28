@@ -2,7 +2,7 @@
 
 # Class dynampi::LockFreeMPIWorkDistributor
 
-**template &lt;typename TaskT, typename ResultT, typename... Options&gt;**
+**template &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**TaskT**](structdynampi_1_1MPI__Type.md), [**typename**](structdynampi_1_1MPI__Type.md) [**ResultT**](structdynampi_1_1MPI__Type.md), typename... Options&gt;**
 
 
 
@@ -52,7 +52,7 @@
 
 | Type | Name |
 | ---: | :--- |
-|  const bool | [**ordered**](#variable-ordered)   = `true`<br> |
+|  [**const**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**ordered**](#variable-ordered)   = `[**true**](structdynampi_1_1MPI__Type.md)`<br> |
 
 
 
@@ -71,18 +71,17 @@
 
 | Type | Name |
 | ---: | :--- |
-|   | [**LockFreeMPIWorkDistributor**](#function-lockfreempiworkdistributor) (std::function&lt; ResultT(TaskT)&gt; worker\_function, [**Config**](structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config.md) config={}) <br> |
-|  void | [**finalize**](#function-finalize) () <br> |
-|  std::vector&lt; ResultT &gt; | [**finish\_remaining\_tasks**](#function-finish_remaining_tasks) () <br> |
-|  std::vector&lt; ResultT &gt; | [**gather\_once**](#function-gather_once) () <br> |
-|  const [**StatisticsT**](classdynampi_1_1LockFreeMPIWorkDistributor.md#typedef-statisticst) & | [**get\_statistics**](#function-get_statistics) () const<br> |
-|  void | [**insert\_task**](#function-insert_task-12) (TaskT task) <br> |
-|  void | [**insert\_task**](#function-insert_task-22) (const TaskT & task, double) <br> |
-|  void | [**insert\_tasks**](#function-insert_tasks) (const std::vector&lt; TaskT &gt; & tasks) <br> |
-|  bool | [**is\_root\_manager**](#function-is_root_manager) () const<br> |
-|  size\_t | [**remaining\_tasks\_count**](#function-remaining_tasks_count) () const<br> |
-|  std::vector&lt; ResultT &gt; | [**run\_tasks**](#function-run_tasks) ([**RunConfig**](structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig.md) config={}) <br> |
-|  void | [**run\_worker**](#function-run_worker) () <br> |
+|   | [**LockFreeMPIWorkDistributor**](#function-lockfreempiworkdistributor) (std::function&lt; [**ResultT**](structdynampi_1_1MPI__Type.md)([**TaskT**](structdynampi_1_1MPI__Type.md))&gt; worker\_function, [**Config**](structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config.md) config={}) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**finalize**](#function-finalize) () <br> |
+|  std::vector&lt; [**ResultT**](structdynampi_1_1MPI__Type.md) &gt; | [**finish\_remaining\_tasks**](#function-finish_remaining_tasks) () <br> |
+|  [**const**](structdynampi_1_1MPI__Type.md) [**StatisticsT**](classdynampi_1_1LockFreeMPIWorkDistributor.md#typedef-statisticst) & | [**get\_statistics**](#function-get_statistics) () const<br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**insert\_task**](#function-insert_task-12) ([**TaskT**](structdynampi_1_1MPI__Type.md) task) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**insert\_task**](#function-insert_task-22) ([**const**](structdynampi_1_1MPI__Type.md) [**TaskT**](structdynampi_1_1MPI__Type.md) & task, [**double**](structdynampi_1_1MPI__Type.md)) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**insert\_tasks**](#function-insert_tasks) ([**const**](structdynampi_1_1MPI__Type.md) std::vector&lt; [**TaskT**](structdynampi_1_1MPI__Type.md) &gt; & tasks) <br> |
+|  [**bool**](structdynampi_1_1MPI__Type.md) | [**is\_root\_manager**](#function-is_root_manager) () const<br> |
+|  [**size\_t**](structdynampi_1_1MPI__Type.md) | [**remaining\_tasks\_count**](#function-remaining_tasks_count) () const<br> |
+|  std::vector&lt; [**ResultT**](structdynampi_1_1MPI__Type.md) &gt; | [**run\_tasks**](#function-run_tasks) ([**RunConfig**](structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig.md) config={}) <br> |
+|  [**void**](structdynampi_1_1MPI__Type.md) | [**run\_worker**](#function-run_worker) () <br> |
 |   | [**~LockFreeMPIWorkDistributor**](#function-lockfreempiworkdistributor) () <br> |
 
 
@@ -151,7 +150,7 @@ const bool dynampi::LockFreeMPIWorkDistributor< TaskT, ResultT, Options >::order
 
 ```C++
 inline explicit dynampi::LockFreeMPIWorkDistributor::LockFreeMPIWorkDistributor (
-    std::function< ResultT(TaskT)> worker_function,
+    std::function< ResultT ( TaskT )> worker_function,
     Config config={}
 ) 
 ```
@@ -189,23 +188,10 @@ inline std::vector< ResultT > dynampi::LockFreeMPIWorkDistributor::finish_remain
 
 
 
-### function gather\_once 
-
-```C++
-inline std::vector< ResultT > dynampi::LockFreeMPIWorkDistributor::gather_once () 
-```
-
-
-
-
-<hr>
-
-
-
 ### function get\_statistics 
 
 ```C++
-inline const StatisticsT & dynampi::LockFreeMPIWorkDistributor::get_statistics () const
+inline const  StatisticsT & dynampi::LockFreeMPIWorkDistributor::get_statistics () const
 ```
 
 
@@ -234,7 +220,7 @@ inline void dynampi::LockFreeMPIWorkDistributor::insert_task (
 
 ```C++
 inline void dynampi::LockFreeMPIWorkDistributor::insert_task (
-    const TaskT & task,
+    const  TaskT & task,
     double
 ) 
 ```

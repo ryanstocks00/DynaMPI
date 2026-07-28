@@ -36,13 +36,12 @@
 
 | Type | Name |
 | ---: | :--- |
-|  bool | [**auto\_run\_workers**](#variable-auto_run_workers)   = `true`<br> |
-|  int | [**claim\_batch\_size**](#variable-claim_batch_size)   = `8`<br> |
-|  MPI\_Comm | [**comm**](#variable-comm)   = `MPI\_COMM\_WORLD`<br> |
-|  int | [**manager\_rank**](#variable-manager_rank)   = `0`<br> |
-|  int | [**max\_result\_count**](#variable-max_result_count)   = `256`<br> |
-|  int | [**max\_task\_count**](#variable-max_task_count)   = `256`<br> |
-|  int | [**max\_tasks**](#variable-max_tasks)   = `8192`<br> |
+|  [**bool**](structdynampi_1_1MPI__Type.md) | [**auto\_run\_workers**](#variable-auto_run_workers)   = `[**true**](structdynampi_1_1MPI__Type.md)`<br> |
+|  [**MPI\_Comm**](structdynampi_1_1MPI__Type.md) | [**comm**](#variable-comm)   = `[**MPI\_COMM\_WORLD**](structdynampi_1_1MPI__Type.md)`<br> |
+|  [**int**](structdynampi_1_1MPI__Type.md) | [**manager\_rank**](#variable-manager_rank)   = `0`<br> |
+|  [**int**](structdynampi_1_1MPI__Type.md) | [**max\_result\_count**](#variable-max_result_count)   = `256`<br> |
+|  [**int**](structdynampi_1_1MPI__Type.md) | [**max\_task\_count**](#variable-max_task_count)   = `256`<br> |
+|  [**int**](structdynampi_1_1MPI__Type.md) | [**max\_tasks**](#variable-max_tasks)   = `8192`<br> |
 
 
 
@@ -96,19 +95,6 @@
 
 ```C++
 bool dynampi::LockFreeMPIWorkDistributor< TaskT, ResultT, Options >::Config::auto_run_workers;
-```
-
-
-
-
-<hr>
-
-
-
-### variable claim\_batch\_size 
-
-```C++
-int dynampi::LockFreeMPIWorkDistributor< TaskT, ResultT, Options >::Config::claim_batch_size;
 ```
 
 

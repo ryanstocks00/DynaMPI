@@ -36,14 +36,13 @@
 
 | Type | Name |
 | ---: | :--- |
-|  bool | [**auto\_run\_workers**](#variable-auto_run_workers)   = `true`<br> |
-|  int | [**batch\_size\_multiplier**](#variable-batch_size_multiplier)   = `2`<br> |
-|  MPI\_Comm | [**comm**](#variable-comm)   = `MPI\_COMM\_WORLD`<br> |
-|  bool | [**coordinator\_per\_node**](#variable-coordinator_per_node)   = `true`<br> |
-|  int | [**manager\_rank**](#variable-manager_rank)   = `0`<br> |
-|  std::optional&lt; int &gt; | [**max\_workers\_per\_coordinator**](#variable-max_workers_per_coordinator)   = `std::nullopt`<br> |
-|  std::optional&lt; size\_t &gt; | [**message\_batch\_size**](#variable-message_batch_size)   = `std::nullopt`<br> |
-|  int | [**pipeline\_depth**](#variable-pipeline_depth)   = `2`<br> |
+|  [**bool**](structdynampi_1_1MPI__Type.md) | [**auto\_run\_workers**](#variable-auto_run_workers)   = `[**true**](structdynampi_1_1MPI__Type.md)`<br> |
+|  [**int**](structdynampi_1_1MPI__Type.md) | [**batch\_size\_multiplier**](#variable-batch_size_multiplier)   = `2`<br> |
+|  [**MPI\_Comm**](structdynampi_1_1MPI__Type.md) | [**comm**](#variable-comm)   = `[**MPI\_COMM\_WORLD**](structdynampi_1_1MPI__Type.md)`<br> |
+|  [**bool**](structdynampi_1_1MPI__Type.md) | [**coordinator\_per\_node**](#variable-coordinator_per_node)   = `[**true**](structdynampi_1_1MPI__Type.md)`<br> |
+|  [**int**](structdynampi_1_1MPI__Type.md) | [**manager\_rank**](#variable-manager_rank)   = `0`<br> |
+|  std::optional&lt; [**int**](structdynampi_1_1MPI__Type.md) &gt; | [**max\_workers\_per\_coordinator**](#variable-max_workers_per_coordinator)   = `std::nullopt`<br> |
+|  std::optional&lt; [**size\_t**](structdynampi_1_1MPI__Type.md) &gt; | [**message\_batch\_size**](#variable-message_batch_size)   = `std::nullopt`<br> |
 
 
 
@@ -175,19 +174,6 @@ std::optional<int> dynampi::HierarchicalMPIWorkDistributor< TaskT, ResultT, Opti
 
 ```C++
 std::optional<size_t> dynampi::HierarchicalMPIWorkDistributor< TaskT, ResultT, Options >::Config::message_batch_size;
-```
-
-
-
-
-<hr>
-
-
-
-### variable pipeline\_depth 
-
-```C++
-int dynampi::HierarchicalMPIWorkDistributor< TaskT, ResultT, Options >::Config::pipeline_depth;
 ```
 
 

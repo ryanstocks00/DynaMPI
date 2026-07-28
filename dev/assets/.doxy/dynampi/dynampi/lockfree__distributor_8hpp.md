@@ -13,7 +13,6 @@
 * `#include <algorithm>`
 * `#include <cassert>`
 * `#include <chrono>`
-* `#include <cstddef>`
 * `#include <cstdint>`
 * `#include <cstring>`
 * `#include <functional>`
@@ -28,7 +27,6 @@
 * `#include "../mpi/mpi_types.hpp"`
 * `#include "dynampi/impl/base_distributor.hpp"`
 * `#include "dynampi/mpi/mpi_error.hpp"`
-* `#include "dynampi/utilities/timer.hpp"`
 
 
 
@@ -54,11 +52,11 @@
 
 | Type | Name |
 | ---: | :--- |
-| class | [**LockFreeMPIWorkDistributor**](classdynampi_1_1LockFreeMPIWorkDistributor.md) &lt;typename TaskT, typename ResultT, Options&gt;<br> |
+| class | [**LockFreeMPIWorkDistributor**](classdynampi_1_1LockFreeMPIWorkDistributor.md) &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**TaskT**](structdynampi_1_1MPI__Type.md), [**typename**](structdynampi_1_1MPI__Type.md) [**ResultT**](structdynampi_1_1MPI__Type.md), Options&gt;<br> |
 | struct | [**Config**](structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config.md) <br> |
 | struct | [**RunConfig**](structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig.md) <br> |
 | struct | [**Statistics**](structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics.md) <br> |
-| class | [**MinimalLockFreeMPIWorkDistributor**](classdynampi_1_1MinimalLockFreeMPIWorkDistributor.md) &lt;typename ResultT&gt;<br> |
+| class | [**MinimalLockFreeMPIWorkDistributor**](classdynampi_1_1MinimalLockFreeMPIWorkDistributor.md) &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**ResultT**](structdynampi_1_1MPI__Type.md)&gt;<br> |
 | struct | [**Config**](structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config.md) <br> |
 
 

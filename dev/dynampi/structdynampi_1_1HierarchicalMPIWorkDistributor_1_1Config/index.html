@@ -571,17 +571,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#variable-pipeline_depth" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        variable pipeline_depth
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -622,36 +611,32 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;">bool</td>
-<td style="text-align: left;"><a href="#variable-auto_run_workers"><strong>auto_run_workers</strong></a>   = <code>true</code><br></td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>bool</strong></a></td>
+<td style="text-align: left;"><a href="#variable-auto_run_workers"><strong>auto_run_workers</strong></a>   = <code>[**true**](structdynampi_1_1MPI__Type.md)</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;">int</td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a></td>
 <td style="text-align: left;"><a href="#variable-batch_size_multiplier"><strong>batch_size_multiplier</strong></a>   = <code>2</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;">MPI_Comm</td>
-<td style="text-align: left;"><a href="#variable-comm"><strong>comm</strong></a>   = <code>MPI\_COMM\_WORLD</code><br></td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>MPI_Comm</strong></a></td>
+<td style="text-align: left;"><a href="#variable-comm"><strong>comm</strong></a>   = <code>[**MPI\_COMM\_WORLD**](structdynampi_1_1MPI__Type.md)</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;">bool</td>
-<td style="text-align: left;"><a href="#variable-coordinator_per_node"><strong>coordinator_per_node</strong></a>   = <code>true</code><br></td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>bool</strong></a></td>
+<td style="text-align: left;"><a href="#variable-coordinator_per_node"><strong>coordinator_per_node</strong></a>   = <code>[**true**](structdynampi_1_1MPI__Type.md)</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;">int</td>
+<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a></td>
 <td style="text-align: left;"><a href="#variable-manager_rank"><strong>manager_rank</strong></a>   = <code>0</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;">std::optional&lt; int &gt;</td>
+<td style="text-align: right;">std::optional&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> &gt;</td>
 <td style="text-align: left;"><a href="#variable-max_workers_per_coordinator"><strong>max_workers_per_coordinator</strong></a>   = <code>std::nullopt</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;">std::optional&lt; size_t &gt;</td>
+<td style="text-align: right;">std::optional&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>size_t</strong></a> &gt;</td>
 <td style="text-align: left;"><a href="#variable-message_batch_size"><strong>message_batch_size</strong></a>   = <code>std::nullopt</code><br></td>
-</tr>
-<tr>
-<td style="text-align: right;">int</td>
-<td style="text-align: left;"><a href="#variable-pipeline_depth"><strong>pipeline_depth</strong></a>   = <code>2</code><br></td>
 </tr>
 </tbody>
 </table>
@@ -688,11 +673,6 @@
 
 <h3 id="variable-message_batch_size">variable message_batch_size</h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">std</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">HierarchicalMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">message_batch_size</span><span class="p">;</span>
-</code></pre></div>
-<hr>
-
-<h3 id="variable-pipeline_depth">variable pipeline_depth</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">HierarchicalMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">pipeline_depth</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 
