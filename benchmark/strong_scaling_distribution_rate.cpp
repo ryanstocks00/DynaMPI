@@ -310,10 +310,12 @@ static BenchmarkResult run_benchmark_async_put_lockfree(const BenchmarkOptions& 
     // additional speculative work this round (batch_size below floors at 1)
     // and let the already-published calibration_batch keep draining during
     // the spin/harvest phases that follow.
-    const bool calibration_measured_anything = calibration_collected > 0 && calibration_elapsed_s > 0.0;
-    const double observed_rate = calibration_measured_anything
-                                      ? static_cast<double>(calibration_collected) / calibration_elapsed_s
-                                      : static_cast<double>(num_workers) / expected_s;
+    const bool calibration_measured_anything =
+        calibration_collected > 0 && calibration_elapsed_s > 0.0;
+    const double observed_rate =
+        calibration_measured_anything
+            ? static_cast<double>(calibration_collected) / calibration_elapsed_s
+            : static_cast<double>(num_workers) / expected_s;
 
     const double remaining_budget_s = std::max(0.0, opts.duration_s - timer.elapsed().count());
     const double estimate =
@@ -431,10 +433,12 @@ static BenchmarkResult run_benchmark_hierarchical_async_put_lockfree(const Bench
     // additional speculative work this round (batch_size below floors at 1)
     // and let the already-published calibration_batch keep draining during
     // the spin/harvest phases that follow.
-    const bool calibration_measured_anything = calibration_collected > 0 && calibration_elapsed_s > 0.0;
-    const double observed_rate = calibration_measured_anything
-                                      ? static_cast<double>(calibration_collected) / calibration_elapsed_s
-                                      : static_cast<double>(num_workers) / expected_s;
+    const bool calibration_measured_anything =
+        calibration_collected > 0 && calibration_elapsed_s > 0.0;
+    const double observed_rate =
+        calibration_measured_anything
+            ? static_cast<double>(calibration_collected) / calibration_elapsed_s
+            : static_cast<double>(num_workers) / expected_s;
 
     const double remaining_budget_s = std::max(0.0, opts.duration_s - timer.elapsed().count());
     const double estimate =
