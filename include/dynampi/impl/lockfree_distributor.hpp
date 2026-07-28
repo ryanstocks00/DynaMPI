@@ -55,6 +55,19 @@ inline void write_bytes(std::byte* buffer, size_t buffer_size, size_t offset, co
   std::memcpy(buffer + offset, src, nbytes);
 }
 
+// Bounds-checked copy out of a sized source buffer into a sized destination
+// (mirrors write_bytes; keeps Codacy CWE-120 / fortified memcpy happy).
+inline void read_bytes(void* dst, size_t dst_capacity, const std::byte* buffer, size_t buffer_size,
+                       size_t offset, size_t nbytes) {
+  if (nbytes == 0) return;
+  constexpr size_t kMaxObjectSize = static_cast<size_t>(std::numeric_limits<std::ptrdiff_t>::max());
+  if (nbytes > kMaxObjectSize || nbytes > dst_capacity || offset > buffer_size ||
+      nbytes > buffer_size - offset) {
+    DYNAMPI_FAIL("read_bytes out of range");  // LCOV_EXCL_LINE
+  }
+  std::memcpy(dst, buffer + offset, nbytes);
+}
+
 inline int64_t read_i64(const std::byte* buffer, [[maybe_unused]] size_t buffer_size,
                         size_t offset) {
   assert(offset + sizeof(int64_t) <= buffer_size);

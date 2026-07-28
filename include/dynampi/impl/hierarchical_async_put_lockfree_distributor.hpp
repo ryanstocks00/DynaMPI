@@ -9,7 +9,6 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <deque>
 #include <functional>
 #include <limits>
@@ -465,12 +464,12 @@ class AsyncPutLevel {
   bool local_only() const { return m_window == MPI_WIN_NULL; }
 
   int64_t local_load_i64(MPI_Aint offset) const {
-    int64_t out = 0;
-    std::memcpy(&out, m_window_buffer.data() + static_cast<size_t>(offset), sizeof(out));
-    return out;
+    return detail::read_i64(m_window_buffer.data(), m_window_buffer.size(),
+                            static_cast<size_t>(offset));
   }
   void local_store_i64(MPI_Aint offset, int64_t value) {
-    std::memcpy(m_window_buffer.data() + static_cast<size_t>(offset), &value, sizeof(value));
+    detail::write_i64(m_window_buffer.data(), m_window_buffer.size(), static_cast<size_t>(offset),
+                      value);
   }
 
   int64_t atomic_read(MPI_Aint offset) {
@@ -503,9 +502,8 @@ class AsyncPutLevel {
 
   void put_bytes(const void* src, size_t n, MPI_Aint offset) {
     if (local_only()) {
-      if (n > 0) {
-        std::memcpy(m_window_buffer.data() + static_cast<size_t>(offset), src, n);
-      }
+      detail::write_bytes(m_window_buffer.data(), m_window_buffer.size(),
+                          static_cast<size_t>(offset), src, n);
       return;
     }
     m_comm.put_bytes(src, n, m_config.owner_rank, offset, m_window);
@@ -513,9 +511,10 @@ class AsyncPutLevel {
   }
   void get_bytes(void* dst, size_t n, MPI_Aint offset) {
     if (local_only()) {
-      if (n > 0) {
-        std::memcpy(dst, m_window_buffer.data() + static_cast<size_t>(offset), n);
-      }
+      // Callers size dst to exactly n; pass that as dst_capacity for the
+      // CWE-120 / fortified-memcpy range gate.
+      detail::read_bytes(dst, n, m_window_buffer.data(), m_window_buffer.size(),
+                         static_cast<size_t>(offset), n);
       return;
     }
     m_comm.get_bytes(dst, n, m_config.owner_rank, offset, m_window);
