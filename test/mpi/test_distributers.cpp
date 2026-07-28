@@ -7,9 +7,11 @@
 #include <mpi.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <dynampi/dynampi.hpp>
+#include <thread>
 #include <type_traits>
 #include <vector>
 
@@ -439,6 +441,59 @@ TYPED_TEST(DynamicDistribution, AutoRunWorkers) {
   // Workers run automatically in constructor, no need to call run_worker()
 }
 
+// gather_once() is the non-looping snapshot API used by the strong-scaling
+// bench to avoid per-retry Barrier/Gather (LockFree) or busy-spin harvest
+// (AsyncPut). Only those two distributors expose it.
+TYPED_TEST(DynamicDistribution, GatherOnce) {
+  using Distributer = DistributerOf<TypeParam, int, int>;
+  constexpr bool has_gather_once =
+      is_specialization_of<dynampi::LockFreeMPIWorkDistributor, Distributer>::value ||
+      is_specialization_of<dynampi::AsyncPutLockFreeMPIWorkDistributor, Distributer>::value;
+  if constexpr (!has_gather_once) {
+    GTEST_SKIP() << "gather_once is only on lock-free RMA distributors";
+  } else {
+    // Slow workers so the manager's first gather_once() snapshots often return
+    // empty (and, for AsyncPut's run_tasks/finalize spin, so the
+    // m_collected_count-unchanged -> rma_wait_idle path is reachable).
+    auto worker_task = [](int task) -> int {
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
+      return task * task;
+    };
+    auto dist = this->template make_distributor<int, int>(worker_task, true);
+
+    if (dist.is_root_manager()) {
+      dist.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8});
+
+      // At least one snapshot call regardless of how fast workers are.
+      auto first = dist.gather_once();
+      EXPECT_LE(first.size(), 8u);
+
+      std::vector<int> all = std::move(first);
+      const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+      while (dist.remaining_tasks_count() > 0) {
+        ASSERT_LT(std::chrono::steady_clock::now(), deadline)
+            << "timed out waiting for gather_once to drain remaining tasks";
+        auto chunk = dist.gather_once();
+        all.insert(all.end(), chunk.begin(), chunk.end());
+        if (chunk.empty()) {
+          std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+      }
+
+      std::sort(all.begin(), all.end());
+      EXPECT_EQ(all, (std::vector<int>{1, 4, 9, 16, 25, 36, 49, 64}));
+      EXPECT_EQ(dist.remaining_tasks_count(), 0u);
+
+      // finish_remaining_tasks / finalize also walk the harvest+idle loop when
+      // workers are still mid-sleep on a fresh batch.
+      dist.insert_tasks({9, 10});
+      auto rest = dist.finish_remaining_tasks();
+      std::sort(rest.begin(), rest.end());
+      EXPECT_EQ(rest, (std::vector<int>{81, 100}));
+    }
+  }
+}
+
 // --- MinimalLockFreeMPIWorkDistributor (index parallel-for) ---
 // This distributor has a distinct, collective API (run(n)), so it is tested
 // directly rather than through the generic DynamicDistribution suite.
@@ -672,5 +727,41 @@ TEST(HierarchicalAsyncPutLockFree, AutoRunWorkers) {
     auto results = dist.finish_remaining_tasks();
     std::sort(results.begin(), results.end());
     EXPECT_EQ(results, (std::vector<int>{1, 4, 9, 16, 25}));
+  }
+}
+
+TEST(HierarchicalAsyncPutLockFree, GatherOnce) {
+  using Distributer = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;
+  auto worker_task = [](int task) -> int {
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    return task * task;
+  };
+
+  Distributer::Config config;
+  config.comm = MPI_COMM_WORLD;
+  config.auto_run_workers = true;
+  Distributer dist(worker_task, config);
+
+  if (dist.is_root_manager()) {
+    dist.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8});
+
+    auto first = dist.gather_once();
+    EXPECT_LE(first.size(), 8u);
+
+    std::vector<int> all = std::move(first);
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+    while (dist.remaining_tasks_count() > 0) {
+      ASSERT_LT(std::chrono::steady_clock::now(), deadline)
+          << "timed out waiting for gather_once to drain remaining tasks";
+      auto chunk = dist.gather_once();
+      all.insert(all.end(), chunk.begin(), chunk.end());
+      if (chunk.empty()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      }
+    }
+
+    std::sort(all.begin(), all.end());
+    EXPECT_EQ(all, (std::vector<int>{1, 4, 9, 16, 25, 36, 49, 64}));
+    EXPECT_EQ(dist.remaining_tasks_count(), 0u);
   }
 }
