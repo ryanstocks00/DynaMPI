@@ -621,6 +621,23 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     setup_topology();
     setup_levels();
 
+    // setup_topology()/setup_levels() run a chain of MPI_Comm_split calls
+    // whose cost grows with rank/level count -- non-manager ranks pay for
+    // it inline here, before ever reaching run_worker()'s claim loop, but
+    // the manager's constructor returns immediately after (is_root_manager()
+    // skips run_worker() below). Without this barrier, a benchmark that
+    // starts timing/calibrating as soon as the manager's constructor
+    // returns can burn most or all of a short calibration window on other
+    // ranks still finishing this setup, before a single task has actually
+    // been claimed anywhere -- confirmed via measurement: ~700-900ms of
+    // dead time with zero results relayed, consistent regardless of task
+    // duration, exactly matching a one-time setup cost rather than a
+    // per-task or per-round bottleneck. Synchronizing here means every rank
+    // (manager included) only proceeds once every rank has finished setup
+    // and is about to start claiming/computing/coordinating, so a caller
+    // timing from just after construction sees actual work from the start.
+    DYNAMPI_MPI_CHECK(MPI_Barrier, (m_world_comm.get()));
+
     if (m_config.auto_run_workers && !is_root_manager()) run_worker();
   }
 
@@ -1056,12 +1073,14 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     // 1. Claim from parent and republish into child, queueing a relay entry
     // recording where this batch's results must eventually be written back.
     //
-    // Gated by backpressure: pending_relays is a strict FIFO (relay N can't
-    // be written back to parent until every relay before it has been), so
-    // claiming far ahead of what's actually been relayed doesn't just add
-    // buffering -- it adds *ordering* latency, since a fully-caught-up
-    // relay near the back of the queue still can't flush until everything
-    // ahead of it does. Confirmed as a real, severe bottleneck at 32+ nodes:
+    // Gated by backpressure: pending_relays is a strict FIFO ACROSS entries
+    // (relay N's range can't be confirmed to parent until relay N-1's range
+    // is fully covered -- parent's own harvest is a contiguous-prefix scan,
+    // same as child's, so there's no way around that part). Claiming far
+    // ahead of what's actually been relayed doesn't just add buffering --
+    // it adds *ordering* latency, since a fully-caught-up relay near the
+    // back of the queue still can't flush until everything ahead of it
+    // does. Confirmed as a real, severe bottleneck at 32+ nodes:
     // without this cap, a coordinator claims from parent every iteration
     // whenever parent isn't drained (no natural throttle, same reasoning as
     // the leader-poll backoff above, just for the claim side instead of the
@@ -1107,22 +1126,49 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
                               std::make_move_iterator(child_results.end()));
     }
 
-    // 3. Flush any relay entries the buffer now fully covers, in FIFO
-    // order.
+    // 3. Flush whatever contiguous prefix of the front pending relay's
+    // results is available now, writing it as its own partial
+    // write_result_range() rather than waiting for that whole claimed batch
+    // to finish -- mirrors HierarchicalMPIWorkDistributor::
+    // send_results_to_parent(), which forwards whatever has accumulated so
+    // far instead of gating on a full round (see its comment: waiting for a
+    // round's slowest straggler used to block sending entirely, even
+    // results from other children that finished long ago). Confirmed as a
+    // real, severe bottleneck here too: with claim_width scaled to feed
+    // every local child at once (leaf_claim_width == local worker count,
+    // e.g. 100 at nodes=1), the old all-or-nothing flush meant NOTHING
+    // relayed upward until every one of those ~100 tasks finished, an
+    // artificial barrier whose wall-clock cost scales with task duration --
+    // measured throughput for hierarchical_async_put_lockfree collapsing
+    // to roughly 1/5-1/10 of the flat class's at the same settings once
+    // expected_us grew past ~1ms, despite the flat class (no such barrier)
+    // staying flat across the same range.
+    //
+    // Order across *entries* is still strict FIFO -- parent's own harvest
+    // is a contiguous-prefix scan (same mechanism as child's), so relay
+    // N+1's range genuinely cannot be confirmed until relay N's range is
+    // fully covered. What's no longer required is covering relay N's range
+    // in one write: write_result_range() is just [start, start+n) at
+    // whatever n is ready, and successive partial calls advancing
+    // parent_start/shrinking child_len are indistinguishable to parent's
+    // scan from one call covering the whole range -- it only sees log
+    // entries appear at the right offsets, not how many separate calls
+    // produced them.
     size_t consumed = 0;
-    while (!hop.pending_relays.empty() &&
-           hop.relay_buffer.size() - consumed >=
-               static_cast<size_t>(hop.pending_relays.front().child_len)) {
-      const auto& front = hop.pending_relays.front();
+    while (!hop.pending_relays.empty() && consumed < hop.relay_buffer.size()) {
+      auto& front = hop.pending_relays.front();
+      const size_t available = hop.relay_buffer.size() - consumed;
+      const size_t chunk = std::min(available, static_cast<size_t>(front.child_len));
       std::vector<ResultT> slice(
           std::make_move_iterator(hop.relay_buffer.begin() + static_cast<ptrdiff_t>(consumed)),
-          std::make_move_iterator(hop.relay_buffer.begin() + static_cast<ptrdiff_t>(consumed) +
-                                  front.child_len));
+          std::make_move_iterator(hop.relay_buffer.begin() + static_cast<ptrdiff_t>(consumed + chunk)));
       hop.parent->write_result_range(front.parent_start, slice);
-      consumed += static_cast<size_t>(front.child_len);
-      hop.pending_task_count -= front.child_len;
-      hop.pending_relays.pop_front();
+      consumed += chunk;
+      hop.pending_task_count -= static_cast<int64_t>(chunk);
+      front.parent_start += static_cast<int64_t>(chunk);
+      front.child_len -= static_cast<int64_t>(chunk);
       made_parent_progress = true;
+      if (front.child_len == 0) hop.pending_relays.pop_front();
     }
     if (consumed > 0) {
       hop.relay_buffer.erase(hop.relay_buffer.begin(),
