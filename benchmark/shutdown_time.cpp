@@ -7,6 +7,8 @@
 
 #include <cstdint>
 #include <cxxopts.hpp>
+#include <dynampi/impl/hierarchical_distributor.hpp>
+#include <dynampi/impl/lockfree_distributor.hpp>
 #include <dynampi/impl/naive_distributor.hpp>
 #include <dynampi/mpi/mpi_communicator.hpp>
 #include <dynampi/utilities/timer.hpp>
@@ -17,7 +19,10 @@
 using Task = uint32_t;
 using Result = uint32_t;
 
+enum class DistributorKind { Naive, Hierarchical, LockFree };
+
 struct BenchmarkOptions {
+  DistributorKind distributor = DistributorKind::Naive;
   uint64_t nodes = 0;
   std::string system;
   std::string output_path;
@@ -30,16 +35,37 @@ struct BenchmarkResult {
   uint64_t iterations = 0;
 };
 
+static DistributorKind parse_distributor(const std::string& value) {
+  if (value == "naive") return DistributorKind::Naive;
+  if (value == "hierarchical") return DistributorKind::Hierarchical;
+  if (value == "lockfree") return DistributorKind::LockFree;
+  throw std::runtime_error("Unknown distributor: " + value);
+}
+
+static std::string to_string(DistributorKind kind) {
+  switch (kind) {
+    case DistributorKind::Naive:
+      return "naive";
+    case DistributorKind::Hierarchical:
+      return "hierarchical";
+    case DistributorKind::LockFree:
+      return "lockfree";
+  }
+  return "unknown";
+}
+
 static void write_csv_header(std::ostream& os) {
-  os << "system,nodes,world_size,workers,time_per_shutdown_us,iterations\n";
+  os << "system,distributor,nodes,world_size,workers,time_per_shutdown_us,iterations\n";
 }
 
 static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts,
                           const BenchmarkResult& result) {
-  os << opts.system << "," << opts.nodes << "," << result.world_size << "," << result.workers << ","
-     << result.time_per_shutdown_us << "," << result.iterations << "\n";
+  os << opts.system << "," << to_string(opts.distributor) << "," << opts.nodes << ","
+     << result.world_size << "," << result.workers << "," << result.time_per_shutdown_us << ","
+     << result.iterations << "\n";
 }
 
+template <typename Distributor>
 static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& opts, MPI_Comm comm) {
   dynampi::MPICommunicator<> comm_wrapper(comm, dynampi::MPICommunicator<>::Ownership::Reference);
   int rank = 0;
@@ -74,8 +100,13 @@ static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& op
     MPI_Barrier(comm_wrapper);
 
     {
-      dynampi::NaiveMPIWorkDistributor<Task, Result> distributor(
-          worker_function, {.comm = comm, .manager_rank = 0, .auto_run_workers = true});
+      // No max_tasks override needed here (unlike strong_scaling_distribution_rate.cpp):
+      // this benchmark never calls insert_task/insert_tasks, so lockfree's
+      // task-table capacity is never exercised regardless of its size --
+      // each iteration constructs a fresh, empty distributor. The library
+      // default is fine.
+      typename Distributor::Config config{.comm = comm, .manager_rank = 0, .auto_run_workers = true};
+      Distributor distributor(worker_function, config);
 
       if (distributor.is_root_manager()) {
         iteration_timer.reset(dynampi::Timer::AutoStart::Yes);
@@ -105,10 +136,13 @@ int main(int argc, char** argv) {
   int world_rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-  cxxopts::Options options("naive_shutdown_time",
-                           "Benchmark naive distributor shutdown time with no tasks");
-  options.add_options()("n,nodes", "Number of nodes for labeling output (defaults to world size)",
-                        cxxopts::value<uint64_t>()->default_value("0"))(
+  cxxopts::Options options("shutdown_time",
+                           "Benchmark distributor construct/shutdown time with no tasks");
+  options.add_options()(
+      "D,distribution", "Distribution strategy: naive, hierarchical, or lockfree",
+      cxxopts::value<std::string>()->default_value("naive"))(
+      "n,nodes", "Number of nodes for labeling output (defaults to world size)",
+      cxxopts::value<uint64_t>()->default_value("0"))(
       "S,system", "System label for plotting (frontier, aurora, ...)",
       cxxopts::value<std::string>()->default_value(""))(
       "o,output", "Append results to CSV file", cxxopts::value<std::string>()->default_value(""))(
@@ -134,6 +168,7 @@ int main(int argc, char** argv) {
   }
 
   BenchmarkOptions opts;
+  opts.distributor = parse_distributor(args["distribution"].as<std::string>());
   opts.nodes = args["nodes"].as<uint64_t>();
   opts.system = args["system"].as<std::string>();
   opts.output_path = args["output"].as<std::string>();
@@ -148,12 +183,23 @@ int main(int argc, char** argv) {
       opts.nodes = static_cast<uint64_t>(size);
     }
 
-    BenchmarkResult result = run_benchmark(opts, comm);
+    BenchmarkResult result;
+    switch (opts.distributor) {
+      case DistributorKind::Naive:
+        result = run_benchmark<dynampi::NaiveMPIWorkDistributor<Task, Result>>(opts, comm);
+        break;
+      case DistributorKind::Hierarchical:
+        result = run_benchmark<dynampi::HierarchicalMPIWorkDistributor<Task, Result>>(opts, comm);
+        break;
+      case DistributorKind::LockFree:
+        result = run_benchmark<dynampi::LockFreeMPIWorkDistributor<Task, Result>>(opts, comm);
+        break;
+    }
 
     if (rank == 0) {
       std::cout << "RESULT"
-                << " nodes=" << opts.nodes << " world_size=" << result.world_size
-                << " workers=" << result.workers
+                << " distributor=" << to_string(opts.distributor) << " nodes=" << opts.nodes
+                << " world_size=" << result.world_size << " workers=" << result.workers
                 << " time_per_shutdown_us=" << result.time_per_shutdown_us
                 << " iterations=" << result.iterations << std::endl;
       if (!opts.output_path.empty()) {

@@ -5,14 +5,14 @@ set -euo pipefail
 
 # Submit one PBS job per node count to avoid long serial waits.
 # Example:
-#   ./benchmark/scripts/submit_aurora_naive_shutdown.sh
+#   ./benchmark/scripts/submit_aurora_shutdown.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=benchmark/scripts/aurora_queue_utils.sh
 source "${SCRIPT_DIR}/aurora_queue_utils.sh"
 SYSTEM="aurora"
-SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_aurora_naive_shutdown.sh"
+SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_aurora_shutdown.sh"
 
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512}"
 IFS=' ' read -r -a QSUB_ARGS <<< "${QSUB_ARGS:-}"
@@ -23,6 +23,7 @@ NCPUS_PER_NODE="${NCPUS_PER_NODE:-102}"
 WALLTIME="${WALLTIME:-00:15:00}"
 LAUNCHER="${LAUNCHER:-}"
 LAUNCHER_ARGS="${LAUNCHER_ARGS:-}"
+DISTRIBUTIONS="${DISTRIBUTIONS:-}"
 OUTPUT_BASE="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 
 for nodes in "${NODE_LIST[@]}"; do
@@ -45,6 +46,7 @@ export NODE_LIST=\"${nodes}\"
 export LAUNCHER=\"${LAUNCHER}\"
 export LAUNCHER_ARGS=\"${LAUNCHER_ARGS}\"
 export CORES_PER_NODE=\"${NCPUS_PER_NODE}\"
+export DISTRIBUTIONS=\"${DISTRIBUTIONS}\"
 export OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${PBS_JOBID_SHORT:-manual}\"
 ${SCRIPT}
 "
