@@ -115,36 +115,30 @@ class AsyncPutLevel {
     const int64_t start = m_total_tasks;
     assert(static_cast<size_t>(start) + tasks.size() <= static_cast<size_t>(m_config.max_tasks) &&
            "AsyncPutLevel: exceeded max_tasks capacity");
-    if (comm_size() > 1) {
-      std::vector<std::byte> buffer(tasks.size() * m_task_slot_stride);
-      for (size_t i = 0; i < tasks.size(); ++i) {
-        const TaskT& task = tasks[i];
-        const int count = MPI_Type<TaskT>::count(task);
-        assert(static_cast<size_t>(count) <= m_max_task_count &&
-               "AsyncPutLevel: task exceeds max_task_count");
-        const size_t data_bytes = static_cast<size_t>(count) * m_task_elem;
-        const size_t off = i * m_task_slot_stride;
-        detail::write_i64(buffer.data(), buffer.size(), off + T_COUNT, count);
-        if (data_bytes > 0) {
-          detail::write_bytes(buffer.data(), buffer.size(), off + T_DATA,
-                              MPI_Type<TaskT>::ptr(task), data_bytes);
-        }
+    std::vector<std::byte> buffer(tasks.size() * m_task_slot_stride);
+    for (size_t i = 0; i < tasks.size(); ++i) {
+      const TaskT& task = tasks[i];
+      const int count = MPI_Type<TaskT>::count(task);
+      assert(static_cast<size_t>(count) <= m_max_task_count &&
+             "AsyncPutLevel: task exceeds max_task_count");
+      const size_t data_bytes = static_cast<size_t>(count) * m_task_elem;
+      const size_t off = i * m_task_slot_stride;
+      detail::write_i64(buffer.data(), buffer.size(), off + T_COUNT, count);
+      if (data_bytes > 0) {
+        detail::write_bytes(buffer.data(), buffer.size(), off + T_DATA, MPI_Type<TaskT>::ptr(task),
+                            data_bytes);
       }
-      put_bytes(buffer.data(), buffer.size(), task_slot(start));
-      m_total_tasks += static_cast<int64_t>(tasks.size());
-      atomic_set(TOTAL_OFF, m_total_tasks);
-    } else {
-      m_total_tasks += static_cast<int64_t>(tasks.size());
     }
+    put_bytes(buffer.data(), buffer.size(), task_slot(start));
+    m_total_tasks += static_cast<int64_t>(tasks.size());
+    atomic_set(TOTAL_OFF, m_total_tasks);
   }
 
   void mark_finished() {
     assert(is_owner());
     m_owner_marked_finished = true;
-    if (comm_size() > 1) {
-      atomic_set(FINISHED_OFF, 1);
-      idle_wait();
-    }
+    atomic_set(FINISHED_OFF, 1);
+    idle_wait();
   }
 
   bool owner_marked_finished() const {
@@ -173,7 +167,6 @@ class AsyncPutLevel {
   // routes it into a relay queue bound for the leader level).
   std::vector<ResultT> harvest_ready_results() {
     assert(is_owner());
-    if (comm_size() == 1) return {};
     const int64_t head_now = atomic_read(HEAD_OFF);
     const int64_t frontier = static_cast<int64_t>(m_owner_collected_count);
     if (head_now <= frontier) return {};
@@ -217,7 +210,6 @@ class AsyncPutLevel {
   // politeness backoff against pure CPU/RMA-poll churn rather than a
   // correctness requirement (there's no gather round to flood).
   std::vector<ResultT> harvest_ready_results_throttled() {
-    if (comm_size() == 1) return {};
     const size_t before = owner_collected_count();
     auto results = harvest_ready_results();
     if (owner_collected_count() == before) idle_wait();
@@ -420,14 +412,15 @@ class AsyncPutLevel {
     m_log_base = m_result_base + capacity * m_result_slot_stride;
     const size_t owner_window_bytes = m_log_base + capacity * LOG_ENTRY_BYTES;
 
-    if (is_owner() && comm_size() > 1) {
-      m_window_buffer.resize(owner_window_bytes);
-    }
-    if (comm_size() == 1) return;
-
+    // Always create a window -- including size-1 communicators. Under
+    // max_upper_fanout grouping, a solo group leader owns a size-1 level and
+    // also self-claims from it via RMA; skipping Win_create left m_window
+    // null and Fetch_and_op hung/failed (seen under SMPI with one rank per
+    // host, where fanout=2 actually builds that tree).
     void* base = nullptr;
     MPI_Aint bsize = 0;
     if (is_owner()) {
+      m_window_buffer.resize(owner_window_bytes);
       base = m_window_buffer.data();
       bsize = static_cast<MPI_Aint>(m_window_buffer.size());
     } else {
