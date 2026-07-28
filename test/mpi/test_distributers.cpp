@@ -7,9 +7,11 @@
 #include <mpi.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <dynampi/dynampi.hpp>
+#include <thread>
 #include <type_traits>
 #include <vector>
 
@@ -551,6 +553,49 @@ TEST(MinimalLockFree, EmptyAndReusable) {
   }
 }
 
+TEST(LockFreeCapacity, RejectsTaskTableOverflow) {
+  {
+    using Distributor = dynampi::LockFreeMPIWorkDistributor<int, int>;
+    Distributor::Config config;
+    config.comm = MPI_COMM_SELF;
+    config.max_tasks = 1;
+    Distributor dist([](int task) { return task; }, config);
+    dist.insert_task(1);
+    EXPECT_THROW(dist.insert_task(2), std::length_error);
+    EXPECT_EQ(dist.finish_remaining_tasks(), (std::vector<int>{1}));
+  }
+
+  {
+    using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<int, int>;
+    Distributor::Config config;
+    config.comm = MPI_COMM_SELF;
+    config.max_tasks = 1;
+    Distributor dist([](int task) { return task; }, config);
+    EXPECT_THROW(dist.insert_tasks(std::vector<int>{1, 2}), std::length_error);
+  }
+}
+
+TEST(AsyncPutLevel, SingletonCommunicator) {
+  using Level = dynampi::detail::AsyncPutLevel<int, int>;
+  Level::Config config;
+  config.comm = MPI_COMM_SELF;
+  config.owner_rank = 0;
+  config.max_tasks = 4;
+  config.claim_batch_size = 2;
+  Level level(config);
+
+  level.publish_tasks({2, 3});
+  auto claimed = level.try_claim();
+  ASSERT_EQ(claimed.start, 0);
+  EXPECT_EQ(claimed.tasks, (std::vector<int>{2, 3}));
+  level.write_result_range(claimed.start, {4, 9});
+  EXPECT_EQ(level.harvest_ready_results(), (std::vector<int>{4, 9}));
+  level.mark_finished();
+  EXPECT_TRUE(level.drained());
+
+  EXPECT_THROW(level.publish_tasks({1, 2, 3, 4, 5}), std::length_error);
+}
+
 // --- HierarchicalAsyncPutLockFreeMPIWorkDistributor ---
 // Node-aware tree topology (manager <-> per-node coordinators <-> local
 // workers) with AsyncPutLockFreeMPIWorkDistributor's one-sided,
@@ -685,6 +730,7 @@ TEST(HierarchicalAsyncPutLockFree, GroupedUpperHierarchy) {
 
   Distributer::Config config;
   config.max_upper_fanout = 2;
+  config.max_local_group_size = 2;
   Distributer work_distributer(worker_task, config);
   if (work_distributer.is_root_manager()) {
     constexpr int kNumTasks = 500;
@@ -696,6 +742,33 @@ TEST(HierarchicalAsyncPutLockFree, GroupedUpperHierarchy) {
     std::vector<Result> expected(kNumTasks);
     for (int i = 0; i < kNumTasks; ++i) expected[i] = i * i;
     EXPECT_EQ(results, expected);
+  }
+}
+
+TEST(HierarchicalAsyncPutLockFree, SingletonGatherAndFinalize) {
+  using Distributor = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;
+
+  {
+    Distributor::Config config;
+    config.comm = MPI_COMM_SELF;
+    Distributor dist([](int task) { return task * task; }, config);
+    dist.insert_tasks({1, 2, 3});
+    EXPECT_EQ(dist.gather_once(), (std::vector<int>{1, 4, 9}));
+  }
+
+  {
+    int tasks_run = 0;
+    Distributor::Config config;
+    config.comm = MPI_COMM_SELF;
+    Distributor dist(
+        [&tasks_run](int task) {
+          ++tasks_run;
+          return task;
+        },
+        config);
+    dist.insert_tasks({1, 2, 3});
+    dist.finalize();
+    EXPECT_EQ(tasks_run, 3);
   }
 }
 
@@ -737,5 +810,37 @@ TEST(HierarchicalAsyncPutLockFree, GatherOnce) {
     std::sort(all.begin(), all.end());
     EXPECT_EQ(all, (std::vector<int>{1, 4, 9, 16, 25, 36, 49, 64}));
     EXPECT_EQ(dist.remaining_tasks_count(), 0u);
+  }
+}
+
+TEST(LockFreeFinalization, DrainsOutstandingWork) {
+  if (MPIEnvironment::world_comm_size() < 2) {
+    GTEST_SKIP() << "Need a worker rank to exercise remote finalization";
+  }
+
+  auto slow_worker = [](int task) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    return task;
+  };
+
+  {
+    using Distributor = dynampi::LockFreeMPIWorkDistributor<int, int>;
+    Distributor dist(slow_worker);
+    if (dist.is_root_manager()) dist.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8});
+    dist.finalize();
+  }
+
+  {
+    using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<int, int>;
+    Distributor dist(slow_worker);
+    if (dist.is_root_manager()) dist.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8});
+    dist.finalize();
+  }
+
+  {
+    using Distributor = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;
+    Distributor dist(slow_worker);
+    if (dist.is_root_manager()) dist.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8});
+    dist.finalize();
   }
 }

@@ -268,7 +268,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
           made_progress = true;
         }
         if (pending_start >= pending_end) {
-          pending_start = -1;
+          pending_start = -1;  // LCOV_EXCL_LINE -- depends on publication racing a batch claim
         } else if (finished_seen) {
           pending_start = -1;
         }
@@ -487,8 +487,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
   void publish_tasks(std::span<const TaskT> tasks) {
     if (tasks.empty()) return;
     const int64_t start = m_total_tasks;
-    assert(static_cast<size_t>(start) + tasks.size() <= static_cast<size_t>(m_config.max_tasks) &&
-           "AsyncPutLockFree: exceeded max_tasks capacity");
+    detail::check_task_capacity(start, tasks.size(), m_config.max_tasks, "AsyncPutLockFree");
     if (num_workers() == 0) {
       m_task_store.insert(m_task_store.end(), tasks.begin(), tasks.end());
       m_total_tasks += static_cast<int64_t>(tasks.size());

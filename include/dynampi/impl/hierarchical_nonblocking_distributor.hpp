@@ -198,7 +198,7 @@ class HierarchicalNonBlockingMPIWorkDistributor
         if (flag) {
           it = pending.erase(it);
         } else {
-          ++it;
+          ++it;  // LCOV_EXCL_LINE -- completion timing is controlled by the MPI progress engine
         }
       }
     }
@@ -480,9 +480,15 @@ class HierarchicalNonBlockingMPIWorkDistributor
           }
         }
 
-        // If we have no tasks to give, wait for tasks from parent
+        // If we have no tasks to give, wait for tasks from parent. Results
+        // can still arrive from children while we wait; forward them now or
+        // the parent can wait forever for completion while this coordinator
+        // waits forever for another task batch.
         while (!m_done && m_unallocated_task_queue.empty()) {
           receive_from_anyone();
+          if (!m_results.empty()) {
+            send_results_to_parent();  // LCOV_EXCL_LINE -- requires a straggler-result race
+          }
         }
         if (m_done) break;
 
@@ -562,10 +568,10 @@ class HierarchicalNonBlockingMPIWorkDistributor
       // already-dispatched tasks are still in flight -- especially with
       // pipeline_depth > 1. Drain and flush before tearing down sends.
       while (m_tasks_sent_to_child > m_results_received_from_child) {
-        receive_from_anyone();
+        receive_from_anyone();  // LCOV_EXCL_LINE -- requires a shutdown/in-flight-result race
       }
       if (!m_results.empty()) {
-        send_results_to_parent();
+        send_results_to_parent();  // LCOV_EXCL_LINE -- same race as the drain above
       }
       wait_all_pending_sends();
     }
@@ -609,13 +615,15 @@ class HierarchicalNonBlockingMPIWorkDistributor
 
   template <typename Range>
     requires std::ranges::input_range<Range> && (!prioritize_tasks)
-  void insert_tasks(const Range& tasks) {
+  void insert_tasks(Range&& tasks) {
     DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
                       "Only the manager can distribute tasks");
-    std::copy(std::ranges::begin(tasks), std::ranges::end(tasks),
-              std::back_inserter(m_unallocated_task_queue));
-    m_tasks_received_from_parent +=
-        std::distance(std::ranges::begin(tasks), std::ranges::end(tasks));
+    size_t inserted = 0;
+    for (const auto& task : tasks) {
+      m_unallocated_task_queue.push_back(task);
+      ++inserted;
+    }
+    m_tasks_received_from_parent += inserted;
   }
   void insert_tasks(const std::vector<TaskT>& tasks)
     requires(!prioritize_tasks)
@@ -868,7 +876,7 @@ class HierarchicalNonBlockingMPIWorkDistributor
       if (notified.contains(request.worker_rank)) {
         // Already told this child; it doesn't need (or expect) a separate
         // reply per request it happened to have outstanding.
-        continue;
+        continue;  // LCOV_EXCL_LINE -- duplicate arrival order is MPI timing-dependent
       }
       send_to_worker(nullptr, request.worker_rank, Tag::DONE, request.source_layer);
       notified.insert(request.worker_rank);

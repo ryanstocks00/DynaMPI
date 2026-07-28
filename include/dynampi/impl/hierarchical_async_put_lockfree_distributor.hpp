@@ -123,8 +123,7 @@ class AsyncPutLevel {
     assert(is_owner());
     if (tasks.empty()) return;
     const int64_t start = m_total_tasks;
-    assert(static_cast<size_t>(start) + tasks.size() <= static_cast<size_t>(m_config.max_tasks) &&
-           "AsyncPutLevel: exceeded max_tasks capacity");
+    detail::check_task_capacity(start, tasks.size(), m_config.max_tasks, "AsyncPutLevel");
     std::vector<std::byte> buffer(tasks.size() * m_task_slot_stride);
     for (size_t i = 0; i < tasks.size(); ++i) {
       const TaskT& task = tasks[i];
@@ -596,6 +595,11 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     int max_local_tasks = 8192;  // per-node local task table capacity (lifetime total, per node)
     int max_task_count = 256;
     int max_result_count = 256;
+    // 0 keeps one local group per shared-memory node. A positive value
+    // partitions large nodes into smaller contiguous groups, reducing
+    // contention on each local RMA window and making the upper hierarchy
+    // useful on machines with many ranks per node.
+    int max_local_group_size = 0;
     // 0 (default): exactly today's two-level tree -- manager talks directly
     // to every node coordinator. >0: caps how many direct claimants any
     // single upper-level window may have. If the node coordinator count
@@ -790,9 +794,17 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     if (m_solo) return;
 
     MPICommunicator<> node_comm = m_world_comm.split_by_node();
+    std::optional<MPICommunicator<>> local_domain;
+    if (m_config.max_local_group_size > 0 && node_comm.size() > m_config.max_local_group_size) {
+      const int color = node_comm.rank() / m_config.max_local_group_size;
+      auto partition = node_comm.split(color, node_comm.rank());
+      local_domain.emplace(std::move(*partition));
+    } else {
+      local_domain.emplace(std::move(node_comm));
+    }
 
     const int local_color = (m_world_comm.rank() == m_config.manager_rank) ? MPI_UNDEFINED : 0;
-    auto local_opt = node_comm.split(local_color, m_world_comm.rank());
+    auto local_opt = local_domain->split(local_color, m_world_comm.rank());
     if (local_opt.has_value()) m_local_comm.emplace(std::move(*local_opt));
 
     const bool is_manager = (m_world_comm.rank() == m_config.manager_rank);

@@ -498,10 +498,10 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       // flush so we don't drop them or trip finalize()'s sent==received
       // invariants.
       while (m_tasks_sent_to_child > m_results_received_from_child) {
-        receive_from_anyone();
+        receive_from_anyone();  // LCOV_EXCL_LINE -- requires a shutdown/in-flight-result race
       }
       if (!m_results.empty()) {
-        send_results_to_parent();
+        send_results_to_parent();  // LCOV_EXCL_LINE -- same race as the drain above
       }
     }
   }
@@ -544,13 +544,15 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   template <typename Range>
     requires std::ranges::input_range<Range> && (!prioritize_tasks)
-  void insert_tasks(const Range& tasks) {
+  void insert_tasks(Range&& tasks) {
     DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
                       "Only the manager can distribute tasks");
-    std::copy(std::ranges::begin(tasks), std::ranges::end(tasks),
-              std::back_inserter(m_unallocated_task_queue));
-    m_tasks_received_from_parent +=
-        std::distance(std::ranges::begin(tasks), std::ranges::end(tasks));
+    size_t inserted = 0;
+    for (const auto& task : tasks) {
+      m_unallocated_task_queue.push_back(task);
+      ++inserted;
+    }
+    m_tasks_received_from_parent += inserted;
   }
   void insert_tasks(const std::vector<TaskT>& tasks)
     requires(!prioritize_tasks)
@@ -776,7 +778,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       if (notified.contains(request.worker_rank)) {
         // Already told this child; it doesn't need (or expect) a separate
         // reply per request it happened to have outstanding.
-        continue;
+        continue;  // LCOV_EXCL_LINE -- duplicate arrival order is MPI timing-dependent
       }
       send_to_worker(nullptr, request.worker_rank, Tag::DONE, request.source_layer);
       notified.insert(request.worker_rank);

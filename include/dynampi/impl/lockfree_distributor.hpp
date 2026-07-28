@@ -15,6 +15,8 @@
 #include <limits>
 #include <map>
 #include <optional>
+#include <stdexcept>
+#include <string>
 #include <thread>
 #include <type_traits>
 #include <utility>
@@ -29,6 +31,16 @@
 namespace dynampi {
 
 namespace detail {
+
+inline void check_task_capacity(int64_t start, size_t count, int max_tasks,
+                                const char* distributor_name) {
+  const bool invalid = start < 0 || max_tasks < 0 ||
+                       static_cast<uint64_t>(start) > static_cast<uint64_t>(max_tasks) ||
+                       count > static_cast<uint64_t>(max_tasks) - static_cast<uint64_t>(start);
+  if (invalid) {
+    throw std::length_error(std::string(distributor_name) + ": exceeded max_tasks capacity");
+  }
+}
 
 // Byte size of a single element of the MPI datatype backing T (e.g. 4 for int,
 // 4 for the element type of std::vector<int>).
@@ -163,7 +175,7 @@ class MinimalLockFreeMPIWorkDistributor {
     MPI_Aint size = static_cast<MPI_Aint>(sizeof(int64_t));
     DYNAMPI_MPI_CHECK(MPI_Win_create, (base, size, 1, MPI_INFO_NULL, m_comm.get(), &m_window));
     DYNAMPI_MPI_CHECK(MPI_Win_lock_all, (MPI_MODE_NOCHECK, m_window));
-  }
+  }  // LCOV_EXCL_LINE -- GCC attributes this closing brace inconsistently for MPI constructors
 
   ~MinimalLockFreeMPIWorkDistributor() {
     if (m_window != MPI_WIN_NULL) {
@@ -615,7 +627,9 @@ class LockFreeMPIWorkDistributor {
         // never-claimed work still exists.
         const int64_t final_total = atomic_read(TOTAL_OFF);
         if (cached_head >= final_total) break;
-        cached_total = final_total;  // real unclaimed work remains; go claim it next iteration
+        // Real unclaimed work remains; go claim it next iteration. Reaching
+        // this line requires FINISHED visibility to race a stale TOTAL read.
+        cached_total = final_total;  // LCOV_EXCL_LINE
       }
       if (!made_progress) {
         maybe_participate_in_gather();
@@ -743,8 +757,7 @@ class LockFreeMPIWorkDistributor {
 
   void publish_task(const TaskT& task) {
     const int64_t index = m_total_tasks;
-    assert(static_cast<size_t>(index) < static_cast<size_t>(m_config.max_tasks) &&
-           "LockFree: exceeded max_tasks capacity");
+    detail::check_task_capacity(index, 1, m_config.max_tasks, "LockFree");
 
     if (num_workers() == 0) {
       m_task_store.push_back(task);
