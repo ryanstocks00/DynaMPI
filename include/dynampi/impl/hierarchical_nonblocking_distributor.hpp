@@ -353,7 +353,7 @@ class HierarchicalNonBlockingMPIWorkDistributor
   };
 
   using StatisticsT =
-      std::conditional_t<statistics_mode == StatisticsMode::Detailed, Statistics, std::monostate>;
+      std::conditional_t<statistics_mode != StatisticsMode::None, Statistics, std::monostate>;
 
   StatisticsT _statistics;
 

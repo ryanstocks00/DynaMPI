@@ -512,7 +512,7 @@ class AsyncPutLevel {
   void get_bytes(void* dst, size_t n, MPI_Aint offset) {
     if (local_only()) {
       // Callers size dst to exactly n; pass that as dst_capacity for the
-      // CWE-120 / fortified-memcpy range gate.
+      // range gate in detail::read_bytes.
       detail::read_bytes(dst, n, m_window_buffer.data(), m_window_buffer.size(),
                          static_cast<size_t>(offset), n);
       return;

@@ -169,7 +169,7 @@ class MPICommunicator {
   // statistics immediately (byte counts are known at post time). Caller owns
   // the request and must keep `data` alive until the request completes.
   template <typename T>
-  inline void isend(T& data, int dest, int tag, MPI_Request* request) {
+  inline void isend(const T& data, int dest, int tag, MPI_Request* request) {
     using mpi_type = MPI_Type<T>;
     DYNAMPI_MPI_CHECK(MPI_Isend, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value, dest,
                                   tag, m_comm, request));
