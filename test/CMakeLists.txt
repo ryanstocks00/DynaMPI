@@ -79,6 +79,12 @@ if(MPIEXEC_EXECUTABLE)
   if(IS_OPENMPI)
     set(MPI_OVERSUBSCRIBE_FLAG "--oversubscribe")
     message(STATUS "Detected MPI implementation with oversubscribe support")
+    string(REGEX MATCH "(Open MPI|OpenRTE)[^0-9]*([0-9]+)" OPENMPI_VERSION_MATCH
+                 "${MPI_VERSION_OUTPUT}")
+    if(CMAKE_MATCH_2 AND CMAKE_MATCH_2 LESS 5)
+      set(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND TRUE)
+      message(STATUS "Open MPI ${CMAKE_MATCH_2}: using osc/pt2pt for split-window tests")
+    endif()
   else()
     message(
       STATUS
@@ -107,6 +113,13 @@ function(add_mpi_test test_name num_procs)
       $<TARGET_FILE:mpi_test>
       ${MPIEXEC_POSTFLAGS})
   add_test(NAME ${test_name} COMMAND ${command})
+  # Open MPI 4's osc/rdma component can race while creating windows on
+  # disjoint communicators from one shared-memory node. The grouped hierarchy
+  # test intentionally exercises exactly that topology. Open MPI 5 fixed the
+  # rdma path and removed the legacy pt2pt fallback.
+  if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND)
+    set_tests_properties(${test_name} PROPERTIES ENVIRONMENT "OMPI_MCA_osc=pt2pt")
+  endif()
 endfunction()
 
 foreach(rank 1 2 3 4 8 16 64)
