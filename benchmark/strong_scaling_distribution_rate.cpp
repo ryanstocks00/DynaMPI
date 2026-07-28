@@ -294,13 +294,30 @@ static BenchmarkResult run_benchmark_async_put_lockfree(const BenchmarkOptions& 
     const uint64_t calibration_collected = calibration_results.size();
     total_tasks += calibration_collected;
     const double calibration_elapsed_s = timer.elapsed().count() - calibration_start_s;
-    const double observed_rate =
-        calibration_collected > 0 && calibration_elapsed_s > 0.0
-            ? static_cast<double>(calibration_collected) / calibration_elapsed_s
-            : static_cast<double>(num_workers) / expected_s;
+    // A calibration window that collected nothing is NOT evidence the batch
+    // finished instantly -- for topologies with real relay/pipeline latency
+    // (e.g. a node coordinator relaying results for many local workers), it
+    // just as often means results haven't made it all the way back yet.
+    // Trusting the zero-collected case to mean "went to completion faster
+    // than we could observe" and falling back to the ideal
+    // num_workers/expected_s rate was a real, confirmed bug: an actual run
+    // measured calibration_collected=0 after a full 1s window (a coordinator
+    // relaying for 100 local workers hadn't delivered a single result back
+    // yet), fell back to a 10.1M/s "ideal" estimate, and published a
+    // ~54,000,000-task main batch that then took far longer to drain than
+    // any reasonable timeout -- indistinguishable from a hang. When nothing
+    // came back, stay conservative instead of extrapolating: publish no
+    // additional speculative work this round (batch_size below floors at 1)
+    // and let the already-published calibration_batch keep draining during
+    // the spin/harvest phases that follow.
+    const bool calibration_measured_anything = calibration_collected > 0 && calibration_elapsed_s > 0.0;
+    const double observed_rate = calibration_measured_anything
+                                      ? static_cast<double>(calibration_collected) / calibration_elapsed_s
+                                      : static_cast<double>(num_workers) / expected_s;
 
     const double remaining_budget_s = std::max(0.0, opts.duration_s - timer.elapsed().count());
-    const double estimate = 1.3 * observed_rate * remaining_budget_s;
+    const double estimate =
+        calibration_measured_anything ? 1.3 * observed_rate * remaining_budget_s : 0.0;
     // Clamped against remaining capacity, not the raw table size: the
     // calibration batch above already consumed calibration_batch slots of
     // it, and this batch is published on top -- clamping against the full
@@ -398,13 +415,30 @@ static BenchmarkResult run_benchmark_hierarchical_async_put_lockfree(const Bench
     const uint64_t calibration_collected = calibration_results.size();
     total_tasks += calibration_collected;
     const double calibration_elapsed_s = timer.elapsed().count() - calibration_start_s;
-    const double observed_rate =
-        calibration_collected > 0 && calibration_elapsed_s > 0.0
-            ? static_cast<double>(calibration_collected) / calibration_elapsed_s
-            : static_cast<double>(num_workers) / expected_s;
+    // A calibration window that collected nothing is NOT evidence the batch
+    // finished instantly -- for topologies with real relay/pipeline latency
+    // (e.g. a node coordinator relaying results for many local workers), it
+    // just as often means results haven't made it all the way back yet.
+    // Trusting the zero-collected case to mean "went to completion faster
+    // than we could observe" and falling back to the ideal
+    // num_workers/expected_s rate was a real, confirmed bug: an actual run
+    // measured calibration_collected=0 after a full 1s window (a coordinator
+    // relaying for 100 local workers hadn't delivered a single result back
+    // yet), fell back to a 10.1M/s "ideal" estimate, and published a
+    // ~54,000,000-task main batch that then took far longer to drain than
+    // any reasonable timeout -- indistinguishable from a hang. When nothing
+    // came back, stay conservative instead of extrapolating: publish no
+    // additional speculative work this round (batch_size below floors at 1)
+    // and let the already-published calibration_batch keep draining during
+    // the spin/harvest phases that follow.
+    const bool calibration_measured_anything = calibration_collected > 0 && calibration_elapsed_s > 0.0;
+    const double observed_rate = calibration_measured_anything
+                                      ? static_cast<double>(calibration_collected) / calibration_elapsed_s
+                                      : static_cast<double>(num_workers) / expected_s;
 
     const double remaining_budget_s = std::max(0.0, opts.duration_s - timer.elapsed().count());
-    const double estimate = 1.3 * observed_rate * remaining_budget_s;
+    const double estimate =
+        calibration_measured_anything ? 1.3 * observed_rate * remaining_budget_s : 0.0;
     // Clamped against remaining capacity, not the raw table size: the
     // calibration batch above already consumed calibration_batch slots of
     // it, and this batch is published on top -- clamping against the full
