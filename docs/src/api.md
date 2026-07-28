@@ -135,8 +135,8 @@ dv::commit_hash();            // "abc1234" or "abc1234-dirty"
 
 ```cpp
 struct CommStatistics {
-    int send_count, recv_count, collective_count;
-    size_t bytes_sent, bytes_received;
+    int send_count, recv_count, collective_count, atomic_count;
+    size_t bytes_sent, bytes_received, atomic_bytes;
     double send_time, recv_time;
     double average_send_size() const;
     double average_receive_size() const;
@@ -151,7 +151,7 @@ struct Statistics {
 
 // LockFreeMPIWorkDistributor
 struct Statistics {
-    CommStatistics comm_statistics;                      // by value
+    const CommStatistics& comm_statistics;
     std::vector<size_t> worker_task_counts;
 };
 ```

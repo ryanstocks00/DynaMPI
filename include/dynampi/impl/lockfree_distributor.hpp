@@ -181,15 +181,13 @@ class MinimalLockFreeMPIWorkDistributor {
 
   void set_counter(int64_t value) {
     int64_t in = value, out;
-    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op,
-                      (&in, &out, MPI_INT64_T, m_config.manager_rank, 0, MPI_REPLACE, m_window));
+    m_comm.fetch_and_op(in, out, m_config.manager_rank, 0, MPI_REPLACE, m_window);
     DYNAMPI_MPI_CHECK(MPI_Win_flush, (m_config.manager_rank, m_window));
   }
 
   int64_t fetch_add(int64_t increment) {
     int64_t in = increment, out;
-    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op,
-                      (&in, &out, MPI_INT64_T, m_config.manager_rank, 0, MPI_SUM, m_window));
+    m_comm.fetch_and_op(in, out, m_config.manager_rank, 0, MPI_SUM, m_window);
     DYNAMPI_MPI_CHECK(MPI_Win_flush, (m_config.manager_rank, m_window));
     return out;
   }
@@ -320,7 +318,7 @@ class LockFreeMPIWorkDistributor {
 
  public:
   struct Statistics {
-    CommStatistics comm_statistics;
+    const CommStatistics& comm_statistics;
     std::vector<size_t> worker_task_counts;
   };
   using StatisticsT =
@@ -331,7 +329,7 @@ class LockFreeMPIWorkDistributor {
       : m_config(config),
         m_comm(config.comm, Comm::Duplicate),
         m_worker_function(std::move(worker_function)),
-        m_statistics{make_statistics()} {
+        m_statistics{make_statistics(m_comm)} {
     initialize_window();
 
     if constexpr (statistics_mode >= StatisticsMode::Aggregated) {
@@ -525,7 +523,8 @@ class LockFreeMPIWorkDistributor {
         if (pending_start >= pending_end) {
           pending_start = -1;  // fully resolved
         } else if (finished_seen) {
-          pending_start = -1;  // total is final and short of pending_end: that remainder never existed
+          pending_start =
+              -1;  // total is final and short of pending_end: that remainder never existed
         }
       } else {
         // Deliberately NOT gated on !finished_seen: finished_seen only means
@@ -547,13 +546,15 @@ class LockFreeMPIWorkDistributor {
               std::min<int64_t>(m_config.claim_batch_size, cached_total - cached_head);
           const int64_t start = fetch_add(HEAD_OFF, claim);
           const int64_t end = start + claim;
-          cached_head = end;  // best local estimate; may be stale vs. concurrent claimants, see above
+          cached_head =
+              end;  // best local estimate; may be stale vs. concurrent claimants, see above
 
           // Usually ready == end (cached_total was accurate); only re-reads
           // TOTAL_OFF when start turned out higher than expected (another
           // worker claimed since our last observation), which is the rare
           // case this whole scheme is built to tolerate rather than prevent.
-          const int64_t total = (start + claim <= cached_total) ? cached_total : atomic_read(TOTAL_OFF);
+          const int64_t total =
+              (start + claim <= cached_total) ? cached_total : atomic_read(TOTAL_OFF);
           const int64_t ready = std::min(end, total);
           if (ready > start) {
             process_range(start, ready - start);
@@ -667,16 +668,14 @@ class LockFreeMPIWorkDistributor {
   // Remote ranks use Fetch_and_op to read/update the manager's window.
   int64_t atomic_read(MPI_Aint offset) {
     int64_t in = 0, out;
-    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op,
-                      (&in, &out, MPI_INT64_T, m_config.manager_rank, offset, MPI_NO_OP, m_window));
+    m_comm.fetch_and_op(in, out, m_config.manager_rank, offset, MPI_NO_OP, m_window);
     flush(m_config.manager_rank);
     return out;
   }
 
   void atomic_set(MPI_Aint offset, int64_t value) {
     int64_t in = value, out;
-    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op, (&in, &out, MPI_INT64_T, m_config.manager_rank, offset,
-                                         MPI_REPLACE, m_window));
+    m_comm.fetch_and_op(in, out, m_config.manager_rank, offset, MPI_REPLACE, m_window);
     flush(m_config.manager_rank);
   }
 
@@ -686,47 +685,19 @@ class LockFreeMPIWorkDistributor {
   // currently is and hands that starting point back.
   int64_t fetch_add(MPI_Aint offset, int64_t increment) {
     int64_t in = increment, out;
-    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op,
-                      (&in, &out, MPI_INT64_T, m_config.manager_rank, offset, MPI_SUM, m_window));
+    m_comm.fetch_and_op(in, out, m_config.manager_rank, offset, MPI_SUM, m_window);
     flush(m_config.manager_rank);
     return out;
   }
 
-  // MPI_Put/MPI_Get take a plain `int` count, but n (a byte length derived
-  // from task/result-table capacities that can legitimately reach into the
-  // hundreds of millions of slots) can exceed INT_MAX. static_cast<int>(n)
-  // on an over-INT_MAX n silently wraps -- see the identical fix (and its
-  // fuller rationale) in hierarchical_async_put_lockfree_distributor.hpp's
-  // put_bytes()/get_bytes(). Chunk into INT_MAX-bounded pieces so no single
-  // MPI_Put/MPI_Get call is ever handed a count that doesn't fit in `int`.
-  static constexpr size_t kMaxRmaChunkBytes = static_cast<size_t>(std::numeric_limits<int>::max());
-
   void put_bytes(const void* src, size_t n, MPI_Aint offset) {
-    if (n == 0) return;
-    const auto* bytes = static_cast<const std::byte*>(src);
-    size_t done = 0;
-    while (done < n) {
-      const size_t chunk = std::min(kMaxRmaChunkBytes, n - done);
-      DYNAMPI_MPI_CHECK(MPI_Put, (bytes + done, static_cast<int>(chunk), MPI_BYTE,
-                                  m_config.manager_rank, offset + static_cast<MPI_Aint>(done),
-                                  static_cast<int>(chunk), MPI_BYTE, m_window));
-      done += chunk;
-    }
+    m_comm.put_bytes(src, n, m_config.manager_rank, offset, m_window);
     flush(m_config.manager_rank);
   }
 
   // Workers read the manager's window.
   void get_bytes(void* dst, size_t n, MPI_Aint offset) {
-    if (n == 0) return;
-    auto* bytes = static_cast<std::byte*>(dst);
-    size_t done = 0;
-    while (done < n) {
-      const size_t chunk = std::min(kMaxRmaChunkBytes, n - done);
-      DYNAMPI_MPI_CHECK(MPI_Get, (bytes + done, static_cast<int>(chunk), MPI_BYTE,
-                                  m_config.manager_rank, offset + static_cast<MPI_Aint>(done),
-                                  static_cast<int>(chunk), MPI_BYTE, m_window));
-      done += chunk;
-    }
+    m_comm.get_bytes(dst, n, m_config.manager_rank, offset, m_window);
     flush(m_config.manager_rank);
   }
 
@@ -755,11 +726,6 @@ class LockFreeMPIWorkDistributor {
                           data_bytes);
     }
     put_bytes(buffer.data(), buffer.size(), task_slot(index));
-
-    if constexpr (statistics_mode != StatisticsMode::None) {
-      m_statistics.comm_statistics.bytes_sent += data_bytes;
-      m_statistics.comm_statistics.send_count++;
-    }
 
     m_total_tasks++;
     atomic_set(TOTAL_OFF, m_total_tasks);  // publish to workers
@@ -887,11 +853,6 @@ class LockFreeMPIWorkDistributor {
         pos += data_bytes;
         m_staging[index] = std::move(result);
         result_count++;
-
-        if constexpr (statistics_mode != StatisticsMode::None) {
-          m_statistics.comm_statistics.bytes_received += data_bytes;
-          m_statistics.comm_statistics.recv_count++;
-        }
       }
       if constexpr (statistics_mode >= StatisticsMode::Aggregated) {
         if (static_cast<size_t>(r) < m_statistics.worker_task_counts.size())
@@ -925,9 +886,9 @@ class LockFreeMPIWorkDistributor {
     return output;
   }
 
-  static StatisticsT make_statistics() {
-    if constexpr (statistics_mode != StatisticsMode::None) {
-      return Statistics{};
+  static StatisticsT make_statistics(const Comm& comm) {
+    if constexpr (statistics_mode == StatisticsMode::Detailed) {
+      return Statistics{.comm_statistics = comm.get_statistics(), .worker_task_counts = {}};
     } else {
       return {};
     }

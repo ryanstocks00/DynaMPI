@@ -37,12 +37,10 @@ namespace detail {
 // below, which instantiates one AsyncPutLevel per tree level: manager<->node
 // coordinators, and, independently, node coordinator<->its local workers.
 //
-// Unlike detail::LockFreeLevel (hierarchical_lockfree_distributor.hpp), there
-// is no gather-round/barrier/broadcast protocol here at all: publishing,
-// claiming, writing results, and harvesting are each purely one-sided,
-// independent operations with no requirement that every claimant
-// participate in lockstep. This makes the state machine considerably
-// simpler than LockFreeLevel's, and is exactly why the flat
+// Unlike a gather/barrier/broadcast round protocol, there is no collective
+// lockstep here at all: publishing, claiming, writing results, and harvesting
+// are each purely one-sided, independent operations with no requirement that
+// every claimant participate together. This is exactly why the flat
 // AsyncPutLockFreeMPIWorkDistributor reaches such a high throughput ceiling
 // in the first place (see that file's class comment) -- composing it
 // hierarchically doesn't need to reintroduce any of that.
@@ -71,11 +69,15 @@ class AsyncPutLevel {
   };
 
   struct ClaimedRange {
-    int64_t start = -1;  // -1: nothing claimable right now (not necessarily drained -- see drained())
+    int64_t start =
+        -1;  // -1: nothing claimable right now (not necessarily drained -- see drained())
     std::vector<TaskT> tasks;
   };
 
-  explicit AsyncPutLevel(Config config) : m_config(config) { initialize_window(); }
+  explicit AsyncPutLevel(Config config)
+      : m_config(config), m_comm(m_config.comm, MPICommunicator<>::Reference) {
+    initialize_window();
+  }
 
   AsyncPutLevel(const AsyncPutLevel&) = delete;
   AsyncPutLevel& operator=(const AsyncPutLevel&) = delete;
@@ -89,17 +91,9 @@ class AsyncPutLevel {
     }
   }
 
-  bool is_owner() const { return comm_rank() == m_config.owner_rank; }
-  int comm_rank() const {
-    int r = 0;
-    MPI_Comm_rank(m_config.comm, &r);
-    return r;
-  }
-  int comm_size() const {
-    int s = 0;
-    MPI_Comm_size(m_config.comm, &s);
-    return s;
-  }
+  bool is_owner() const { return m_comm.rank() == m_config.owner_rank; }
+  int comm_rank() const { return m_comm.rank(); }
+  int comm_size() const { return m_comm.size(); }
 
   void idle_wait() { detail::rma_wait_idle(m_window); }
 
@@ -132,8 +126,8 @@ class AsyncPutLevel {
         const size_t off = i * m_task_slot_stride;
         detail::write_i64(buffer.data(), buffer.size(), off + T_COUNT, count);
         if (data_bytes > 0) {
-          detail::write_bytes(buffer.data(), buffer.size(), off + T_DATA, MPI_Type<TaskT>::ptr(task),
-                              data_bytes);
+          detail::write_bytes(buffer.data(), buffer.size(), off + T_DATA,
+                              MPI_Type<TaskT>::ptr(task), data_bytes);
         }
       }
       put_bytes(buffer.data(), buffer.size(), task_slot(start));
@@ -219,11 +213,9 @@ class AsyncPutLevel {
   }
 
   // Like harvest_ready_results(), but backs off briefly if nothing new was
-  // found, instead of being called back-to-back in a tight owner loop --
-  // matching request_gather_throttled()'s role in LockFreeLevel, though the
-  // cost being avoided here is pure CPU/RMA-poll churn rather than gather-
-  // round flooding (there's no round to flood: a throttle here is purely a
-  // politeness backoff, not a correctness requirement).
+  // found, instead of being called back-to-back in a tight owner loop -- a
+  // politeness backoff against pure CPU/RMA-poll churn rather than a
+  // correctness requirement (there's no gather round to flood).
   std::vector<ResultT> harvest_ready_results_throttled() {
     if (comm_size() == 1) return {};
     const size_t before = owner_collected_count();
@@ -274,7 +266,8 @@ class AsyncPutLevel {
     // symmetric handling and AsyncPutLockFreeMPIWorkDistributor::run_worker()'s
     // identical comment: once finished_seen is true, a stale cached_total
     // must still be correctable by drained()'s own fresh read, not frozen.
-    if (m_cached_head >= m_cached_total && !m_seen_finished) m_cached_total = atomic_read(TOTAL_OFF);
+    if (m_cached_head >= m_cached_total && !m_seen_finished)
+      m_cached_total = atomic_read(TOTAL_OFF);
 
     if (m_cached_head < m_cached_total) {
       const int64_t claim =
@@ -384,6 +377,7 @@ class AsyncPutLevel {
   static constexpr size_t LOG_ENTRY_BYTES = 8;
 
   Config m_config;
+  MPICommunicator<> m_comm;
   MPI_Win m_window = MPI_WIN_NULL;
   std::vector<std::byte> m_window_buffer;
   alignas(int64_t) std::byte m_peer_window[sizeof(int64_t)]{};
@@ -458,63 +452,28 @@ class AsyncPutLevel {
 
   int64_t atomic_read(MPI_Aint offset) {
     int64_t in = 0, out;
-    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op,
-                      (&in, &out, MPI_INT64_T, m_config.owner_rank, offset, MPI_NO_OP, m_window));
+    m_comm.fetch_and_op(in, out, m_config.owner_rank, offset, MPI_NO_OP, m_window);
     flush(m_config.owner_rank);
     return out;
   }
   void atomic_set(MPI_Aint offset, int64_t value) {
     int64_t in = value, out;
-    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op, (&in, &out, MPI_INT64_T, m_config.owner_rank, offset,
-                                         MPI_REPLACE, m_window));
+    m_comm.fetch_and_op(in, out, m_config.owner_rank, offset, MPI_REPLACE, m_window);
     flush(m_config.owner_rank);
   }
   int64_t fetch_add(MPI_Aint offset, int64_t increment) {
     int64_t in = increment, out;
-    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op,
-                      (&in, &out, MPI_INT64_T, m_config.owner_rank, offset, MPI_SUM, m_window));
+    m_comm.fetch_and_op(in, out, m_config.owner_rank, offset, MPI_SUM, m_window);
     flush(m_config.owner_rank);
     return out;
   }
-  // MPI_Put/MPI_Get take a plain `int` count, but n (a byte length derived
-  // from task/result-table capacities that can legitimately reach into the
-  // hundreds of millions of slots -- see kLockFreeMaxTasks-style configs in
-  // the benchmarks) can exceed INT_MAX. static_cast<int>(n) on an
-  // over-INT_MAX n silently wraps (confirmed: a single-node run pushing
-  // ~100M-capacity tables produced a bulk get_bytes() call whose byte count
-  // overflowed to a small/negative int, which MPI_Get then reinterpreted as
-  // a huge unsigned transfer -- observed downstream as a relay buffer
-  // reporting a "size" near 2^32 that took hours to (never) drain, and is
-  // the leading suspect for this class's other unexplained bad_alloc/
-  // segfault crashes at high throughput). Chunk into MPI_Aint-addressed,
-  // INT_MAX-bounded pieces so no single MPI_Put/MPI_Get call is ever handed
-  // a count that doesn't fit in `int`.
-  static constexpr size_t kMaxRmaChunkBytes = static_cast<size_t>(std::numeric_limits<int>::max());
 
   void put_bytes(const void* src, size_t n, MPI_Aint offset) {
-    if (n == 0) return;
-    const auto* bytes = static_cast<const std::byte*>(src);
-    size_t done = 0;
-    while (done < n) {
-      const size_t chunk = std::min(kMaxRmaChunkBytes, n - done);
-      DYNAMPI_MPI_CHECK(MPI_Put, (bytes + done, static_cast<int>(chunk), MPI_BYTE,
-                                  m_config.owner_rank, offset + static_cast<MPI_Aint>(done),
-                                  static_cast<int>(chunk), MPI_BYTE, m_window));
-      done += chunk;
-    }
+    m_comm.put_bytes(src, n, m_config.owner_rank, offset, m_window);
     flush(m_config.owner_rank);
   }
   void get_bytes(void* dst, size_t n, MPI_Aint offset) {
-    if (n == 0) return;
-    auto* bytes = static_cast<std::byte*>(dst);
-    size_t done = 0;
-    while (done < n) {
-      const size_t chunk = std::min(kMaxRmaChunkBytes, n - done);
-      DYNAMPI_MPI_CHECK(MPI_Get, (bytes + done, static_cast<int>(chunk), MPI_BYTE,
-                                  m_config.owner_rank, offset + static_cast<MPI_Aint>(done),
-                                  static_cast<int>(chunk), MPI_BYTE, m_window));
-      done += chunk;
-    }
+    m_comm.get_bytes(dst, n, m_config.owner_rank, offset, m_window);
     flush(m_config.owner_rank);
   }
 
@@ -548,10 +507,7 @@ class AsyncPutLevel {
 // (manager <-> per-node coordinators <-> per-node local workers) with
 // AsyncPutLockFreeMPIWorkDistributor's one-sided, collective-free RMA
 // protocol (fetch-and-add claiming, batched Put-based result return via a
-// completion log), applied independently at each level of the tree -- the
-// same relationship HierarchicalLockFreeMPIWorkDistributor has to
-// LockFreeMPIWorkDistributor, but built on the async-put protocol instead
-// of the CAS+Gatherv one.
+// completion log), applied independently at each level of the tree.
 //
 // Motivation: the flat AsyncPutLockFreeMPIWorkDistributor reaches ~600K-2M+
 // tasks/s (see that file, and strong_scaling_distribution_rate.cpp's
@@ -567,10 +523,9 @@ class AsyncPutLevel {
 // async-put protocol specifically, aiming to combine both distributors'
 // advantages: no collective-call overhead *and* no single-window ceiling.
 //
-// A node coordinator plays two roles at once, same as in
-// HierarchicalLockFreeMPIWorkDistributor: owner of its local level, and
+// A node coordinator plays two roles at once: owner of its local level, and
 // claimant of the leader level. The one genuinely new piece of bookkeeping
-// versus that sibling class: a coordinator doesn't compute claimed tasks
+// versus the flat class: a coordinator doesn't compute claimed tasks
 // itself, it republishes them into its local level and only later, once
 // local results are confirmed, relays them upward -- and because local
 // harvesting returns whatever contiguous prefix is ready (which can span
@@ -582,7 +537,7 @@ class AsyncPutLevel {
 //
 // Results are unordered (see AsyncPutLevel); use a different distributor if
 // task-index-ordered output is required. Task prioritization and detailed
-// statistics are not supported (matching HierarchicalLockFreeMPIWorkDistributor).
+// statistics are not supported.
 // ---------------------------------------------------------------------------
 template <typename TaskT, typename ResultT, typename... Options>
 class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
@@ -592,9 +547,9 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     int manager_rank = 0;
     bool auto_run_workers = true;
     int leader_batch_multiplier = 2;  // coordinators claim (local peers)*multiplier tasks at once
-    int local_batch_size = 8;         // local workers claim this many tasks at once from their coordinator
-    int max_tasks = 8192;             // leader-level task table capacity (lifetime total)
-    int max_local_tasks = 8192;       // per-node local task table capacity (lifetime total, per node)
+    int local_batch_size = 8;  // local workers claim this many tasks at once from their coordinator
+    int max_tasks = 8192;      // leader-level task table capacity (lifetime total)
+    int max_local_tasks = 8192;  // per-node local task table capacity (lifetime total, per node)
     int max_task_count = 256;
     int max_result_count = 256;
     // 0 (default): exactly today's two-level tree -- manager talks directly
@@ -636,7 +591,8 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   size_t remaining_tasks_count() const {
     assert(is_root_manager());
     if (m_solo) return m_local_task_store.size() - m_local_collected_count;
-    const auto& top = m_owned_upper_levels.front();  // manager always owns exactly one top-of-chain level
+    const auto& top =
+        m_owned_upper_levels.front();  // manager always owns exactly one top-of-chain level
     return top.owner_published_count() - top.owner_collected_count() - m_results.size();
   }
 
@@ -677,9 +633,8 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
       }
     }
 
-    return drain_results(config.allow_more_than_target_tasks
-                             ? std::numeric_limits<size_t>::max()
-                             : config.target_num_tasks);
+    return drain_results(config.allow_more_than_target_tasks ? std::numeric_limits<size_t>::max()
+                                                             : config.target_num_tasks);
   }
 
   [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() { return run_tasks({}); }
@@ -696,7 +651,8 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
         m_local_collected_count++;
       }
     } else {
-      auto results = m_owned_upper_levels.front().harvest_ready_results();  // manager's top-of-chain level
+      auto results =
+          m_owned_upper_levels.front().harvest_ready_results();  // manager's top-of-chain level
       m_results.insert(m_results.end(), std::make_move_iterator(results.begin()),
                        std::make_move_iterator(results.end()));
     }
@@ -902,7 +858,8 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     auto coordinators_opt = flat_comm.split(is_manager ? MPI_UNDEFINED : 0, flat_comm.rank());
 
     bool is_final_round_leader = false;
-    int feed_size = leaf_claim;  // claim size for the NEXT level to be discovered, updated per round
+    int feed_size =
+        leaf_claim;  // claim size for the NEXT level to be discovered, updated per round
     if (!is_manager) {
       // std::optional, not a bare MPICommunicator: MPICommunicator has no
       // move assignment (only move construction -- see its deleted
@@ -926,7 +883,8 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
 
         // Collective over round_comm: every member (leader or not) calls
         // this together, before acting on their differing result below.
-        auto leaders_opt = round_comm->split(is_group_leader ? 0 : MPI_UNDEFINED, round_comm->rank());
+        auto leaders_opt =
+            round_comm->split(is_group_leader ? 0 : MPI_UNDEFINED, round_comm->rank());
 
         if (!is_group_leader) {
           emplace_parent_level(std::move(group_comm), 0, feed_size);
@@ -954,8 +912,8 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     // Attach to the manager: every ORIGINAL member of flat_comm (manager +
     // every coordinator, whether promoted zero, one, or many times) reaches
     // this exact call.
-    auto top_opt =
-        flat_comm.split((is_manager || is_final_round_leader) ? 0 : MPI_UNDEFINED, flat_comm.rank());
+    auto top_opt = flat_comm.split((is_manager || is_final_round_leader) ? 0 : MPI_UNDEFINED,
+                                   flat_comm.rank());
     if (top_opt.has_value()) {
       MPIGroup top_group(*top_opt);
       const int owner_rank = world_group.translate_rank(m_config.manager_rank, top_group);
@@ -1009,7 +967,8 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     detail::AsyncPutLevel<TaskT, ResultT>* child;
     std::deque<PendingRelay> pending_relays;
     std::vector<ResultT> relay_buffer;  // child results collected but not yet fully relayed upward
-    int64_t pending_task_count = 0;     // sum of child_len across pending_relays -- see step_bridge_hop()
+    int64_t pending_task_count =
+        0;  // sum of child_len across pending_relays -- see step_bridge_hop()
     bool finish_marked = false;
   };
 
@@ -1093,7 +1052,8 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     // previously masked parent-level polling from ever backing off.
     auto child_results = hop.child->harvest_ready_results();
     if (!child_results.empty()) {
-      hop.relay_buffer.insert(hop.relay_buffer.end(), std::make_move_iterator(child_results.begin()),
+      hop.relay_buffer.insert(hop.relay_buffer.end(),
+                              std::make_move_iterator(child_results.begin()),
                               std::make_move_iterator(child_results.end()));
     }
 

@@ -180,3 +180,52 @@ TEST(MPICommunicatorWrapper, RecvEmptyMessage) {
     MPI_Barrier(MPI_COMM_WORLD);
   }
 }
+
+TEST(MPICommunicatorWrapper, PutGetAndStatistics) {
+  using TrackedComm =
+      dynampi::MPICommunicator<dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>;
+  TrackedComm comm(MPI_COMM_WORLD);
+  const int rank = comm.rank();
+  const int size = comm.size();
+  if (size < 2) {
+    GTEST_SKIP() << "Need at least 2 ranks for Put/Get";
+  }
+
+  int local = (rank == 0) ? 0 : -1;
+  MPI_Win win = MPI_WIN_NULL;
+  DYNAMPI_MPI_CHECK(MPI_Win_create, (&local, static_cast<MPI_Aint>(sizeof(int)), 1, MPI_INFO_NULL,
+                                     comm.get(), &win));
+  DYNAMPI_MPI_CHECK(MPI_Win_lock_all, (MPI_MODE_NOCHECK, win));
+
+  if (rank == 1) {
+    const int value = 42;
+    comm.put_bytes(&value, sizeof(int), 0, 0, win);
+    DYNAMPI_MPI_CHECK(MPI_Win_flush, (0, win));
+  }
+  MPI_Barrier(comm.get());
+
+  if (rank == 1) {
+    int got = 0;
+    comm.get_bytes(&got, sizeof(int), 0, 0, win);
+    DYNAMPI_MPI_CHECK(MPI_Win_flush, (0, win));
+    EXPECT_EQ(got, 42);
+  }
+  MPI_Barrier(comm.get());
+
+  const auto &stats = comm.get_statistics();
+  if (rank == 1) {
+    EXPECT_EQ(stats.send_count, 1);
+    EXPECT_EQ(stats.bytes_sent, sizeof(int));
+    EXPECT_EQ(stats.recv_count, 1);
+    EXPECT_EQ(stats.bytes_received, sizeof(int));
+  } else {
+    EXPECT_EQ(stats.send_count, 0);
+    EXPECT_EQ(stats.recv_count, 0);
+  }
+  if (rank == 0) {
+    EXPECT_EQ(local, 42);
+  }
+
+  DYNAMPI_MPI_CHECK(MPI_Win_unlock_all, (win));
+  DYNAMPI_MPI_CHECK(MPI_Win_free, (&win));
+}

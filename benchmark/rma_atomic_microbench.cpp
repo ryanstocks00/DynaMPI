@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Measures the raw ceiling of the one-sided RMA atomics LockFreeMPIWorkDistributor
-// and HierarchicalLockFreeMPIWorkDistributor build on top of: MPI_Fetch_and_op and
-// MPI_Compare_and_swap against a single int64 counter on rank 0's window,
-// hammered concurrently by every other rank. No task claiming, no result
-// staging, no gather rounds -- just the bare primitive, so this isolates
-// "how fast can the fabric/MPI implementation do this operation" from
+// and AsyncPutLockFreeMPIWorkDistributor build on top of: MPI_Fetch_and_op
+// (and MPI_Compare_and_swap for comparison) against a single int64 counter on
+// rank 0's window, hammered concurrently by every other rank. No task claiming,
+// no result staging, no gather rounds -- just the bare primitive, so this
+// isolates "how fast can the fabric/MPI implementation do this operation" from
 // anything about how the distributor uses it.
 //
 // Three phases:
@@ -15,16 +15,13 @@
 //                     purest measure of one atomic round trip's rate.
 //   cas_flushed   -- MPI_Compare_and_swap + MPI_Win_flush every call, with a
 //                     locally-cached expected value corrected for free from a
-//                     failed CAS's return (see run_worker() in
-//                     lockfree_distributor.hpp for why this needs no separate
-//                     read). This is the actual primitive the claim loop uses;
-//                     comparing it to faa_flushed isolates the cost of
-//                     cross-rank contention/retries from the cost of the
-//                     round trip itself.
+//                     failed CAS's return. Kept for comparison against FAA;
+//                     the distributors themselves use Fetch_and_op (SUM) for
+//                     claiming, not CAS.
 //   faa_pipelined -- `pipeline_depth` Fetch_and_op calls posted back-to-back
 //                     before a single MPI_Win_flush, instead of flushing
 //                     every call. Tests whether the flush-per-op pattern
-//                     (used throughout LockFreeLevel/LockFreeMPIWorkDistributor)
+//                     (used throughout the lock-free distributors)
 //                     is itself the bottleneck, by seeing whether overlapping
 //                     multiple outstanding atomics raises the ceiling.
 #include <mpi.h>
@@ -101,7 +98,7 @@ int main(int argc, char** argv) {
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   cxxopts::Options options("rma_atomic_microbench",
-                            "Raw RMA atomic (Fetch_and_op / Compare_and_swap) throughput ceiling");
+                           "Raw RMA atomic (Fetch_and_op / Compare_and_swap) throughput ceiling");
   options.add_options()("d,duration_s", "duration per phase, in seconds",
                         cxxopts::value<double>()->default_value("3"))(
       "p,pipeline_depths", "comma-separated pipeline depths to test for faa_pipelined",
@@ -155,10 +152,10 @@ int main(int argc, char** argv) {
     if (rank == root) {
       const double succ_rate = static_cast<double>(total.succeeded) / duration_s;
       const double att_rate = static_cast<double>(total.attempted) / duration_s;
-      std::cout << "RESULT phase=" << name << " world_size=" << size << " participants=" << participants
-                << " succeeded=" << total.succeeded << " attempted=" << total.attempted
-                << " duration_s=" << duration_s << " succeeded_per_s=" << succ_rate
-                << " attempted_per_s=" << att_rate
+      std::cout << "RESULT phase=" << name << " world_size=" << size
+                << " participants=" << participants << " succeeded=" << total.succeeded
+                << " attempted=" << total.attempted << " duration_s=" << duration_s
+                << " succeeded_per_s=" << succ_rate << " attempted_per_s=" << att_rate
                 << " succeeded_per_s_per_rank=" << (succ_rate / participants) << std::endl;
     }
   };

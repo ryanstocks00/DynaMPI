@@ -101,7 +101,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
   static const bool ordered = false;
 
   struct Statistics {
-    CommStatistics comm_statistics;
+    const CommStatistics& comm_statistics;
   };
   using StatisticsT =
       std::conditional_t<statistics_mode != StatisticsMode::None, Statistics, std::monostate>;
@@ -117,7 +117,8 @@ class AsyncPutLockFreeMPIWorkDistributor {
                                               Config config = {})
       : m_config(config),
         m_comm(config.comm, Comm::Duplicate),
-        m_worker_function(std::move(worker_function)) {
+        m_worker_function(std::move(worker_function)),
+        m_statistics{make_statistics(m_comm)} {
     initialize_window();
     if (m_config.auto_run_workers && !is_root_manager()) run_worker();
   }
@@ -180,7 +181,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
     }
 
     const size_t limit = config.allow_more_than_target_tasks ? std::numeric_limits<size_t>::max()
-                                                              : config.target_num_tasks;
+                                                             : config.target_num_tasks;
     return drain_results(limit);
   }
 
@@ -380,8 +381,8 @@ class AsyncPutLockFreeMPIWorkDistributor {
   // construction -- no separate frontier variable needed.
   size_t m_collected_count = 0;
   size_t m_returned_count = 0;
-  std::vector<ResultT> m_results;         // manager only: harvested, ready to return
-  std::vector<TaskT> m_task_store;        // manager only, solo-world fallback
+  std::vector<ResultT> m_results;   // manager only: harvested, ready to return
+  std::vector<TaskT> m_task_store;  // manager only, solo-world fallback
   StatisticsT m_statistics;
 
   void initialize_window() {
@@ -436,58 +437,28 @@ class AsyncPutLockFreeMPIWorkDistributor {
 
   int64_t atomic_read(MPI_Aint offset) {
     int64_t in = 0, out;
-    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op,
-                      (&in, &out, MPI_INT64_T, m_config.manager_rank, offset, MPI_NO_OP, m_window));
+    m_comm.fetch_and_op(in, out, m_config.manager_rank, offset, MPI_NO_OP, m_window);
     flush(m_config.manager_rank);
     return out;
   }
   void atomic_set(MPI_Aint offset, int64_t value) {
     int64_t in = value, out;
-    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op, (&in, &out, MPI_INT64_T, m_config.manager_rank, offset,
-                                         MPI_REPLACE, m_window));
+    m_comm.fetch_and_op(in, out, m_config.manager_rank, offset, MPI_REPLACE, m_window);
     flush(m_config.manager_rank);
   }
   int64_t fetch_add(MPI_Aint offset, int64_t increment) {
     int64_t in = increment, out;
-    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op,
-                      (&in, &out, MPI_INT64_T, m_config.manager_rank, offset, MPI_SUM, m_window));
+    m_comm.fetch_and_op(in, out, m_config.manager_rank, offset, MPI_SUM, m_window);
     flush(m_config.manager_rank);
     return out;
   }
-  // MPI_Put/MPI_Get take a plain `int` count, but n (a byte length derived
-  // from task/result-table capacities that can legitimately reach into the
-  // hundreds of millions of slots) can exceed INT_MAX. static_cast<int>(n)
-  // on an over-INT_MAX n silently wraps -- see the identical fix (and its
-  // fuller rationale) in hierarchical_async_put_lockfree_distributor.hpp's
-  // put_bytes()/get_bytes(), which share this exact helper shape. Chunk
-  // into INT_MAX-bounded pieces so no single MPI_Put/MPI_Get call is ever
-  // handed a count that doesn't fit in `int`.
-  static constexpr size_t kMaxRmaChunkBytes = static_cast<size_t>(std::numeric_limits<int>::max());
 
   void put_bytes(const void* src, size_t n, MPI_Aint offset) {
-    if (n == 0) return;
-    const auto* bytes = static_cast<const std::byte*>(src);
-    size_t done = 0;
-    while (done < n) {
-      const size_t chunk = std::min(kMaxRmaChunkBytes, n - done);
-      DYNAMPI_MPI_CHECK(MPI_Put, (bytes + done, static_cast<int>(chunk), MPI_BYTE,
-                                  m_config.manager_rank, offset + static_cast<MPI_Aint>(done),
-                                  static_cast<int>(chunk), MPI_BYTE, m_window));
-      done += chunk;
-    }
+    m_comm.put_bytes(src, n, m_config.manager_rank, offset, m_window);
     flush(m_config.manager_rank);
   }
   void get_bytes(void* dst, size_t n, MPI_Aint offset) {
-    if (n == 0) return;
-    auto* bytes = static_cast<std::byte*>(dst);
-    size_t done = 0;
-    while (done < n) {
-      const size_t chunk = std::min(kMaxRmaChunkBytes, n - done);
-      DYNAMPI_MPI_CHECK(MPI_Get, (bytes + done, static_cast<int>(chunk), MPI_BYTE,
-                                  m_config.manager_rank, offset + static_cast<MPI_Aint>(done),
-                                  static_cast<int>(chunk), MPI_BYTE, m_window));
-      done += chunk;
-    }
+    m_comm.get_bytes(dst, n, m_config.manager_rank, offset, m_window);
     flush(m_config.manager_rank);
   }
 
@@ -524,7 +495,6 @@ class AsyncPutLockFreeMPIWorkDistributor {
       return;
     }
     std::vector<std::byte> buffer(tasks.size() * m_task_slot_stride);
-    size_t total_data_bytes = 0;
     for (size_t i = 0; i < tasks.size(); ++i) {
       const TaskT& task = tasks[i];
       const int count = MPI_Type<TaskT>::count(task);
@@ -537,15 +507,10 @@ class AsyncPutLockFreeMPIWorkDistributor {
         detail::write_bytes(buffer.data(), buffer.size(), off + T_DATA, MPI_Type<TaskT>::ptr(task),
                             data_bytes);
       }
-      total_data_bytes += data_bytes;
     }
     put_bytes(buffer.data(), buffer.size(), task_slot(start));
     m_total_tasks += static_cast<int64_t>(tasks.size());
     atomic_set(TOTAL_OFF, m_total_tasks);
-    if constexpr (statistics_mode != StatisticsMode::None) {
-      m_statistics.comm_statistics.bytes_sent += total_data_bytes;
-      m_statistics.comm_statistics.send_count++;
-    }
   }
 
   std::vector<TaskT> read_task_batch(int64_t index, int64_t count) {
@@ -665,6 +630,14 @@ class AsyncPutLockFreeMPIWorkDistributor {
     m_results.erase(m_results.begin(), m_results.begin() + static_cast<ptrdiff_t>(count));
     m_returned_count += count;
     return output;
+  }
+
+  static StatisticsT make_statistics(const Comm& comm) {
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      return Statistics{.comm_statistics = comm.get_statistics()};
+    } else {
+      return {};
+    }
   }
 };
 

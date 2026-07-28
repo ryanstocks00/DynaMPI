@@ -170,9 +170,7 @@ class HierarchicalNonBlockingMPIWorkDistributor
       reap();
       pending.emplace_back(std::move(value), MPI_Request{});
       auto& [buf, req] = pending.back();
-      using mpi_type = MPI_Type<T>;
-      DYNAMPI_MPI_CHECK(MPI_Isend, (mpi_type::ptr(buf), mpi_type::count(buf), mpi_type::value,
-                                    dest, tag, comm.get(), &req));
+      comm.isend(buf, dest, tag, &req);
     }
 
     // Must be called before this rank's process moves toward destruction:
@@ -201,10 +199,10 @@ class HierarchicalNonBlockingMPIWorkDistributor
     std::deque<std::pair<T, MPI_Request>> pending;
   };
 
-  AsyncSendPool<int> m_pending_int_sends;                        // REQUEST_BATCH
-  AsyncSendPool<TaskT> m_pending_task_sends;                      // TASK
-  AsyncSendPool<ResultT> m_pending_result_sends;                  // RESULT
-  AsyncSendPool<std::vector<TaskT>> m_pending_task_batch_sends;   // TASK_BATCH
+  AsyncSendPool<int> m_pending_int_sends;                            // REQUEST_BATCH
+  AsyncSendPool<TaskT> m_pending_task_sends;                         // TASK
+  AsyncSendPool<ResultT> m_pending_result_sends;                     // RESULT
+  AsyncSendPool<std::vector<TaskT>> m_pending_task_batch_sends;      // TASK_BATCH
   AsyncSendPool<std::vector<ResultT>> m_pending_result_batch_sends;  // RESULT_BATCH
 
   void wait_all_pending_sends() {
@@ -363,7 +361,7 @@ class HierarchicalNonBlockingMPIWorkDistributor
 
  public:
   explicit HierarchicalNonBlockingMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
-                                          Config runtime_config = Config{})
+                                                     Config runtime_config = Config{})
       : m_communicator(runtime_config.comm, MPICommunicator::Duplicate),
         m_world_group(m_communicator),
         m_worker_function(worker_function),
@@ -815,10 +813,8 @@ class HierarchicalNonBlockingMPIWorkDistributor
   template <typename T>
   void send_async(const T& data, int dest, Tag tag) {
     if constexpr (std::is_same_v<T, std::nullptr_t>) {
-      using mpi_type = MPI_Type<std::nullptr_t>;
       MPI_Request req;
-      DYNAMPI_MPI_CHECK(MPI_Isend, (nullptr, mpi_type::count(nullptr), mpi_type::value, dest,
-                                    static_cast<int>(tag), m_communicator.get(), &req));
+      m_communicator.isend_empty(dest, static_cast<int>(tag), &req);
       DYNAMPI_MPI_CHECK(MPI_Request_free, (&req));
     } else if constexpr (std::is_same_v<T, std::vector<TaskT>>) {
       m_pending_task_batch_sends.post(m_communicator, data, dest, static_cast<int>(tag));
