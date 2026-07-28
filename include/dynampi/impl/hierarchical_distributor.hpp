@@ -484,21 +484,22 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         top_up_pipeline(1);
         // Safe to honor m_done now: this round is fully distributed and
         // whatever was ready has been flushed to our parent. Any results
-        // still outstanding (stragglers) are picked up by
-        // send_done_to_children_when_free()'s own draining below, and
-        // flushed by the final send_results_to_parent() after it.
+        // still outstanding after the loop (e.g. in-flight RESULT_BATCH
+        // while a child already REQUEST_BATCH'd ahead) are drained and
+        // flushed after send_done_to_children_when_free() below.
         if (m_done) break;
       }
       send_done_to_children_when_free();
-      // send_done_to_children_when_free() only returns once every child is
-      // free, which (see receive_result_from/receive_result_batch_from)
-      // requires having received that child's result first -- so by this
-      // point every result this coordinator will ever collect has arrived.
-      // The round loop above only flushes at round boundaries, so a
-      // straggler landing after the last round's flush (including one only
-      // observed here, during the done-notification drain) would otherwise
-      // never be forwarded, permanently violating finalize()'s
-      // m_results_sent_to_parent == m_tasks_received_from_parent invariant.
+      // REQUEST_BATCH (not RESULT_BATCH) is what marks a child free, so
+      // send_done_to_children_when_free() can finish while results for
+      // already-dispatched tasks are still in flight -- especially with
+      // pipeline_depth > 1, where a child may request its next batch before
+      // returning the current one's results. Drain those before the final
+      // flush so we don't drop them or trip finalize()'s sent==received
+      // invariants.
+      while (m_tasks_sent_to_child > m_results_received_from_child) {
+        receive_from_anyone();
+      }
       if (!m_results.empty()) {
         send_results_to_parent();
       }
@@ -509,7 +510,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     DYNAMPI_ASSERT(!is_leaf_worker(), "Leaf workers should not return results directly");
     DYNAMPI_ASSERT_NE(m_communicator.rank(), m_config.manager_rank,
                       "Manager should not request tasks from itself");
-    std::vector<ResultT> results = m_results;
+    std::vector<ResultT> results = std::move(m_results);
     m_results.clear();
 
     send_to_parent(results, Tag::RESULT_BATCH);
@@ -529,7 +530,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   {
     DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
                       "Only the manager can distribute tasks");
-    m_unallocated_task_queue.push_back(task);
+    m_unallocated_task_queue.push_back(std::move(task));
     m_tasks_received_from_parent++;
   }
   void insert_task(const TaskT& task, double priority)
@@ -787,19 +788,20 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   void receive_result_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
                            CommLayer layer) {
-    m_results.push_back(ResultT{});
-    if (result_mpi_type::resize_required) {
+    if constexpr (result_mpi_type::resize_required) {
       DYNAMPI_UNIMPLEMENTED(  // LCOV_EXCL_LINE
           "Dynamic resizing of results is not supported in hierarchical distribution");
+    } else {
+      m_results.push_back(ResultT{});
+      // With groups, always use global communicator and determine layer from source rank
+      int world_source = status.MPI_SOURCE;
+      if (m_config.coordinator_per_node) {
+        layer = determine_layer_from_world_rank(world_source);
+      }
+      m_communicator.recv(m_results.back(), world_source, Tag::RESULT);
+      m_results_received_from_child++;
+      m_free_worker_indices.push(TaskRequest{.worker_rank = world_source, .source_layer = layer});
     }
-    // With groups, always use global communicator and determine layer from source rank
-    int world_source = status.MPI_SOURCE;
-    if (m_config.coordinator_per_node) {
-      layer = determine_layer_from_world_rank(world_source);
-    }
-    m_communicator.recv(m_results.back(), world_source, Tag::RESULT);
-    m_results_received_from_child++;
-    m_free_worker_indices.push(TaskRequest{.worker_rank = world_source, .source_layer = layer});
   }
 
   void receive_result_batch_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
@@ -814,7 +816,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     // Results and next-batch requests are independent messages (see the
     // double-buffering refill in run_worker()), so receiving results here
     // has no side effect on task allocation for this child.
-    std::copy(results.begin(), results.end(), std::back_inserter(m_results));
+    std::move(results.begin(), results.end(), std::back_inserter(m_results));
     m_results_received_from_child += results.size();
   }
 
@@ -859,8 +861,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       // *future* round: quarantine it so the current round's distribution
       // loop can't overshoot into it (see run_worker()).
       auto& target = m_round_active ? m_prefetched_tasks : m_unallocated_task_queue;
-      for (const auto& task : tasks) {
-        target.push_back(task);
+      for (auto& task : tasks) {
+        target.push_back(std::move(task));
       }
     }
   }

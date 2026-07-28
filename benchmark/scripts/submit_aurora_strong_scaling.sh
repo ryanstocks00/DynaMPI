@@ -68,10 +68,18 @@ ${SCRIPT}
   # by PBS itself (independent of wait_for_aurora_queue_space's running/
   # debug-scaling checks, which only look at running-count and debug-scaling
   # occupancy). qsub fails outright when that limit is hit -- retry with
-  # backoff instead of letting `set -e` abort the whole node-count sweep.
+  # backoff for a bounded number of attempts (permanent errors like bad
+  # resource requests should not block the sweep forever).
+  qsub_attempts=0
+  qsub_max_attempts="${AURORA_QSUB_MAX_ATTEMPTS:-30}"
   until qsub "${submit_args[@]}" -N "${job_name}" -l "select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}" \
     -l "walltime=${WALLTIME}" -l "filesystems=${FILESYSTEMS}" <<< "${job_script}"; do
-    echo "qsub failed (queue limit?) for nodes=${nodes}; retrying in ${AURORA_QUEUE_POLL_INTERVAL}s ..." >&2
+    qsub_attempts=$((qsub_attempts + 1))
+    if (( qsub_attempts >= qsub_max_attempts )); then
+      echo "qsub failed permanently for nodes=${nodes} after ${qsub_attempts} attempts" >&2
+      exit 1
+    fi
+    echo "qsub failed (queue limit?) for nodes=${nodes}; retrying in ${AURORA_QUEUE_POLL_INTERVAL}s (${qsub_attempts}/${qsub_max_attempts}) ..." >&2
     sleep "${AURORA_QUEUE_POLL_INTERVAL}"
   done
 done

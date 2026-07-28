@@ -3,7 +3,7 @@
 
 // Isolates AsyncPutLockFreeMPIWorkDistributor's true claim+compute+write
 // throughput from strong_scaling_distribution_rate's generic incremental
-// insert/run_tasks driver loop, which repaces insertion in small batches
+// insert/run_tasks driver loop, which replaces insertion in small batches
 // (num_workers*4) and calls run_tasks() with a 0.1s budget -- overhead
 // that's shared fairly across all distributors there, but worth ruling out
 // as this class's specific bottleneck. Pattern: publish one huge batch up
@@ -20,6 +20,7 @@
 #include <dynampi/mpi/mpi_communicator.hpp>
 #include <dynampi/utilities/timer.hpp>
 #include <iostream>
+#include <limits>
 
 using Task = uint32_t;
 
@@ -46,10 +47,12 @@ int main(int argc, char** argv) {
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   cxxopts::Options options("async_put_lockfree_isolated_bench", "Isolated claim+write throughput");
-  options.add_options()("t,expected_us", "task duration us", cxxopts::value<uint64_t>()->default_value("1"))(
+  options.add_options()("t,expected_us", "task duration us",
+                        cxxopts::value<uint64_t>()->default_value("1"))(
       "d,duration_s", "spin duration s", cxxopts::value<double>()->default_value("3"))(
       "b,claim_batch_size", "claim batch size", cxxopts::value<int>()->default_value("8"))(
-      "n,num_tasks", "tasks to publish up front", cxxopts::value<uint64_t>()->default_value("2000000"));
+      "n,num_tasks", "tasks to publish up front",
+      cxxopts::value<uint64_t>()->default_value("2000000"));
   auto args = options.parse(argc, argv);
   const uint64_t expected_us = args["expected_us"].as<uint64_t>();
   const double duration_s = args["duration_s"].as<double>();
@@ -78,6 +81,13 @@ int main(int argc, char** argv) {
     Distributor::Config config;
     config.comm = MPI_COMM_WORLD;
     config.manager_rank = 0;
+    if (num_tasks > static_cast<uint64_t>(std::numeric_limits<int>::max()) - 1000u) {
+      if (rank == 0) {
+        std::cerr << "num_tasks too large for max_tasks (int capacity)" << std::endl;
+      }
+      MPI_Finalize();
+      return 1;
+    }
     config.max_tasks = static_cast<int>(num_tasks) + 1000;
     config.claim_batch_size = claim_batch_size;
     Distributor distributor(worker_function, config);

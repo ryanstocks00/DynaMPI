@@ -15,19 +15,19 @@ AURORA_QUEUE_POLL_INTERVAL="${AURORA_QUEUE_POLL_INTERVAL:-60}"
 # runs) instead of deferring to them.
 AURORA_JOB_NAME_PREFIX="${AURORA_JOB_NAME_PREFIX:-dynampi_}"
 
-# Count my OWN jobs (by name prefix): running (state R). Assumes qstat -u
-# output has state as second-to-last column and job name as column 4.
+# Count my OWN jobs (by name prefix): running (state R).
+# qstat -u columns: JobID Username Queue Jobname ... S Time
 _aurora_running_count() {
   qstat -u "${USER}" 2>/dev/null | awk -v prefix="${AURORA_JOB_NAME_PREFIX}" '
-    NR > 5 && NF >= 2 && index($4, prefix) == 1 && $(NF-1) == "R" { n++ }
+    NR > 5 && NF >= 10 && index($4, prefix) == 1 && $10 == "R" { n++ }
     END { print 0 + n }
   '
 }
 
-# Count my OWN jobs in debug-scaling (queued + running). Queue name is last column.
+# Count my OWN jobs in debug-scaling (queued + running).
 _aurora_debug_scaling_count() {
   qstat -u "${USER}" 2>/dev/null | awk -v prefix="${AURORA_JOB_NAME_PREFIX}" '
-    NR > 5 && NF >= 2 && index($4, prefix) == 1 && $NF == "debug-scaling" { n++ }
+    NR > 5 && NF >= 4 && index($4, prefix) == 1 && $3 == "debug-scaling" { n++ }
     END { print 0 + n }
   '
 }

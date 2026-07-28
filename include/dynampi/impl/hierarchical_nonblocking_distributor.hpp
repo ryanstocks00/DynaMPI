@@ -13,6 +13,7 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <list>
 #include <ranges>
 #include <set>
 #include <span>
@@ -163,6 +164,11 @@ class HierarchicalNonBlockingMPIWorkDistributor
   // new one -- an amortized, non-blocking cleanup rather than a separate
   // sweep -- so the pool stays close to "however many of this message type
   // are genuinely in flight right now," not unboundedly growing.
+  //
+  // Stored in std::list (not deque/vector): reap() erases completed entries
+  // from arbitrary positions, and MPI_Isend for scalar T points into the
+  // element itself. list::erase does not relocate other nodes, so in-flight
+  // buffers stay at a stable address.
   template <typename T>
   class AsyncSendPool {
    public:
@@ -196,7 +202,7 @@ class HierarchicalNonBlockingMPIWorkDistributor
         }
       }
     }
-    std::deque<std::pair<T, MPI_Request>> pending;
+    std::list<std::pair<T, MPI_Request>> pending;
   };
 
   AsyncSendPool<int> m_pending_int_sends;                            // REQUEST_BATCH
@@ -551,6 +557,16 @@ class HierarchicalNonBlockingMPIWorkDistributor
         if (m_done) break;
       }
       send_done_to_children_when_free();
+      // REQUEST_BATCH (not RESULT_BATCH) is what marks a child free, so
+      // send_done_to_children_when_free() can finish while results for
+      // already-dispatched tasks are still in flight -- especially with
+      // pipeline_depth > 1. Drain and flush before tearing down sends.
+      while (m_tasks_sent_to_child > m_results_received_from_child) {
+        receive_from_anyone();
+      }
+      if (!m_results.empty()) {
+        send_results_to_parent();
+      }
       wait_all_pending_sends();
     }
   }
@@ -559,7 +575,7 @@ class HierarchicalNonBlockingMPIWorkDistributor
     DYNAMPI_ASSERT(!is_leaf_worker(), "Leaf workers should not return results directly");
     DYNAMPI_ASSERT_NE(m_communicator.rank(), m_config.manager_rank,
                       "Manager should not request tasks from itself");
-    std::vector<ResultT> results = m_results;
+    std::vector<ResultT> results = std::move(m_results);
     m_results.clear();
 
     send_to_parent(results, Tag::RESULT_BATCH);
@@ -579,7 +595,7 @@ class HierarchicalNonBlockingMPIWorkDistributor
   {
     DYNAMPI_ASSERT_EQ(m_communicator.rank(), m_config.manager_rank,
                       "Only the manager can distribute tasks");
-    m_unallocated_task_queue.push_back(task);
+    m_unallocated_task_queue.push_back(std::move(task));
     m_tasks_received_from_parent++;
   }
   void insert_task(const TaskT& task, double priority)
@@ -864,19 +880,20 @@ class HierarchicalNonBlockingMPIWorkDistributor
 
   void receive_result_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
                            CommLayer layer) {
-    m_results.push_back(ResultT{});
-    if (result_mpi_type::resize_required) {
+    if constexpr (result_mpi_type::resize_required) {
       DYNAMPI_UNIMPLEMENTED(  // LCOV_EXCL_LINE
           "Dynamic resizing of results is not supported in hierarchical distribution");
+    } else {
+      m_results.push_back(ResultT{});
+      // With groups, always use global communicator and determine layer from source rank
+      int world_source = status.MPI_SOURCE;
+      if (m_config.coordinator_per_node) {
+        layer = determine_layer_from_world_rank(world_source);
+      }
+      m_communicator.recv(m_results.back(), world_source, Tag::RESULT);
+      m_results_received_from_child++;
+      m_free_worker_indices.push(TaskRequest{.worker_rank = world_source, .source_layer = layer});
     }
-    // With groups, always use global communicator and determine layer from source rank
-    int world_source = status.MPI_SOURCE;
-    if (m_config.coordinator_per_node) {
-      layer = determine_layer_from_world_rank(world_source);
-    }
-    m_communicator.recv(m_results.back(), world_source, Tag::RESULT);
-    m_results_received_from_child++;
-    m_free_worker_indices.push(TaskRequest{.worker_rank = world_source, .source_layer = layer});
   }
 
   void receive_result_batch_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
@@ -891,7 +908,7 @@ class HierarchicalNonBlockingMPIWorkDistributor
     // Results and next-batch requests are independent messages (see the
     // double-buffering refill in run_worker()), so receiving results here
     // has no side effect on task allocation for this child.
-    std::copy(results.begin(), results.end(), std::back_inserter(m_results));
+    std::move(results.begin(), results.end(), std::back_inserter(m_results));
     m_results_received_from_child += results.size();
   }
 
@@ -936,8 +953,8 @@ class HierarchicalNonBlockingMPIWorkDistributor
       // *future* round: quarantine it so the current round's distribution
       // loop can't overshoot into it (see run_worker()).
       auto& target = m_round_active ? m_prefetched_tasks : m_unallocated_task_queue;
-      for (const auto& task : tasks) {
-        target.push_back(task);
+      for (auto& task : tasks) {
+        target.push_back(std::move(task));
       }
     }
   }

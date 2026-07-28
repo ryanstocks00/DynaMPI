@@ -77,7 +77,8 @@ static DistributorKind parse_distributor(const std::string& value) {
   if (value == "hierarchical") return DistributorKind::Hierarchical;
   if (value == "lockfree") return DistributorKind::LockFree;
   if (value == "async_put_lockfree") return DistributorKind::AsyncPutLockFree;
-  if (value == "hierarchical_async_put_lockfree") return DistributorKind::HierarchicalAsyncPutLockFree;
+  if (value == "hierarchical_async_put_lockfree")
+    return DistributorKind::HierarchicalAsyncPutLockFree;
   throw std::runtime_error("Unknown distributor: " + value);
 }
 
@@ -262,7 +263,7 @@ static void pump_mpi_progress(MPI_Comm comm) {
 // on every drain, which at high rank counts can dominate over actual task
 // throughput for fine-grained tasks.
 static BenchmarkResult run_benchmark_lockfree_final_gather(const BenchmarkOptions& opts,
-                                                            MPI_Comm comm) {
+                                                           MPI_Comm comm) {
   dynampi::MPICommunicator<> comm_wrapper(comm, dynampi::MPICommunicator<>::Ownership::Reference);
   int rank = 0;
   int size = 0;
@@ -441,7 +442,7 @@ static BenchmarkResult run_benchmark_lockfree_final_gather(const BenchmarkOption
 // (matching rma_atomic_microbench's raw one-sided-atomic ceiling), a ~70-100x
 // difference explained entirely by driver pacing, not the protocol itself.
 static BenchmarkResult run_benchmark_async_put_lockfree(const BenchmarkOptions& opts,
-                                                         MPI_Comm comm) {
+                                                        MPI_Comm comm) {
   dynampi::MPICommunicator<> comm_wrapper(comm, dynampi::MPICommunicator<>::Ownership::Reference);
   int rank = 0;
   int size = 0;
@@ -557,7 +558,7 @@ static BenchmarkResult run_benchmark_async_put_lockfree(const BenchmarkOptions& 
 // from 32 nodes onward (see the strong-scaling sweep this benchmark
 // produced for async_put_lockfree at multi-node scale).
 static BenchmarkResult run_benchmark_hierarchical_async_put_lockfree(const BenchmarkOptions& opts,
-                                                                      MPI_Comm comm) {
+                                                                     MPI_Comm comm) {
   dynampi::MPICommunicator<> comm_wrapper(comm, dynampi::MPICommunicator<>::Ownership::Reference);
   int rank = 0;
   int size = 0;
@@ -662,7 +663,9 @@ int main(int argc, char** argv) {
   options.add_options()("t,expected_us", "Expected task duration in microseconds",
                         cxxopts::value<uint64_t>()->default_value("1"))(
       "d,duration_s", "Target duration in seconds", cxxopts::value<double>()->default_value("10"))(
-      "D,distribution", "Distribution strategy: naive, hierarchical, or lockfree",
+      "D,distribution",
+      "Distribution strategy: naive, hierarchical, lockfree, async_put_lockfree, "
+      "or hierarchical_async_put_lockfree",
       cxxopts::value<std::string>()->default_value("hierarchical"))(
       "m,mode", "Duration mode: fixed or random (uniform 0-2x expected)",
       cxxopts::value<std::string>()->default_value("fixed"))(
@@ -703,15 +706,23 @@ int main(int argc, char** argv) {
   }
 
   BenchmarkOptions opts;
-  opts.expected_us = args["expected_us"].as<uint64_t>();
-  opts.duration_s = args["duration_s"].as<double>();
-  opts.distributor = parse_distributor(args["distribution"].as<std::string>());
-  opts.duration_mode = parse_duration_mode(args["mode"].as<std::string>());
-  opts.gather_mode = parse_gather_mode(args["gather_mode"].as<std::string>());
-  opts.max_upper_fanout = args["max_upper_fanout"].as<int>();
-  opts.nodes = args["nodes"].as<uint64_t>();
-  opts.system = args["system"].as<std::string>();
-  opts.output_path = args["output"].as<std::string>();
+  try {
+    opts.expected_us = args["expected_us"].as<uint64_t>();
+    opts.duration_s = args["duration_s"].as<double>();
+    opts.distributor = parse_distributor(args["distribution"].as<std::string>());
+    opts.duration_mode = parse_duration_mode(args["mode"].as<std::string>());
+    opts.gather_mode = parse_gather_mode(args["gather_mode"].as<std::string>());
+    opts.max_upper_fanout = args["max_upper_fanout"].as<int>();
+    opts.nodes = args["nodes"].as<uint64_t>();
+    opts.system = args["system"].as<std::string>();
+    opts.output_path = args["output"].as<std::string>();
+  } catch (const std::exception& e) {
+    if (world_rank == 0) {
+      std::cerr << "Error: " << e.what() << "\n" << options.help() << std::endl;
+    }
+    MPI_Finalize();
+    return 1;
+  }
 
   if (opts.expected_us == 0) {
     if (world_rank == 0) {
@@ -749,9 +760,10 @@ int main(int argc, char** argv) {
         result = run_benchmark<dynampi::HierarchicalMPIWorkDistributor<Task, uint32_t>>(opts, comm);
         break;
       case DistributorKind::LockFree:
-        result = opts.gather_mode == GatherMode::Final
-                     ? run_benchmark_lockfree_final_gather(opts, comm)
-                     : run_benchmark<dynampi::LockFreeMPIWorkDistributor<Task, uint32_t>>(opts, comm);
+        result =
+            opts.gather_mode == GatherMode::Final
+                ? run_benchmark_lockfree_final_gather(opts, comm)
+                : run_benchmark<dynampi::LockFreeMPIWorkDistributor<Task, uint32_t>>(opts, comm);
         break;
       case DistributorKind::AsyncPutLockFree:
         result = run_benchmark_async_put_lockfree(opts, comm);

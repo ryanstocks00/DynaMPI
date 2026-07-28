@@ -30,6 +30,8 @@
 #include <cstdint>
 #include <cxxopts.hpp>
 #include <iostream>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace {
@@ -111,15 +113,28 @@ int main(int argc, char** argv) {
   }
   const double duration_s = parsed["duration_s"].as<double>();
   std::vector<int> pipeline_depths;
-  {
+  try {
     std::string s = parsed["pipeline_depths"].as<std::string>();
     size_t pos = 0;
     while (pos < s.size()) {
       size_t comma = s.find(',', pos);
       if (comma == std::string::npos) comma = s.size();
-      pipeline_depths.push_back(std::stoi(s.substr(pos, comma - pos)));
+      const int depth = std::stoi(s.substr(pos, comma - pos));
+      if (depth <= 0) {
+        throw std::invalid_argument("pipeline depth must be positive");
+      }
+      pipeline_depths.push_back(depth);
       pos = comma + 1;
     }
+    if (pipeline_depths.empty()) {
+      throw std::invalid_argument("pipeline_depths must not be empty");
+    }
+  } catch (const std::exception& e) {
+    if (rank == 0) {
+      std::cerr << "Invalid --pipeline_depths: " << e.what() << "\n" << options.help() << std::endl;
+    }
+    MPI_Finalize();
+    return 1;
   }
 
   const int root = 0;

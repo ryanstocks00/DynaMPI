@@ -555,7 +555,11 @@ class LockFreeMPIWorkDistributor {
           // case this whole scheme is built to tolerate rather than prevent.
           const int64_t total =
               (start + claim <= cached_total) ? cached_total : atomic_read(TOTAL_OFF);
-          const int64_t ready = std::min(end, total);
+          // Clamped into [start, end], not just capped at end: total can be
+          // less than start when cached_total was stale enough that this
+          // whole claim landed past what's published (same bug AsyncPut
+          // documents in run_worker()).
+          const int64_t ready = std::clamp(total, start, end);
           if (ready > start) {
             process_range(start, ready - start);
             made_progress = true;

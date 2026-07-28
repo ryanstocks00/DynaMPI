@@ -105,7 +105,8 @@ static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& op
       // task-table capacity is never exercised regardless of its size --
       // each iteration constructs a fresh, empty distributor. The library
       // default is fine.
-      typename Distributor::Config config{.comm = comm, .manager_rank = 0, .auto_run_workers = true};
+      typename Distributor::Config config{
+          .comm = comm, .manager_rank = 0, .auto_run_workers = true};
       Distributor distributor(worker_function, config);
 
       if (distributor.is_root_manager()) {
@@ -138,9 +139,8 @@ int main(int argc, char** argv) {
 
   cxxopts::Options options("shutdown_time",
                            "Benchmark distributor construct/shutdown time with no tasks");
-  options.add_options()(
-      "D,distribution", "Distribution strategy: naive, hierarchical, or lockfree",
-      cxxopts::value<std::string>()->default_value("naive"))(
+  options.add_options()("D,distribution", "Distribution strategy: naive, hierarchical, or lockfree",
+                        cxxopts::value<std::string>()->default_value("naive"))(
       "n,nodes", "Number of nodes for labeling output (defaults to world size)",
       cxxopts::value<uint64_t>()->default_value("0"))(
       "S,system", "System label for plotting (frontier, aurora, ...)",
@@ -168,10 +168,18 @@ int main(int argc, char** argv) {
   }
 
   BenchmarkOptions opts;
-  opts.distributor = parse_distributor(args["distribution"].as<std::string>());
-  opts.nodes = args["nodes"].as<uint64_t>();
-  opts.system = args["system"].as<std::string>();
-  opts.output_path = args["output"].as<std::string>();
+  try {
+    opts.distributor = parse_distributor(args["distribution"].as<std::string>());
+    opts.nodes = args["nodes"].as<uint64_t>();
+    opts.system = args["system"].as<std::string>();
+    opts.output_path = args["output"].as<std::string>();
+  } catch (const std::exception& e) {
+    if (world_rank == 0) {
+      std::cerr << "Error: " << e.what() << "\n" << options.help() << std::endl;
+    }
+    MPI_Finalize();
+    return 1;
+  }
 
   try {
     MPI_Comm comm = MPI_COMM_WORLD;
