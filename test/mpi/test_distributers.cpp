@@ -471,8 +471,7 @@ TYPED_TEST(DynamicDistribution, GatherOnce) {
       std::vector<int> all = std::move(first);
       const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
       while (dist.remaining_tasks_count() > 0) {
-        ASSERT_LT(std::chrono::steady_clock::now(), deadline)
-            << "timed out waiting for gather_once to drain remaining tasks";
+        ASSERT_LT(std::chrono::steady_clock::now(), deadline);
         auto chunk = dist.gather_once();
         all.insert(all.end(), chunk.begin(), chunk.end());
         if (chunk.empty()) {
@@ -751,8 +750,7 @@ TEST(HierarchicalAsyncPutLockFree, GatherOnce) {
     std::vector<int> all = std::move(first);
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
     while (dist.remaining_tasks_count() > 0) {
-      ASSERT_LT(std::chrono::steady_clock::now(), deadline)
-          << "timed out waiting for gather_once to drain remaining tasks";
+      ASSERT_LT(std::chrono::steady_clock::now(), deadline);
       auto chunk = dist.gather_once();
       all.insert(all.end(), chunk.begin(), chunk.end());
       if (chunk.empty()) {

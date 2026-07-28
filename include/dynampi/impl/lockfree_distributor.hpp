@@ -50,8 +50,7 @@ inline void write_bytes(std::byte* buffer, size_t buffer_size, size_t offset, co
   // ptrdiff_t max so the length is proven below the "maximum object size".
   constexpr size_t kMaxObjectSize = static_cast<size_t>(std::numeric_limits<std::ptrdiff_t>::max());
   if (nbytes > kMaxObjectSize || offset > buffer_size || nbytes > buffer_size - offset) {
-    assert(false && "write_bytes out of range");
-    return;
+    DYNAMPI_FAIL("write_bytes out of range");  // LCOV_EXCL_LINE
   }
   std::memcpy(buffer + offset, src, nbytes);
 }
@@ -74,8 +73,7 @@ inline void read_result_bytes(const std::byte* buffer, size_t buffer_size, size_
   if (data_bytes == 0) return;
   constexpr size_t kMaxObjectSize = static_cast<size_t>(std::numeric_limits<std::ptrdiff_t>::max());
   if (data_bytes > kMaxObjectSize || offset > buffer_size || data_bytes > buffer_size - offset) {
-    assert(false && "read_result_bytes out of range");
-    return;
+    DYNAMPI_FAIL("read_result_bytes out of range");  // LCOV_EXCL_LINE
   }
   if constexpr (MPI_Type<T>::resize_required) {
     // cppcheck-suppress invalidPointerCast

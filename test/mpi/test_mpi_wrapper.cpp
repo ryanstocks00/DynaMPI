@@ -222,9 +222,9 @@ TEST(MPICommunicatorWrapper, PutGetAndStatistics) {
     EXPECT_EQ(stats.send_count, 0);
     EXPECT_EQ(stats.recv_count, 0);
   }
-  if (rank == 0) {
-    EXPECT_EQ(local, 42);
-  }
+  // Do not assert on rank 0's plain load of `local`: under MPI_WIN_SEPARATE
+  // (e.g. MS-MPI) remote Puts update the public window copy only, so ordinary
+  // loads are not required to observe them. The Get above is the portable check.
 
   DYNAMPI_MPI_CHECK(MPI_Win_unlock_all, (win));
   DYNAMPI_MPI_CHECK(MPI_Win_free, (&win));
