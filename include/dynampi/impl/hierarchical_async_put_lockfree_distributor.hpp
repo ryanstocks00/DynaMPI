@@ -134,15 +134,30 @@ class AsyncPutLevel {
                             data_bytes);
       }
     }
-    put_bytes(buffer.data(), buffer.size(), task_slot(start));
+    if (local_only()) {
+      detail::write_bytes(m_window_buffer.data(), m_window_buffer.size(),
+                          static_cast<size_t>(task_slot(start)), buffer.data(), buffer.size());
+      m_total_tasks += static_cast<int64_t>(tasks.size());
+      local_store_i64(TOTAL_OFF, m_total_tasks);
+      return;
+    }
+    post_put_bytes(buffer.data(), buffer.size(), task_slot(start));
     m_total_tasks += static_cast<int64_t>(tasks.size());
-    atomic_set(TOTAL_OFF, m_total_tasks);
+    int64_t total_out = 0;
+    post_fetch_and_op(m_total_tasks, total_out, TOTAL_OFF, MPI_REPLACE);
+    flush_remote();
   }
 
   void mark_finished() {
     assert(is_owner());
     m_owner_marked_finished = true;
-    atomic_set(FINISHED_OFF, 1);
+    if (local_only()) {
+      local_store_i64(FINISHED_OFF, 1);
+    } else {
+      int64_t finished_out = 0;
+      post_fetch_and_op(static_cast<int64_t>(1), finished_out, FINISHED_OFF, MPI_REPLACE);
+      flush_remote();
+    }
     idle_wait();
   }
 
@@ -178,7 +193,7 @@ class AsyncPutLevel {
 
     const size_t scan_count = static_cast<size_t>(head_now - frontier);
     std::vector<std::byte> log_buf(scan_count * LOG_ENTRY_BYTES);
-    get_bytes(log_buf.data(), log_buf.size(), log_slot(frontier));
+    get_bytes_local(log_buf.data(), log_buf.size(), log_slot(frontier));
 
     int64_t confirmed_end = frontier;
     while (confirmed_end < head_now) {
@@ -191,7 +206,7 @@ class AsyncPutLevel {
 
     const int64_t n = confirmed_end - frontier;
     std::vector<std::byte> result_buf(static_cast<size_t>(n) * m_result_slot_stride);
-    get_bytes(result_buf.data(), result_buf.size(), result_slot(frontier));
+    get_bytes_local(result_buf.data(), result_buf.size(), result_slot(frontier));
 
     std::vector<ResultT> output;
     output.reserve(static_cast<size_t>(n));
@@ -331,11 +346,9 @@ class AsyncPutLevel {
     return false;
   }
 
-  // Writes results.size() results starting at task index `start` in two
-  // round trips total: one bulk Put for [count][data], then one completion-
-  // log entry covering the whole range -- see
-  // AsyncPutLockFreeMPIWorkDistributor::write_result_range() for the
-  // ordering rationale (identical here).
+  // Writes results.size() results starting at task index `start`:
+  // Put data -> flush -> Put completion-log flag -> flush. The log write is a
+  // plain Put (not an atomic): the claim index is exclusively owned.
   void write_result_range(int64_t start, const std::vector<ResultT>& results) {
     const int64_t count = static_cast<int64_t>(results.size());
     assert(count > 0);
@@ -353,8 +366,16 @@ class AsyncPutLevel {
                             MPI_Type<ResultT>::ptr(result), data_bytes);
       }
     }
-    put_bytes(buffer.data(), buffer.size(), result_slot(start));
-    atomic_set(log_slot(start), count);
+    if (local_only()) {
+      detail::write_bytes(m_window_buffer.data(), m_window_buffer.size(),
+                          static_cast<size_t>(result_slot(start)), buffer.data(), buffer.size());
+      local_store_i64(log_slot(start), count);
+      return;
+    }
+    post_put_bytes(buffer.data(), buffer.size(), result_slot(start));
+    flush_remote();
+    post_put_bytes(&count, sizeof(count), log_slot(start));
+    flush_remote();
   }
 
  private:
@@ -453,7 +474,8 @@ class AsyncPutLevel {
     return static_cast<MPI_Aint>(m_log_base + static_cast<size_t>(index) * LOG_ENTRY_BYTES);
   }
 
-  void flush(int rank) { DYNAMPI_MPI_CHECK(MPI_Win_flush, (rank, m_window)); }
+  void flush_remote() { DYNAMPI_MPI_CHECK(MPI_Win_flush, (m_config.owner_rank, m_window)); }
+  void flush_local() { DYNAMPI_MPI_CHECK(MPI_Win_flush_local, (m_config.owner_rank, m_window)); }
 
   // Size-1 levels have no MPI window; owner buffer is the sole storage.
   bool local_only() const { return m_window == MPI_WIN_NULL; }
@@ -467,21 +489,22 @@ class AsyncPutLevel {
                       value);
   }
 
+  void post_fetch_and_op(int64_t in, int64_t& out, MPI_Aint offset, MPI_Op op) {
+    m_comm.fetch_and_op(in, out, m_config.owner_rank, offset, op, m_window);
+  }
+  void post_put_bytes(const void* src, size_t n, MPI_Aint offset) {
+    m_comm.put_bytes(src, n, m_config.owner_rank, offset, m_window);
+  }
+  void post_get_bytes(void* dst, size_t n, MPI_Aint offset) {
+    m_comm.get_bytes(dst, n, m_config.owner_rank, offset, m_window);
+  }
+
   int64_t atomic_read(MPI_Aint offset) {
     if (local_only()) return local_load_i64(offset);
     int64_t in = 0, out;
-    m_comm.fetch_and_op(in, out, m_config.owner_rank, offset, MPI_NO_OP, m_window);
-    flush(m_config.owner_rank);
+    post_fetch_and_op(in, out, offset, MPI_NO_OP);
+    flush_local();
     return out;
-  }
-  void atomic_set(MPI_Aint offset, int64_t value) {
-    if (local_only()) {
-      local_store_i64(offset, value);
-      return;
-    }
-    int64_t in = value, out;
-    m_comm.fetch_and_op(in, out, m_config.owner_rank, offset, MPI_REPLACE, m_window);
-    flush(m_config.owner_rank);
   }
   int64_t fetch_add(MPI_Aint offset, int64_t increment) {
     if (local_only()) {
@@ -490,36 +513,25 @@ class AsyncPutLevel {
       return out;
     }
     int64_t in = increment, out;
-    m_comm.fetch_and_op(in, out, m_config.owner_rank, offset, MPI_SUM, m_window);
-    flush(m_config.owner_rank);
+    post_fetch_and_op(in, out, offset, MPI_SUM);
+    flush_local();
     return out;
   }
 
-  void put_bytes(const void* src, size_t n, MPI_Aint offset) {
+  void get_bytes_local(void* dst, size_t n, MPI_Aint offset) {
     if (local_only()) {
-      detail::write_bytes(m_window_buffer.data(), m_window_buffer.size(),
-                          static_cast<size_t>(offset), src, n);
-      return;
-    }
-    m_comm.put_bytes(src, n, m_config.owner_rank, offset, m_window);
-    flush(m_config.owner_rank);
-  }
-  void get_bytes(void* dst, size_t n, MPI_Aint offset) {
-    if (local_only()) {
-      // Callers size dst to exactly n; pass that as dst_capacity for the
-      // range gate in detail::read_bytes.
       detail::read_bytes(dst, n, m_window_buffer.data(), m_window_buffer.size(),
                          static_cast<size_t>(offset), n);
       return;
     }
-    m_comm.get_bytes(dst, n, m_config.owner_rank, offset, m_window);
-    flush(m_config.owner_rank);
+    post_get_bytes(dst, n, offset);
+    flush_local();
   }
 
   std::vector<TaskT> read_task_batch(int64_t index, int64_t count) {
     const size_t bytes = static_cast<size_t>(count) * m_task_slot_stride;
     std::vector<std::byte> buf(bytes);
-    get_bytes(buf.data(), bytes, task_slot(index));
+    get_bytes_local(buf.data(), bytes, task_slot(index));
 
     std::vector<TaskT> tasks;
     tasks.reserve(static_cast<size_t>(count));

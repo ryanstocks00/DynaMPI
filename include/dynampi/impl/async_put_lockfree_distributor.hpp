@@ -28,23 +28,16 @@ namespace dynampi {
 //
 // Lock-free task claiming via fetch-and-add against HEAD_OFF, bounded by a
 // cached read of TOTAL_OFF, one task per claim -- this is a flat distributor.
-// . Per task:
-//   worker:
-//     1 fetch_add(HEAD_OFF)      -- claim one task index
-//     1 Get                      -- read that task
-//     1 Put                      -- write its result
-//     1 atomic_set               -- publish a "[start,1) done" entry to a
-//                                    completion log, keyed by `start`
-//                                    (collision-free: fetch_add already
-//                                    guarantees this worker uniquely owns
-//                                    `start`, so no separate slot-allocation
-//                                    round trip is needed for the log either)
+// Per task (worker):
+//   fetch_add(HEAD) + flush_local   -- claim; only need origin completion
+//   get(task) + flush_local         -- read payload
+//   compute
+//   put(result) + flush             -- data durable at manager
+//   put(log flag) + flush           -- plain Put (slot is exclusively owned);
+//                                      second flush publishes the flag after data
 //
-//   manager, per harvest call (however many entries are ready):
-//     1 atomic_read(HEAD_OFF)    -- how far claiming has progressed
-//     1 bulk Get of the completion log over the unscanned range
-//     1 bulk Get of the result table over however much of that range
-//       turned out to be a contiguous run of completed entries
+// Manager publish: put(tasks) + atomic_set(TOTAL) + flush
+// Manager harvest reads use flush_local only.
 //
 // Results are explicitly NOT ordered: harvested in completion order (which,
 // via the completion log's contiguous-prefix scan, is close to submission
@@ -430,35 +423,47 @@ class AsyncPutLockFreeMPIWorkDistributor {
     return static_cast<MPI_Aint>(m_log_base + static_cast<size_t>(index) * LOG_ENTRY_BYTES);
   }
 
-  // --- RMA primitives (claimant side) ---
+  // --- RMA primitives ---
+  //
+  // Passive-target RMA is nonblocking. flush_local completes at the origin
+  // (enough before reading claim/get results); flush_remote completes at the
+  // target (needed before a remote rank can observe Puts / atomics).
+  int manager_rank() const { return m_config.manager_rank; }
 
-  void flush(int rank) { DYNAMPI_MPI_CHECK(MPI_Win_flush, (rank, m_window)); }
+  void flush_remote() { DYNAMPI_MPI_CHECK(MPI_Win_flush, (manager_rank(), m_window)); }
+  void flush_local() { DYNAMPI_MPI_CHECK(MPI_Win_flush_local, (manager_rank(), m_window)); }
+
+  void post_fetch_and_op(int64_t in, int64_t& out, MPI_Aint offset, MPI_Op op) {
+    m_comm.fetch_and_op(in, out, manager_rank(), offset, op, m_window);
+  }
+  void post_put_bytes(const void* src, size_t n, MPI_Aint offset) {
+    m_comm.put_bytes(src, n, manager_rank(), offset, m_window);
+  }
+  void post_get_bytes(void* dst, size_t n, MPI_Aint offset) {
+    m_comm.get_bytes(dst, n, manager_rank(), offset, m_window);
+  }
 
   int64_t atomic_read(MPI_Aint offset) {
     int64_t in = 0, out;
-    m_comm.fetch_and_op(in, out, m_config.manager_rank, offset, MPI_NO_OP, m_window);
-    flush(m_config.manager_rank);
+    post_fetch_and_op(in, out, offset, MPI_NO_OP);
+    flush_local();
     return out;
   }
   void atomic_set(MPI_Aint offset, int64_t value) {
     int64_t in = value, out;
-    m_comm.fetch_and_op(in, out, m_config.manager_rank, offset, MPI_REPLACE, m_window);
-    flush(m_config.manager_rank);
+    post_fetch_and_op(in, out, offset, MPI_REPLACE);
+    flush_remote();
   }
   int64_t fetch_add(MPI_Aint offset, int64_t increment) {
     int64_t in = increment, out;
-    m_comm.fetch_and_op(in, out, m_config.manager_rank, offset, MPI_SUM, m_window);
-    flush(m_config.manager_rank);
+    post_fetch_and_op(in, out, offset, MPI_SUM);
+    flush_local();
     return out;
   }
 
-  void put_bytes(const void* src, size_t n, MPI_Aint offset) {
-    m_comm.put_bytes(src, n, m_config.manager_rank, offset, m_window);
-    flush(m_config.manager_rank);
-  }
-  void get_bytes(void* dst, size_t n, MPI_Aint offset) {
-    m_comm.get_bytes(dst, n, m_config.manager_rank, offset, m_window);
-    flush(m_config.manager_rank);
+  void get_bytes_local(void* dst, size_t n, MPI_Aint offset) {
+    post_get_bytes(dst, n, offset);
+    flush_local();
   }
 
   // --- Task publish (manager side) / read (claimant side) ---
@@ -506,7 +511,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
                             data_bytes);
       }
     }
-    put_bytes(buffer.data(), buffer.size(), task_slot(start));
+    post_put_bytes(buffer.data(), buffer.size(), task_slot(start));
     m_total_tasks += static_cast<int64_t>(tasks.size());
     atomic_set(TOTAL_OFF, m_total_tasks);
   }
@@ -514,7 +519,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
   std::vector<TaskT> read_task_batch(int64_t index, int64_t count) {
     const size_t bytes = static_cast<size_t>(count) * m_task_slot_stride;
     std::vector<std::byte> buf(bytes);
-    get_bytes(buf.data(), bytes, task_slot(index));
+    get_bytes_local(buf.data(), bytes, task_slot(index));
 
     std::vector<TaskT> tasks;
     tasks.reserve(static_cast<size_t>(count));
@@ -533,13 +538,11 @@ class AsyncPutLockFreeMPIWorkDistributor {
 
   // --- Result write (claimant side) / harvest (manager side) ---
 
-  // Writes results.size() results starting at task index `start` in two
-  // round trips total, regardless of how many: one bulk Put for the whole
-  // range's [count][data] slots, then one completion-log entry covering the
-  // whole range. The log entry must land after the data Put's flush (data
-  // durably in place before anything can observe the log entry) -- exactly
-  // the same ordering argument as the single-result version this replaced,
-  // just amortized over a whole batch instead of one flag per task.
+  // Writes results.size() results starting at task index `start`:
+  //   Put result data -> flush -> Put completion-log flag -> flush.
+  // The log write is a plain Put (not an atomic): fetch_add already gave this
+  // worker exclusive ownership of `start`, so no concurrent writer shares the
+  // slot. The intervening flush is what makes "data before flag" portable.
   void write_result_range(int64_t start, const std::vector<ResultT>& results) {
     const int64_t count = static_cast<int64_t>(results.size());
     assert(count > 0);
@@ -557,8 +560,10 @@ class AsyncPutLockFreeMPIWorkDistributor {
                             MPI_Type<ResultT>::ptr(result), data_bytes);
       }
     }
-    put_bytes(buffer.data(), buffer.size(), result_slot(start));
-    atomic_set(log_slot(start), count);
+    post_put_bytes(buffer.data(), buffer.size(), result_slot(start));
+    flush_remote();
+    post_put_bytes(&count, sizeof(count), log_slot(start));
+    flush_remote();
   }
 
   // Owner-only. Three round trips regardless of how many batches turn out
@@ -584,13 +589,16 @@ class AsyncPutLockFreeMPIWorkDistributor {
   // harvest loop spins forever seeing HEAD/log as unchanged.
   void harvest_ready_results() {
     assert(is_root_manager());
-    const int64_t head_now = atomic_read(HEAD_OFF);
+    int64_t head_in = 0, head_now = 0;
+    post_fetch_and_op(head_in, head_now, HEAD_OFF, MPI_NO_OP);
+    flush_local();
+
     const int64_t frontier = static_cast<int64_t>(m_collected_count);
     if (head_now <= frontier) return;
 
     const size_t scan_count = static_cast<size_t>(head_now - frontier);
     std::vector<std::byte> log_buf(scan_count * LOG_ENTRY_BYTES);
-    get_bytes(log_buf.data(), log_buf.size(), log_slot(frontier));
+    get_bytes_local(log_buf.data(), log_buf.size(), log_slot(frontier));
 
     int64_t confirmed_end = frontier;
     while (confirmed_end < head_now) {
@@ -603,7 +611,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
 
     const int64_t n = confirmed_end - frontier;
     std::vector<std::byte> result_buf(static_cast<size_t>(n) * m_result_slot_stride);
-    get_bytes(result_buf.data(), result_buf.size(), result_slot(frontier));
+    get_bytes_local(result_buf.data(), result_buf.size(), result_slot(frontier));
 
     m_results.reserve(m_results.size() + static_cast<size_t>(n));
     for (int64_t i = 0; i < n; ++i) {
