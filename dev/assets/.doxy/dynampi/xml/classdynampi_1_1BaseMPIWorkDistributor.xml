@@ -6,10 +6,10 @@
     <innerclass refid="structdynampi_1_1BaseMPIWorkDistributor_1_1Config" prot="public">dynampi::BaseMPIWorkDistributor::Config</innerclass>
     <templateparamlist>
       <param>
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref></type>
+        <type>typename TaskT</type>
       </param>
       <param>
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">ResultT</ref></type>
+        <type>typename ResultT</type>
       </param>
       <param>
         <type>typename...</type>
@@ -19,7 +19,7 @@
     </templateparamlist>
     <sectiondef kind="protected-type">
       <memberdef kind="typedef" id="classdynampi_1_1BaseMPIWorkDistributor_1a267745d02dd4eddc107dd4877e629067" prot="protected" static="no">
-        <type>std::conditional_t&lt; <ref refid="classdynampi_1_1BaseMPIWorkDistributor_1addcebc39033a4dc6bf38c51562f99170" kindref="member">prioritize_tasks</ref>, std::priority_queue&lt; std::pair&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref>, <ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref> &gt; &gt;, std::deque&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">TaskT</ref> &gt; &gt;</type>
+        <type>std::conditional_t&lt; <ref refid="classdynampi_1_1BaseMPIWorkDistributor_1addcebc39033a4dc6bf38c51562f99170" kindref="member">prioritize_tasks</ref>, std::priority_queue&lt; std::pair&lt; double, TaskT &gt; &gt;, std::deque&lt; TaskT &gt; &gt;</type>
         <definition>using dynampi::BaseMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::QueueT =  std::conditional_t&lt;prioritize_tasks, std::priority_queue&lt;std::pair&lt;double, TaskT&gt; &gt;, std::deque&lt;TaskT&gt; &gt;</definition>
         <argsstring></argsstring>
         <name>QueueT</name>
@@ -35,7 +35,7 @@
     </sectiondef>
     <sectiondef kind="protected-static-attrib">
       <memberdef kind="variable" id="classdynampi_1_1BaseMPIWorkDistributor_1addcebc39033a4dc6bf38c51562f99170" prot="protected" static="yes" constexpr="yes" mutable="no">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <type>constexpr bool</type>
         <definition>constexpr bool dynampi::BaseMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::prioritize_tasks</definition>
         <argsstring></argsstring>
         <name>prioritize_tasks</name>

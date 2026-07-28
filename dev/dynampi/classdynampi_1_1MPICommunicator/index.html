@@ -854,26 +854,26 @@
 <tbody>
 <tr>
 <td style="text-align: right;"></td>
-<td style="text-align: left;"><a href="#function-mpicommunicator-13"><strong>MPICommunicator</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>MPI_Comm</strong></a> comm, <a href="./#enum-ownership"><strong>Ownership</strong></a> ownership=Duplicate) <br></td>
+<td style="text-align: left;"><a href="#function-mpicommunicator-13"><strong>MPICommunicator</strong></a> (MPI_Comm comm, <a href="./#enum-ownership"><strong>Ownership</strong></a> ownership=Duplicate) <br></td>
 </tr>
 <tr>
 <td style="text-align: right;"></td>
-<td style="text-align: left;"><a href="#function-mpicommunicator-23"><strong>MPICommunicator</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> <a href="./"><strong>MPICommunicator</strong></a> &amp; other) = delete<br></td>
+<td style="text-align: left;"><a href="#function-mpicommunicator-23"><strong>MPICommunicator</strong></a> (const <a href="./"><strong>MPICommunicator</strong></a> &amp; other) = delete<br></td>
 </tr>
 <tr>
 <td style="text-align: right;"></td>
 <td style="text-align: left;"><a href="#function-mpicommunicator-33"><strong>MPICommunicator</strong></a> (<a href="./"><strong>MPICommunicator</strong></a> &amp;&amp; other) noexcept<br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
-<td style="text-align: left;"><a href="#function-broadcast"><strong>broadcast</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>T</strong></a> &amp; data, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> root=0) <br></td>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-broadcast"><strong>broadcast</strong></a> (T &amp; data, int root=0) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
-<td style="text-align: left;"><a href="#function-gather"><strong>gather</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>T</strong></a> &amp; data, std::vector&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>T</strong></a> &gt; * result, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> root=0) <br></td>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-gather"><strong>gather</strong></a> (const T &amp; data, std::vector&lt; T &gt; * result, int root=0) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>MPI_Comm</strong></a></td>
+<td style="text-align: right;">MPI_Comm</td>
 <td style="text-align: left;"><a href="#function-get"><strong>get</strong></a> () const<br></td>
 </tr>
 <tr>
@@ -881,12 +881,12 @@
 <td style="text-align: left;"><a href="#function-get_group"><strong>get_group</strong></a> () const<br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> <a href="../structdynampi_1_1CommStatistics/"><strong>CommStatistics</strong></a> &amp;</td>
+<td style="text-align: right;">const <a href="../structdynampi_1_1CommStatistics/"><strong>CommStatistics</strong></a> &amp;</td>
 <td style="text-align: left;"><a href="#function-get_statistics"><strong>get_statistics</strong></a> () const<br></td>
 </tr>
 <tr>
-<td style="text-align: right;">std::optional&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>MPI_Status</strong></a> &gt;</td>
-<td style="text-align: left;"><a href="#function-iprobe"><strong>iprobe</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> source=<a href="../structdynampi_1_1MPI__Type/"><strong>MPI_ANY_SOURCE</strong></a>, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> tag=<a href="../structdynampi_1_1MPI__Type/"><strong>MPI_ANY_TAG</strong></a>) <br></td>
+<td style="text-align: right;">std::optional&lt; MPI_Status &gt;</td>
+<td style="text-align: left;"><a href="#function-iprobe"><strong>iprobe</strong></a> (int source=MPI_ANY_SOURCE, int tag=MPI_ANY_TAG) <br></td>
 </tr>
 <tr>
 <td style="text-align: right;"></td>
@@ -894,51 +894,51 @@
 </tr>
 <tr>
 <td style="text-align: right;"><a href="./"><strong>MPICommunicator</strong></a> &amp;</td>
-<td style="text-align: left;"><a href="#function-operator"><strong>operator=</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> <a href="./"><strong>MPICommunicator</strong></a> &amp; other) = delete<br></td>
+<td style="text-align: left;"><a href="#function-operator"><strong>operator=</strong></a> (const <a href="./"><strong>MPICommunicator</strong></a> &amp; other) = delete<br></td>
 </tr>
 <tr>
 <td style="text-align: right;"><a href="./"><strong>MPICommunicator</strong></a> &amp;</td>
 <td style="text-align: left;"><a href="#function-operator_1"><strong>operator=</strong></a> (<a href="./"><strong>MPICommunicator</strong></a> &amp;&amp; other) = delete<br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>MPI_Status</strong></a></td>
-<td style="text-align: left;"><a href="#function-probe"><strong>probe</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> source=<a href="../structdynampi_1_1MPI__Type/"><strong>MPI_ANY_SOURCE</strong></a>, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> tag=<a href="../structdynampi_1_1MPI__Type/"><strong>MPI_ANY_TAG</strong></a>) <br></td>
+<td style="text-align: right;">MPI_Status</td>
+<td style="text-align: left;"><a href="#function-probe"><strong>probe</strong></a> (int source=MPI_ANY_SOURCE, int tag=MPI_ANY_TAG) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a></td>
+<td style="text-align: right;">int</td>
 <td style="text-align: left;"><a href="#function-rank"><strong>rank</strong></a> () const<br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
-<td style="text-align: left;"><a href="#function-recv"><strong>recv</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>T</strong></a> &amp; data, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> source, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> tag=0) <br></td>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-recv"><strong>recv</strong></a> (T &amp; data, int source, int tag=0) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>MPI_Status</strong></a></td>
-<td style="text-align: left;"><a href="#function-recv_any"><strong>recv_any</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>T</strong></a> &amp; data, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> source=<a href="../structdynampi_1_1MPI__Type/"><strong>MPI_ANY_SOURCE</strong></a>, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> tag=<a href="../structdynampi_1_1MPI__Type/"><strong>MPI_ANY_TAG</strong></a>) <br></td>
+<td style="text-align: right;">MPI_Status</td>
+<td style="text-align: left;"><a href="#function-recv_any"><strong>recv_any</strong></a> (T &amp; data, int source=MPI_ANY_SOURCE, int tag=MPI_ANY_TAG) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
-<td style="text-align: left;"><a href="#function-recv_empty"><strong>recv_empty</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> source, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> tag=0) <br><em>Receives 0 elements of type T. Use when the sender used send_empty&lt;T&gt;.</em></td>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-recv_empty"><strong>recv_empty</strong></a> (int source, int tag=0) <br><em>Receives 0 elements of type T. Use when the sender used send_empty&lt;T&gt;.</em></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
-<td style="text-align: left;"><a href="#function-recv_empty_message"><strong>recv_empty_message</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> source, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> tag=0) <br></td>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-recv_empty_message"><strong>recv_empty_message</strong></a> (int source, int tag=0) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
-<td style="text-align: left;"><a href="#function-send"><strong>send</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>T</strong></a> &amp; data, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> dest, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> tag=0) <br></td>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-send"><strong>send</strong></a> (const T &amp; data, int dest, int tag=0) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
-<td style="text-align: left;"><a href="#function-send_empty"><strong>send_empty</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> dest, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> tag=0) <br></td>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-send_empty"><strong>send_empty</strong></a> (int dest, int tag=0) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a></td>
+<td style="text-align: right;">int</td>
 <td style="text-align: left;"><a href="#function-size"><strong>size</strong></a> () const<br></td>
 </tr>
 <tr>
 <td style="text-align: right;">std::optional&lt; <a href="./"><strong>MPICommunicator</strong></a> &gt;</td>
-<td style="text-align: left;"><a href="#function-split"><strong>split</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> color, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> key=0) const<br></td>
+<td style="text-align: left;"><a href="#function-split"><strong>split</strong></a> (int color, int key=0) const<br></td>
 </tr>
 <tr>
 <td style="text-align: right;"><a href="./"><strong>MPICommunicator</strong></a></td>
@@ -970,7 +970,7 @@
 
 <h3 id="function-mpicommunicator-23">function MPICommunicator [2/3]</h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">dynampi</span><span class="o">::</span><span class="n">MPICommunicator</span><span class="o">::</span><span class="n">MPICommunicator</span><span class="w"> </span><span class="p">(</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="k">const</span><span class="w">  </span><span class="n">MPICommunicator</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">other</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">MPICommunicator</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">other</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span>
 </code></pre></div>
 <hr>
@@ -983,7 +983,7 @@
 <hr>
 
 <h3 id="function-broadcast">function broadcast</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w">  </span><span class="nc">T</span><span class="o">&gt;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">MPICommunicator</span><span class="o">::</span><span class="n">broadcast</span><span class="w"> </span><span class="p">(</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="n">T</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">root</span><span class="o">=</span><span class="mi">0</span>
@@ -992,9 +992,9 @@
 <hr>
 
 <h3 id="function-gather">function gather</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w">  </span><span class="nc">T</span><span class="o">&gt;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">MPICommunicator</span><span class="o">::</span><span class="n">gather</span><span class="w"> </span><span class="p">(</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="k">const</span><span class="w">  </span><span class="n">T</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">result</span><span class="p">,</span>
 <a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">root</span><span class="o">=</span><span class="mi">0</span>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="p">)</span><span class="w"> </span>
@@ -1012,7 +1012,7 @@
 <hr>
 
 <h3 id="function-get_statistics">function get_statistics</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kr">inline</span><span class="w"> </span><span class="k">const</span><span class="w">  </span><span class="n">CommStatistics</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">MPICommunicator</span><span class="o">::</span><span class="n">get_statistics</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kr">inline</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">CommStatistics</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">MPICommunicator</span><span class="o">::</span><span class="n">get_statistics</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
 </code></pre></div>
 <hr>
 
@@ -1031,7 +1031,7 @@
 
 <h3 id="function-operator">function operator=</h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">MPICommunicator</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">MPICommunicator</span><span class="o">::</span><span class="k">operator</span><span class="o">=</span><span class="w"> </span><span class="p">(</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="k">const</span><span class="w">  </span><span class="n">MPICommunicator</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">other</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">MPICommunicator</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">other</span>
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span>
 </code></pre></div>
 <hr>
@@ -1057,7 +1057,7 @@
 <hr>
 
 <h3 id="function-recv">function recv</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w">  </span><span class="nc">T</span><span class="o">&gt;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">MPICommunicator</span><span class="o">::</span><span class="n">recv</span><span class="w"> </span><span class="p">(</span>
 <a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="n">T</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
 <a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">source</span><span class="p">,</span>
@@ -1067,7 +1067,7 @@
 <hr>
 
 <h3 id="function-recv_any">function recv_any</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w">  </span><span class="nc">T</span><span class="o">&gt;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
 <a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kr">inline</span><span class="w"> </span><span class="n">MPI_Status</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">MPICommunicator</span><span class="o">::</span><span class="n">recv_any</span><span class="w"> </span><span class="p">(</span>
 <a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="n">T</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
 <a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">source</span><span class="o">=</span><span class="n">MPI_ANY_SOURCE</span><span class="p">,</span>
@@ -1078,7 +1078,7 @@
 
 <h3 id="function-recv_empty">function recv_empty</h3>
 <p><em>Receives 0 elements of type T. Use when the sender used send_empty&lt;T&gt;.</em> 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w">  </span><span class="nc">T</span><span class="o">&gt;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
 <a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">MPICommunicator</span><span class="o">::</span><span class="n">recv_empty</span><span class="w"> </span><span class="p">(</span>
 <a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">source</span><span class="p">,</span>
 <a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">tag</span><span class="o">=</span><span class="mi">0</span>
@@ -1095,9 +1095,9 @@
 <hr>
 
 <h3 id="function-send">function send</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w">  </span><span class="nc">T</span><span class="o">&gt;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
 <a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">MPICommunicator</span><span class="o">::</span><span class="n">send</span><span class="w"> </span><span class="p">(</span>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span><span class="k">const</span><span class="w">  </span><span class="n">T</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
 <a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">dest</span><span class="p">,</span>
 <a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">tag</span><span class="o">=</span><span class="mi">0</span>
 <a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="p">)</span><span class="w"> </span>
@@ -1105,7 +1105,7 @@
 <hr>
 
 <h3 id="function-send_empty">function send_empty</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w">  </span><span class="nc">T</span><span class="o">&gt;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
 <a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">MPICommunicator</span><span class="o">::</span><span class="n">send_empty</span><span class="w"> </span><span class="p">(</span>
 <a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">dest</span><span class="p">,</span>
 <a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">tag</span><span class="o">=</span><span class="mi">0</span>

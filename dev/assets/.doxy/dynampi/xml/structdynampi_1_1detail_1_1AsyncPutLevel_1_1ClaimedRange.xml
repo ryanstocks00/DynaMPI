@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1detail_1_1AsyncPutLevel_1_1ClaimedRange" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::detail::AsyncPutLevel::ClaimedRange</compoundname>
+    <includes refid="hierarchical__async__put__lockfree__distributor_8hpp" local="no">hierarchical_async_put_lockfree_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1detail_1_1AsyncPutLevel_1_1ClaimedRange_1ade9c89038e24bd94440a8deaa2ad2d02" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1_1detail_1a30efd8764a044e52cae4ffc68c80e48c" kindref="member">int64_t</ref></type>
+        <definition>int64_t dynampi::detail::AsyncPutLevel&lt; TaskT, ResultT &gt;::ClaimedRange::start</definition>
+        <argsstring></argsstring>
+        <name>start</name>
+        <qualifiedname>dynampi::detail::AsyncPutLevel::ClaimedRange::start</qualifiedname>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp" line="74" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1detail_1_1AsyncPutLevel_1_1ClaimedRange_1a293b50f6d2fdc6dd307b22b444810ff8" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="namespacedynampi_1_1detail_1a30efd8764a044e52cae4ffc68c80e48c" kindref="member">TaskT</ref> &gt;</type>
+        <definition>std::vector&lt;TaskT&gt; dynampi::detail::AsyncPutLevel&lt; TaskT, ResultT &gt;::ClaimedRange::tasks</definition>
+        <argsstring></argsstring>
+        <name>tasks</name>
+        <qualifiedname>dynampi::detail::AsyncPutLevel::ClaimedRange::tasks</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp" line="75" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp" bodystart="75" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp" line="73" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp" bodystart="73" bodyend="76"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1detail_1_1AsyncPutLevel_1_1ClaimedRange_1ade9c89038e24bd94440a8deaa2ad2d02" prot="public" virt="non-virtual"><scope>dynampi::detail::AsyncPutLevel::ClaimedRange</scope><name>start</name></member>
+      <member refid="structdynampi_1_1detail_1_1AsyncPutLevel_1_1ClaimedRange_1a293b50f6d2fdc6dd307b22b444810ff8" prot="public" virt="non-virtual"><scope>dynampi::detail::AsyncPutLevel::ClaimedRange</scope><name>tasks</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

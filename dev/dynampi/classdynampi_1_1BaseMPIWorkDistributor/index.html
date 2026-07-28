@@ -581,7 +581,7 @@
 
 
 <h1 id="class-dynampibasempiworkdistributor">Class dynampi::BaseMPIWorkDistributor</h1>
-<p><strong>template &lt;<a href="../structdynampi_1_1MPI__Type/"><strong>typename</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>TaskT</strong></a>, <a href="../structdynampi_1_1MPI__Type/"><strong>typename</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>ResultT</strong></a>, typename... Options&gt;</strong></p>
+<p><strong>template &lt;typename TaskT, typename ResultT, typename... Options&gt;</strong></p>
 <p><a href="../annotated/"><strong>ClassList</strong></a> <strong>&gt;</strong> <a href="../namespacedynampi/"><strong>dynampi</strong></a> <strong>&gt;</strong> <a href="./"><strong>BaseMPIWorkDistributor</strong></a></p>
 <ul>
 <li><code>#include &lt;base_distributor.hpp&gt;</code></li>
@@ -611,7 +611,7 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;">typedef std::conditional_t&lt; <a href="./#variable-prioritize_tasks"><strong>prioritize_tasks</strong></a>, std::priority_queue&lt; std::pair&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>double</strong></a>, <a href="../structdynampi_1_1MPI__Type/"><strong>TaskT</strong></a> &gt; &gt;, std::deque&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>TaskT</strong></a> &gt; &gt;</td>
+<td style="text-align: right;">typedef std::conditional_t&lt; <a href="./#variable-prioritize_tasks"><strong>prioritize_tasks</strong></a>, std::priority_queue&lt; std::pair&lt; double, TaskT &gt; &gt;, std::deque&lt; TaskT &gt; &gt;</td>
 <td style="text-align: left;"><a href="#typedef-queuet"><strong>QueueT</strong></a>  <br></td>
 </tr>
 </tbody>
@@ -626,7 +626,7 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>constexpr</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>bool</strong></a></td>
+<td style="text-align: right;">constexpr bool</td>
 <td style="text-align: left;"><a href="#variable-prioritize_tasks"><strong>prioritize_tasks</strong></a>   = <code>[**get\_option\_value**](template__options_8hpp.md#function-get_option_value)&amp;lt;[**prioritize\_tasks\_t**](structdynampi_1_1prioritize__tasks__t.md), Options...&amp;gt;()</code><br></td>
 </tr>
 </tbody>

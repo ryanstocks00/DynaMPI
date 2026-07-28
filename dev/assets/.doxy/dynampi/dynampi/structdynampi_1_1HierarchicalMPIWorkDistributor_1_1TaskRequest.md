@@ -35,9 +35,9 @@
 
 | Type | Name |
 | ---: | :--- |
-|  std::optional&lt; [**int**](structdynampi_1_1MPI__Type.md) &gt; | [**num\_tasks\_requested**](#variable-num_tasks_requested)   = `std::nullopt`<br> |
+|  std::optional&lt; int &gt; | [**num\_tasks\_requested**](#variable-num_tasks_requested)   = `std::nullopt`<br> |
 |  CommLayer | [**source\_layer**](#variable-source_layer)   = `CommLayer::Global`<br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**worker\_rank**](#variable-worker_rank)  <br> |
+|  int | [**worker\_rank**](#variable-worker_rank)  <br> |
 
 
 

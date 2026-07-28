@@ -36,11 +36,11 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**bool**](structdynampi_1_1MPI__Type.md) | [**auto\_run\_workers**](#variable-auto_run_workers)   = `[**true**](structdynampi_1_1MPI__Type.md)`<br> |
-|  [**MPI\_Comm**](structdynampi_1_1MPI__Type.md) | [**comm**](#variable-comm)   = `[**MPI\_COMM\_WORLD**](structdynampi_1_1MPI__Type.md)`<br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**manager\_rank**](#variable-manager_rank)   = `0`<br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**max\_result\_size**](#variable-max_result_size)   = `1024`<br> |
-|  [**bool**](structdynampi_1_1MPI__Type.md) | [**use\_immediate\_recv**](#variable-use_immediate_recv)   = `[**false**](structdynampi_1_1MPI__Type.md)`<br> |
+|  bool | [**auto\_run\_workers**](#variable-auto_run_workers)   = `true`<br> |
+|  MPI\_Comm | [**comm**](#variable-comm)   = `MPI\_COMM\_WORLD`<br> |
+|  int | [**manager\_rank**](#variable-manager_rank)   = `0`<br> |
+|  int | [**max\_result\_size**](#variable-max_result_size)   = `1024`<br> |
+|  bool | [**use\_immediate\_recv**](#variable-use_immediate_recv)   = `false`<br> |
 
 
 

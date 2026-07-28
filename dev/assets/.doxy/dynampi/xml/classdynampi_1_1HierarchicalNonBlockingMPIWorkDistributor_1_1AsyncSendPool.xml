@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classdynampi_1_1HierarchicalNonBlockingMPIWorkDistributor_1_1AsyncSendPool" kind="class" language="C++" prot="private">
+    <compoundname>dynampi::HierarchicalNonBlockingMPIWorkDistributor::AsyncSendPool</compoundname>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalNonBlockingMPIWorkDistributor_1_1AsyncSendPool_1a6a2b63aedeabd7e34e46231197e59656" prot="private" static="no" mutable="no">
+        <type>std::deque&lt; std::pair&lt; T, MPI_Request &gt; &gt;</type>
+        <definition>std::deque&lt;std::pair&lt;T, MPI_Request&gt; &gt; dynampi::HierarchicalNonBlockingMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::AsyncSendPool&lt; T &gt;::pending</definition>
+        <argsstring></argsstring>
+        <name>pending</name>
+        <qualifiedname>dynampi::HierarchicalNonBlockingMPIWorkDistributor::AsyncSendPool::pending</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_nonblocking_distributor.hpp" line="201" column="16" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_nonblocking_distributor.hpp" bodystart="201" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalNonBlockingMPIWorkDistributor_1_1AsyncSendPool_1a872814a82077079522e56e280cc32088" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void dynampi::HierarchicalNonBlockingMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::AsyncSendPool&lt; T &gt;::post</definition>
+        <argsstring>(MPICommunicator &amp;comm, T value, int dest, int tag)</argsstring>
+        <name>post</name>
+        <qualifiedname>dynampi::HierarchicalNonBlockingMPIWorkDistributor::AsyncSendPool::post</qualifiedname>
+        <param>
+          <type><ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &amp;</type>
+          <declname>comm</declname>
+        </param>
+        <param>
+          <type>T</type>
+          <declname>value</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>dest</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>tag</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_nonblocking_distributor.hpp" line="169" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_nonblocking_distributor.hpp" bodystart="169" bodyend="176"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalNonBlockingMPIWorkDistributor_1_1AsyncSendPool_1a550789deb9a9b74331fd76ddf3dd51fd" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void dynampi::HierarchicalNonBlockingMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::AsyncSendPool&lt; T &gt;::wait_all</definition>
+        <argsstring>()</argsstring>
+        <name>wait_all</name>
+        <qualifiedname>dynampi::HierarchicalNonBlockingMPIWorkDistributor::AsyncSendPool::wait_all</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_nonblocking_distributor.hpp" line="182" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_nonblocking_distributor.hpp" bodystart="182" bodyend="187"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalNonBlockingMPIWorkDistributor_1_1AsyncSendPool_1aa1dace5a45882dbfb56631609b3c9c03" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void dynampi::HierarchicalNonBlockingMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::AsyncSendPool&lt; T &gt;::reap</definition>
+        <argsstring>()</argsstring>
+        <name>reap</name>
+        <qualifiedname>dynampi::HierarchicalNonBlockingMPIWorkDistributor::AsyncSendPool::reap</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_nonblocking_distributor.hpp" line="190" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_nonblocking_distributor.hpp" bodystart="190" bodyend="200"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_nonblocking_distributor.hpp" line="167" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_nonblocking_distributor.hpp" bodystart="167" bodyend="202"/>
+    <listofallmembers>
+      <member refid="classdynampi_1_1HierarchicalNonBlockingMPIWorkDistributor_1_1AsyncSendPool_1a6a2b63aedeabd7e34e46231197e59656" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalNonBlockingMPIWorkDistributor::AsyncSendPool</scope><name>pending</name></member>
+      <member refid="classdynampi_1_1HierarchicalNonBlockingMPIWorkDistributor_1_1AsyncSendPool_1a872814a82077079522e56e280cc32088" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalNonBlockingMPIWorkDistributor::AsyncSendPool</scope><name>post</name></member>
+      <member refid="classdynampi_1_1HierarchicalNonBlockingMPIWorkDistributor_1_1AsyncSendPool_1aa1dace5a45882dbfb56631609b3c9c03" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalNonBlockingMPIWorkDistributor::AsyncSendPool</scope><name>reap</name></member>
+      <member refid="classdynampi_1_1HierarchicalNonBlockingMPIWorkDistributor_1_1AsyncSendPool_1a550789deb9a9b74331fd76ddf3dd51fd" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalNonBlockingMPIWorkDistributor::AsyncSendPool</scope><name>wait_all</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

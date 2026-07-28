@@ -1,0 +1,518 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor" kind="class" language="C++" prot="public">
+    <compoundname>dynampi::HierarchicalLockFreeMPIWorkDistributor</compoundname>
+    <includes refid="hierarchical__lockfree__distributor_8hpp" local="no">hierarchical_lockfree_distributor.hpp</includes>
+    <innerclass refid="structdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1_1Config" prot="public">dynampi::HierarchicalLockFreeMPIWorkDistributor::Config</innerclass>
+    <innerclass refid="structdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1_1RunConfig" prot="public">dynampi::HierarchicalLockFreeMPIWorkDistributor::RunConfig</innerclass>
+    <templateparamlist>
+      <param>
+        <type>typename TaskT</type>
+      </param>
+      <param>
+        <type>typename ResultT</type>
+      </param>
+      <param>
+        <type>typename...</type>
+        <declname>Options</declname>
+        <defname>Options</defname>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a6eb05e63d4b78c14b33371e6304d6159" prot="public" static="yes" mutable="no">
+        <type>const bool</type>
+        <definition>const bool dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::ordered</definition>
+        <argsstring></argsstring>
+        <name>ordered</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::ordered</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="639" column="21" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="639" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a32e9aca3271ae8e7b1b5891a0e17a10a" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1_1Config" kindref="compound">Config</ref></type>
+        <definition>Config dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_config</definition>
+        <argsstring></argsstring>
+        <name>m_config</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_config</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="751" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="751" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a03aaacc2f0be340da69b75b56ca7d3e8" prot="private" static="no" mutable="no">
+        <type><ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref></type>
+        <definition>MPICommunicator dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_world_comm</definition>
+        <argsstring></argsstring>
+        <name>m_world_comm</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_world_comm</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="752" column="4" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="752" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a713589cc626a58644e769c5033e64cf4" prot="private" static="no" mutable="no">
+        <type>std::function&lt; ResultT(TaskT)&gt;</type>
+        <definition>std::function&lt;ResultT(TaskT)&gt; dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_worker_function</definition>
+        <argsstring></argsstring>
+        <name>m_worker_function</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_worker_function</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="753" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="753" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a98146197d700bd14ffb116ee912b37c0" prot="private" static="no" mutable="no">
+        <type>const bool</type>
+        <definition>const bool dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_solo</definition>
+        <argsstring></argsstring>
+        <name>m_solo</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_solo</qualifiedname>
+        <initializer>= (m_world_comm.size() == 1)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="754" column="14" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="754" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1ad152ffb7fa054493d39a22993e70a724" prot="private" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref>&lt;&gt; &gt;</type>
+        <definition>std::optional&lt;MPICommunicator&lt;&gt; &gt; dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_local_comm</definition>
+        <argsstring></argsstring>
+        <name>m_local_comm</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_local_comm</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="756" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="756" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1aaf63629c5930c660b8f96f186b97df83" prot="private" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref>&lt;&gt; &gt;</type>
+        <definition>std::optional&lt;MPICommunicator&lt;&gt; &gt; dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_leader_comm</definition>
+        <argsstring></argsstring>
+        <name>m_leader_comm</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_leader_comm</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="757" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="757" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a29880f2f55ddc170e919c21f9e7069e1" prot="private" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classdynampi_1_1detail_1_1LockFreeLevel" kindref="compound">detail::LockFreeLevel</ref>&lt; TaskT, ResultT &gt; &gt;</type>
+        <definition>std::optional&lt;detail::LockFreeLevel&lt;TaskT, ResultT&gt; &gt; dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_leader_level</definition>
+        <argsstring></argsstring>
+        <name>m_leader_level</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_leader_level</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="759" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="759" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1ae0abad7f0ea96a82533330a8a26d85c9" prot="private" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classdynampi_1_1detail_1_1LockFreeLevel" kindref="compound">detail::LockFreeLevel</ref>&lt; TaskT, ResultT &gt; &gt;</type>
+        <definition>std::optional&lt;detail::LockFreeLevel&lt;TaskT, ResultT&gt; &gt; dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_local_level</definition>
+        <argsstring></argsstring>
+        <name>m_local_level</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_local_level</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="760" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="760" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a431809dcfddd036e92b768d2cc0b94ed" prot="private" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_finalized</definition>
+        <argsstring></argsstring>
+        <name>m_finalized</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_finalized</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="762" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="762" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a034ebb69cf53899f407e972ace03f226" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; ResultT &gt;</type>
+        <definition>std::vector&lt;ResultT&gt; dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_results</definition>
+        <argsstring></argsstring>
+        <name>m_results</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_results</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="763" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="763" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a425335fbe237c0470665a61c30964440" prot="private" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_returned_count</definition>
+        <argsstring></argsstring>
+        <name>m_returned_count</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_returned_count</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="764" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="764" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a353d25bb664c659fb564afafc7ff5a4b" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; TaskT &gt;</type>
+        <definition>std::vector&lt;TaskT&gt; dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_local_task_store</definition>
+        <argsstring></argsstring>
+        <name>m_local_task_store</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_local_task_store</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="766" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="766" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a7d51fe19c0e709510767b738c60931ba" prot="private" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_local_collected_count</definition>
+        <argsstring></argsstring>
+        <name>m_local_collected_count</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::m_local_collected_count</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="767" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="767" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1ad24f4e29fe88b79c268e5276d1292218" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::HierarchicalLockFreeMPIWorkDistributor</definition>
+        <argsstring>(std::function&lt; ResultT(TaskT)&gt; worker_function, Config config={})</argsstring>
+        <name>HierarchicalLockFreeMPIWorkDistributor</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::HierarchicalLockFreeMPIWorkDistributor</qualifiedname>
+        <param>
+          <type>std::function&lt; ResultT(TaskT)&gt;</type>
+          <declname>worker_function</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1_1Config" kindref="compound">Config</ref></type>
+          <declname>config</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="641" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="641" bodyend="650"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a77e4eb1bc5b8c052744b85b974716fbb" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::~HierarchicalLockFreeMPIWorkDistributor</definition>
+        <argsstring>()</argsstring>
+        <name>~HierarchicalLockFreeMPIWorkDistributor</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::~HierarchicalLockFreeMPIWorkDistributor</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="652" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="652" bodyend="654"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1aed57d5cceb03d9ca427ebd550c4b9183" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::is_root_manager</definition>
+        <argsstring>() const</argsstring>
+        <name>is_root_manager</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::is_root_manager</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="656" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="656" bodyend="656"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a0ba8417a8909c39d592d820b37774f17" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::remaining_tasks_count</definition>
+        <argsstring>() const</argsstring>
+        <name>remaining_tasks_count</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::remaining_tasks_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="658" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="658" bodyend="663"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1adc56bea8a9833e989ce54f8f107e1625" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::insert_task</definition>
+        <argsstring>(TaskT task)</argsstring>
+        <name>insert_task</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::insert_task</qualifiedname>
+        <param>
+          <type>TaskT</type>
+          <declname>task</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="665" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="665" bodyend="668"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a0ebd00b23129ca4e7199c7ed0d0aa6ea" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::insert_tasks</definition>
+        <argsstring>(const std::vector&lt; TaskT &gt; &amp;tasks)</argsstring>
+        <name>insert_tasks</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::insert_tasks</qualifiedname>
+        <param>
+          <type>const std::vector&lt; TaskT &gt; &amp;</type>
+          <declname>tasks</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="670" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="670" bodyend="677"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a99ba8ef23d639afc7092d18462310113" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; ResultT &gt;</type>
+        <definition>std::vector&lt; ResultT &gt; dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::run_tasks</definition>
+        <argsstring>(const RunConfig &amp;config=RunConfig{})</argsstring>
+        <name>run_tasks</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::run_tasks</qualifiedname>
+        <param>
+          <type>const <ref refid="structdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1_1RunConfig" kindref="compound">RunConfig</ref> &amp;</type>
+          <declname>config</declname>
+          <defval><ref refid="structdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1_1RunConfig" kindref="compound">RunConfig</ref>{}</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="679" column="16" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="679" bodyend="707"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a2af1392988e9b767e9f2a7f6f7e1d825" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; ResultT &gt;</type>
+        <definition>std::vector&lt; ResultT &gt; dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::finish_remaining_tasks</definition>
+        <argsstring>()</argsstring>
+        <name>finish_remaining_tasks</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::finish_remaining_tasks</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="709" column="16" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="709" bodyend="709"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a5e4337a326573d7042df19a432e845aa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::finalize</definition>
+        <argsstring>()</argsstring>
+        <name>finalize</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::finalize</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="711" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="711" bodyend="733"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a9fd00a6a64f5b9b964061929cd31a600" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::run_worker</definition>
+        <argsstring>()</argsstring>
+        <name>run_worker</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::run_worker</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="735" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="735" bodyend="748"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a27a47ba08201e0ccf095f657a8b13b11" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::setup_topology</definition>
+        <argsstring>()</argsstring>
+        <name>setup_topology</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::setup_topology</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="769" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="769" bodyend="785"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1abcd7e8d6576074eff0f36e2e7d07f63b" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::setup_levels</definition>
+        <argsstring>()</argsstring>
+        <name>setup_levels</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::setup_levels</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="787" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="787" bodyend="808"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a5177c7ae1bfb7048a1725a3e97e12580" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::run_node_coordinator</definition>
+        <argsstring>()</argsstring>
+        <name>run_node_coordinator</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::run_node_coordinator</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="817" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="817" bodyend="866"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1ae9eb0e6b3080b4306f89c73ff881923f" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::run_local_worker</definition>
+        <argsstring>()</argsstring>
+        <name>run_local_worker</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::run_local_worker</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="869" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="869" bodyend="898"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a19a8434eab24caa24214b7578250e040" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::run_leaf_leader_worker</definition>
+        <argsstring>()</argsstring>
+        <name>run_leaf_leader_worker</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::run_leaf_leader_worker</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="902" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="902" bodyend="920"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a3f1584bc704c5f926afdbbb878938c43" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; ResultT &gt;</type>
+        <definition>std::vector&lt; ResultT &gt; dynampi::HierarchicalLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::drain_results</definition>
+        <argsstring>(size_t limit)</argsstring>
+        <name>drain_results</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeMPIWorkDistributor::drain_results</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>limit</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="922" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="922" bodyend="930"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" line="619" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp" bodystart="619" bodyend="931"/>
+    <listofallmembers>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a3f1584bc704c5f926afdbbb878938c43" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>drain_results</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a5e4337a326573d7042df19a432e845aa" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>finalize</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a2af1392988e9b767e9f2a7f6f7e1d825" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>finish_remaining_tasks</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1ad24f4e29fe88b79c268e5276d1292218" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>HierarchicalLockFreeMPIWorkDistributor</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1adc56bea8a9833e989ce54f8f107e1625" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>insert_task</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a0ebd00b23129ca4e7199c7ed0d0aa6ea" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>insert_tasks</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1aed57d5cceb03d9ca427ebd550c4b9183" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>is_root_manager</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a32e9aca3271ae8e7b1b5891a0e17a10a" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_config</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a431809dcfddd036e92b768d2cc0b94ed" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_finalized</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1aaf63629c5930c660b8f96f186b97df83" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_leader_comm</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a29880f2f55ddc170e919c21f9e7069e1" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_leader_level</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a7d51fe19c0e709510767b738c60931ba" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_local_collected_count</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1ad152ffb7fa054493d39a22993e70a724" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_local_comm</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1ae0abad7f0ea96a82533330a8a26d85c9" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_local_level</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a353d25bb664c659fb564afafc7ff5a4b" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_local_task_store</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a034ebb69cf53899f407e972ace03f226" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_results</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a425335fbe237c0470665a61c30964440" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_returned_count</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a98146197d700bd14ffb116ee912b37c0" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_solo</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a713589cc626a58644e769c5033e64cf4" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_worker_function</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a03aaacc2f0be340da69b75b56ca7d3e8" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>m_world_comm</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a6eb05e63d4b78c14b33371e6304d6159" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>ordered</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a0ba8417a8909c39d592d820b37774f17" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>remaining_tasks_count</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a19a8434eab24caa24214b7578250e040" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>run_leaf_leader_worker</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1ae9eb0e6b3080b4306f89c73ff881923f" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>run_local_worker</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a5177c7ae1bfb7048a1725a3e97e12580" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>run_node_coordinator</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a99ba8ef23d639afc7092d18462310113" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>run_tasks</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a9fd00a6a64f5b9b964061929cd31a600" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>run_worker</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1abcd7e8d6576074eff0f36e2e7d07f63b" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>setup_levels</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a27a47ba08201e0ccf095f657a8b13b11" prot="private" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>setup_topology</name></member>
+      <member refid="classdynampi_1_1HierarchicalLockFreeMPIWorkDistributor_1a77e4eb1bc5b8c052744b85b974716fbb" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeMPIWorkDistributor</scope><name>~HierarchicalLockFreeMPIWorkDistributor</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

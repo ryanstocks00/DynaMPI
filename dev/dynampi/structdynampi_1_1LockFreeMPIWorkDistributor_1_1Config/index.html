@@ -506,6 +506,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#variable-claim_batch_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        variable claim_batch_size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#variable-comm" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -600,27 +611,31 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>bool</strong></a></td>
-<td style="text-align: left;"><a href="#variable-auto_run_workers"><strong>auto_run_workers</strong></a>   = <code>[**true**](structdynampi_1_1MPI__Type.md)</code><br></td>
+<td style="text-align: right;">bool</td>
+<td style="text-align: left;"><a href="#variable-auto_run_workers"><strong>auto_run_workers</strong></a>   = <code>true</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>MPI_Comm</strong></a></td>
-<td style="text-align: left;"><a href="#variable-comm"><strong>comm</strong></a>   = <code>[**MPI\_COMM\_WORLD**](structdynampi_1_1MPI__Type.md)</code><br></td>
+<td style="text-align: right;">int</td>
+<td style="text-align: left;"><a href="#variable-claim_batch_size"><strong>claim_batch_size</strong></a>   = <code>8</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a></td>
+<td style="text-align: right;">MPI_Comm</td>
+<td style="text-align: left;"><a href="#variable-comm"><strong>comm</strong></a>   = <code>MPI\_COMM\_WORLD</code><br></td>
+</tr>
+<tr>
+<td style="text-align: right;">int</td>
 <td style="text-align: left;"><a href="#variable-manager_rank"><strong>manager_rank</strong></a>   = <code>0</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a></td>
+<td style="text-align: right;">int</td>
 <td style="text-align: left;"><a href="#variable-max_result_count"><strong>max_result_count</strong></a>   = <code>256</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a></td>
+<td style="text-align: right;">int</td>
 <td style="text-align: left;"><a href="#variable-max_task_count"><strong>max_task_count</strong></a>   = <code>256</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a></td>
+<td style="text-align: right;">int</td>
 <td style="text-align: left;"><a href="#variable-max_tasks"><strong>max_tasks</strong></a>   = <code>8192</code><br></td>
 </tr>
 </tbody>
@@ -631,28 +646,33 @@
 </code></pre></div>
 <hr>
 
+<h3 id="variable-claim_batch_size">variable claim_batch_size</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">LockFreeMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">claim_batch_size</span><span class="p">;</span>
+</code></pre></div>
+<hr>
+
 <h3 id="variable-comm">variable comm</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">MPI_Comm</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">LockFreeMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">comm</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">MPI_Comm</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">LockFreeMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">comm</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 
 <h3 id="variable-manager_rank">variable manager_rank</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">LockFreeMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">manager_rank</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">LockFreeMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">manager_rank</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 
 <h3 id="variable-max_result_count">variable max_result_count</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">LockFreeMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">max_result_count</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">LockFreeMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">max_result_count</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 
 <h3 id="variable-max_task_count">variable max_task_count</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">LockFreeMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">max_task_count</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">LockFreeMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">max_task_count</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 
 <h3 id="variable-max_tasks">variable max_tasks</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">LockFreeMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">max_tasks</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">LockFreeMPIWorkDistributor</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="p">,</span><span class="w"> </span><span class="n">ResultT</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="o">&gt;::</span><span class="n">Config</span><span class="o">::</span><span class="n">max_tasks</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 

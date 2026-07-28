@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1AsyncPutLockFreeMPIWorkDistributor_1_1RunConfig" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::AsyncPutLockFreeMPIWorkDistributor::RunConfig</compoundname>
+    <includes refid="async__put__lockfree__distributor_8hpp" local="no">async_put_lockfree_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1AsyncPutLockFreeMPIWorkDistributor_1_1RunConfig_1a4ca710853e279f6197ff1adb1bffe24c" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t dynampi::AsyncPutLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::target_num_tasks</definition>
+        <argsstring></argsstring>
+        <name>target_num_tasks</name>
+        <qualifiedname>dynampi::AsyncPutLockFreeMPIWorkDistributor::RunConfig::target_num_tasks</qualifiedname>
+        <initializer>= std::numeric_limits&lt;size_t&gt;::max()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp" line="93" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp" bodystart="93" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1AsyncPutLockFreeMPIWorkDistributor_1_1RunConfig_1af50d15b198628ab6ba1f847eb4835bac" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool dynampi::AsyncPutLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::allow_more_than_target_tasks</definition>
+        <argsstring></argsstring>
+        <name>allow_more_than_target_tasks</name>
+        <qualifiedname>dynampi::AsyncPutLockFreeMPIWorkDistributor::RunConfig::allow_more_than_target_tasks</qualifiedname>
+        <initializer>= true</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp" line="94" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp" bodystart="94" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1AsyncPutLockFreeMPIWorkDistributor_1_1RunConfig_1a8401deb94c54e09f3d050ee74cd09be1" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; double &gt;</type>
+        <definition>std::optional&lt;double&gt; dynampi::AsyncPutLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::max_seconds</definition>
+        <argsstring></argsstring>
+        <name>max_seconds</name>
+        <qualifiedname>dynampi::AsyncPutLockFreeMPIWorkDistributor::RunConfig::max_seconds</qualifiedname>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp" line="95" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp" bodystart="95" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp" line="92" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp" bodystart="92" bodyend="96"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1AsyncPutLockFreeMPIWorkDistributor_1_1RunConfig_1af50d15b198628ab6ba1f847eb4835bac" prot="public" virt="non-virtual"><scope>dynampi::AsyncPutLockFreeMPIWorkDistributor::RunConfig</scope><name>allow_more_than_target_tasks</name></member>
+      <member refid="structdynampi_1_1AsyncPutLockFreeMPIWorkDistributor_1_1RunConfig_1a8401deb94c54e09f3d050ee74cd09be1" prot="public" virt="non-virtual"><scope>dynampi::AsyncPutLockFreeMPIWorkDistributor::RunConfig</scope><name>max_seconds</name></member>
+      <member refid="structdynampi_1_1AsyncPutLockFreeMPIWorkDistributor_1_1RunConfig_1a4ca710853e279f6197ff1adb1bffe24c" prot="public" virt="non-virtual"><scope>dynampi::AsyncPutLockFreeMPIWorkDistributor::RunConfig</scope><name>target_num_tasks</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

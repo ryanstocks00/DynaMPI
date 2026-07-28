@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1AsyncPutLockFreeMPIWorkDistributor_1_1Statistics" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::AsyncPutLockFreeMPIWorkDistributor::Statistics</compoundname>
+    <includes refid="async__put__lockfree__distributor_8hpp" local="no">async_put_lockfree_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1AsyncPutLockFreeMPIWorkDistributor_1_1Statistics_1ae6f730124a5963d881e81b487014a046" prot="public" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1CommStatistics" kindref="compound">CommStatistics</ref></type>
+        <definition>CommStatistics dynampi::AsyncPutLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics::comm_statistics</definition>
+        <argsstring></argsstring>
+        <name>comm_statistics</name>
+        <qualifiedname>dynampi::AsyncPutLockFreeMPIWorkDistributor::Statistics::comm_statistics</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp" line="104" column="20" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp" bodystart="104" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>dynampi::AsyncPutLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics</label>
+        <link refid="structdynampi_1_1AsyncPutLockFreeMPIWorkDistributor_1_1Statistics"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>comm_statistics</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>dynampi::CommStatistics</label>
+        <link refid="structdynampi_1_1CommStatistics"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp" line="103" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp" bodystart="103" bodyend="105"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1AsyncPutLockFreeMPIWorkDistributor_1_1Statistics_1ae6f730124a5963d881e81b487014a046" prot="public" virt="non-virtual"><scope>dynampi::AsyncPutLockFreeMPIWorkDistributor::Statistics</scope><name>comm_statistics</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

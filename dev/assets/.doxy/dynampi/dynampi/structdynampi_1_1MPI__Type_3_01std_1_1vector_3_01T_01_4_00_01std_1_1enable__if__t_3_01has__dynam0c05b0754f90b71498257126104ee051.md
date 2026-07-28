@@ -2,7 +2,7 @@
 
 # Struct dynampi::MPI\_Type&lt; std::vector&lt; T &gt;, std::enable\_if\_t&lt; has\_dynampi\_mpi\_type&lt; T &gt;::value &gt; &gt;
 
-**template &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**T**](structdynampi_1_1MPI__Type.md)&gt;**
+**template &lt;typename T&gt;**
 
 
 
@@ -40,8 +40,8 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**const**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**resize\_required**](#variable-resize_required)   = `[**true**](structdynampi_1_1MPI__Type.md)`<br> |
-|  [**const**](structdynampi_1_1MPI__Type.md) [**MPI\_Datatype**](structdynampi_1_1MPI__Type.md) | [**value**](#variable-value)   = `[**MPI\_Type**](structdynampi_1_1MPI__Type.md)&lt;[**T**](structdynampi_1_1MPI__Type.md)&gt;::value`<br> |
+|  const bool | [**resize\_required**](#variable-resize_required)   = `true`<br> |
+|  const MPI\_Datatype | [**value**](#variable-value)   = `[**MPI\_Type**](structdynampi_1_1MPI__Type.md)&lt;T&gt;::value`<br> |
 
 
 
@@ -62,10 +62,10 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**count**](#function-count) ([**const**](structdynampi_1_1MPI__Type.md) std::vector&lt; [**T**](structdynampi_1_1MPI__Type.md) &gt; & vec) <br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) \* | [**ptr**](#function-ptr-12) (std::vector&lt; [**T**](structdynampi_1_1MPI__Type.md) &gt; & vec) noexcept<br> |
-|  [**const**](structdynampi_1_1MPI__Type.md) [**void**](structdynampi_1_1MPI__Type.md) \* | [**ptr**](#function-ptr-22) ([**const**](structdynampi_1_1MPI__Type.md) std::vector&lt; [**T**](structdynampi_1_1MPI__Type.md) &gt; & vec) noexcept<br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**resize**](#function-resize) (std::vector&lt; [**T**](structdynampi_1_1MPI__Type.md) &gt; & vec, [**int**](structdynampi_1_1MPI__Type.md) new\_size) <br> |
+|  int | [**count**](#function-count) (const std::vector&lt; T &gt; & vec) <br> |
+|  void \* | [**ptr**](#function-ptr-12) (std::vector&lt; T &gt; & vec) noexcept<br> |
+|  const void \* | [**ptr**](#function-ptr-22) (const std::vector&lt; T &gt; & vec) noexcept<br> |
+|  void | [**resize**](#function-resize) (std::vector&lt; T &gt; & vec, int new\_size) <br> |
 
 
 
@@ -158,7 +158,7 @@ static inline void * dynampi::MPI_Type< std::vector< T >, std::enable_if_t< has_
 ### function ptr [2/2]
 
 ```C++
-static inline const  void * dynampi::MPI_Type< std::vector< T >, std::enable_if_t< has_dynampi_mpi_type< T >::value > >::ptr (
+static inline const void * dynampi::MPI_Type< std::vector< T >, std::enable_if_t< has_dynampi_mpi_type< T >::value > >::ptr (
     const std::vector< T > & vec
 ) noexcept
 ```

@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1HierarchicalAsyncPutLockFreeMPIWorkDistributor_1_1PendingRelay" kind="struct" language="C++" prot="private">
+    <compoundname>dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor::PendingRelay</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalAsyncPutLockFreeMPIWorkDistributor_1_1PendingRelay_1ad1fc38273f4a8376a0d0ba3a9b98a3d4" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::PendingRelay::parent_start</definition>
+        <argsstring></argsstring>
+        <name>parent_start</name>
+        <qualifiedname>dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor::PendingRelay::parent_start</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp" line="1002" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp" bodystart="1002" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalAsyncPutLockFreeMPIWorkDistributor_1_1PendingRelay_1a4b1a6ae60fe2885f37936d3595fbc1e7" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::PendingRelay::child_len</definition>
+        <argsstring></argsstring>
+        <name>child_len</name>
+        <qualifiedname>dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor::PendingRelay::child_len</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp" line="1003" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp" bodystart="1003" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp" line="1001" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp" bodystart="1001" bodyend="1004"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1HierarchicalAsyncPutLockFreeMPIWorkDistributor_1_1PendingRelay_1a4b1a6ae60fe2885f37936d3595fbc1e7" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor::PendingRelay</scope><name>child_len</name></member>
+      <member refid="structdynampi_1_1HierarchicalAsyncPutLockFreeMPIWorkDistributor_1_1PendingRelay_1ad1fc38273f4a8376a0d0ba3a9b98a3d4" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor::PendingRelay</scope><name>parent_start</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

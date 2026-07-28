@@ -2,7 +2,7 @@
 
 # Class dynampi::MinimalLockFreeMPIWorkDistributor
 
-**template &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**ResultT**](structdynampi_1_1MPI__Type.md)&gt;**
+**template &lt;typename ResultT&gt;**
 
 
 
@@ -59,9 +59,9 @@
 
 | Type | Name |
 | ---: | :--- |
-|   | [**MinimalLockFreeMPIWorkDistributor**](#function-minimallockfreempiworkdistributor) (std::function&lt; [**ResultT**](structdynampi_1_1MPI__Type.md)([**size\_t**](structdynampi_1_1MPI__Type.md))&gt; worker\_function, [**Config**](structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config.md) config={}) <br> |
-|  [**bool**](structdynampi_1_1MPI__Type.md) | [**is\_root\_manager**](#function-is_root_manager) () const<br> |
-|  std::vector&lt; [**ResultT**](structdynampi_1_1MPI__Type.md) &gt; | [**run**](#function-run) ([**size\_t**](structdynampi_1_1MPI__Type.md) n\_tasks) <br> |
+|   | [**MinimalLockFreeMPIWorkDistributor**](#function-minimallockfreempiworkdistributor) (std::function&lt; ResultT(size\_t)&gt; worker\_function, [**Config**](structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config.md) config={}) <br> |
+|  bool | [**is\_root\_manager**](#function-is_root_manager) () const<br> |
+|  std::vector&lt; ResultT &gt; | [**run**](#function-run) (size\_t n\_tasks) <br> |
 |   | [**~MinimalLockFreeMPIWorkDistributor**](#function-minimallockfreempiworkdistributor) () <br> |
 
 
@@ -100,7 +100,7 @@
 
 ```C++
 inline explicit dynampi::MinimalLockFreeMPIWorkDistributor::MinimalLockFreeMPIWorkDistributor (
-    std::function< ResultT ( size_t )> worker_function,
+    std::function< ResultT(size_t)> worker_function,
     Config config={}
 ) 
 ```

@@ -5,7 +5,7 @@
     <includes refid="mpi__group_8hpp" local="no">mpi_group.hpp</includes>
     <sectiondef kind="private-attrib">
       <memberdef kind="variable" id="classdynampi_1_1MPIGroup_1a74031a5b8ba169a9e3048282f03b2543" prot="private" static="no" mutable="no">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Group</ref></type>
+        <type>MPI_Group</type>
         <definition>MPI_Group dynampi::MPIGroup::m_group</definition>
         <argsstring></argsstring>
         <name>m_group</name>
@@ -34,7 +34,7 @@
         <name>MPIGroup</name>
         <qualifiedname>dynampi::MPIGroup::MPIGroup</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref>&lt; Options... &gt; &amp;</type>
+          <type>const <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref>&lt; Options... &gt; &amp;</type>
           <declname>comm</declname>
         </param>
         <briefdescription>
@@ -52,7 +52,7 @@
         <name>MPIGroup</name>
         <qualifiedname>dynampi::MPIGroup::MPIGroup</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+          <type>const <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
           <declname>other</declname>
         </param>
         <briefdescription>
@@ -70,7 +70,7 @@
         <name>operator=</name>
         <qualifiedname>dynampi::MPIGroup::operator=</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+          <type>const <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
           <declname>other</declname>
         </param>
         <briefdescription>
@@ -132,26 +132,26 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="47" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="47" bodyend="51"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1MPIGroup_1adfb16096432d877c21b57362ed1adcb6" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <type>void</type>
         <definition>void dynampi::MPIGroup::translate_ranks</definition>
         <argsstring>(const MPIGroup &amp;to_group, int n, const int ranks[], int translated_ranks[]) const</argsstring>
         <name>translate_ranks</name>
         <qualifiedname>dynampi::MPIGroup::translate_ranks</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+          <type>const <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
           <declname>to_group</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>n</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>const int</type>
           <declname>ranks</declname>
           <array>[]</array>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>translated_ranks</declname>
           <array>[]</array>
         </param>
@@ -164,17 +164,17 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="54" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="54" bodyend="58"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1MPIGroup_1aef96a69d92a9a507d107bac37ff8245b" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <type>int</type>
         <definition>int dynampi::MPIGroup::translate_rank</definition>
         <argsstring>(int rank, const MPIGroup &amp;to_group) const</argsstring>
         <name>translate_rank</name>
         <qualifiedname>dynampi::MPIGroup::translate_rank</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>rank</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+          <type>const <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
           <declname>to_group</declname>
         </param>
         <briefdescription>
@@ -186,7 +186,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="61" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="61" bodyend="65"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1MPIGroup_1a46a492d4081d0b8f69b3eedbbd337c1e" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <type>int</type>
         <definition>int dynampi::MPIGroup::size</definition>
         <argsstring>() const</argsstring>
         <name>size</name>
@@ -200,7 +200,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="68" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="68" bodyend="72"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1MPIGroup_1ad17930ebf9ddd0f8801273619511fcd6" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <type>int</type>
         <definition>int dynampi::MPIGroup::rank</definition>
         <argsstring>() const</argsstring>
         <name>rank</name>
@@ -228,7 +228,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" line="89" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp" bodystart="89" bodyend="89"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1MPIGroup_1a4f6d8742deffabdbfdb656d4ecf96f62" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Group</ref></type>
+        <type>MPI_Group</type>
         <definition>MPI_Group dynampi::MPIGroup::get</definition>
         <argsstring>() const</argsstring>
         <name>get</name>
@@ -244,21 +244,21 @@
     </sectiondef>
     <sectiondef kind="public-static-func">
       <memberdef kind="function" id="classdynampi_1_1MPIGroup_1ac0ef720ca8ac06ab123258638dd0d4eb" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <type>int</type>
         <definition>static int dynampi::MPIGroup::contains_rank_in_group</definition>
         <argsstring>(int rank_in_reference, const MPIGroup &amp;reference_group, const MPIGroup &amp;target_group)</argsstring>
         <name>contains_rank_in_group</name>
         <qualifiedname>dynampi::MPIGroup::contains_rank_in_group</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>rank_in_reference</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+          <type>const <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
           <declname>reference_group</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
+          <type>const <ref refid="classdynampi_1_1MPIGroup" kindref="compound">MPIGroup</ref> &amp;</type>
           <declname>target_group</declname>
         </param>
         <briefdescription>

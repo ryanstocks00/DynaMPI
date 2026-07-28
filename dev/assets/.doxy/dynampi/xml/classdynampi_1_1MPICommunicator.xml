@@ -63,7 +63,7 @@
     </sectiondef>
     <sectiondef kind="private-attrib">
       <memberdef kind="variable" id="classdynampi_1_1MPICommunicator_1aa48154136d1fa86148940404611e05d1" prot="private" static="no" mutable="no">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Comm</ref></type>
+        <type>MPI_Comm</type>
         <definition>MPI_Comm dynampi::MPICommunicator&lt; Options &gt;::m_comm</definition>
         <argsstring></argsstring>
         <name>m_comm</name>
@@ -107,7 +107,7 @@
     </sectiondef>
     <sectiondef kind="private-static-attrib">
       <memberdef kind="variable" id="classdynampi_1_1MPICommunicator_1a367b71e7d524555dacfa87aa73701c31" prot="private" static="yes" constexpr="yes" mutable="no">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
+        <type>constexpr <ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
         <definition>constexpr StatisticsMode dynampi::MPICommunicator&lt; Options &gt;::statistics_mode</definition>
         <argsstring></argsstring>
         <name>statistics_mode</name>
@@ -131,7 +131,7 @@
         <name>MPICommunicator</name>
         <qualifiedname>dynampi::MPICommunicator::MPICommunicator</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Comm</ref></type>
+          <type>MPI_Comm</type>
           <declname>comm</declname>
         </param>
         <param>
@@ -154,7 +154,7 @@
         <name>MPICommunicator</name>
         <qualifiedname>dynampi::MPICommunicator::MPICommunicator</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &amp;</type>
+          <type>const <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &amp;</type>
           <declname>other</declname>
         </param>
         <briefdescription>
@@ -172,7 +172,7 @@
         <name>operator=</name>
         <qualifiedname>dynampi::MPICommunicator::operator=</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &amp;</type>
+          <type>const <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">MPICommunicator</ref> &amp;</type>
           <declname>other</declname>
         </param>
         <briefdescription>
@@ -254,11 +254,11 @@
         <name>split</name>
         <qualifiedname>dynampi::MPICommunicator::split</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>color</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>key</declname>
           <defval>0</defval>
         </param>
@@ -285,7 +285,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="125" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="125" bodyend="125"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a149b4aa34d721d0e816b5e6ed4510d48" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1CommStatistics" kindref="compound">CommStatistics</ref> &amp;</type>
+        <type>const <ref refid="structdynampi_1_1CommStatistics" kindref="compound">CommStatistics</ref> &amp;</type>
         <definition>const CommStatistics &amp; dynampi::MPICommunicator&lt; Options &gt;::get_statistics</definition>
         <argsstring>() const</argsstring>
         <name>get_statistics</name>
@@ -300,7 +300,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="127" column="24" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="127" bodyend="131"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1ae08399570bf9b7b3b80d1577aa6ccbe9" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <type>int</type>
         <definition>int dynampi::MPICommunicator&lt; Options &gt;::rank</definition>
         <argsstring>() const</argsstring>
         <name>rank</name>
@@ -314,7 +314,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="133" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="133" bodyend="137"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a60803fdde73fb42d1d7a637714134290" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+        <type>int</type>
         <definition>int dynampi::MPICommunicator&lt; Options &gt;::size</definition>
         <argsstring>() const</argsstring>
         <name>size</name>
@@ -330,24 +330,24 @@
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a89d3eaae1d7f772706c0259abc5138d5" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
           <param>
-            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+            <type>typename T</type>
           </param>
         </templateparamlist>
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <type>void</type>
         <definition>void dynampi::MPICommunicator&lt; Options &gt;::send</definition>
         <argsstring>(const T &amp;data, int dest, int tag=0)</argsstring>
         <name>send</name>
         <qualifiedname>dynampi::MPICommunicator::send</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &amp;</type>
+          <type>const T &amp;</type>
           <declname>data</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>dest</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>tag</declname>
           <defval>0</defval>
         </param>
@@ -360,20 +360,20 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="146" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="146" bodyend="156"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1afae2eb6131af281a9cc7717638496841" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Status</ref></type>
+        <type>MPI_Status</type>
         <definition>MPI_Status dynampi::MPICommunicator&lt; Options &gt;::probe</definition>
         <argsstring>(int source=MPI_ANY_SOURCE, int tag=MPI_ANY_TAG)</argsstring>
         <name>probe</name>
         <qualifiedname>dynampi::MPICommunicator::probe</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>source</declname>
-          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_ANY_SOURCE</ref></defval>
+          <defval>MPI_ANY_SOURCE</defval>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>tag</declname>
-          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_ANY_TAG</ref></defval>
+          <defval>MPI_ANY_TAG</defval>
         </param>
         <briefdescription>
         </briefdescription>
@@ -384,20 +384,20 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="158" column="21" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="158" bodyend="162"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a877f737c54e0f9d6e4cd28c568b73e28" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
-        <type>std::optional&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Status</ref> &gt;</type>
+        <type>std::optional&lt; MPI_Status &gt;</type>
         <definition>std::optional&lt; MPI_Status &gt; dynampi::MPICommunicator&lt; Options &gt;::iprobe</definition>
         <argsstring>(int source=MPI_ANY_SOURCE, int tag=MPI_ANY_TAG)</argsstring>
         <name>iprobe</name>
         <qualifiedname>dynampi::MPICommunicator::iprobe</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>source</declname>
-          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_ANY_SOURCE</ref></defval>
+          <defval>MPI_ANY_SOURCE</defval>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>tag</declname>
-          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_ANY_TAG</ref></defval>
+          <defval>MPI_ANY_TAG</defval>
         </param>
         <briefdescription>
         </briefdescription>
@@ -410,24 +410,24 @@
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a236bdb1a221ab6f118fad71e8abe9e50" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
           <param>
-            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+            <type>typename T</type>
           </param>
         </templateparamlist>
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <type>void</type>
         <definition>void dynampi::MPICommunicator&lt; Options &gt;::recv</definition>
         <argsstring>(T &amp;data, int source, int tag=0)</argsstring>
         <name>recv</name>
         <qualifiedname>dynampi::MPICommunicator::recv</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &amp;</type>
+          <type>T &amp;</type>
           <declname>data</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>source</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>tag</declname>
           <defval>0</defval>
         </param>
@@ -442,27 +442,27 @@
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a083f2257b84cc47458b2a88273a316da" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
           <param>
-            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+            <type>typename T</type>
           </param>
         </templateparamlist>
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Status</ref></type>
+        <type>MPI_Status</type>
         <definition>MPI_Status dynampi::MPICommunicator&lt; Options &gt;::recv_any</definition>
         <argsstring>(T &amp;data, int source=MPI_ANY_SOURCE, int tag=MPI_ANY_TAG)</argsstring>
         <name>recv_any</name>
         <qualifiedname>dynampi::MPICommunicator::recv_any</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &amp;</type>
+          <type>T &amp;</type>
           <declname>data</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>source</declname>
-          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_ANY_SOURCE</ref></defval>
+          <defval>MPI_ANY_SOURCE</defval>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>tag</declname>
-          <defval><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_ANY_TAG</ref></defval>
+          <defval>MPI_ANY_TAG</defval>
         </param>
         <briefdescription>
         </briefdescription>
@@ -475,20 +475,20 @@
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a908609eb1387b8b46fa8bc29b1b971af" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
           <param>
-            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+            <type>typename T</type>
           </param>
         </templateparamlist>
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <type>void</type>
         <definition>void dynampi::MPICommunicator&lt; Options &gt;::broadcast</definition>
         <argsstring>(T &amp;data, int root=0)</argsstring>
         <name>broadcast</name>
         <qualifiedname>dynampi::MPICommunicator::broadcast</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &amp;</type>
+          <type>T &amp;</type>
           <declname>data</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>root</declname>
           <defval>0</defval>
         </param>
@@ -501,17 +501,17 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="209" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="209" bodyend="223"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a23089e5594e4075a4b0efa8f24d49dfd" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <type>void</type>
         <definition>void dynampi::MPICommunicator&lt; Options &gt;::recv_empty_message</definition>
         <argsstring>(int source, int tag=0)</argsstring>
         <name>recv_empty_message</name>
         <qualifiedname>dynampi::MPICommunicator::recv_empty_message</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>source</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>tag</declname>
           <defval>0</defval>
         </param>
@@ -526,20 +526,20 @@
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1acac6192d057971c440e62674dc14539b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
           <param>
-            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+            <type>typename T</type>
           </param>
         </templateparamlist>
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <type>void</type>
         <definition>void dynampi::MPICommunicator&lt; Options &gt;::send_empty</definition>
         <argsstring>(int dest, int tag=0)</argsstring>
         <name>send_empty</name>
         <qualifiedname>dynampi::MPICommunicator::send_empty</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>dest</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>tag</declname>
           <defval>0</defval>
         </param>
@@ -555,20 +555,20 @@
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a780f1e002bea00e97fb16a4ca7f3fc93" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
           <param>
-            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+            <type>typename T</type>
           </param>
         </templateparamlist>
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <type>void</type>
         <definition>void dynampi::MPICommunicator&lt; Options &gt;::recv_empty</definition>
         <argsstring>(int source, int tag=0)</argsstring>
         <name>recv_empty</name>
         <qualifiedname>dynampi::MPICommunicator::recv_empty</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>source</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>tag</declname>
           <defval>0</defval>
         </param>
@@ -584,24 +584,24 @@
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a67630cb450a31446e5cabf679ef5c237" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
           <param>
-            <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">typename</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref></type>
+            <type>typename T</type>
           </param>
         </templateparamlist>
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <type>void</type>
         <definition>void dynampi::MPICommunicator&lt; Options &gt;::gather</definition>
         <argsstring>(const T &amp;data, std::vector&lt; T &gt; *result, int root=0)</argsstring>
         <name>gather</name>
         <qualifiedname>dynampi::MPICommunicator::gather</qualifiedname>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &amp;</type>
+          <type>const T &amp;</type>
           <declname>data</declname>
         </param>
         <param>
-          <type>std::vector&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">T</ref> &gt; *</type>
+          <type>std::vector&lt; T &gt; *</type>
           <declname>result</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">int</ref></type>
+          <type>int</type>
           <declname>root</declname>
           <defval>0</defval>
         </param>
@@ -614,7 +614,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="257" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="257" bodyend="267"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1MPICommunicator_1a822f42f75a2aa920b4171a3f752962ad" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Comm</ref></type>
+        <type>MPI_Comm</type>
         <definition>MPI_Comm dynampi::MPICommunicator&lt; Options &gt;::get</definition>
         <argsstring>() const</argsstring>
         <name>get</name>

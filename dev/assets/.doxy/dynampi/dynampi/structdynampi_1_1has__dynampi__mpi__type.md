@@ -2,7 +2,7 @@
 
 # Struct dynampi::has\_dynampi\_mpi\_type
 
-**template &lt;[**typename**](structdynampi_1_1MPI__Type.md), [**typename**](structdynampi_1_1MPI__Type.md)&gt;**
+**template &lt;typename, typename&gt;**
 
 
 

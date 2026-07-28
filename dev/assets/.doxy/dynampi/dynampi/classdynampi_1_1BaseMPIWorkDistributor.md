@@ -2,7 +2,7 @@
 
 # Class dynampi::BaseMPIWorkDistributor
 
-**template &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**TaskT**](structdynampi_1_1MPI__Type.md), [**typename**](structdynampi_1_1MPI__Type.md) [**ResultT**](structdynampi_1_1MPI__Type.md), typename... Options&gt;**
+**template &lt;typename TaskT, typename ResultT, typename... Options&gt;**
 
 
 
@@ -63,7 +63,7 @@
 
 | Type | Name |
 | ---: | :--- |
-| typedef std::conditional\_t&lt; [**prioritize\_tasks**](classdynampi_1_1BaseMPIWorkDistributor.md#variable-prioritize_tasks), std::priority\_queue&lt; std::pair&lt; [**double**](structdynampi_1_1MPI__Type.md), [**TaskT**](structdynampi_1_1MPI__Type.md) &gt; &gt;, std::deque&lt; [**TaskT**](structdynampi_1_1MPI__Type.md) &gt; &gt; | [**QueueT**](#typedef-queuet)  <br> |
+| typedef std::conditional\_t&lt; [**prioritize\_tasks**](classdynampi_1_1BaseMPIWorkDistributor.md#variable-prioritize_tasks), std::priority\_queue&lt; std::pair&lt; double, TaskT &gt; &gt;, std::deque&lt; TaskT &gt; &gt; | [**QueueT**](#typedef-queuet)  <br> |
 
 
 
@@ -74,7 +74,7 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**prioritize\_tasks**](#variable-prioritize_tasks)   = `[**get\_option\_value**](template__options_8hpp.md#function-get_option_value)&lt;[**prioritize\_tasks\_t**](structdynampi_1_1prioritize__tasks__t.md), Options...&gt;()`<br> |
+|  constexpr bool | [**prioritize\_tasks**](#variable-prioritize_tasks)   = `[**get\_option\_value**](template__options_8hpp.md#function-get_option_value)&lt;[**prioritize\_tasks\_t**](structdynampi_1_1prioritize__tasks__t.md), Options...&gt;()`<br> |
 
 
 

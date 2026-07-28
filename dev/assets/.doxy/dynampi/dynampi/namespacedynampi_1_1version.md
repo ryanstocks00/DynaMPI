@@ -35,10 +35,10 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**int**](structdynampi_1_1MPI__Type.md) | [**major**](#variable-major)   = `[**DYNAMPI\_VERSION\_MAJOR**](structdynampi_1_1MPI__Type.md)`<br> |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**int**](structdynampi_1_1MPI__Type.md) | [**minor**](#variable-minor)   = `[**DYNAMPI\_VERSION\_MINOR**](structdynampi_1_1MPI__Type.md)`<br> |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**int**](structdynampi_1_1MPI__Type.md) | [**patch**](#variable-patch)   = `[**DYNAMPI\_VERSION\_PATCH**](structdynampi_1_1MPI__Type.md)`<br> |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) std::string\_view | [**string**](#variable-string)   = `[**DYNAMPI\_VERSION\_STRING**](dynampi_8hpp.md#define-dynampi_version_string)`<br> |
+|  constexpr int | [**major**](#variable-major)   = `DYNAMPI\_VERSION\_MAJOR`<br> |
+|  constexpr int | [**minor**](#variable-minor)   = `DYNAMPI\_VERSION\_MINOR`<br> |
+|  constexpr int | [**patch**](#variable-patch)   = `DYNAMPI\_VERSION\_PATCH`<br> |
+|  constexpr std::string\_view | [**string**](#variable-string)   = `[**DYNAMPI\_VERSION\_STRING**](dynampi_8hpp.md#define-dynampi_version_string)`<br> |
 
 
 
@@ -59,9 +59,9 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) std::string\_view | [**commit\_hash**](#function-commit_hash) () <br> |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) std::string\_view | [**compile\_date**](#function-compile_date) () <br> |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**is\_at\_least**](#function-is_at_least) ([**int**](structdynampi_1_1MPI__Type.md) v\_major, [**int**](structdynampi_1_1MPI__Type.md) v\_minor, [**int**](structdynampi_1_1MPI__Type.md) v\_patch) <br> |
+|  constexpr std::string\_view | [**commit\_hash**](#function-commit_hash) () <br> |
+|  constexpr std::string\_view | [**compile\_date**](#function-compile_date) () <br> |
+|  constexpr bool | [**is\_at\_least**](#function-is_at_least) (int v\_major, int v\_minor, int v\_patch) <br> |
 
 
 
@@ -178,7 +178,7 @@ inline constexpr std::string_view dynampi::version::compile_date ()
 ### function is\_at\_least 
 
 ```C++
-constexpr  bool dynampi::version::is_at_least (
+constexpr bool dynampi::version::is_at_least (
     int v_major,
     int v_minor,
     int v_patch

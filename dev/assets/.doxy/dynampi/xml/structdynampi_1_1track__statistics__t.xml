@@ -6,7 +6,7 @@
     <includes refid="mpi__communicator_8hpp" local="no">mpi_communicator.hpp</includes>
     <sectiondef kind="public-static-attrib">
       <memberdef kind="variable" id="structdynampi_1_1track__statistics__t_1a4466269905b89f8fe06781bb1defa797" prot="public" static="yes" constexpr="yes" mutable="no">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
+        <type>constexpr <ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
         <definition>constexpr StatisticsMode dynampi::track_statistics_t::value</definition>
         <argsstring></argsstring>
         <name>value</name>

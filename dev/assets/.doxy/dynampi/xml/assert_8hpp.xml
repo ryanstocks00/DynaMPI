@@ -12,6 +12,7 @@
     <includes local="no">string_view</includes>
     <includes refid="printing_8hpp" local="yes">printing.hpp</includes>
     <includedby refid="hierarchical__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</includedby>
+    <includedby refid="hierarchical__nonblocking__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_nonblocking_distributor.hpp</includedby>
     <includedby refid="mpi__communicator_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp</includedby>
     <includedby refid="mpi__group_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp</includedby>
     <incdepgraph>
@@ -115,38 +116,74 @@
         <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp</label>
         <link refid="dynampi_8hpp"/>
       </node>
+      <node id="6">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/async_put_lockfree_distributor.hpp</label>
+        <link refid="async__put__lockfree__distributor_8hpp"/>
+      </node>
+      <node id="7">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp</label>
+        <link refid="hierarchical__async__put__lockfree__distributor_8hpp"/>
+      </node>
       <node id="2">
         <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</label>
         <link refid="hierarchical__distributor_8hpp"/>
         <childnode refid="3" relation="include">
         </childnode>
       </node>
-      <node id="5">
+      <node id="8">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_distributor.hpp</label>
+        <link refid="hierarchical__lockfree__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_nonblocking_distributor.hpp</label>
+        <link refid="hierarchical__nonblocking__distributor_8hpp"/>
+      </node>
+      <node id="9">
         <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp</label>
         <link refid="lockfree__distributor_8hpp"/>
         <childnode refid="3" relation="include">
         </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
       </node>
-      <node id="6">
+      <node id="10">
         <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp</label>
         <link refid="naive__distributor_8hpp"/>
         <childnode refid="3" relation="include">
         </childnode>
       </node>
-      <node id="4">
+      <node id="5">
         <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp</label>
         <link refid="mpi__communicator_8hpp"/>
-        <childnode refid="2" relation="include">
-        </childnode>
-        <childnode refid="5" relation="include">
-        </childnode>
         <childnode refid="6" relation="include">
         </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
       </node>
-      <node id="7">
+      <node id="11">
         <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_group.hpp</label>
         <link refid="mpi__group_8hpp"/>
-        <childnode refid="4" relation="include">
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
         </childnode>
       </node>
       <node id="1">
@@ -156,7 +193,9 @@
         </childnode>
         <childnode refid="4" relation="include">
         </childnode>
-        <childnode refid="7" relation="include">
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
         </childnode>
       </node>
     </invincdepgraph>
@@ -385,13 +424,13 @@
 <codeline lineno="44"><highlight class="normal"></highlight></codeline>
 <codeline lineno="45"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>NDEBUG</highlight><highlight class="normal"></highlight></codeline>
 <codeline lineno="46"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal">...<sp/>Args&gt;</highlight></codeline>
-<codeline lineno="47" refid="namespacedynampi_1aa95ac84922fb5db11726bbbb7061603f" refkind="member"><highlight class="normal">std::optional&lt;std::string&gt;<sp/><ref refid="namespacedynampi_1aa95ac84922fb5db11726bbbb7061603f" kindref="member">OptionalString</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">Args</ref><sp/>&amp;&amp;...<ref refid="structdynampi_1_1MPI__Type" kindref="compound">args</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="47" refid="namespacedynampi_1aa95ac84922fb5db11726bbbb7061603f" refkind="member"><highlight class="normal">std::optional&lt;std::string&gt;<sp/><ref refid="namespacedynampi_1aa95ac84922fb5db11726bbbb7061603f" kindref="member">OptionalString</ref>(Args<sp/>&amp;&amp;...args)<sp/>{</highlight></codeline>
 <codeline lineno="48"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">...(args)<sp/>==<sp/>0)<sp/>{</highlight></codeline>
 <codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>std::nullopt;</highlight></codeline>
 <codeline lineno="50"><highlight class="normal"><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
-<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/>std::stringstream<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">ss</ref>;</highlight></codeline>
-<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">ss</ref><sp/>&lt;&lt;<sp/>...<sp/>&lt;&lt;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">args</ref>);</highlight></codeline>
-<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">ss</ref>.str();</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/>std::stringstream<sp/>ss;</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/>(ss<sp/>&lt;&lt;<sp/>...<sp/>&lt;&lt;<sp/>args);</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>ss.str();</highlight></codeline>
 <codeline lineno="54"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
 <codeline lineno="55"><highlight class="normal">}</highlight></codeline>
 <codeline lineno="56"><highlight class="normal"></highlight></codeline>
@@ -401,30 +440,30 @@
 <codeline lineno="60"><highlight class="preprocessor"><sp/><sp/><sp/><sp/><sp/><sp/>dynampi::_DYNAMPI_FAIL_ASSERT(#condition,<sp/>dynampi::OptionalString(__VA_ARGS__));<sp/>\</highlight></codeline>
 <codeline lineno="61"><highlight class="preprocessor"><sp/><sp/>}<sp/>while<sp/>(false)</highlight><highlight class="normal"></highlight></codeline>
 <codeline lineno="62"><highlight class="normal"></highlight></codeline>
-<codeline lineno="63" refid="namespacedynampi_1a73c9e8db89503bafedb278ff40b20351" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a73c9e8db89503bafedb278ff40b20351" kindref="member">_DYNAMPI_FAIL_ASSERT</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">condition_str</ref>,</highlight></codeline>
-<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::optional&lt;std::string&gt;<sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">message</ref></highlight></codeline>
-<codeline lineno="65"><highlight class="normal">#<ref refid="structdynampi_1_1MPI__Type" kindref="compound">ifdef</ref><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">DYNAMPI_HAS_SOURCE_LOCATION</ref></highlight></codeline>
+<codeline lineno="63" refid="namespacedynampi_1a73c9e8db89503bafedb278ff40b20351" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a73c9e8db89503bafedb278ff40b20351" kindref="member">_DYNAMPI_FAIL_ASSERT</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;condition_str,</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::optional&lt;std::string&gt;<sp/>&amp;message</highlight></codeline>
+<codeline lineno="65"><highlight class="normal">#ifdef<sp/>DYNAMPI_HAS_SOURCE_LOCATION</highlight></codeline>
 <codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,</highlight></codeline>
-<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::source_location<sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">loc</ref><sp/>=<sp/>std::source_location::current()</highlight></codeline>
-<codeline lineno="68"><highlight class="normal">#<ref refid="structdynampi_1_1MPI__Type" kindref="compound">endif</ref></highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::source_location<sp/>&amp;loc<sp/>=<sp/>std::source_location::current()</highlight></codeline>
+<codeline lineno="68"><highlight class="normal">#endif</highlight></codeline>
 <codeline lineno="69"><highlight class="normal">)<sp/>{</highlight></codeline>
 <codeline lineno="70"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!std::uncaught_exceptions())<sp/>{</highlight></codeline>
-<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/>std::stringstream<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">ss</ref>;</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/>std::stringstream<sp/>ss;</highlight></codeline>
 <codeline lineno="72"><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>DYNAMPI_HAS_SOURCE_LOCATION</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/>std::string_view<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">s</ref><sp/>=<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">loc</ref>.file_name();</highlight></codeline>
-<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/>std::string_view<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">filename</ref><sp/>=<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">s</ref>.substr(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">s</ref>.find_last_of(</highlight><highlight class="charliteral">&apos;/&apos;</highlight><highlight class="normal">)<sp/>+<sp/>1);</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/>std::string_view<sp/>s<sp/>=<sp/>loc.file_name();</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/>std::string_view<sp/>filename<sp/>=<sp/>s.substr(s.find_last_of(</highlight><highlight class="charliteral">&apos;/&apos;</highlight><highlight class="normal">)<sp/>+<sp/>1);</highlight></codeline>
 <codeline lineno="75"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
 <codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>rank<sp/>=<sp/>0;</highlight></codeline>
-<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Comm_rank</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_COMM_WORLD</ref>,<sp/>&amp;rank);</highlight></codeline>
-<codeline lineno="78"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">ss</ref><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;DynaMPI<sp/>assertion<sp/>failed<sp/>on<sp/>rank<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>rank<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">condition_str</ref></highlight></codeline>
-<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">message</ref><sp/>?<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>*<ref refid="structdynampi_1_1MPI__Type" kindref="compound">message</ref><sp/>:<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/>MPI_Comm_rank(MPI_COMM_WORLD,<sp/>&amp;rank);</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><sp/><sp/><sp/><sp/>ss<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;DynaMPI<sp/>assertion<sp/>failed<sp/>on<sp/>rank<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>rank<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>condition_str</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>(message<sp/>?<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>*message<sp/>:<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">)</highlight></codeline>
 <codeline lineno="80"><highlight class="normal"></highlight></codeline>
-<codeline lineno="81"><highlight class="normal">#<ref refid="structdynampi_1_1MPI__Type" kindref="compound">ifdef</ref><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">DYNAMPI_HAS_SOURCE_LOCATION</ref></highlight></codeline>
-<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n<sp/>in<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">loc</ref>.function_name()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>at<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">filename</ref><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">loc</ref>.line()</highlight></codeline>
+<codeline lineno="81"><highlight class="normal">#ifdef<sp/>DYNAMPI_HAS_SOURCE_LOCATION</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n<sp/>in<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>loc.function_name()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>at<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>filename<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>loc.line()</highlight></codeline>
 <codeline lineno="83"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
 <codeline lineno="84"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
-<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">ss</ref>.str();</highlight></codeline>
-<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>std::runtime_error(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">ss</ref>.str());</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/>ss.str();</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>std::runtime_error(ss.str());</highlight></codeline>
 <codeline lineno="87"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
 <codeline lineno="88"><highlight class="normal">}</highlight></codeline>
 <codeline lineno="89"><highlight class="normal"></highlight></codeline>
@@ -438,21 +477,21 @@
 <codeline lineno="97"><highlight class="preprocessor"><sp/><sp/>}<sp/>while<sp/>(false)</highlight><highlight class="normal"></highlight></codeline>
 <codeline lineno="98"><highlight class="normal"></highlight></codeline>
 <codeline lineno="99"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>A,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>B&gt;</highlight></codeline>
-<codeline lineno="100" refid="namespacedynampi_1a54e508df8e16c3c7ccf69152c35f09b5" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a54e508df8e16c3c7ccf69152c35f09b5" kindref="member">_DYNAMPI_FAILBinOp</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">A</ref><sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">a</ref>,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">B</ref><sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">b</ref>,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">a_str</ref>,</highlight></codeline>
-<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">b_str</ref>,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">nop</ref>,</highlight></codeline>
-<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::optional&lt;std::string&gt;<sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">message</ref></highlight></codeline>
-<codeline lineno="103"><highlight class="normal">#<ref refid="structdynampi_1_1MPI__Type" kindref="compound">ifdef</ref><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">DYNAMPI_HAS_SOURCE_LOCATION</ref></highlight></codeline>
+<codeline lineno="100" refid="namespacedynampi_1a54e508df8e16c3c7ccf69152c35f09b5" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a54e508df8e16c3c7ccf69152c35f09b5" kindref="member">_DYNAMPI_FAILBinOp</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>A<sp/>&amp;a,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>B<sp/>&amp;b,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;a_str,</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;b_str,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;nop,</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::optional&lt;std::string&gt;<sp/>&amp;message</highlight></codeline>
+<codeline lineno="103"><highlight class="normal">#ifdef<sp/>DYNAMPI_HAS_SOURCE_LOCATION</highlight></codeline>
 <codeline lineno="104"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,</highlight></codeline>
-<codeline lineno="105"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::source_location<sp/>&amp;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">loc</ref><sp/>=<sp/>std::source_location::current()</highlight></codeline>
-<codeline lineno="106"><highlight class="normal">#<ref refid="structdynampi_1_1MPI__Type" kindref="compound">endif</ref></highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::source_location<sp/>&amp;loc<sp/>=<sp/>std::source_location::current()</highlight></codeline>
+<codeline lineno="106"><highlight class="normal">#endif</highlight></codeline>
 <codeline lineno="107"><highlight class="normal">)<sp/>{</highlight></codeline>
-<codeline lineno="108"><highlight class="normal"><sp/><sp/>std::stringstream<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">ss</ref>;</highlight></codeline>
-<codeline lineno="109"><highlight class="normal"><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">ss</ref><sp/>&lt;&lt;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">a</ref><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">nop</ref><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">b</ref>;</highlight></codeline>
-<codeline lineno="110"><highlight class="normal"><sp/><sp/><ref refid="namespacedynampi_1a73c9e8db89503bafedb278ff40b20351" kindref="member">dynampi::_DYNAMPI_FAIL_ASSERT</ref>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">a_str</ref><sp/>+<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">nop</ref><sp/>+<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">b_str</ref>,</highlight></codeline>
-<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">message</ref><sp/>?<sp/>(<ref refid="structdynampi_1_1MPI__Type" kindref="compound">ss</ref>.str()<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>*<ref refid="structdynampi_1_1MPI__Type" kindref="compound">message</ref>)<sp/>:<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">ss</ref>.str()</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/>std::stringstream<sp/>ss;</highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><sp/><sp/>ss<sp/>&lt;&lt;<sp/>a<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>nop<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>b;</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/><ref refid="namespacedynampi_1a73c9e8db89503bafedb278ff40b20351" kindref="member">dynampi::_DYNAMPI_FAIL_ASSERT</ref>(a_str<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>nop<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>b_str,</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>message<sp/>?<sp/>(ss.str()<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>*message)<sp/>:<sp/>ss.str()</highlight></codeline>
 <codeline lineno="112"><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>DYNAMPI_HAS_SOURCE_LOCATION</highlight><highlight class="normal"></highlight></codeline>
 <codeline lineno="113"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,</highlight></codeline>
-<codeline lineno="114"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">loc</ref></highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>loc</highlight></codeline>
 <codeline lineno="115"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
 <codeline lineno="116"><highlight class="normal"><sp/><sp/>);</highlight></codeline>
 <codeline lineno="117"><highlight class="normal">}</highlight></codeline>

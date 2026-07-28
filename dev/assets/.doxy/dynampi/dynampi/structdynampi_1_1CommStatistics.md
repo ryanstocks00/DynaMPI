@@ -36,13 +36,13 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**size\_t**](structdynampi_1_1MPI__Type.md) | [**bytes\_received**](#variable-bytes_received)   = `0`<br> |
-|  [**size\_t**](structdynampi_1_1MPI__Type.md) | [**bytes\_sent**](#variable-bytes_sent)   = `0`<br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**collective\_count**](#variable-collective_count)   = `0`<br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**recv\_count**](#variable-recv_count)   = `0`<br> |
-|  [**double**](structdynampi_1_1MPI__Type.md) | [**recv\_time**](#variable-recv_time)   = `0.0`<br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**send\_count**](#variable-send_count)   = `0`<br> |
-|  [**double**](structdynampi_1_1MPI__Type.md) | [**send\_time**](#variable-send_time)   = `0.0`<br> |
+|  size\_t | [**bytes\_received**](#variable-bytes_received)   = `0`<br> |
+|  size\_t | [**bytes\_sent**](#variable-bytes_sent)   = `0`<br> |
+|  int | [**collective\_count**](#variable-collective_count)   = `0`<br> |
+|  int | [**recv\_count**](#variable-recv_count)   = `0`<br> |
+|  double | [**recv\_time**](#variable-recv_time)   = `0.0`<br> |
+|  int | [**send\_count**](#variable-send_count)   = `0`<br> |
+|  double | [**send\_time**](#variable-send_time)   = `0.0`<br> |
 
 
 
@@ -63,9 +63,9 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**double**](structdynampi_1_1MPI__Type.md) | [**average\_receive\_size**](#function-average_receive_size) () const<br> |
-|  [**double**](structdynampi_1_1MPI__Type.md) | [**average\_send\_size**](#function-average_send_size) () const<br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**reset**](#function-reset) () <br> |
+|  double | [**average\_receive\_size**](#function-average_receive_size) () const<br> |
+|  double | [**average\_send\_size**](#function-average_send_size) () const<br> |
+|  void | [**reset**](#function-reset) () <br> |
 
 
 

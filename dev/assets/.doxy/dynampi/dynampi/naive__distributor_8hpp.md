@@ -50,7 +50,7 @@
 
 | Type | Name |
 | ---: | :--- |
-| class | [**NaiveMPIWorkDistributor**](classdynampi_1_1NaiveMPIWorkDistributor.md) &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**TaskT**](structdynampi_1_1MPI__Type.md), [**typename**](structdynampi_1_1MPI__Type.md) [**ResultT**](structdynampi_1_1MPI__Type.md), Options&gt;<br> |
+| class | [**NaiveMPIWorkDistributor**](classdynampi_1_1NaiveMPIWorkDistributor.md) &lt;typename TaskT, typename ResultT, Options&gt;<br> |
 | struct | [**Config**](structdynampi_1_1NaiveMPIWorkDistributor_1_1Config.md) <br> |
 | struct | [**RunConfig**](structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig.md) <br> |
 | struct | [**Statistics**](structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics.md) <br> |

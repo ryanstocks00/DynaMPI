@@ -5,12 +5,12 @@
     <includes refid="naive__distributor_8hpp" local="no">naive_distributor.hpp</includes>
     <sectiondef kind="public-attrib">
       <memberdef kind="variable" id="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig_1a201f78a7308fdcb7941f0b29f9a6ed5a" prot="public" static="no" mutable="no">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref></type>
+        <type>size_t</type>
         <definition>size_t dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::target_num_tasks</definition>
         <argsstring></argsstring>
         <name>target_num_tasks</name>
         <qualifiedname>dynampi::NaiveMPIWorkDistributor::RunConfig::target_num_tasks</qualifiedname>
-        <initializer>= std::numeric_limits&lt;<ref refid="structdynampi_1_1MPI__Type" kindref="compound">size_t</ref>&gt;::max()</initializer>
+        <initializer>= std::numeric_limits&lt;size_t&gt;::max()</initializer>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -20,12 +20,12 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="43" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="43" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig_1a458213e051f4e378ee8e1b15af49091f" prot="public" static="no" mutable="no">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">bool</ref></type>
+        <type>bool</type>
         <definition>bool dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::allow_more_than_target_tasks</definition>
         <argsstring></argsstring>
         <name>allow_more_than_target_tasks</name>
         <qualifiedname>dynampi::NaiveMPIWorkDistributor::RunConfig::allow_more_than_target_tasks</qualifiedname>
-        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">true</ref></initializer>
+        <initializer>= true</initializer>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -35,7 +35,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="47" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="47" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig_1ac70dd38a256e427d71b24f8d2176afd0" prot="public" static="no" mutable="no">
-        <type>std::optional&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref> &gt;</type>
+        <type>std::optional&lt; double &gt;</type>
         <definition>std::optional&lt;double&gt; dynampi::NaiveMPIWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::max_seconds</definition>
         <argsstring></argsstring>
         <name>max_seconds</name>

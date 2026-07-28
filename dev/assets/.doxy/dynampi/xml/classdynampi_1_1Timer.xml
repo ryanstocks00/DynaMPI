@@ -83,7 +83,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="22" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="22" bodyend="26"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1Timer_1a094bb6d98993adfa0d631835c97b4c73" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <type>void</type>
         <definition>void dynampi::Timer::start</definition>
         <argsstring>()</argsstring>
         <name>start</name>
@@ -97,7 +97,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="28" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="28" bodyend="31"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1Timer_1a3b04edcd8eaa183021ad714541357260" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
-        <type>std::chrono::duration&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref> &gt;</type>
+        <type>std::chrono::duration&lt; double &gt;</type>
         <definition>std::chrono::duration&lt; double &gt; dynampi::Timer::stop</definition>
         <argsstring>()</argsstring>
         <name>stop</name>
@@ -111,7 +111,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="33" column="25" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="33" bodyend="40"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1Timer_1af63ac97c131c79c1466c7fa5836476f6" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">void</ref></type>
+        <type>void</type>
         <definition>void dynampi::Timer::reset</definition>
         <argsstring>(AutoStart auto_start=AutoStart::Yes)</argsstring>
         <name>reset</name>
@@ -130,7 +130,7 @@
         <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" line="42" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/utilities/timer.hpp" bodystart="42" bodyend="48"/>
       </memberdef>
       <memberdef kind="function" id="classdynampi_1_1Timer_1ae0c61ce303d7657ef46b47a330f2bb33" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
-        <type>std::chrono::duration&lt; <ref refid="structdynampi_1_1MPI__Type" kindref="compound">double</ref> &gt;</type>
+        <type>std::chrono::duration&lt; double &gt;</type>
         <definition>std::chrono::duration&lt; double &gt; dynampi::Timer::elapsed</definition>
         <argsstring>() const</argsstring>
         <name>elapsed</name>
@@ -156,7 +156,7 @@
           <declname>os</declname>
         </param>
         <param>
-          <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">const</ref> <ref refid="classdynampi_1_1Timer" kindref="compound">Timer</ref> &amp;</type>
+          <type>const <ref refid="classdynampi_1_1Timer" kindref="compound">Timer</ref> &amp;</type>
           <declname>timer</declname>
         </param>
         <briefdescription>

@@ -37,7 +37,7 @@
 | Type | Name |
 | ---: | :--- |
 |  [**CommStatistics**](structdynampi_1_1CommStatistics.md) | [**comm\_statistics**](#variable-comm_statistics)  <br> |
-|  std::vector&lt; [**size\_t**](structdynampi_1_1MPI__Type.md) &gt; | [**worker\_task\_counts**](#variable-worker_task_counts)  <br> |
+|  std::vector&lt; size\_t &gt; | [**worker\_task\_counts**](#variable-worker_task_counts)  <br> |
 
 
 
