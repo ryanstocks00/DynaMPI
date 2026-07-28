@@ -27,13 +27,8 @@ namespace dynampi {
 // AsyncPutLockFreeMPIWorkDistributor
 //
 // Lock-free task claiming via fetch-and-add against HEAD_OFF, bounded by a
-// cached read of TOTAL_OFF, one task per claim -- this is a flat, leaf-level
-// distributor with no coordinator above it to amortize a round trip over a
-// batch on a worker's behalf; see the Hierarchical* distributors for where
-// batching still happens, at their upper/coordinator levels. No
-// MPI_Gather/MPI_Gatherv, ever, and no per-task RMA call on the harvest side
-// either. Per task:
-//
+// cached read of TOTAL_OFF, one task per claim -- this is a flat distributor.
+// . Per task:
 //   worker:
 //     1 fetch_add(HEAD_OFF)      -- claim one task index
 //     1 Get                      -- read that task
@@ -51,24 +46,13 @@ namespace dynampi {
 //     1 bulk Get of the result table over however much of that range
 //       turned out to be a contiguous run of completed entries
 //
-// The harvest side still amortizes over however much is ready at once (an
-// O(1)-round-trip bulk scan, not O(results found)) -- only the claim/write
-// side is one-task-at-a-time. Every RMA call here still goes through the
-// real MPI RMA API (Fetch_and_op/Put/Get), even the manager's self-targeted
-// ones -- see harvest_ready_results() for why plain local loads on the
-// owner's own window buffer are not safe to substitute (MPI_WIN_SEPARATE).
-//
 // Results are explicitly NOT ordered: harvested in completion order (which,
 // via the completion log's contiguous-prefix scan, is close to submission
-// order but not guaranteed to be exactly that under a straggler). Ordering
-// would require a Sort or an index-keyed result table -- either reintroduces
-// per-task cost this design specifically avoids.
+// order but not guaranteed).
+
 // ---------------------------------------------------------------------------
-// Options currently only recognizes track_statistics<...> (no
-// prioritization support in this class); it exists so this type fits the
-// same Distributor<TaskT, ResultT, Options...> shape every other
-// distributor here uses, for generic test/benchmark code that instantiates
-// uniformly.
+// Options currently only recognizes track_statistics<...> (no prioritization support in this
+// class).
 template <typename TaskT, typename ResultT, typename... Options>
 class AsyncPutLockFreeMPIWorkDistributor {
  private:
@@ -92,9 +76,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
     std::optional<double> max_seconds = std::nullopt;
   };
 
-  // Not ordered -- see the class comment. Every other distributor's
-  // ordered=false path already sorts before comparing in generic test code,
-  // so this needs no special-casing there.
+  // Not ordered
   static const bool ordered = false;
 
   struct Statistics {

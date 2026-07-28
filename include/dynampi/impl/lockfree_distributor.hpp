@@ -109,20 +109,22 @@ inline void read_result_bytes(const std::byte* buffer, size_t buffer_size, size_
 
 // Drive progress while a rank is spinning on one-sided completion.
 //
-// Under MPI_WIN_SEPARATE (MS-MPI always; some other stacks too), remote Puts
-// into this rank's window are not observed by self-targeted Get/Fetch_and_op
-// unless the two-sided progress engine runs. MPI_Win_flush_all and sleeping
-// are not enough -- MPI_Iprobe is (same pattern as pump_mpi_progress in the
-// strong-scaling / isolated AsyncPut benches). Without this, AsyncPut's
-// manager harvest loop never sees worker completion-log updates and hangs.
-inline void rma_wait_idle(MPI_Win window, MPI_Comm comm) {
-  if (window != MPI_WIN_NULL) {
-    DYNAMPI_MPI_CHECK(MPI_Win_flush_all, (window));
-  }
+// Under MPI_WIN_SEPARATE (MS-MPI always; some other stacks too), the
+// two-sided progress engine must run while ranks wait on remote RMA state.
+// Every AsyncPut RMA primitive already flushes its target before returning,
+// so another MPI_Win_flush_all here only makes idle ranks contend with useful
+// traffic. MPI_Iprobe drives progress without adding that RMA contention.
+inline void rma_wait_idle(MPI_Win /*window*/, MPI_Comm comm) {
   int flag = 0;
   DYNAMPI_MPI_CHECK(MPI_Iprobe, (MPI_ANY_SOURCE, MPI_ANY_TAG, comm, &flag, MPI_STATUS_IGNORE));
+  // A yield alone can immediately reschedule oversubscribed ranks. With
+  // MS-MPI that lets idle workers continuously flood the passive-target
+  // window with synchronized polls, starving in-flight task/result RMA
+  // indefinitely. Stagger ranks so they do not wake as a thundering herd.
 #if defined(_WIN32)
-  std::this_thread::yield();
+  int rank = 0;
+  DYNAMPI_MPI_CHECK(MPI_Comm_rank, (comm, &rank));
+  std::this_thread::sleep_for(std::chrono::microseconds(100 + (rank % 32) * 100));
 #else
   std::this_thread::sleep_for(std::chrono::microseconds(50));
 #endif
