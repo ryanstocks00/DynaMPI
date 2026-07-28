@@ -13,17 +13,26 @@
 #include "dynampi/mpi/mpi_communicator.hpp"
 
 TEST(MPI, ErrorCheck) {
-  MPI_Errhandler previous_handler = MPI_ERRHANDLER_NULL;
-  MPI_Comm_get_errhandler(MPI_COMM_WORLD, &previous_handler);
-  MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
-  EXPECT_THROW(DYNAMPI_MPI_CHECK(MPI_Comm_rank, (MPI_COMM_NULL, nullptr)), std::runtime_error);
+  // What's actually under test is DYNAMPI_MPI_CHECK's own logic (return code
+  // -> exception, with the formatted MPI_Error_string message included) --
+  // not any particular MPI implementation's error-checking behavior. Feeding
+  // it a genuinely invalid call (MPI_COMM_NULL, a null output pointer, ...)
+  // to *produce* that error code turned out to be unreliable across MPI
+  // builds: two different invalid-argument combinations here both segfaulted
+  // inside MPICH's own internals on this specific Aurora build (confirmed
+  // via gdb -- crashes inside MPIR_Comm_rank_impl/PMPI_Comm_rank, not in
+  // application code), regardless of MPI_ERRORS_RETURN being set on
+  // MPI_COMM_WORLD. A mock callable returning a real MPI error code exercises
+  // the exact same DYNAMPI_MPI_CHECK/mpi_fail code path (including the real
+  // MPI_Error_string formatting) without depending on any implementation's
+  // willingness to error-return instead of crash for a given invalid input.
+  auto fake_mpi_call = [](int) { return MPI_ERR_COMM; };
+  int unused = 0;
+  EXPECT_THROW(DYNAMPI_MPI_CHECK(fake_mpi_call, (unused)), std::runtime_error);
   try {
-    DYNAMPI_MPI_CHECK(MPI_Comm_rank, (MPI_COMM_NULL, nullptr));
+    DYNAMPI_MPI_CHECK(fake_mpi_call, (unused));
   } catch (const std::runtime_error &e) {
-    EXPECT_TRUE(std::string(e.what()).find("MPI error in MPI_Comm_rank") != std::string::npos);
-  }
-  if (previous_handler != MPI_ERRHANDLER_NULL) {
-    MPI_Comm_set_errhandler(MPI_COMM_WORLD, previous_handler);
+    EXPECT_TRUE(std::string(e.what()).find("MPI error in fake_mpi_call") != std::string::npos);
   }
 }
 

@@ -26,39 +26,37 @@ namespace dynampi {
 // ---------------------------------------------------------------------------
 // AsyncPutLockFreeMPIWorkDistributor
 //
-// Same lock-free task claiming as LockFreeMPIWorkDistributor (fetch-and-add
-// against HEAD_OFF, bounded by a cached read of TOTAL_OFF), but a completely
-// different result path: no MPI_Gather/MPI_Gatherv, ever, and -- as of this
-// revision -- no per-task RMA call on either side either. Every round trip
-// in the hot path covers a whole claimed *batch*, not one task:
+// Lock-free task claiming via fetch-and-add against HEAD_OFF, bounded by a
+// cached read of TOTAL_OFF, one task per claim -- this is a flat, leaf-level
+// distributor with no coordinator above it to amortize a round trip over a
+// batch on a worker's behalf; see the Hierarchical* distributors for where
+// batching still happens, at their upper/coordinator levels. No
+// MPI_Gather/MPI_Gatherv, ever, and no per-task RMA call on the harvest side
+// either. Per task:
 //
-//   worker, per batch of up to claim_batch_size tasks:
-//     1 fetch_add(HEAD_OFF)      -- claim the range
-//     1 bulk Get                 -- read all tasks in the range
-//     1 bulk Put                 -- write all results in the range
-//     1 atomic_set               -- publish one "[start,count) done" entry
-//                                    to a completion log, keyed by `start`
+//   worker:
+//     1 fetch_add(HEAD_OFF)      -- claim one task index
+//     1 Get                      -- read that task
+//     1 Put                      -- write its result
+//     1 atomic_set               -- publish a "[start,1) done" entry to a
+//                                    completion log, keyed by `start`
 //                                    (collision-free: fetch_add already
 //                                    guarantees this worker uniquely owns
 //                                    `start`, so no separate slot-allocation
 //                                    round trip is needed for the log either)
 //
-//   manager, per harvest call (however many batches are ready):
+//   manager, per harvest call (however many entries are ready):
 //     1 atomic_read(HEAD_OFF)    -- how far claiming has progressed
 //     1 bulk Get of the completion log over the unscanned range
 //     1 bulk Get of the result table over however much of that range
 //       turned out to be a contiguous run of completed entries
 //
-// i.e. O(1) round trips per batch and per harvest call, not O(batch size) or
-// O(results found). This is what actually gets close to the raw one-sided
-// atomic ceiling rma_atomic_microbench measures (~900K ops/s against a
-// single target): the earlier per-task version paid 2 extra round trips
-// *per task* on the write side and 3 *per result* on the harvest side, which
-// swamped the win from dropping the collective entirely. Every RMA call
-// here still goes through the real MPI RMA API (Fetch_and_op/Put/Get), even
-// the manager's self-targeted ones -- see harvest_ready_results() for why
-// plain local loads on the owner's own window buffer are not safe to
-// substitute (MPI_WIN_SEPARATE).
+// The harvest side still amortizes over however much is ready at once (an
+// O(1)-round-trip bulk scan, not O(results found)) -- only the claim/write
+// side is one-task-at-a-time. Every RMA call here still goes through the
+// real MPI RMA API (Fetch_and_op/Put/Get), even the manager's self-targeted
+// ones -- see harvest_ready_results() for why plain local loads on the
+// owner's own window buffer are not safe to substitute (MPI_WIN_SEPARATE).
 //
 // Results are explicitly NOT ordered: harvested in completion order (which,
 // via the completion log's contiguous-prefix scan, is close to submission
@@ -86,7 +84,6 @@ class AsyncPutLockFreeMPIWorkDistributor {
     int max_tasks = 8192;
     int max_task_count = 256;
     int max_result_count = 256;
-    int claim_batch_size = 8;
   };
 
   struct RunConfig {
@@ -197,8 +194,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
   // uninterrupted worker-side spin, which wants to publish a batch, let
   // workers run completely undisturbed for a fixed window, then harvest
   // once at the end (see AsyncPutLockFree's benchmark path in
-  // strong_scaling_distribution_rate.cpp, mirroring
-  // LockFreeMPIWorkDistributor::gather_once() for the same reason).
+  // strong_scaling_distribution_rate.cpp).
   [[nodiscard]] std::vector<ResultT> gather_once() {
     assert(is_root_manager());
     if (num_workers() == 0) {
@@ -230,16 +226,38 @@ class AsyncPutLockFreeMPIWorkDistributor {
   void run_worker() {
     assert(!is_root_manager());
 
-    // Same bounded fetch-and-add claim loop as LockFreeMPIWorkDistributor
-    // (see that class's run_worker() for the full derivation of why the
-    // request size must be bounded by a cached TOTAL_OFF read, why the
-    // claim branch must NOT be gated on !finished_seen -- a hang, found and
-    // fixed via gdb backtraces earlier -- and why pending_start/pending_end
-    // + processing the ready prefix immediately is required to avoid a
-    // claim-vs-collection deadlock). The only difference here: no
-    // maybe_participate_in_gather() at all -- there is no gather protocol
-    // in this class, results go out via one-sided Put the moment a whole
-    // claimed batch (or its ready prefix) finishes.
+    // One-task-at-a-time fetch-and-add claim loop, bounded by a cached
+    // read of TOTAL_OFF (a fresh atomic_read() only when this rank's own
+    // claimed range has caught up to what it last observed as published --
+    // cached_total is a monotonic lower bound, never an overestimate, since
+    // it's just a stale snapshot of a monotonically-increasing counter).
+    //
+    // The claim branch is deliberately NOT gated on !finished_seen:
+    // finished_seen only means "TOTAL_OFF won't grow anymore", not "stop
+    // claiming what's already known to be available" -- gating the whole
+    // branch on !finished_seen meant that once finished_seen went true,
+    // nothing could ever claim again, even a real, never-claimed gap
+    // between cached_head and a just-learned final_total (see the exit
+    // check below, which discovers and records that gap into
+    // cached_total). Confirmed via gdb backtraces on a caught hang: 15/16
+    // ranks parked in the destructor's teardown barrier while the 16th sat
+    // in an idle-wait loop forever.
+    //
+    // Even at claim size 1, HEAD_OFF (claims) can race ahead of TOTAL_OFF
+    // (publishes): with many workers each doing their own unconditional
+    // fetch_add, aggregate claim rate can outpace publish_tasks()'s rate,
+    // so a freshly claimed index can land beyond what's actually published
+    // yet. pending_start/pending_end track that unresolved remainder across
+    // iterations; a worker with a pending tail must still process whatever
+    // prefix is already ready immediately rather than blocking on the rest,
+    // since finalize() can't set FINISHED_OFF until it has collected every
+    // result -- including this worker's already-ready prefix -- so blocking
+    // here would deadlock against a manager waiting on results this worker
+    // refuses to compute.
+    //
+    // No maybe_participate_in_gather() here at all -- there is no gather
+    // protocol in this class, a result goes out via one-sided Put the
+    // moment its task finishes.
     int64_t cached_head = 0;
     int64_t cached_total = 0;
     int64_t pending_start = -1;
@@ -281,8 +299,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
         if (cached_head >= cached_total && !finished_seen) cached_total = atomic_read(TOTAL_OFF);
 
         if (cached_head < cached_total) {
-          const int64_t claim =
-              std::min<int64_t>(m_config.claim_batch_size, cached_total - cached_head);
+          const int64_t claim = 1;
           const int64_t start = fetch_add(HEAD_OFF, claim);
           const int64_t end = start + claim;
           cached_head = end;

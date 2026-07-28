@@ -44,7 +44,7 @@ using MPIDynamicWorkDistributor =
 ## Distributor Classes
 
 Full distributors (`NaiveMPIWorkDistributor`, `MPIDynamicWorkDistributor`,
-`LockFreeMPIWorkDistributor`) share a common interface:
+`AsyncPutLockFreeMPIWorkDistributor`, `Hierarchical*`) share a common interface:
 
 ```cpp
 template <typename TaskT, typename ResultT, typename... Options>
@@ -149,10 +149,10 @@ struct Statistics {
     // std::optional<std::vector<size_t>> worker_task_counts;  // hierarchical
 };
 
-// LockFreeMPIWorkDistributor
+// AsyncPutLockFreeMPIWorkDistributor (Hierarchical* distributors do not
+// currently support statistics)
 struct Statistics {
     const CommStatistics& comm_statistics;
-    std::vector<size_t> worker_task_counts;
 };
 ```
 

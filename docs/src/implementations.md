@@ -5,8 +5,10 @@
 
 # Distributor Implementations
 
-DynaMPI provides three full-featured distributors plus a minimal lock-free
-parallel-for helper.
+DynaMPI provides two full-featured distributors plus a minimal lock-free
+parallel-for helper (see `include/dynampi/impl/` for the newer
+RMA-based `AsyncPutLockFreeMPIWorkDistributor` and `Hierarchical*`
+distributors, not yet documented here).
 
 ---
 
@@ -107,20 +109,15 @@ while not done:
 
 ---
 
-## LockFreeMPIWorkDistributor
+## MinimalLockFreeMPIWorkDistributor
 
-**Best for:** fine-grained tasks where passive-target RMA progress is strong,
-and you want to avoid a two-sided request/response handshake per task.
+**Best for:** embarrassingly parallel index loops (`size_t → ResultT`) where
+the task payload is just the loop index and you want to avoid a two-sided
+request/response handshake per task.
 
 Workers claim work by atomically advancing a shared counter on the manager's
-MPI window (`MPI_Fetch_and_op`) and deposit results with `MPI_Put` under
-`MPI_Win_lock_all`.  Supports arbitrary `TaskT` / `ResultT` (with fixed
-capacity limits), incremental `insert_task(s)` / `run_tasks`, and ordered
-results.
-
-There is also **`MinimalLockFreeMPIWorkDistributor<ResultT>`**: a smaller
-API for embarrassingly parallel index loops (`size_t → ResultT`) that claims
-indices with one atomic counter and gathers results once at the end.
+MPI window (`MPI_Fetch_and_op`) under `MPI_Win_lock_all`, execute locally,
+and results are gathered once at the end via `MPI_Gatherv`.
 
 ### Protocol (sketch)
 
@@ -128,27 +125,22 @@ indices with one atomic counter and gathers results once at the end.
 Workers (lock_all once):
   while true:
     idx ← Fetch_and_op(+1, head)
-    if idx >= total_tasks: exit (or wait for more / shutdown)
-    result = worker_function(task[idx])
-    Put(result) → manager; signal completion
+    if idx >= n_tasks: break
+    local_results.append(idx, worker_function(idx))
 
-Manager:
-  insert_task(s) bumps total_tasks / publishes payloads in the window
-  poll / gather completed results into run_tasks() return value
-  finalize() sets finished flag and drains remaining work
+gather_sorted(local_results) on manager
 ```
 
-- **Communication:** Passive-target RMA (`MPI_Win_lock_all`, `Fetch_and_op`, `Put`)
-- **Ordering:** Ordered by task ID (`ordered = true`)
-- **Prioritization:** Not supported (priority argument is ignored if enabled)
+- **Communication:** Passive-target RMA (`MPI_Win_lock_all`, `Fetch_and_op`) plus one `MPI_Gatherv` at the end
+- **Ordering:** Ordered by task ID
+- **Prioritization:** Not supported
 
-### Configuration
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `max_tasks` | `int` | `8192` | Lifetime capacity of task/result tables |
-| `max_task_count` | `int` | `256` | Max elements per resizable `TaskT` |
-| `max_result_count` | `int` | `256` | Max elements per resizable `ResultT` |
+For arbitrary task/result payloads, incremental result collection, or
+scaling past a couple hundred ranks, use `AsyncPutLockFreeMPIWorkDistributor`
+or one of the `Hierarchical*` distributors instead — see their headers under
+`include/dynampi/impl/` (a from-scratch RMA-based design that batches claims
+at coordinator levels rather than a `MinimalLockFreeMPIWorkDistributor`
+CAS/Gatherv round in the hot path).
 
 Design background (historical fence-based prototype and MPICH notes): see
 [Lock-Free Design](mpi_compare_and_swap_design.md).
@@ -161,17 +153,17 @@ Design background (historical fence-based prototype and MPICH notes): see
 |----------|-----|
 | < ~64 ranks, need ordered results / prioritization | `NaiveMPIWorkDistributor` |
 | 100+ ranks, multi-node (default) | `MPIDynamicWorkDistributor` |
-| Fine-grained tasks, good RMA progress | `LockFreeMPIWorkDistributor` |
 | Static index parallel-for only | `MinimalLockFreeMPIWorkDistributor` |
+| Fine-grained tasks, high scale, RMA-only hot path | `AsyncPutLockFreeMPIWorkDistributor` / `Hierarchical*` |
 
 ## Comparison
 
-| Feature | Naive | MPIDynamic (hierarchical) | LockFree |
+| Feature | Naive | MPIDynamic (hierarchical) | MinimalLockFree |
 |---------|-------|---------------------------|----------|
-| Communication | Two-sided | Two-sided + batching | Passive RMA |
+| Communication | Two-sided | Two-sided + batching | Passive RMA + one Gatherv |
 | Ordered results | Yes | No | Yes |
 | Task prioritisation | Yes | No | No |
-| Statistics | Yes | Yes | Yes |
+| Statistics | Yes | Yes | No |
 | Node-aware topology | No | Yes | No |
-| Manager bottleneck | O(W) messages | O(coordinators) | Atomic claim + Put |
-| Max practical ranks | ~64 | ~1000+ | MPI-RMA dependent |
+| Manager bottleneck | O(W) messages | O(coordinators) | Atomic claim + one Gatherv |
+| Max practical ranks | ~64 | ~1000+ | Low hundreds (Gatherv-bound) |

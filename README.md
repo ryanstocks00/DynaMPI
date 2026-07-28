@@ -44,8 +44,8 @@ auto worker_task = [](size_t task) -> size_t { return task * task; };
 auto result = dynampi::mpi_manager_worker_distribution<size_t>(4, worker_task);
 if (result.has_value()) {
   // Manager: one result per task. Default distributor is hierarchical and
-  // unordered — use NaiveMPIWorkDistributor or LockFreeMPIWorkDistributor
-  // if you need results in task-index order.
+  // unordered — use NaiveMPIWorkDistributor if you need results in
+  // task-index order.
   assert(result->size() == 4);
 }
 ```

@@ -16,7 +16,6 @@ set(benchmarks
     timer_resolution
     shutdown_time
     rma_atomic_microbench
-    async_put_lockfree_isolated_bench
 )
 
 foreach(benchmark IN LISTS benchmarks)

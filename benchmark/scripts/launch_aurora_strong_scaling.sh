@@ -60,10 +60,7 @@ echo "Allocated cores per node: ${ALLOC_CORES_PER_NODE}"
 export FI_CXI_RX_MATCH_MODE=software
 
 mkdir -p "${OUTPUT_DIR}"
-# v2: distinct filename from the pre-max_upper_fanout strong_scaling_${SYSTEM}.csv --
-# that file's header has no max_upper_fanout column, so appending new rows to it
-# would silently misalign columns.
-CSV="${OUTPUT_DIR}/strong_scaling_v2_${SYSTEM}.csv"
+CSV="${OUTPUT_DIR}/strong_scaling_${SYSTEM}.csv"
 
 for nodes in "${NODE_LIST[@]}"; do
   for rpn in "${RANKS_PER_NODE_LIST[@]}"; do

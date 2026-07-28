@@ -31,7 +31,7 @@ if [[ -z "${LAUNCHER}" ]]; then
 fi
 
 mkdir -p "${OUTPUT_DIR}"
-CSV="${OUTPUT_DIR}/strong_scaling_v2_${SYSTEM}.csv"
+CSV="${OUTPUT_DIR}/strong_scaling_${SYSTEM}.csv"
 
 for ranks in "${RANK_LIST[@]}"; do
   for dist in "${DISTRIBUTIONS[@]}"; do

@@ -590,7 +590,6 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     int manager_rank = 0;
     bool auto_run_workers = true;
     int leader_batch_multiplier = 2;  // coordinators claim (local peers)*multiplier tasks at once
-    int local_batch_size = 8;  // local workers claim this many tasks at once from their coordinator
     int max_tasks = 8192;      // leader-level task table capacity (lifetime total)
     int max_local_tasks = 8192;  // per-node local task table capacity (lifetime total, per node)
     int max_task_count = 256;
@@ -883,13 +882,17 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     MPIGroup world_group(m_world_comm);
     const int local_peers = m_local_comm.has_value() ? std::max(0, m_local_comm->size() - 1) : 0;
     const int multiplier = std::max(1, m_config.leader_batch_multiplier);
-    // The level feeding this rank's own local_level (or its own direct
-    // compute, for a leaf leader-worker) is sized by that rank's own
-    // downstream fan-out -- see the old setup_levels()'s claim_batch_size
-    // comment (unchanged reasoning, just renamed). Anything feeding an
-    // *intermediate* group level instead is sized by that group's raw
-    // membership -- see feed_size's updates below.
-    const int leaf_claim = local_peers > 0 ? std::max(1, local_peers * multiplier) : multiplier;
+    // A real node coordinator (local_peers > 0) claims from its parent in
+    // batches sized by its own downstream fan-out, to keep its local workers
+    // fed -- that's still "further up the chain" batching, on behalf of
+    // many claimants below it. A leaf leader-worker (local_peers == 0, no
+    // local_level at all) has no one to relay for: it claims and computes
+    // directly against this same level itself, so per the leaf-claims-one
+    // rule (see run_leaf_leader_worker()) that claim must be 1, not a
+    // multiplier-sized batch. Anything feeding an *intermediate* group level
+    // instead is sized by that group's raw membership -- see feed_size's
+    // updates below.
+    const int leaf_claim = local_peers > 0 ? std::max(1, local_peers * multiplier) : 1;
 
     const int effective_fanout =
         m_config.max_upper_fanout > 0 ? m_config.max_upper_fanout : std::numeric_limits<int>::max();
@@ -994,7 +997,10 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
       local_cfg.max_tasks = m_config.max_local_tasks;
       local_cfg.max_task_count = m_config.max_task_count;
       local_cfg.max_result_count = m_config.max_result_count;
-      local_cfg.claim_batch_size = m_config.local_batch_size;
+      // Local workers claim one task at a time from their node coordinator
+      // (same-node RMA -- cheap; batching belongs further up the chain, at
+      // a coordinator's own claim from its parent, not at this leaf level).
+      local_cfg.claim_batch_size = 1;
       m_local_level.emplace(local_cfg);
     }
   }

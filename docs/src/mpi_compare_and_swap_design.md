@@ -5,9 +5,18 @@
 
 # Lock-Free RMA Distributor — Design Notes
 
-These notes document the design that became
-`LockFreeMPIWorkDistributor` / `MinimalLockFreeMPIWorkDistributor`.
+These notes document the design that became `MinimalLockFreeMPIWorkDistributor`.
 For the user-facing summary, see [Implementations](implementations.md).
+
+!!! note "LockFreeMPIWorkDistributor removed"
+    The arbitrary-payload, CAS-based `LockFreeMPIWorkDistributor` this
+    document originally also covered has been removed: its result path
+    (`MPI_Barrier` + `MPI_Gather`/`MPI_Gatherv` per round) scales badly
+    under heavy oversubscription, measured taking 50+ seconds (sometimes
+    timing out entirely) for a trivial test at 150-204 ranks on 2 nodes.
+    Use `AsyncPutLockFreeMPIWorkDistributor` or one of the `Hierarchical*`
+    distributors instead — no collectives on the hot path, and batching
+    happens at coordinator levels rather than per flat claim.
 
 !!! note "Historical context"
     An earlier fence-based one-sided prototype (`OneSidedMPIWorkDistributor`)
@@ -26,12 +35,13 @@ For the user-facing summary, see [Implementations](implementations.md).
 ## Rationale
 
 Passive-target RMA avoids a two-sided request/response handshake per task.
-Workers claim indices (or task slots) with `MPI_Fetch_and_op` and publish
-results with `MPI_Put`.
+Workers claim indices with `MPI_Fetch_and_op` and results are gathered once
+at the end.
 
 `MinimalLockFreeMPIWorkDistributor` restricts tasks to loop indices
-(`size_t`).  `LockFreeMPIWorkDistributor` stores arbitrary task/result
-payloads in fixed-capacity window slots.
+(`size_t`) -- see `AsyncPutLockFreeMPIWorkDistributor` (and the
+`Hierarchical*` variants) for arbitrary task/result payloads in
+fixed-capacity window slots.
 
 ## Data Layout (conceptual)
 
@@ -39,13 +49,9 @@ Manager window (simplified):
 
 ```
   Offset 0:   head_idx / claim counter   (int64)  ← Fetch_and_op by workers
-  Offset 8:   total_tasks                 (int64)  ← written by manager
-  Offset 16:  finished / control flags    (int64)
-  …         task and result slot tables
 ```
 
-Exact offsets and gather sequencing live in
-`include/dynampi/impl/lockfree_distributor.hpp`.
+Exact offsets live in `include/dynampi/impl/lockfree_distributor.hpp`.
 
 ## Synchronisation
 
@@ -72,14 +78,12 @@ gather_sorted(local_results) on manager
 |---|---|---|
 | Barriers per round | 3 collective fences | 0 |
 | Lock/unlock per task | 0 | 0 (`lock_all` once) |
-| RMA per task | Puts in fence epochs | Fetch_and_op + Put (+ gather) |
-| Arbitrary task types | Yes (slot based) | Yes (`LockFreeMPIWorkDistributor`) |
+| RMA per task | Puts in fence epochs | Fetch_and_op (+ one gather at the end) |
 | Index-only fast path | — | `MinimalLockFreeMPIWorkDistributor` |
 
 ## Implementation checklist (shipped)
 
-1. `LockFreeMPIWorkDistributor<TaskT, ResultT, Options...>` with
-   `insert_task(s)` / `run_tasks` / `finish_remaining_tasks`.
-2. `MinimalLockFreeMPIWorkDistributor<ResultT>` for index parallel-for.
-3. Manager window created on the root; workers attach with a placeholder base.
-4. Capacity limits via `Config::max_tasks`, `max_task_count`, `max_result_count`.
+1. `MinimalLockFreeMPIWorkDistributor<ResultT>` for index parallel-for.
+2. Manager window created on the root; workers attach with a placeholder base.
+3. `Config::comm` / `manager_rank` only -- no per-task capacity limits needed
+   since the task payload is just the loop index.

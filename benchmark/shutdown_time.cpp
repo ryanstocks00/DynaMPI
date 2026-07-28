@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <cxxopts.hpp>
 #include <dynampi/impl/hierarchical_distributor.hpp>
-#include <dynampi/impl/lockfree_distributor.hpp>
 #include <dynampi/impl/naive_distributor.hpp>
 #include <dynampi/mpi/mpi_communicator.hpp>
 #include <dynampi/utilities/timer.hpp>
@@ -19,7 +18,7 @@
 using Task = uint32_t;
 using Result = uint32_t;
 
-enum class DistributorKind { Naive, Hierarchical, LockFree };
+enum class DistributorKind { Naive, Hierarchical };
 
 struct BenchmarkOptions {
   DistributorKind distributor = DistributorKind::Naive;
@@ -38,7 +37,6 @@ struct BenchmarkResult {
 static DistributorKind parse_distributor(const std::string& value) {
   if (value == "naive") return DistributorKind::Naive;
   if (value == "hierarchical") return DistributorKind::Hierarchical;
-  if (value == "lockfree") return DistributorKind::LockFree;
   throw std::runtime_error("Unknown distributor: " + value);
 }
 
@@ -48,8 +46,6 @@ static std::string to_string(DistributorKind kind) {
       return "naive";
     case DistributorKind::Hierarchical:
       return "hierarchical";
-    case DistributorKind::LockFree:
-      return "lockfree";
   }
   return "unknown";
 }
@@ -139,7 +135,7 @@ int main(int argc, char** argv) {
 
   cxxopts::Options options("shutdown_time",
                            "Benchmark distributor construct/shutdown time with no tasks");
-  options.add_options()("D,distribution", "Distribution strategy: naive, hierarchical, or lockfree",
+  options.add_options()("D,distribution", "Distribution strategy: naive or hierarchical",
                         cxxopts::value<std::string>()->default_value("naive"))(
       "n,nodes", "Number of nodes for labeling output (defaults to world size)",
       cxxopts::value<uint64_t>()->default_value("0"))(
@@ -198,9 +194,6 @@ int main(int argc, char** argv) {
         break;
       case DistributorKind::Hierarchical:
         result = run_benchmark<dynampi::HierarchicalMPIWorkDistributor<Task, Result>>(opts, comm);
-        break;
-      case DistributorKind::LockFree:
-        result = run_benchmark<dynampi::LockFreeMPIWorkDistributor<Task, Result>>(opts, comm);
         break;
     }
 

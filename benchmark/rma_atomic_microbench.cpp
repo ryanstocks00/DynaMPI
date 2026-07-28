@@ -1,8 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Ryan Stocks
 // SPDX-License-Identifier: Apache-2.0
 
-// Measures the raw ceiling of the one-sided RMA atomics LockFreeMPIWorkDistributor
-// and AsyncPutLockFreeMPIWorkDistributor build on top of: MPI_Fetch_and_op
+// Measures the raw ceiling of the one-sided RMA atomics the lock-free
+// distributors (MinimalLockFreeMPIWorkDistributor, AsyncPutLockFreeMPIWorkDistributor,
+// and the Hierarchical* variants) build on top of: MPI_Fetch_and_op
 // (and MPI_Compare_and_swap for comparison) against a single int64 counter on
 // rank 0's window, hammered concurrently by every other rank. No task claiming,
 // no result staging, no gather rounds -- just the bare primitive, so this

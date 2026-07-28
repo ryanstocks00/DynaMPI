@@ -33,7 +33,7 @@ if [[ -z "${LAUNCHER}" ]]; then
 fi
 
 mkdir -p "${OUTPUT_DIR}"
-CSV="${OUTPUT_DIR}/strong_scaling_v2_${SYSTEM}.csv"
+CSV="${OUTPUT_DIR}/strong_scaling_${SYSTEM}.csv"
 
 for nodes in "${NODE_LIST[@]}"; do
   for rpn in "${RANKS_PER_NODE_LIST[@]}"; do

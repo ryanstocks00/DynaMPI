@@ -117,7 +117,6 @@ class DynamicDistribution : public ::testing::Test {
 
 using DistributerTypes =
     ::testing::Types<DistributerTypeWrapper<dynampi::NaiveMPIWorkDistributor>,
-                     DistributerTypeWrapper<dynampi::LockFreeMPIWorkDistributor>,
                      HierarchicalDistributerTypeWrapper<true>,
                      HierarchicalDistributerTypeWrapper<false>,
                      HierarchicalNonBlockingDistributerTypeWrapper<true>,
@@ -326,7 +325,6 @@ TYPED_TEST(DynamicDistribution, PriorityQueue) {
   using Result = int;
   using Distributer = DistributerOf<TypeParam, Task, Result, dynampi::enable_prioritization>;
   if (!Distributer::ordered ||
-      is_specialization_of<dynampi::LockFreeMPIWorkDistributor, Distributer>::value ||
       is_specialization_of<dynampi::AsyncPutLockFreeMPIWorkDistributor, Distributer>::value) {
     GTEST_SKIP() << "This test requires ordered results with priority, which is not supported by "
                     "this distributer.";
@@ -374,7 +372,6 @@ TYPED_TEST(DynamicDistribution, Statistics) {
       // Message-passing distributors send bare TaskT values. Lock-free RMA
       // paths also count window headers and atomics via MPICommunicator.
       constexpr bool is_rma =
-          is_specialization_of<dynampi::LockFreeMPIWorkDistributor, Distributer>::value ||
           is_specialization_of<dynampi::AsyncPutLockFreeMPIWorkDistributor, Distributer>::value;
       if constexpr (is_rma) {
         if (expected_size > 0) {
@@ -442,8 +439,8 @@ TYPED_TEST(DynamicDistribution, AutoRunWorkers) {
 }
 
 // gather_once() is the non-looping snapshot API used by the strong-scaling
-// bench to avoid per-retry Barrier/Gather (LockFree) or busy-spin harvest
-// (AsyncPut). Only those two distributors expose it.
+// bench to avoid per-retry busy-spin harvest. Only AsyncPutLockFree exposes
+// it.
 //
 // Under SMPI, busy-polling gather_once() (or OS-sleeping in workers) can
 // starve other ranks: AsyncPut's harvest is pure RMA and may not yield the
@@ -453,7 +450,6 @@ TYPED_TEST(DynamicDistribution, AutoRunWorkers) {
 TYPED_TEST(DynamicDistribution, GatherOnce) {
   using Distributer = DistributerOf<TypeParam, int, int>;
   constexpr bool has_gather_once =
-      is_specialization_of<dynampi::LockFreeMPIWorkDistributor, Distributer>::value ||
       is_specialization_of<dynampi::AsyncPutLockFreeMPIWorkDistributor, Distributer>::value;
   if constexpr (!has_gather_once) {
     GTEST_SKIP() << "gather_once is only on lock-free RMA distributors";
@@ -554,25 +550,12 @@ TEST(MinimalLockFree, EmptyAndReusable) {
 }
 
 TEST(LockFreeCapacity, RejectsTaskTableOverflow) {
-  {
-    using Distributor = dynampi::LockFreeMPIWorkDistributor<int, int>;
-    Distributor::Config config;
-    config.comm = MPI_COMM_SELF;
-    config.max_tasks = 1;
-    Distributor dist([](int task) { return task; }, config);
-    dist.insert_task(1);
-    EXPECT_THROW(dist.insert_task(2), std::length_error);
-    EXPECT_EQ(dist.finish_remaining_tasks(), (std::vector<int>{1}));
-  }
-
-  {
-    using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<int, int>;
-    Distributor::Config config;
-    config.comm = MPI_COMM_SELF;
-    config.max_tasks = 1;
-    Distributor dist([](int task) { return task; }, config);
-    EXPECT_THROW(dist.insert_tasks(std::vector<int>{1, 2}), std::length_error);
-  }
+  using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<int, int>;
+  Distributor::Config config;
+  config.comm = MPI_COMM_SELF;
+  config.max_tasks = 1;
+  Distributor dist([](int task) { return task; }, config);
+  EXPECT_THROW(dist.insert_tasks(std::vector<int>{1, 2}), std::length_error);
 }
 
 TEST(AsyncPutLevel, SingletonCommunicator) {
@@ -822,13 +805,6 @@ TEST(LockFreeFinalization, DrainsOutstandingWork) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
     return task;
   };
-
-  {
-    using Distributor = dynampi::LockFreeMPIWorkDistributor<int, int>;
-    Distributor dist(slow_worker);
-    if (dist.is_root_manager()) dist.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8});
-    dist.finalize();
-  }
 
   {
     using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<int, int>;
