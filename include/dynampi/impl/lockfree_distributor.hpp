@@ -41,10 +41,18 @@ inline int mpi_type_size_bytes() {
 
 inline constexpr size_t round_up_8(size_t bytes) { return (bytes + 7) & ~static_cast<size_t>(7); }
 
-inline void write_bytes(std::byte* buffer, [[maybe_unused]] size_t buffer_size, size_t offset,
-                        const void* src, size_t nbytes) {
+inline void write_bytes(std::byte* buffer, size_t buffer_size, size_t offset, const void* src,
+                        size_t nbytes) {
   if (nbytes == 0) return;
-  assert(offset <= buffer_size && nbytes <= buffer_size - offset);
+  // Runtime range gate (not assert-only): GCC 14 -Wstringop-overflow treats an
+  // unconstrained size_t length as possibly near SIZE_MAX and false-positives
+  // on fortified memcpy into buffer+offset under -Werror. Cap against
+  // ptrdiff_t max so the length is proven below the "maximum object size".
+  constexpr size_t kMaxObjectSize = static_cast<size_t>(std::numeric_limits<std::ptrdiff_t>::max());
+  if (nbytes > kMaxObjectSize || offset > buffer_size || nbytes > buffer_size - offset) {
+    assert(false && "write_bytes out of range");
+    return;
+  }
   std::memcpy(buffer + offset, src, nbytes);
 }
 
@@ -61,10 +69,14 @@ inline void write_i64(std::byte* buffer, size_t buffer_size, size_t offset, int6
 }
 
 template <typename T>
-inline void read_result_bytes(const std::byte* buffer, [[maybe_unused]] size_t buffer_size,
-                              size_t offset, T& value, size_t data_bytes) {
+inline void read_result_bytes(const std::byte* buffer, size_t buffer_size, size_t offset, T& value,
+                              size_t data_bytes) {
   if (data_bytes == 0) return;
-  assert(offset <= buffer_size && data_bytes <= buffer_size - offset);
+  constexpr size_t kMaxObjectSize = static_cast<size_t>(std::numeric_limits<std::ptrdiff_t>::max());
+  if (data_bytes > kMaxObjectSize || offset > buffer_size || data_bytes > buffer_size - offset) {
+    assert(false && "read_result_bytes out of range");
+    return;
+  }
   if constexpr (MPI_Type<T>::resize_required) {
     // cppcheck-suppress invalidPointerCast
     std::memcpy(MPI_Type<T>::ptr(value), buffer + offset, data_bytes);
@@ -719,13 +731,14 @@ class LockFreeMPIWorkDistributor {
     }
 
     const int count = MPI_Type<TaskT>::count(task);
+    assert(count >= 0);
     assert(static_cast<size_t>(count) <= m_max_task_count &&
            "LockFree: task exceeds max_task_count");
     const size_t data_bytes = static_cast<size_t>(count) * m_task_elem;
 
     std::vector<std::byte> buffer(T_DATA + data_bytes);
     detail::write_i64(buffer.data(), buffer.size(), T_COUNT, count);
-    if (count > 0) {
+    if (data_bytes > 0) {
       detail::write_bytes(buffer.data(), buffer.size(), T_DATA, MPI_Type<TaskT>::ptr(task),
                           data_bytes);
     }
