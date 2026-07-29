@@ -699,67 +699,50 @@ TEST(HierarchicalAsyncPutLockFree, RunTasksMaxTasks) {
   }
 }
 
-// Forces real multi-round grouping of the upper hierarchy (see
-// max_upper_fanout's class comment) whenever this test runs across enough
-// physical nodes to have more than 2 node coordinators -- e.g. at 512 ranks
-// / 64 nodes (8 ranks/node -> 64 coordinators), fanout=2 forces 6 rounds of
-// grouping (64->32->16->8->4->2->1), exercising several ranks' promotion
-// through multiple owned upper levels, not just one. At small (single-node)
-// rank counts this degenerates to the same single flat level as
-// max_upper_fanout=0 (only one coordinator exists), which is still a useful
-// no-op-path regression check.
-TEST(HierarchicalAsyncPutLockFree, GroupedUpperHierarchy) {
-  using Task = int;
-  using Result = int;
-  using Distributer = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, Result>;
-  auto worker_task = [](Task task) -> Result { return task * task; };
-
-  Distributer::Config config;
-  config.max_upper_fanout = 2;
-  config.max_local_group_size = 2;
+// Shared body for the hierarchical upper-chain topology tests below.
+// Both HierarchicalMPIWorkDistributor and
+// HierarchicalAsyncPutLockFreeMPIWorkDistributor expose the same
+// max_upper_fanout / max_local_group_size Config knobs and the same
+// insert_tasks / finish_remaining_tasks manager API, so one helper covers
+// send/recv and RMA. Keep the TEST() names distinct: Open MPI 4's
+// osc/pt2pt workaround in test/CMakeLists.txt filters the AsyncPut
+// variants by exact suite.test name.
+template <typename Distributer>
+void expect_upper_hierarchy_squares(typename Distributer::Config config) {
+  auto worker_task = [](int task) -> int { return task * task; };
   Distributer work_distributer(worker_task, config);
-  if (work_distributer.is_root_manager()) {
-    constexpr int kNumTasks = 500;
-    std::vector<Task> tasks(kNumTasks);
-    for (int i = 0; i < kNumTasks; ++i) tasks[i] = i;
-    work_distributer.insert_tasks(tasks);
-    auto results = work_distributer.finish_remaining_tasks();
-    std::sort(results.begin(), results.end());
-    std::vector<Result> expected(kNumTasks);
-    for (int i = 0; i < kNumTasks; ++i) expected[i] = i * i;
-    EXPECT_EQ(results, expected);
-  }
+  if (!work_distributer.is_root_manager()) return;
+
+  constexpr int kNumTasks = 500;
+  std::vector<int> tasks(kNumTasks);
+  for (int i = 0; i < kNumTasks; ++i) tasks[i] = i;
+  work_distributer.insert_tasks(tasks);
+  auto results = work_distributer.finish_remaining_tasks();
+  std::sort(results.begin(), results.end());
+  std::vector<int> expected(kNumTasks);
+  for (int i = 0; i < kNumTasks; ++i) expected[i] = i * i;
+  EXPECT_EQ(results, expected);
 }
 
-// Forces real multi-round grouping of the leader hierarchy (see
-// max_upper_fanout's class comment) whenever this test runs across enough
-// physical nodes to have more than 2 node coordinators -- mirrors
-// HierarchicalAsyncPutLockFree.GroupedUpperHierarchy above, same idea over
-// send/recv instead of RMA windows. max_local_group_size=2 synthesizes
-// multiple coordinators on a single shared-memory node so CI (and any
-// single-node job) still exercises the grouping path rather than
-// degenerating to the flat leader group.
-TEST(Hierarchical, GroupedUpperHierarchy) {
-  using Task = int;
-  using Result = int;
-  using Distributer = dynampi::HierarchicalMPIWorkDistributor<Task, Result>;
-  auto worker_task = [](Task task) -> Result { return task * task; };
-
-  Distributer::Config config;
+// Forces real multi-round grouping of the upper hierarchy (see
+// max_upper_fanout's class comment). max_local_group_size=2 synthesizes
+// multiple coordinators on a single shared-memory node so CI still
+// exercises the grouping path; at tiny rank counts this degenerates to
+// the flat level, which is still a useful no-op-path regression check.
+TEST(HierarchicalAsyncPutLockFree, GroupedUpperHierarchy) {
+  using Dist = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;
+  Dist::Config config;
   config.max_upper_fanout = 2;
   config.max_local_group_size = 2;
-  Distributer work_distributer(worker_task, config);
-  if (work_distributer.is_root_manager()) {
-    constexpr int kNumTasks = 500;
-    std::vector<Task> tasks(kNumTasks);
-    for (int i = 0; i < kNumTasks; ++i) tasks[i] = i;
-    work_distributer.insert_tasks(tasks);
-    auto results = work_distributer.finish_remaining_tasks();
-    std::sort(results.begin(), results.end());
-    std::vector<Result> expected(kNumTasks);
-    for (int i = 0; i < kNumTasks; ++i) expected[i] = i * i;
-    EXPECT_EQ(results, expected);
-  }
+  expect_upper_hierarchy_squares<Dist>(config);
+}
+
+TEST(Hierarchical, GroupedUpperHierarchy) {
+  using Dist = dynampi::HierarchicalMPIWorkDistributor<int, int>;
+  Dist::Config config;
+  config.max_upper_fanout = 2;
+  config.max_local_group_size = 2;
+  expect_upper_hierarchy_squares<Dist>(config);
 }
 
 // Exercises Config::max_upper_fanout auto mode (default -1).
@@ -767,54 +750,22 @@ TEST(Hierarchical, GroupedUpperHierarchy) {
 // world size > 33 that crosses the flat-topology cutoff (~32) so the
 // sqrt-based fanout pick and multi-round grouping both run. At smaller
 // rank counts this stays on the flat auto path, which is still a useful
-// smoke check.
+// smoke check. AsyncPut variant is excluded from Open MPI 4's default
+// suite and run under osc/pt2pt (see test/CMakeLists.txt).
 TEST(Hierarchical, AutoFanoutUpperHierarchy) {
-  using Task = int;
-  using Result = int;
-  using Distributer = dynampi::HierarchicalMPIWorkDistributor<Task, Result>;
-  auto worker_task = [](Task task) -> Result { return task * task; };
-
-  Distributer::Config config;
+  using Dist = dynampi::HierarchicalMPIWorkDistributor<int, int>;
+  Dist::Config config;
   config.max_upper_fanout = -1;
   config.max_local_group_size = 1;
-  Distributer work_distributer(worker_task, config);
-  if (work_distributer.is_root_manager()) {
-    constexpr int kNumTasks = 500;
-    std::vector<Task> tasks(kNumTasks);
-    for (int i = 0; i < kNumTasks; ++i) tasks[i] = i;
-    work_distributer.insert_tasks(tasks);
-    auto results = work_distributer.finish_remaining_tasks();
-    std::sort(results.begin(), results.end());
-    std::vector<Result> expected(kNumTasks);
-    for (int i = 0; i < kNumTasks; ++i) expected[i] = i * i;
-    EXPECT_EQ(results, expected);
-  }
+  expect_upper_hierarchy_squares<Dist>(config);
 }
 
-// Same auto-fanout coverage as Hierarchical.AutoFanoutUpperHierarchy, over
-// the RMA upper chain. On Open MPI 4 this is excluded from the default
-// mpi_test_* suite and run under osc/pt2pt (see test/CMakeLists.txt).
 TEST(HierarchicalAsyncPutLockFree, AutoFanoutUpperHierarchy) {
-  using Task = int;
-  using Result = int;
-  using Distributer = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, Result>;
-  auto worker_task = [](Task task) -> Result { return task * task; };
-
-  Distributer::Config config;
+  using Dist = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;
+  Dist::Config config;
   config.max_upper_fanout = -1;
   config.max_local_group_size = 1;
-  Distributer work_distributer(worker_task, config);
-  if (work_distributer.is_root_manager()) {
-    constexpr int kNumTasks = 500;
-    std::vector<Task> tasks(kNumTasks);
-    for (int i = 0; i < kNumTasks; ++i) tasks[i] = i;
-    work_distributer.insert_tasks(tasks);
-    auto results = work_distributer.finish_remaining_tasks();
-    std::sort(results.begin(), results.end());
-    std::vector<Result> expected(kNumTasks);
-    for (int i = 0; i < kNumTasks; ++i) expected[i] = i * i;
-    EXPECT_EQ(results, expected);
-  }
+  expect_upper_hierarchy_squares<Dist>(config);
 }
 
 TEST(HierarchicalAsyncPutLockFree, SingletonGatherAndFinalize) {
