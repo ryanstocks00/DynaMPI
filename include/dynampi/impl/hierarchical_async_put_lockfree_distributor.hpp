@@ -950,7 +950,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
         return fanout;
       }
       return m_config.max_upper_fanout > 0 ? m_config.max_upper_fanout
-                                            : std::numeric_limits<int>::max();
+                                           : std::numeric_limits<int>::max();
     }();
 
     if (coordinator_count <= effective_fanout) {
@@ -1197,7 +1197,8 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
       const size_t chunk = std::min(available, static_cast<size_t>(front.child_len));
       std::vector<ResultT> slice(
           std::make_move_iterator(hop.relay_buffer.begin() + static_cast<ptrdiff_t>(consumed)),
-          std::make_move_iterator(hop.relay_buffer.begin() + static_cast<ptrdiff_t>(consumed + chunk)));
+          std::make_move_iterator(hop.relay_buffer.begin() +
+                                  static_cast<ptrdiff_t>(consumed + chunk)));
       hop.parent->write_result_range(front.parent_start, slice);
       consumed += chunk;
       hop.pending_task_count -= static_cast<int64_t>(chunk);

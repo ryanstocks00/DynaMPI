@@ -144,9 +144,12 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   // direct leader-layer children at that round -- the manager always owns
   // exactly the top round, even when grouping is disabled/unneeded), and
   // every non-manager leader-layer rank has exactly one m_leader_parent_group
-  // whose rank 0 is its immediate parent. When grouping is disabled or the
-  // coordinator count already fits, this degenerates to exactly one round:
-  // byte-for-byte today's single flat group.
+  // whose owner is its immediate parent (the manager when that group includes
+  // them -- looked up by manager_rank, since flat/top groups are keyed by
+  // world rank so the manager need not be group rank 0; otherwise group rank
+  // 0, the intermediate group leader by construction). When grouping is
+  // disabled or the coordinator count already fits, this degenerates to
+  // exactly one round: byte-for-byte today's single flat group.
   std::vector<MPIGroup> m_owned_leader_levels;
   std::optional<MPIGroup> m_leader_parent_group;
 
@@ -184,7 +187,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       return fanout;
     }
     return m_config.max_upper_fanout > 0 ? m_config.max_upper_fanout
-                                          : std::numeric_limits<int>::max();
+                                         : std::numeric_limits<int>::max();
   }
 
   // Builds the leader layer (manager + node coordinators), optionally
@@ -263,8 +266,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     // Attach to the manager: every ORIGINAL member of flat_comm (manager +
     // every coordinator, whether promoted zero, one, or many times) reaches
     // this exact call.
-    auto top_opt =
-        flat_comm.split((is_manager || is_final_round_leader) ? 0 : MPI_UNDEFINED, flat_comm.rank());
+    auto top_opt = flat_comm.split((is_manager || is_final_round_leader) ? 0 : MPI_UNDEFINED,
+                                   flat_comm.rank());
     if (top_opt.has_value()) {
       MPIGroup top_group(*top_opt);
       if (is_manager) {
@@ -300,9 +303,22 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         // m_leader_parent_group -- the manager directly when grouping is
         // disabled/unneeded or I'm in the top round, or a higher-level
         // leader if grouping promoted me but not all the way up.
+        //
+        // Flat/top groups include the manager but are keyed by world rank,
+        // so the manager is not necessarily group rank 0 when
+        // manager_rank != 0 (mirrors AsyncPut's owner_rank lookup).
+        // Intermediate grouping levels never include the manager; their
+        // owner is group rank 0 by construction of the color/key split.
         DYNAMPI_ASSERT(m_leader_parent_group.has_value(),
                        "Non-manager leader-layer rank must have a parent group");
-        int parent_world_rank = m_leader_parent_group->translate_rank(0, m_world_group);
+        int parent_in_group = 0;
+        const int manager_in_group =
+            m_world_group.translate_rank(m_config.manager_rank, *m_leader_parent_group);
+        if (manager_in_group != MPI_UNDEFINED) {
+          parent_in_group = manager_in_group;
+        }
+        int parent_world_rank =
+            m_leader_parent_group->translate_rank(parent_in_group, m_world_group);
         result = std::make_pair(parent_world_rank, CommLayer::Leader);
       }
     } else {
