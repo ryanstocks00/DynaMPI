@@ -59,6 +59,14 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     // Note: Manager is excluded from its node's Local Comm to separate duties.
     bool coordinator_per_node = true;
 
+    // Only meaningful when coordinator_per_node is true. 0 (default) keeps one
+    // local group per shared-memory node. A positive value partitions large
+    // nodes into smaller contiguous groups -- same knob as
+    // HierarchicalAsyncPutLockFreeMPIWorkDistributor::Config::max_local_group_size
+    // -- so a single-node CI job can still synthesize multiple coordinators
+    // and exercise max_upper_fanout grouping.
+    int max_local_group_size = 0;
+
     // Only meaningful when coordinator_per_node is true. <0 (default,
     // "auto"): pick a fanout from node coordinator count -- see
     // setup_leader_hierarchy()'s comment for the formula (mirrors
@@ -446,15 +454,24 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         _statistics{create_statistics(m_communicator)} {
     // --- Initialize Topology Groups ---
     if (m_config.coordinator_per_node) {
-      // 1. Identify physical nodes via split_by_node
+      // 1. Identify physical nodes via split_by_node, optionally partitioning
+      // large nodes into smaller local domains (max_local_group_size).
       MPICommunicator node_comm = m_communicator.split_by_node();
+      std::optional<MPICommunicator> local_domain;
+      if (m_config.max_local_group_size > 0 && node_comm.size() > m_config.max_local_group_size) {
+        const int color = node_comm.rank() / m_config.max_local_group_size;
+        auto partition = node_comm.split(color, node_comm.rank());
+        local_domain.emplace(std::move(*partition));
+      } else {
+        local_domain.emplace(std::move(node_comm));
+      }
 
       // 2. Create Local Group: Exclude Manager!
       // If I am Manager, color is Undefined (I don't participate in local worker pool).
       // Everyone else participates.
       int local_color = (m_communicator.rank() == m_config.manager_rank) ? MPI_UNDEFINED : 0;
 
-      auto local_comm_opt = node_comm.split(local_color, m_communicator.rank());
+      auto local_comm_opt = local_domain->split(local_color, m_communicator.rank());
       if (local_comm_opt.has_value()) {
         // Extract group from the temporary communicator, then let it be freed
         m_local_group.emplace(*local_comm_opt);

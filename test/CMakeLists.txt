@@ -106,8 +106,11 @@ endif()
 function(add_mpi_test test_name num_procs)
   set(gtest_args "")
   if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND)
-    list(APPEND gtest_args
-         "--gtest_filter=-HierarchicalAsyncPutLockFree.GroupedUpperHierarchy")
+    list(
+      APPEND
+      gtest_args
+      "--gtest_filter=-HierarchicalAsyncPutLockFree.GroupedUpperHierarchy:HierarchicalAsyncPutLockFree.AutoFanoutUpperHierarchy"
+    )
   endif()
   set(command
       ${MPIEXEC_EXECUTABLE}
@@ -131,7 +134,7 @@ endforeach()
 
 # Open MPI 4's osc/rdma component can race while creating windows on disjoint
 # communicators from one shared-memory node. Run only the synthetic grouped
-# topology test with osc/pt2pt; forcing that legacy backend on the full
+# topology tests with osc/pt2pt; forcing that legacy backend on the full
 # lock-free suite can stall at high rank counts. Open MPI 5 fixed the rdma path
 # and removed the pt2pt fallback.
 if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND AND DYNAMPI_MAX_MPI_RANK GREATER_EQUAL 8)
@@ -147,5 +150,20 @@ if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND AND DYNAMPI_MAX_MPI_RANK GREATER_EQUAL 8)
       "--gtest_filter=HierarchicalAsyncPutLockFree.GroupedUpperHierarchy"
       ${MPIEXEC_POSTFLAGS})
   set_tests_properties(mpi_test_8_rank_grouped
+                       PROPERTIES ENVIRONMENT "OMPI_MCA_osc=pt2pt")
+endif()
+if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND AND DYNAMPI_MAX_MPI_RANK GREATER_EQUAL 64)
+  add_test(
+    NAME mpi_test_64_rank_auto_fanout
+    COMMAND
+      ${MPIEXEC_EXECUTABLE}
+      ${MPIEXEC_NUMPROC_FLAG}
+      64
+      ${MPI_OVERSUBSCRIBE_FLAG}
+      ${MPIEXEC_PREFLAGS}
+      $<TARGET_FILE:mpi_test>
+      "--gtest_filter=HierarchicalAsyncPutLockFree.AutoFanoutUpperHierarchy"
+      ${MPIEXEC_POSTFLAGS})
+  set_tests_properties(mpi_test_64_rank_auto_fanout
                        PROPERTIES ENVIRONMENT "OMPI_MCA_osc=pt2pt")
 endif()

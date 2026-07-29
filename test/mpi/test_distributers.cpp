@@ -735,13 +735,10 @@ TEST(HierarchicalAsyncPutLockFree, GroupedUpperHierarchy) {
 // max_upper_fanout's class comment) whenever this test runs across enough
 // physical nodes to have more than 2 node coordinators -- mirrors
 // HierarchicalAsyncPutLockFree.GroupedUpperHierarchy above, same idea over
-// send/recv instead of RMA windows. Unlike that test, there's no
-// max_local_group_size knob here to multiply coordinators beyond the actual
-// physical node count, so meaningful multi-round coverage needs the test
-// job itself to span several nodes. At small (single/double-node) rank
-// counts this degenerates to the same single flat leader group as
-// max_upper_fanout=0 (too few coordinators to need grouping), which is
-// still a useful no-op-path regression check.
+// send/recv instead of RMA windows. max_local_group_size=2 synthesizes
+// multiple coordinators on a single shared-memory node so CI (and any
+// single-node job) still exercises the grouping path rather than
+// degenerating to the flat leader group.
 TEST(Hierarchical, GroupedUpperHierarchy) {
   using Task = int;
   using Result = int;
@@ -750,6 +747,66 @@ TEST(Hierarchical, GroupedUpperHierarchy) {
 
   Distributer::Config config;
   config.max_upper_fanout = 2;
+  config.max_local_group_size = 2;
+  Distributer work_distributer(worker_task, config);
+  if (work_distributer.is_root_manager()) {
+    constexpr int kNumTasks = 500;
+    std::vector<Task> tasks(kNumTasks);
+    for (int i = 0; i < kNumTasks; ++i) tasks[i] = i;
+    work_distributer.insert_tasks(tasks);
+    auto results = work_distributer.finish_remaining_tasks();
+    std::sort(results.begin(), results.end());
+    std::vector<Result> expected(kNumTasks);
+    for (int i = 0; i < kNumTasks; ++i) expected[i] = i * i;
+    EXPECT_EQ(results, expected);
+  }
+}
+
+// Exercises Config::max_upper_fanout auto mode (default -1) past the
+// flat-topology cutoff (~32 coordinators), so the sqrt-based fanout pick
+// and the resulting multi-round grouping both run. max_local_group_size=1
+// makes every non-manager rank a coordinator; needs world size > 33.
+TEST(Hierarchical, AutoFanoutUpperHierarchy) {
+  if (MPIEnvironment::world_comm_size() < 34) {
+    GTEST_SKIP() << "Need >= 34 ranks to exercise auto fanout (>32 coordinators)";
+  }
+  using Task = int;
+  using Result = int;
+  using Distributer = dynampi::HierarchicalMPIWorkDistributor<Task, Result>;
+  auto worker_task = [](Task task) -> Result { return task * task; };
+
+  Distributer::Config config;
+  config.max_upper_fanout = -1;
+  config.max_local_group_size = 1;
+  Distributer work_distributer(worker_task, config);
+  if (work_distributer.is_root_manager()) {
+    constexpr int kNumTasks = 500;
+    std::vector<Task> tasks(kNumTasks);
+    for (int i = 0; i < kNumTasks; ++i) tasks[i] = i;
+    work_distributer.insert_tasks(tasks);
+    auto results = work_distributer.finish_remaining_tasks();
+    std::sort(results.begin(), results.end());
+    std::vector<Result> expected(kNumTasks);
+    for (int i = 0; i < kNumTasks; ++i) expected[i] = i * i;
+    EXPECT_EQ(results, expected);
+  }
+}
+
+// Same auto-fanout coverage as Hierarchical.AutoFanoutUpperHierarchy, over
+// the RMA upper chain. On Open MPI 4 this is excluded from the default
+// mpi_test_* suite and run under osc/pt2pt (see test/CMakeLists.txt).
+TEST(HierarchicalAsyncPutLockFree, AutoFanoutUpperHierarchy) {
+  if (MPIEnvironment::world_comm_size() < 34) {
+    GTEST_SKIP() << "Need >= 34 ranks to exercise auto fanout (>32 coordinators)";
+  }
+  using Task = int;
+  using Result = int;
+  using Distributer = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, Result>;
+  auto worker_task = [](Task task) -> Result { return task * task; };
+
+  Distributer::Config config;
+  config.max_upper_fanout = -1;
+  config.max_local_group_size = 1;
   Distributer work_distributer(worker_task, config);
   if (work_distributer.is_root_manager()) {
     constexpr int kNumTasks = 500;
