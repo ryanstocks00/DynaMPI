@@ -19,9 +19,11 @@ IFS=' ' read -r -a MODES <<< "${MODES:-fixed random}"
 DURATION_S="${DURATION_S:-10}"
 # hierarchical_async_put_lockfree only: forwarded as --max_upper_fanout (ignored by
 # every other distributor, which is run exactly once regardless of how many values
-# are listed here). 0 = single unbounded coordinator level (default). Set multiple
-# space-separated values to sweep hierarchy branching factor within one job.
-IFS=' ' read -r -a MAX_UPPER_FANOUT_LIST <<< "${MAX_UPPER_FANOUT_LIST:-${MAX_UPPER_FANOUT:-0}}"
+# are listed here). Negative (default) = auto, picking a fanout from coordinator
+# count -- see HierarchicalAsyncPutLockFreeMPIWorkDistributor's setup_upper_chain().
+# 0 = single unbounded coordinator level. Set multiple space-separated values to
+# sweep hierarchy branching factor within one job.
+IFS=' ' read -r -a MAX_UPPER_FANOUT_LIST <<< "${MAX_UPPER_FANOUT_LIST:-${MAX_UPPER_FANOUT:--1}}"
 IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-core}"
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
@@ -75,10 +77,11 @@ for nodes in "${NODE_LIST[@]}"; do
     fi
     total_ranks=$((nodes * ranks_per_node))
     for dist in "${DISTRIBUTIONS[@]}"; do
-      # Only hierarchical_async_put_lockfree's behavior depends on max_upper_fanout;
-      # every other distributor would just repeat identical runs, so collapse its
-      # fanout list down to one (the first) value.
-      if [[ "${dist}" == "hierarchical_async_put_lockfree" ]]; then
+      # Only hierarchical and hierarchical_async_put_lockfree's behavior
+      # depends on max_upper_fanout; every other distributor would just
+      # repeat identical runs, so collapse its fanout list down to one (the
+      # first) value.
+      if [[ "${dist}" == "hierarchical_async_put_lockfree" || "${dist}" == "hierarchical" ]]; then
         fanouts=("${MAX_UPPER_FANOUT_LIST[@]}")
       else
         fanouts=("${MAX_UPPER_FANOUT_LIST[0]}")

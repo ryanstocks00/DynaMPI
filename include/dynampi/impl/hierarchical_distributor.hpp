@@ -58,6 +58,19 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     // Manager <-> Node Coordinators <-> Local Workers
     // Note: Manager is excluded from its node's Local Comm to separate duties.
     bool coordinator_per_node = true;
+
+    // Only meaningful when coordinator_per_node is true. <0 (default,
+    // "auto"): pick a fanout from node coordinator count -- see
+    // setup_leader_hierarchy()'s comment for the formula (mirrors
+    // HierarchicalAsyncPutLockFreeMPIWorkDistributor::Config::max_upper_fanout,
+    // same measured sweet spot). 0: disabled, exactly today's flat two-level
+    // tree -- manager talks directly to every node coordinator. >0: caps how
+    // many direct claimants any single leader-layer rank may have; if the
+    // node coordinator count exceeds this, coordinators are grouped
+    // (recursively, as many times as needed) into a tree of intermediate
+    // leaders so no single rank -- not even the manager -- ever has more
+    // than max_upper_fanout direct leader-layer children.
+    int max_upper_fanout = -1;
   };
 
   struct RunConfig {
@@ -122,8 +135,20 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   MPICommunicator m_communicator;  // Global communicator
   MPIGroup m_world_group;          // Group for the global communicator (for rank translation)
   std::optional<MPIGroup> m_local_group;  // Intra-node group (Shared Memory, excludes manager)
-  std::optional<MPIGroup>
-      m_leader_group;  // Inter-node group (Leaders only: manager + node coordinators)
+
+  // Leader-layer topology (manager + node coordinators), built by
+  // setup_leader_hierarchy(). Mirrors
+  // HierarchicalAsyncPutLockFreeMPIWorkDistributor's m_owned_upper_levels /
+  // m_parent_level split: a rank promoted through zero or more grouping
+  // rounds owns one group per round it leads (m_owned_leader_levels, its
+  // direct leader-layer children at that round -- the manager always owns
+  // exactly the top round, even when grouping is disabled/unneeded), and
+  // every non-manager leader-layer rank has exactly one m_leader_parent_group
+  // whose rank 0 is its immediate parent. When grouping is disabled or the
+  // coordinator count already fits, this degenerates to exactly one round:
+  // byte-for-byte today's single flat group.
+  std::vector<MPIGroup> m_owned_leader_levels;
+  std::optional<MPIGroup> m_leader_parent_group;
 
   std::function<ResultT(TaskT)> m_worker_function;
   Config m_config;
@@ -139,6 +164,117 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     return std::max(1, configured);
   }
 
+  // Resolves Config::max_upper_fanout to an actual branching factor.
+  // coordinator_count excludes the manager. Auto mode mirrors
+  // HierarchicalAsyncPutLockFreeMPIWorkDistributor's identically-named
+  // formula (see its setup_upper_chain() comment for the measurements
+  // behind it): below ~32 coordinators, a fanout sweep showed grouped and
+  // flat topologies are statistically indistinguishable, so stay flat.
+  // At and above that, group into a tree with branching factor equal to
+  // the smallest power of 2 not less than sqrt(coordinator_count) -- the
+  // same sweep measured a deeper tree (smaller branching factor) at ~6x
+  // worse throughput, and a shallower tree that concentrates traffic onto
+  // too few leaders also measured worse.
+  inline int resolve_leader_fanout(int coordinator_count) const {
+    if (m_config.max_upper_fanout < 0) {
+      if (coordinator_count <= 32) return std::numeric_limits<int>::max();
+      int fanout = 1;
+      const double target = std::sqrt(static_cast<double>(coordinator_count));
+      while (fanout < target) fanout *= 2;
+      return fanout;
+    }
+    return m_config.max_upper_fanout > 0 ? m_config.max_upper_fanout
+                                          : std::numeric_limits<int>::max();
+  }
+
+  // Builds the leader layer (manager + node coordinators), optionally
+  // grouped into a k-ary tree with branching factor resolve_leader_fanout()
+  // when the coordinator count exceeds it. Mirrors
+  // HierarchicalAsyncPutLockFreeMPIWorkDistributor::setup_upper_chain() --
+  // see its comment for the general shape; this builds the same tree over
+  // send/recv instead of RMA windows, so there's no per-level window to
+  // create, just group membership to record (m_owned_leader_levels /
+  // m_leader_parent_group).
+  //
+  // Every MPI_Comm_split call below is collective over its *input* comm's
+  // full membership; the control flow is written so every rank in that
+  // membership reaches the matching call, even ranks that stop being
+  // promoted early (mirrors the same requirement in setup_upper_chain()).
+  void setup_leader_hierarchy(bool is_manager, bool is_node_coordinator) {
+    const int leader_color = (is_manager || is_node_coordinator) ? 0 : MPI_UNDEFINED;
+    // Key is global rank to maintain global ordering among leaders.
+    auto flat_opt = m_communicator.split(leader_color, m_communicator.rank());
+    if (!flat_opt.has_value()) return;  // plain local worker: no leader-layer role at all
+    MPICommunicator flat_comm = std::move(*flat_opt);
+
+    const int coordinator_count = flat_comm.size() - 1;  // excludes manager
+    const int effective_fanout = resolve_leader_fanout(coordinator_count);
+
+    if (coordinator_count <= effective_fanout) {
+      // Fits directly under the manager: exactly today's single flat group
+      // (also always true when max_upper_fanout is disabled).
+      MPIGroup flat_group(flat_comm);
+      if (is_manager) {
+        m_owned_leader_levels.push_back(std::move(flat_group));
+      } else {
+        m_leader_parent_group.emplace(std::move(flat_group));
+      }
+      return;
+    }
+
+    // Real grouping needed. Carve "coordinators only" out of flat_comm --
+    // every member of flat_comm (manager included) calls this split
+    // together, even though only coordinators use the result.
+    auto coordinators_opt = flat_comm.split(is_manager ? MPI_UNDEFINED : 0, flat_comm.rank());
+
+    bool is_final_round_leader = false;
+    if (!is_manager) {
+      // std::optional, not a bare MPICommunicator: MPICommunicator has no
+      // move assignment (only move construction), so replacing round_comm
+      // each iteration needs emplace()'s in-place construction rather than
+      // `round_comm = ...`.
+      std::optional<MPICommunicator> round_comm(std::move(*coordinators_opt));
+      while (true) {
+        if (round_comm->size() <= effective_fanout) {
+          // This round's membership (this rank included) already fits
+          // directly under the manager -- stop promoting.
+          is_final_round_leader = true;
+          break;
+        }
+        const int color = round_comm->rank() / effective_fanout;
+        auto group_opt = round_comm->split(color, round_comm->rank());
+        MPICommunicator group_comm = std::move(*group_opt);
+        const bool is_group_leader = (group_comm.rank() == 0);
+
+        // Collective over round_comm: every member (leader or not) calls
+        // this together, before acting on their differing result below.
+        auto leaders_opt =
+            round_comm->split(is_group_leader ? 0 : MPI_UNDEFINED, round_comm->rank());
+
+        if (!is_group_leader) {
+          m_leader_parent_group.emplace(std::move(group_comm));
+          break;
+        }
+        m_owned_leader_levels.emplace_back(group_comm);
+        round_comm.emplace(std::move(*leaders_opt));
+      }
+    }
+
+    // Attach to the manager: every ORIGINAL member of flat_comm (manager +
+    // every coordinator, whether promoted zero, one, or many times) reaches
+    // this exact call.
+    auto top_opt =
+        flat_comm.split((is_manager || is_final_round_leader) ? 0 : MPI_UNDEFINED, flat_comm.rank());
+    if (top_opt.has_value()) {
+      MPIGroup top_group(*top_opt);
+      if (is_manager) {
+        m_owned_leader_levels.push_back(std::move(top_group));
+      } else {
+        m_leader_parent_group.emplace(std::move(top_group));
+      }
+    }
+  }
+
   // Returns {parent_rank, communicator_layer}
   inline std::pair<int, CommLayer> get_parent_target() const {
     // Return cached value if available
@@ -149,8 +285,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     std::pair<int, CommLayer> result;
     DYNAMPI_ASSERT(!is_root_manager(), "Root manager should not have a parent");
     if (m_config.coordinator_per_node) {
-      DYNAMPI_ASSERT(m_local_group.has_value() || m_leader_group.has_value(),
-                     "Local or leader group should be present");
+      DYNAMPI_ASSERT(m_local_group.has_value() || m_leader_parent_group.has_value(),
+                     "Local or leader parent group should be present");
       if (m_local_group && m_local_group->rank() > 0) {
         // Case 1: I am a Local Worker (Rank > 0 in Local Group)
         // Parent is the Node Coordinator (Local Rank 0).
@@ -158,12 +294,16 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         int node_coord_world_rank = m_local_group->translate_rank(0, m_world_group);
         result = {node_coord_world_rank, CommLayer::Local};
       } else {
-        // Case 2: I am a Node Coordinator (Local Rank 0).
-        // Parent is the Global Manager.
-        // With the new topology, Manager is ALWAYS in the leader group.
-        // We need the manager's world rank, which we already have
-        int global_manager = m_config.manager_rank;
-        result = std::make_pair(global_manager, CommLayer::Leader);
+        // Case 2: I am a leader-layer rank (a node coordinator, and
+        // possibly promoted one or more further times by
+        // setup_leader_hierarchy()). My parent is whichever rank owns
+        // m_leader_parent_group -- the manager directly when grouping is
+        // disabled/unneeded or I'm in the top round, or a higher-level
+        // leader if grouping promoted me but not all the way up.
+        DYNAMPI_ASSERT(m_leader_parent_group.has_value(),
+                       "Non-manager leader-layer rank must have a parent group");
+        int parent_world_rank = m_leader_parent_group->translate_rank(0, m_world_group);
+        result = std::make_pair(parent_world_rank, CommLayer::Leader);
       }
     } else {
       // Original Logic
@@ -204,10 +344,13 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
       if (m_local_group && m_local_group->rank() == 0) {
         count += (m_local_group->size() - 1);
       }
-      // 2. Remote Children: If I am Manager, other Leaders are my children.
-      // Note: In this topology, Manager is IN leader group, but NOT in local group.
-      if (is_root_manager() && m_leader_group) {
-        count += (m_leader_group->size() - 1);
+      // 2. Leader-layer children: every group this rank owns -- the manager
+      // always owns exactly the top round (even when grouping is
+      // disabled/unneeded), and a promoted coordinator owns one group per
+      // round it leads. Each owned group's other members are this rank's
+      // direct leader-layer children for that round.
+      for (const auto& level : m_owned_leader_levels) {
+        count += (level.size() - 1);
       }
       return count;
     } else {
@@ -301,10 +444,9 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         m_local_group.emplace(*local_comm_opt);
       }
 
-      // 3. Create Leader Group
-      // Who joins?
-      // A: The Manager (Always)
-      // B: The Node Coordinators (Rank 0 of the *Local* Comm)
+      // 3. Build the leader layer: manager + Node Coordinators (Rank 0 of
+      // the *Local* Comm), optionally grouped into a tree -- see
+      // setup_leader_hierarchy().
       bool is_manager = (m_communicator.rank() == m_config.manager_rank);
       // Check if we're rank 0 in the local group (node coordinator)
       bool is_node_coordinator = false;
@@ -313,14 +455,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         is_node_coordinator = (my_local_rank == 0);
       }
 
-      int leader_color = (is_manager || is_node_coordinator) ? 0 : MPI_UNDEFINED;
-
-      // Key is global rank to maintain global ordering among leaders
-      auto leader_comm_opt = m_communicator.split(leader_color, m_communicator.rank());
-      if (leader_comm_opt.has_value()) {
-        // Extract group from the temporary communicator, then let it be freed
-        m_leader_group.emplace(*leader_comm_opt);
-      }
+      setup_leader_hierarchy(is_manager, is_node_coordinator);
     }
 
     if (m_config.auto_run_workers && m_communicator.rank() != m_config.manager_rank) {
@@ -734,9 +869,11 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         return CommLayer::Local;
       }
     }
-    DYNAMPI_ASSERT(m_leader_group.has_value(), "Leader group should be present");
-    [[maybe_unused]] int leader_rank = m_world_group.translate_rank(world_rank, *m_leader_group);
-    DYNAMPI_ASSERT_NE(leader_rank, MPI_UNDEFINED, "Rank should be in leader group");
+    // Not a local child, so it's a leader-layer child -- one of this rank's
+    // direct children at one of its owned levels (see m_owned_leader_levels;
+    // there's no single group spanning every leader-layer rank to verify
+    // membership against once multi-level grouping is active).
+    DYNAMPI_ASSERT(!m_owned_leader_levels.empty(), "Leader-layer rank should own a level");
     return CommLayer::Leader;
   }
 

@@ -44,7 +44,7 @@ struct BenchmarkOptions {
   double duration_s = 10.0;
   DistributorKind distributor = DistributorKind::Hierarchical;
   DurationMode duration_mode = DurationMode::Fixed;
-  int max_upper_fanout = 0;
+  int max_upper_fanout = -1;
   uint64_t nodes = 0;
   std::string system;
   std::string output_path;
@@ -159,6 +159,9 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
   typename Distributor::Config config{.comm = comm, .manager_rank = 0};
   if constexpr (requires { config.max_tasks; }) {
     config.max_tasks = kLockFreeMaxTasks;
+  }
+  if constexpr (requires { config.max_upper_fanout; }) {
+    config.max_upper_fanout = opts.max_upper_fanout;
   }
   Distributor distributor(worker_function, config);
 
@@ -405,10 +408,12 @@ int main(int argc, char** argv) {
       cxxopts::value<std::string>()->default_value("fixed"))(
       "max_upper_fanout",
       "hierarchical_async_put_lockfree only: max direct children per coordinator "
-      "above the node-local level. 0 = single unbounded coordinator level (default, "
-      "matches pre-N-level behavior); >0 activates iterative k-ary grouping into "
+      "above the node-local level. Negative (default) = auto, picking a fanout "
+      "from coordinator count (see HierarchicalAsyncPutLockFreeMPIWorkDistributor's "
+      "setup_upper_chain() for the formula); 0 = single unbounded coordinator level "
+      "(matches pre-N-level behavior); >0 activates iterative k-ary grouping into "
       "multiple upper levels once the coordinator count exceeds this fanout.",
-      cxxopts::value<int>()->default_value("0"))(
+      cxxopts::value<int>()->default_value("-1"))(
       "n,nodes", "Number of nodes for labeling output (defaults to world size)",
       cxxopts::value<uint64_t>()->default_value("0"))(
       "S,system", "System label for plotting (frontier, aurora, ...)",

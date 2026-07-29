@@ -731,6 +731,39 @@ TEST(HierarchicalAsyncPutLockFree, GroupedUpperHierarchy) {
   }
 }
 
+// Forces real multi-round grouping of the leader hierarchy (see
+// max_upper_fanout's class comment) whenever this test runs across enough
+// physical nodes to have more than 2 node coordinators -- mirrors
+// HierarchicalAsyncPutLockFree.GroupedUpperHierarchy above, same idea over
+// send/recv instead of RMA windows. Unlike that test, there's no
+// max_local_group_size knob here to multiply coordinators beyond the actual
+// physical node count, so meaningful multi-round coverage needs the test
+// job itself to span several nodes. At small (single/double-node) rank
+// counts this degenerates to the same single flat leader group as
+// max_upper_fanout=0 (too few coordinators to need grouping), which is
+// still a useful no-op-path regression check.
+TEST(Hierarchical, GroupedUpperHierarchy) {
+  using Task = int;
+  using Result = int;
+  using Distributer = dynampi::HierarchicalMPIWorkDistributor<Task, Result>;
+  auto worker_task = [](Task task) -> Result { return task * task; };
+
+  Distributer::Config config;
+  config.max_upper_fanout = 2;
+  Distributer work_distributer(worker_task, config);
+  if (work_distributer.is_root_manager()) {
+    constexpr int kNumTasks = 500;
+    std::vector<Task> tasks(kNumTasks);
+    for (int i = 0; i < kNumTasks; ++i) tasks[i] = i;
+    work_distributer.insert_tasks(tasks);
+    auto results = work_distributer.finish_remaining_tasks();
+    std::sort(results.begin(), results.end());
+    std::vector<Result> expected(kNumTasks);
+    for (int i = 0; i < kNumTasks; ++i) expected[i] = i * i;
+    EXPECT_EQ(results, expected);
+  }
+}
+
 TEST(HierarchicalAsyncPutLockFree, SingletonGatherAndFinalize) {
   using Distributor = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;
 

@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <deque>
@@ -606,15 +607,18 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     // contention on each local RMA window and making the upper hierarchy
     // useful on machines with many ranks per node.
     int max_local_group_size = 0;
-    // 0 (default): exactly today's two-level tree -- manager talks directly
-    // to every node coordinator. >0: caps how many direct claimants any
-    // single upper-level window may have. If the node coordinator count
-    // exceeds this, coordinators are grouped (recursively, as many times as
-    // needed) into a tree of intermediate levels so no single window -- not
-    // even the manager's -- ever has more than max_upper_fanout direct
-    // claimants. See setup_upper_chain() for the construction and the class
-    // comment for why this matters at large scale.
-    int max_upper_fanout = 0;
+    // <0 (default, "auto"): pick a fanout from coordinator count -- see
+    // setup_upper_chain()'s auto-fanout comment for the formula and the
+    // measurements behind it. 0: disabled, exactly the two-level tree --
+    // manager talks directly to every node coordinator. >0: caps how many
+    // direct claimants any single upper-level window may have; if the node
+    // coordinator count exceeds this, coordinators are grouped (recursively,
+    // as many times as needed) into a tree of intermediate levels so no
+    // single window -- not even the manager's -- ever has more than
+    // max_upper_fanout direct claimants. See setup_upper_chain() for the
+    // construction and the class comment for why this matters at large
+    // scale.
+    int max_upper_fanout = -1;
   };
 
   struct RunConfig {
@@ -925,9 +929,29 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     // to feed one task to every child in its immediate subtree.
     const int leaf_claim_width = std::max(1, local_children);
 
-    const int effective_fanout =
-        m_config.max_upper_fanout > 0 ? m_config.max_upper_fanout : std::numeric_limits<int>::max();
     const int coordinator_count = flat_comm.size() - 1;
+    // Auto mode (max_upper_fanout < 0): below ~32 coordinators, a fanout
+    // sweep at 128 coordinators (128 nodes) showed grouped and flat
+    // topologies are statistically indistinguishable, so stay flat there --
+    // fewer moving parts, no relay-depth cost for no measured benefit. At
+    // and above that, group into a tree with branching factor equal to the
+    // smallest power of 2 not less than sqrt(coordinator_count): the same
+    // sweep measured branching factor 8 (a deeper tree) at ~6x worse
+    // throughput than 16 or 32 (both matching the flat baseline), and
+    // branching factor 64 (a shallower tree that concentrates all traffic
+    // onto just 2 leaders) also measured worse -- 16 is the smallest power
+    // of 2 >= sqrt(128) ~= 11.3, landing in that measured sweet spot.
+    const int effective_fanout = [&] {
+      if (m_config.max_upper_fanout < 0) {
+        if (coordinator_count <= 32) return std::numeric_limits<int>::max();
+        int fanout = 1;
+        const double target = std::sqrt(static_cast<double>(coordinator_count));
+        while (fanout < target) fanout *= 2;
+        return fanout;
+      }
+      return m_config.max_upper_fanout > 0 ? m_config.max_upper_fanout
+                                            : std::numeric_limits<int>::max();
+    }();
 
     if (coordinator_count <= effective_fanout) {
       // Fits directly under the manager: exactly today's single flat level
