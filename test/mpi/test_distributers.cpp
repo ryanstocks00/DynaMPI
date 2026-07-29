@@ -762,14 +762,13 @@ TEST(Hierarchical, GroupedUpperHierarchy) {
   }
 }
 
-// Exercises Config::max_upper_fanout auto mode (default -1) past the
-// flat-topology cutoff (~32 coordinators), so the sqrt-based fanout pick
-// and the resulting multi-round grouping both run. max_local_group_size=1
-// makes every non-manager rank a coordinator; needs world size > 33.
+// Exercises Config::max_upper_fanout auto mode (default -1).
+// max_local_group_size=1 makes every non-manager rank a coordinator; at
+// world size > 33 that crosses the flat-topology cutoff (~32) so the
+// sqrt-based fanout pick and multi-round grouping both run. At smaller
+// rank counts this stays on the flat auto path, which is still a useful
+// smoke check.
 TEST(Hierarchical, AutoFanoutUpperHierarchy) {
-  if (MPIEnvironment::world_comm_size() < 34) {
-    GTEST_SKIP() << "Need >= 34 ranks to exercise auto fanout (>32 coordinators)";
-  }
   using Task = int;
   using Result = int;
   using Distributer = dynampi::HierarchicalMPIWorkDistributor<Task, Result>;
@@ -796,9 +795,6 @@ TEST(Hierarchical, AutoFanoutUpperHierarchy) {
 // the RMA upper chain. On Open MPI 4 this is excluded from the default
 // mpi_test_* suite and run under osc/pt2pt (see test/CMakeLists.txt).
 TEST(HierarchicalAsyncPutLockFree, AutoFanoutUpperHierarchy) {
-  if (MPIEnvironment::world_comm_size() < 34) {
-    GTEST_SKIP() << "Need >= 34 ranks to exercise auto fanout (>32 coordinators)";
-  }
   using Task = int;
   using Result = int;
   using Distributer = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, Result>;
