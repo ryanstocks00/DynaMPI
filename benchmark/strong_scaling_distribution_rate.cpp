@@ -24,12 +24,19 @@
 using Task = uint32_t;
 
 // Lockfree pre-allocates a fixed-capacity task/result table sized for the
-// entire lifetime of the distributor (not a ring buffer). Sized generously
-// above realistic sustained throughput at 2048 nodes; publish_task() only
-// guards overflow with an assert(), which is compiled out under NDEBUG
-// (our Release build), so undersizing this corrupts memory instead of
-// erroring cleanly.
-constexpr int kLockFreeMaxTasks = 100'000'000;
+// entire lifetime of the distributor (not a ring buffer). publish_task()
+// only guards overflow with an assert(), which is compiled out under
+// NDEBUG (our Release build), so undersizing this corrupts memory instead
+// of erroring cleanly. Per-slot cost is tiny for our scalar uint32_t
+// Task/ResultT (task slot + result slot + log entry <= ~40 bytes, since
+// MPI_Type<uint32_t>::resize_required is false so the variable-length
+// max_task_count/max_result_count machinery collapses to a single
+// element) -- 500M tasks is ~20GB, trivial on a manager rank, and
+// comfortably covers even our empirically-observed ~2.4-5M tasks/s
+// aggregate ceiling (which doesn't grow with node count -- it's a
+// manager-window bottleneck, not a per-worker one) sustained for a full
+// duration_s with room for repeated top-up chunks on top.
+constexpr int kLockFreeMaxTasks = 500'000'000;
 
 enum class DistributorKind {
   Naive,
@@ -168,31 +175,28 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
   if (distributor.is_root_manager()) {
     timer.start();
 
+    // Keep a small, fixed-size queue topped up for the whole run and just
+    // stop at duration_s -- no mid-run recalibration. An earlier version
+    // estimated a "current_rate" from the cumulative total at the
+    // duration_s/2 mark and throttled further inserts against it; that's a
+    // single noisy snapshot (poisoned by topology-construction/warm-up time
+    // dominating the early portion of a run, worse at larger scale) driving
+    // every remaining insertion decision, and it produced wildly
+    // irreproducible throughput at scale (e.g. hierarchical at
+    // expected_us=1000: 5.1M tasks/s at 128 nodes, 600-700K at 256 nodes,
+    // 2.3M at 512 nodes, all nominally the same configuration). That
+    // throttle was guarding against a risk this driver doesn't actually
+    // have: unlike the async-put classes' one-shot giant-batch drivers,
+    // where overpublishing means an unbounded final drain, this queue is
+    // continuously topped up in small increments (target_queue_size), so
+    // the outstanding backlog at any moment -- including at
+    // finish_remaining_tasks() -- is inherently bounded by
+    // target_queue_size regardless of how fast or slow the run turns out
+    // to be.
     const uint64_t target_queue_size = num_workers * 4;
     while (timer.elapsed().count() < opts.duration_s) {
       const uint64_t remaining = distributor.remaining_tasks_count();
-      uint64_t to_insert = 0;
-      if (remaining < target_queue_size) {
-        to_insert = target_queue_size - remaining;
-      }
-      if (timer.elapsed().count() > opts.duration_s / 2.0 && total_tasks > 0) {
-        double current_rate = static_cast<double>(total_tasks) / timer.elapsed().count();
-        double estimated_total_tasks = current_rate * opts.duration_s;
-        if (estimated_total_tasks > static_cast<double>(total_tasks) && current_rate > 0.0) {
-          double remaining_time = opts.duration_s - timer.elapsed().count();
-          uint64_t can_complete_tasks_remaining =
-              static_cast<uint64_t>(current_rate * remaining_time);
-          if (can_complete_tasks_remaining > remaining) {
-            uint64_t max_to_insert = can_complete_tasks_remaining - remaining;
-            to_insert = std::min(to_insert, max_to_insert);
-          } else {
-            // Already have more tasks queued than can be completed, don't insert more
-            to_insert = 0;
-          }
-        }
-      }
-      // Clamp to_insert to be non-negative and <= target_queue_size
-      to_insert = std::min(to_insert, target_queue_size);
+      uint64_t to_insert = remaining < target_queue_size ? target_queue_size - remaining : 0;
 
       if (to_insert > 0) {
         std::vector<Task> tasks;
@@ -218,46 +222,35 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
                          timer.elapsed().count()};
 }
 
-// A cheap, non-blocking MPI call whose only purpose is to give the library a
-// chance to drive its progress engine. See the comment at its call sites in
-// run_benchmark_async_put_style() for why a manager rank that never
-// otherwise touches MPI needs this under FI_CXI_RX_MATCH_MODE=software.
-static void pump_mpi_progress(MPI_Comm comm) {
-  int flag = 0;
-  MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm, &flag, MPI_STATUS_IGNORE);
-}
-
 // Shared by AsyncPutLockFreeMPIWorkDistributor and
 // HierarchicalAsyncPutLockFreeMPIWorkDistributor -- they already implement
-// the exact same insert_tasks()/gather_once()/run_tasks()/finalize() API, so
-// the two drivers used to be byte-identical copy-pasted functions apart from
-// Config setup. Shape: calibrate briefly to get a REAL measured rate (the
-// theoretical num_workers/expected_s ideal is a claim/write-protocol
-// ceiling, not an achieved rate, and can be 100x+ too optimistic at fine
-// task granularity -- see the calibration_collected==0 comment below), then
-// publish one large batch sized off that measurement, then just wait --
-// no more inserts -- until duration_s elapses, harvest exactly once, and
-// stop the timer *before* finalize() so finalize()'s drain of any leftover
-// backlog (it always runs every published task to completion; the protocol
-// has no cancellation) doesn't count against the measured throughput.
+// the exact same insert_tasks()/run_tasks()/finalize() API, so the two
+// drivers used to be byte-identical copy-pasted functions apart from Config
+// setup. Shape: publish a bounded chunk of tasks, then just ask the
+// distributor to run for the remaining time budget --
+// run_tasks({.max_seconds = t}) already loops harvesting until either the
+// time bound or task exhaustion, whichever comes first, so it correctly
+// measures "how much got done in this much time" regardless of how the
+// chunk was sized. If the chunk drains before duration_s elapses (the
+// while condition is still true), publish another one and keep going.
 //
-// This distributor family needs this dedicated shape (rather than fitting
-// run_benchmark<Distributor>()) because the generic driver's incremental
-// small-batch insert_tasks()/run_tasks(max_seconds=0.1) cycle pays this
-// class's per-call overhead far more often than necessary, capping measured
-// throughput around 10-15K tasks/s regardless of how fast the underlying
-// claim+write protocol actually is -- confirmed via a now-removed dedicated
-// isolated benchmark that this class's true uninterrupted throughput
-// reaches ~650K-965K tasks/s (matching rma_atomic_microbench's raw
-// one-sided-atomic ceiling), a ~70-100x difference explained entirely by
-// driver pacing, not the protocol itself.
-//
-// An all-adaptive small-batch driver (repeatedly sizing each top-up from
-// observed throughput instead of publishing one big batch up front) was
-// tried and discarded: measuring observed_rate only from what the loop
-// itself chose to queue that cycle is a self-limiting feedback loop that
-// converges to a low-throughput fixed point (~16x below this shape's
-// measured throughput) instead of ramping up to the real ceiling.
+// No calibration anywhere. An earlier version measured a rate from a short
+// calibration window and used it to size one big batch for the entire rest
+// of the run -- exactly the same "one snapshot decides everything"
+// fragility that caused unreliable message-passing hierarchical
+// measurements at scale (see run_benchmark()'s comment: the same
+// expected_us=1000 config measured 5.1M tasks/s at 128 nodes, 600-700K at
+// 256, 2.3M at 512, no trend, just noise from when the single snapshot was
+// taken). Calibration was never actually needed for measurement accuracy
+// -- run_tasks()'s own max_seconds bound already gets that right no matter
+// how much was published. Its only real job was keeping the leftover small
+// enough that finalize()'s mandatory full-drain (the protocol has no
+// cancellation) doesn't blow up wall-clock time after the measurement is
+// already locked in behind timer.stop(). Bounding every chunk to the same
+// modest, scale-independent size does that job just as well without
+// needing to estimate anything: worst case, at most one chunk is left
+// outstanding when duration_s hits, not however large a rate-based guess
+// happened to compute.
 template <typename Distributor>
 static BenchmarkResult run_benchmark_async_put_style(const BenchmarkOptions& opts, MPI_Comm comm) {
   dynampi::MPICommunicator<> comm_wrapper(comm, dynampi::MPICommunicator<>::Ownership::Reference);
@@ -286,101 +279,50 @@ static BenchmarkResult run_benchmark_async_put_style(const BenchmarkOptions& opt
   if (distributor.is_root_manager()) {
     timer.start();
 
-    const double expected_s = static_cast<double>(opts.expected_us) * 1e-6;
-    const double calibration_window_s = std::min(1.0, opts.duration_s * 0.2);
-    const double ideal_rate = static_cast<double>(num_workers) / expected_s;
-    // Cap raised well above the 20,000 originally used for the now-removed
-    // CAS-based LockFreeMPIWorkDistributor benchmark (copy-pasted from there
-    // initially, then found to be a real bug here): that cap was sized for
-    // its ~10-24K tasks/s ceiling, where 20,000 tasks takes close to the
-    // full 1s calibration window to drain. AsyncPutLockFreeMPIWorkDistributor's
-    // batched claim/write protocol reaches 600K-965K tasks/s uninterrupted --
-    // a 20,000-task batch drains in well under 50ms, leaving the worker idle for
-    // the rest of the calibration window. Since observed_rate below divides
-    // by the *full* window regardless of how much of it was spent working,
-    // an early-draining batch silently collapses observed_rate toward
-    // batch/window instead of the true achievable rate -- confirmed via
-    // measurement: this alone was capping the real benchmark path at
-    // ~25K tasks/s (vs ~57K in the isolated, uncalibrated benchmark, same
-    // settings) despite every other part of the class performing correctly.
-    // A 2,000,000-task cap costs one bulk Put of a few tens of MB either
-    // way -- cheap regardless of whether it fully drains within the window.
-    const uint64_t calibration_batch = std::min<uint64_t>(
-        std::min<uint64_t>(2'000'000, kLockFreeMaxTasks - 1),
-        std::max<uint64_t>(num_workers * 10,
-                           static_cast<uint64_t>(ideal_rate * calibration_window_s)));
-    {
-      std::vector<Task> tasks;
-      tasks.reserve(calibration_batch);
-      for (uint64_t i = 0; i < calibration_batch; ++i) tasks.push_back(static_cast<Task>(i));
-      distributor.insert_tasks(tasks);
-    }
-    const double calibration_start_s = timer.elapsed().count();
-    while (timer.elapsed().count() - calibration_start_s < calibration_window_s) {
-      pump_mpi_progress(comm);
-    }
-    auto calibration_results = distributor.gather_once();
-    const uint64_t calibration_collected = calibration_results.size();
-    total_tasks += calibration_collected;
-    const double calibration_elapsed_s = timer.elapsed().count() - calibration_start_s;
-    // A calibration window that collected nothing is NOT evidence the batch
-    // finished instantly -- for topologies with real relay/pipeline latency
-    // (e.g. a node coordinator relaying results for many local workers), it
-    // just as often means results haven't made it all the way back yet.
-    // Trusting the zero-collected case to mean "went to completion faster
-    // than we could observe" and falling back to the ideal
-    // num_workers/expected_s rate was a real, confirmed bug: an actual run
-    // measured calibration_collected=0 after a full 1s window (a coordinator
-    // relaying for 100 local workers hadn't delivered a single result back
-    // yet), fell back to a 10.1M/s "ideal" estimate, and published a
-    // ~54,000,000-task main batch that then took far longer to drain than
-    // any reasonable timeout -- indistinguishable from a hang. When nothing
-    // came back, stay conservative instead of extrapolating: publish no
-    // additional speculative work this round (batch_size below floors at 1)
-    // and let the already-published calibration_batch keep draining during
-    // the spin/harvest phases that follow.
-    const bool calibration_measured_anything =
-        calibration_collected > 0 && calibration_elapsed_s > 0.0;
-    const double observed_rate =
-        calibration_measured_anything
-            ? static_cast<double>(calibration_collected) / calibration_elapsed_s
-            : static_cast<double>(num_workers) / expected_s;
+    // Every chunk (first one and every top-up) uses this same bounded
+    // size: floor of num_workers*1000 so it actually reaches the cap at
+    // realistic scale, cap of 2,000,000 -- proven safe throughout this
+    // codebase's history as a one-shot batch size (a single bulk Put of a
+    // few tens of MB, cheap regardless of scale, and never implicated in
+    // any of the multi-minute drain incidents that motivated removing
+    // calibration -- those all came from a *second*, rate-estimated batch
+    // on top of a batch this size, not from a batch this size on its own).
+    //
+    // The floor matters a lot for the flat (non-hierarchical) RMA class:
+    // every worker draws from one shared atomic counter, so a too-small
+    // chunk means all of them race through it almost immediately and then
+    // simultaneously stall on a refill -- and each refill cycle (allocate
+    // + bulk Put + resync) has fixed overhead that, repeated often enough,
+    // dominates the run. Confirmed via a real regression: an earlier
+    // version of this floor was num_workers*10, which is smaller than the
+    // 2,000,000 cap for any node count below ~2000 -- so min(cap, floor)
+    // always evaluated to the (too-small) floor, the cap never actually
+    // engaged, and flat async_put_lockfree at 128 nodes measured
+    // 27,404 tasks/s versus a historical (old, calibration-based driver)
+    // 241,596 tasks/s at the same config -- a ~9x self-inflicted
+    // regression, not a real architectural ceiling. num_workers*1000
+    // reaches the 2,000,000 cap by ~20 nodes, matching how large the old
+    // driver's batches always ended up being in practice.
+    const uint64_t chunk_size =
+        std::min<uint64_t>(2'000'000, std::max<uint64_t>(num_workers * 1000, 1000));
 
-    const double remaining_budget_s = std::max(0.0, opts.duration_s - timer.elapsed().count());
-    const double estimate =
-        calibration_measured_anything ? 1.3 * observed_rate * remaining_budget_s : 0.0;
-    // Clamped against remaining capacity, not the raw table size: the
-    // calibration batch above already consumed calibration_batch slots of
-    // it, and this batch is published on top -- clamping against the full
-    // kLockFreeMaxTasks here (as this used to do) let the two batches
-    // together publish up to kLockFreeMaxTasks - 1 + calibration_batch
-    // tasks, silently exceeding the table's real capacity by however large
-    // calibration_batch was (confirmed: an actual run published 101,999,999
-    // tasks against a 100,000,000 cap, exactly matching a ~2,000,000
-    // calibration_batch overshoot for this distributor). publish_tasks()'s
-    // own overflow guard is an assert(), compiled out under NDEBUG/Release
-    // (see kLockFreeMaxTasks's own comment), so this silently corrupted
-    // memory instead of erroring -- manifesting many calls later as an
-    // unrelated-looking segfault deep inside a harvest's bulk RMA read.
-    const double capacity_remaining =
-        static_cast<double>(kLockFreeMaxTasks) - 1.0 - static_cast<double>(calibration_batch);
-    const double clamped_estimate = std::min(estimate, std::max(0.0, capacity_remaining));
-    const uint64_t batch_size =
-        clamped_estimate >= 1.0 ? static_cast<uint64_t>(clamped_estimate) : 1;
-
-    {
-      std::vector<Task> tasks;
-      tasks.reserve(batch_size);
-      for (uint64_t i = 0; i < batch_size; ++i) {
-        tasks.push_back(static_cast<Task>(calibration_batch + i));
-      }
-      distributor.insert_tasks(tasks);
-    }
+    uint64_t published = 0;
     while (timer.elapsed().count() < opts.duration_s) {
-      pump_mpi_progress(comm);
+      const uint64_t capacity_left = static_cast<uint64_t>(kLockFreeMaxTasks) - 1 - published;
+      const uint64_t to_insert = std::min(chunk_size, capacity_left);
+      if (to_insert == 0) break;  // table full: end the run rather than corrupt memory
+      {
+        std::vector<Task> tasks;
+        tasks.reserve(to_insert);
+        for (uint64_t i = 0; i < to_insert; ++i) tasks.push_back(static_cast<Task>(published + i));
+        distributor.insert_tasks(tasks);
+      }
+      published += to_insert;
+
+      auto results =
+          distributor.run_tasks({.max_seconds = opts.duration_s - timer.elapsed().count()});
+      total_tasks += results.size();
     }
-    auto results = distributor.gather_once();
-    total_tasks += results.size();
     timer.stop();
 
     distributor.finalize();
