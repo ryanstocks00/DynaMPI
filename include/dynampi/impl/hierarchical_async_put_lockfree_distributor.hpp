@@ -429,10 +429,13 @@ class AsyncPutLevel {
 
     m_task_elem = static_cast<size_t>(detail::mpi_type_size_bytes<TaskT>());
     m_result_elem = static_cast<size_t>(detail::mpi_type_size_bytes<ResultT>());
-    m_max_task_count =
-        MPI_Type<TaskT>::resize_required ? static_cast<size_t>(m_config.max_task_count) : 1;
-    m_max_result_count =
-        MPI_Type<ResultT>::resize_required ? static_cast<size_t>(m_config.max_result_count) : 1;
+    // Same per-value element sizing as the flat distributor's window.
+    m_max_task_count = MPI_Type<TaskT>::resize_required
+                           ? static_cast<size_t>(m_config.max_task_count)
+                           : static_cast<size_t>(mpi_elements_per_value<TaskT>());
+    m_max_result_count = MPI_Type<ResultT>::resize_required
+                             ? static_cast<size_t>(m_config.max_result_count)
+                             : static_cast<size_t>(mpi_elements_per_value<ResultT>());
 
     m_task_slot_stride = detail::round_up_8(T_DATA + m_max_task_count * m_task_elem);
     m_result_slot_stride = detail::round_up_8(R_DATA + m_max_result_count * m_result_elem);

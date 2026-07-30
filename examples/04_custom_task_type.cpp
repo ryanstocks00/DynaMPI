@@ -32,17 +32,16 @@ static_assert(sizeof(Ray) == 3 * sizeof(double), "Ray must be contiguous doubles
 static_assert(sizeof(Hit) == 3 * sizeof(double), "Hit must be contiguous doubles");
 
 // DynaMPI moves a value as `count()` elements of `value`, read through `ptr()`.
+// One Ray is three MPI_DOUBLE elements; every distributor accounts for a value
+// spanning several elements, so nothing else is needed here.
 //
-// resize_required = true with a no-op resize(): DynaMPI sizes its per-task
-// buffers from count() only for types that declare themselves resizable. A
-// fixed-size type declaring resize_required = false must instead satisfy
-// count() == 1 with MPI_Type_size(value) == sizeof(T), which a struct of three
-// doubles does not -- getting this wrong throws std::invalid_argument from the
-// distributor's constructor. See docs/src/api.md#custom-types.
+// Two requirements: count() * MPI_Type_size(value) must equal sizeof(T), and
+// the storage at ptr() must be contiguous -- hence the static_asserts above.
+// See docs/src/api.md#custom-types.
 template <>
 struct dynampi::MPI_Type<Ray> {
   inline static const MPI_Datatype value = MPI_DOUBLE;
-  inline static const bool resize_required = true;
+  inline static const bool resize_required = false;  // fixed size
 
   static int count(const Ray&) noexcept { return 3; }
   static void resize(Ray&, int) noexcept {}
@@ -53,7 +52,7 @@ struct dynampi::MPI_Type<Ray> {
 template <>
 struct dynampi::MPI_Type<Hit> {
   inline static const MPI_Datatype value = MPI_DOUBLE;
-  inline static const bool resize_required = true;
+  inline static const bool resize_required = false;  // fixed size
 
   static int count(const Hit&) noexcept { return 3; }
   static void resize(Hit&, int) noexcept {}
@@ -64,8 +63,8 @@ struct dynampi::MPI_Type<Hit> {
 int main(int argc, char** argv) {
   MPI_Init(&argc, &argv);
   {
-    // Custom structs are supported by the naive and async-put distributors.
-    // The hierarchical two-sided distributors take fixed-size types only.
+    // Custom structs work with every distributor; this one happens to use the
+    // flat lock-free RMA distributor.
     using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<Ray, Hit>;
 
     // The index rides along in the task so the worker can stamp it on the

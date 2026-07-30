@@ -197,8 +197,8 @@ Batch size is `num_direct_children × batch_size_multiplier`.
 
 !!! warning "Fixed-size task and result types only"
     `TaskT` and `ResultT` must satisfy `MPI_Type<T>::resize_required == false` —
-    i.e. scalars and fixed-size structs with an `MPI_Type` specialization, not
-    `std::vector<T>` or `std::string`.  A variable-length `ResultT` raises
+    scalars and [fixed-size structs](api.md#custom-types), not `std::vector<T>`
+    or `std::string`.  A variable-length `ResultT` raises
     `DYNAMPI_UNIMPLEMENTED` as soon as a coordinator receives a result, and the
     batch path does not pack variable-length tasks correctly.
     Use `NaiveMPIWorkDistributor` or one of the async-put distributors for
@@ -455,7 +455,7 @@ Design background is in [Lock-free RMA design](lockfree_rma_design.md).
 | Ordered results | **Yes** | No | No | No | No | **Yes** |
 | Arbitrary `TaskT` / `ResultT` | Yes | Fixed-size only | Fixed-size only | Yes | Yes | `size_t` task only |
 | Variable-length payloads | Yes | **No** | **No** | Yes (capped) | Yes (capped) | Results only |
-| [Custom structs](api.md#custom-types) | Yes | **No** | **No** | Yes | Yes | Results only |
+| [Custom structs](api.md#custom-types) | Yes | Yes | Yes | Yes | Yes | Results only |
 | Prioritization | **Yes** | No | No | No (ignored) | No | No |
 | Statistics | `Aggregated`, `Detailed` | `Aggregated`, `Detailed` | `Aggregated`, `Detailed` | `Aggregated`, `Detailed` | **None** | None |
 | Node-aware topology | No | Yes | Yes | No | Yes | No |

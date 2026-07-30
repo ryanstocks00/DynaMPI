@@ -594,74 +594,103 @@ TEST(LockFreeCapacity, RejectsTaskTableOverflow) {
   EXPECT_THROW(dist.insert_tasks(std::vector<int>{1, 2}), std::length_error);
 }
 
-// A struct of three doubles spans three datatype elements, so declaring
-// resize_required == false breaks the "one element covers the object"
-// contract that fixed-width RMA slots and batched vector<T> messages rely on.
-// It used to corrupt data silently; it must now be rejected up front.
+// A fixed-size struct described by its scalar element type: one Vec3 is three
+// MPI_DOUBLE elements, so everything that sizes a buffer per value -- the
+// fixed-width RMA window slots, and the element count of a batched
+// vector<Vec3> message -- has to account for all three. Exercised across every
+// distributor, since each sizes those buffers differently.
 namespace {
-struct MisdeclaredFixedSize {
+struct Vec3 {
   double x, y, z;
 };
-struct WellDeclaredFixedSize {
-  double x, y, z;
+
+// 12 bytes described by an 8-byte datatype: not a whole number of elements, so
+// no per-value element count can express it. Must still be rejected rather
+// than silently truncated. (The fix for a type like this is to declare
+// MPI_FLOAT with count() == 3, which Vec3-style handling then covers.)
+struct Unaligned {
+  float a, b, c;
 };
 }  // namespace
 
 template <>
-struct dynampi::MPI_Type<MisdeclaredFixedSize> {
+struct dynampi::MPI_Type<Vec3> {
   inline static const MPI_Datatype value = MPI_DOUBLE;
-  inline static const bool resize_required = false;  // wrong: count() is 3, not 1
-  static int count(const MisdeclaredFixedSize&) noexcept { return 3; }
-  static void resize(MisdeclaredFixedSize&, int) noexcept {}
-  static void* ptr(MisdeclaredFixedSize& v) noexcept { return &v; }
-  static const void* ptr(const MisdeclaredFixedSize& v) noexcept { return &v; }
+  inline static const bool resize_required = false;
+  static int count(const Vec3&) noexcept { return 3; }
+  static void resize(Vec3&, int) noexcept {}
+  static void* ptr(Vec3& v) noexcept { return &v; }
+  static const void* ptr(const Vec3& v) noexcept { return &v; }
 };
 
 template <>
-struct dynampi::MPI_Type<WellDeclaredFixedSize> {
-  inline static const MPI_Datatype value = MPI_DOUBLE;
-  inline static const bool resize_required = true;  // size buffers from count()
-  static int count(const WellDeclaredFixedSize&) noexcept { return 3; }
-  static void resize(WellDeclaredFixedSize&, int) noexcept {}
-  static void* ptr(WellDeclaredFixedSize& v) noexcept { return &v; }
-  static const void* ptr(const WellDeclaredFixedSize& v) noexcept { return &v; }
+struct dynampi::MPI_Type<Unaligned> {
+  inline static const MPI_Datatype value = MPI_DOUBLE;  // deliberately mismatched
+  inline static const bool resize_required = false;
+  static int count(const Unaligned&) noexcept { return 2; }
+  static void resize(Unaligned&, int) noexcept {}
+  static void* ptr(Unaligned& v) noexcept { return &v; }
+  static const void* ptr(const Unaligned& v) noexcept { return &v; }
 };
 
-TEST(FixedSizeMPIType, RejectsMisdeclaredMultiElementPayload) {
-  auto identity = [](MisdeclaredFixedSize v) { return v; };
+TYPED_TEST(DynamicDistribution, MultiElementFixedSizePayload) {
+  using Distributer = DistributerOf<TypeParam, Vec3, Vec3>;
+  auto worker_task = [](Vec3 v) -> Vec3 { return Vec3{v.x * 2, v.y * 2, v.z * 2}; };
 
-  {
-    using Distributor =
-        dynampi::AsyncPutLockFreeMPIWorkDistributor<MisdeclaredFixedSize, MisdeclaredFixedSize>;
-    typename Distributor::Config config;
-    config.comm = MPI_COMM_SELF;
-    EXPECT_THROW(Distributor(identity, config), std::invalid_argument);
-  }
-  {
-    using Distributor =
-        dynampi::HierarchicalMPIWorkDistributor<MisdeclaredFixedSize, MisdeclaredFixedSize>;
-    typename Distributor::Config config;
-    config.comm = MPI_COMM_SELF;
-    EXPECT_THROW(Distributor(identity, config), std::invalid_argument);
+  auto config = get_distributer_config<TypeParam, Vec3, Vec3>();
+  config.comm = MPI_COMM_WORLD;
+  Distributer distributor(worker_task, config);
+
+  if (distributor.is_root_manager()) {
+    std::vector<Vec3> tasks;
+    for (int i = 1; i <= 8; ++i) {
+      const auto value = static_cast<double>(i);
+      tasks.push_back(Vec3{value, value, value});
+    }
+    distributor.insert_tasks(tasks);
+
+    auto results = distributor.finish_remaining_tasks();
+    ASSERT_EQ(results.size(), tasks.size());
+
+    // Sums every component, so a truncated element would show up.
+    double sum = 0.0;
+    for (const auto& r : results) sum += r.x + r.y + r.z;
+    EXPECT_DOUBLE_EQ(sum, 2.0 * 3.0 * (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8));
   }
 }
 
-// The documented spelling for the same struct round-trips correctly.
-TEST(FixedSizeMPIType, AcceptsResizableSpelling) {
-  using Distributor =
-      dynampi::AsyncPutLockFreeMPIWorkDistributor<WellDeclaredFixedSize, WellDeclaredFixedSize>;
-  typename Distributor::Config config;
-  config.comm = MPI_COMM_SELF;
+TEST(FixedSizeMPIType, ElementsPerValue) {
+  EXPECT_EQ(dynampi::mpi_elements_per_value<double>(), 1);
+  EXPECT_EQ(dynampi::mpi_elements_per_value<int>(), 1);
+  EXPECT_EQ(dynampi::mpi_elements_per_value<Vec3>(), 3);
+  // Variable-length types size their buffers from count() instead.
+  EXPECT_EQ(dynampi::mpi_elements_per_value<std::vector<int>>(), 1);
 
-  Distributor dist(
-      [](WellDeclaredFixedSize v) { return WellDeclaredFixedSize{v.x * 2, v.y * 2, v.z * 2}; },
-      config);
-  dist.insert_tasks(std::vector<WellDeclaredFixedSize>{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}});
-  auto results = dist.finish_remaining_tasks();
-  ASSERT_EQ(results.size(), 2u);
-  double sum = 0.0;
-  for (const auto& r : results) sum += r.x + r.y + r.z;
-  EXPECT_DOUBLE_EQ(sum, 2.0 * 21.0);
+  // Batched messages count elements, not values, and resize() inverts that.
+  const std::vector<Vec3> batch(4);
+  EXPECT_EQ(dynampi::MPI_Type<std::vector<Vec3>>::count(batch), 12);
+  std::vector<Vec3> received;
+  dynampi::MPI_Type<std::vector<Vec3>>::resize(received, 12);
+  EXPECT_EQ(received.size(), 4u);
+
+  const std::vector<int> scalars(4);
+  EXPECT_EQ(dynampi::MPI_Type<std::vector<int>>::count(scalars), 4);
+}
+
+TEST(FixedSizeMPIType, RejectsPayloadThatIsNotAWholeNumberOfElements) {
+  auto identity = [](Unaligned v) { return v; };
+  {
+    using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<Unaligned, Unaligned>;
+    typename Distributor::Config config;
+    config.comm = MPI_COMM_SELF;
+    EXPECT_THROW(Distributor(identity, config), std::invalid_argument);
+  }
+  {
+    using Distributor = dynampi::HierarchicalMPIWorkDistributor<Unaligned, Unaligned>;
+    typename Distributor::Config config;
+    config.comm = MPI_COMM_SELF;
+    EXPECT_THROW(Distributor(identity, config), std::invalid_argument);
+  }
 }
 
 TEST(AsyncPutLevel, SingletonCommunicator) {

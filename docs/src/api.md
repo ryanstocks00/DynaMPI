@@ -315,7 +315,8 @@ variable-length ones.  That flag decides where a type may be used:
 
 | Payload | Naive | Hierarchical / NonBlocking | AsyncPut / Hier. AsyncPut | MinimalLockFree |
 |---------|-------|----------------------------|---------------------------|-----------------|
-| Fixed-size | ✓ | ✓ | ✓ | ✓ (results) |
+| Fixed-size scalar | ✓ | ✓ | ✓ | ✓ (results) |
+| Fixed-size struct | ✓ | ✓ | ✓ | ✓ (results) |
 | Variable-length | ✓ | **✗** | ✓, up to `max_task_count` / `max_result_count` elements | ✓ (results) |
 
 ### Custom types
@@ -331,7 +332,7 @@ static_assert(sizeof(Point) == 3 * sizeof(double));
 template <>
 struct dynampi::MPI_Type<Point> {
   inline static const MPI_Datatype value = MPI_DOUBLE;
-  inline static const bool resize_required = true;   // see the note below
+  inline static const bool resize_required = false;  // fixed size
 
   static int   count(const Point&) noexcept { return 3; }
   static void  resize(Point&, int) noexcept {}       // fixed size: nothing to do
@@ -340,40 +341,27 @@ struct dynampi::MPI_Type<Point> {
 };
 ```
 
-Genuinely variable-length types work the same way, with `count()` returning the
-current element count and `resize(value, n)` growing the storage to `n` elements
-— that is exactly how the shipped `std::vector<T>` and `std::string`
-specializations are written.
+That works with **every** distributor.  A value may span several datatype
+elements — three `MPI_DOUBLE`s here — and everything that sizes a buffer per
+value accounts for it: the fixed-width RMA window slots, and the element count
+of a batched `std::vector<T>` message.
 
-!!! warning "`resize_required = false` means more than 'fixed size'"
-    Declaring `resize_required = false` asserts the stronger contract
-    **`count() == 1` and `MPI_Type_size(value) == sizeof(T)`** — one element of
-    one datatype covering the whole object.  That holds for the built-in scalars,
-    but a struct of three doubles has `count() == 3`, so declaring it
-    non-resizable would make the RMA distributors size their per-task window
-    slots from `sizeof(double)` instead of `sizeof(Point)`.
+Genuinely variable-length types work the same way with `resize_required = true`,
+`count()` returning the current element count, and `resize(value, n)` growing the
+storage to `n` elements — exactly how the shipped `std::vector<T>` and
+`std::string` specializations are written.
 
-    Declaring `resize_required = true` with a no-op `resize()` is the correct
-    spelling for such a struct: it only tells DynaMPI to size buffers from
-    `count()`, which is what you want.  Meeting the stricter contract instead
-    would require a committed derived datatype (`MPI_Type_create_struct`), which
-    cannot be created before `MPI_Init` and therefore cannot initialise a
-    `static` member.
+Two requirements to be aware of:
 
-    Distributors that depend on the contract check it in their constructor and
-    throw `std::invalid_argument` naming the offending type, so an incorrectly
-    declared specialization fails immediately rather than moving truncated data.
-    The check runs in release builds too.
-
-Which distributors accept a custom struct follows directly from that flag:
-
-| Distributor | Custom struct |
-|-------------|---------------|
-| `NaiveMPIWorkDistributor` | ✓ |
-| `AsyncPutLockFreeMPIWorkDistributor` | ✓ |
-| `HierarchicalAsyncPutLockFreeMPIWorkDistributor` | ✓ |
-| `HierarchicalMPIWorkDistributor` / `…NonBlocking…` | ✗ — they reject `resize_required` payloads outright, and their batch path assumes `count() == 1` (both diagnosed, not silent) |
-| `MinimalLockFreeMPIWorkDistributor` | ✓ as the result type (the task is always an index) |
+- **The whole object must be sent.** `count() * MPI_Type_size(value)` has to
+  equal `sizeof(T)` for a fixed-size type, and the storage at `ptr()` has to be
+  contiguous.
+- **The object must be a whole number of elements.** A 12-byte struct described
+  by an 8-byte datatype cannot be expressed as *N* elements; distributors detect
+  this in their constructor and throw `std::invalid_argument` naming the type,
+  in release builds too.  Describe such a type with a datatype that fits — three
+  `MPI_FLOAT`s rather than one and a half `MPI_DOUBLE`s — or with `MPI_BYTE` and
+  `count() == sizeof(T)`.
 
 [examples/04_custom_task_type.cpp](https://github.com/ryanstocks00/DynaMPI/blob/main/examples/04_custom_task_type.cpp)
 is a complete working version of this.
