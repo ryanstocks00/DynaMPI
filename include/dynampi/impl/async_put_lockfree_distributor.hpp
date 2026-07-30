@@ -378,6 +378,12 @@ class AsyncPutLockFreeMPIWorkDistributor {
   StatisticsT m_statistics;
 
   void initialize_window() {
+    // Window slots are fixed-width, so a non-resizable payload spanning more
+    // than one datatype element would overrun them -- see
+    // check_fixed_size_mpi_type().
+    check_fixed_size_mpi_type<TaskT>("task", "AsyncPutLockFree");
+    check_fixed_size_mpi_type<ResultT>("result", "AsyncPutLockFree");
+
     m_task_elem = static_cast<size_t>(detail::mpi_type_size_bytes<TaskT>());
     m_result_elem = static_cast<size_t>(detail::mpi_type_size_bytes<ResultT>());
     m_max_task_count =

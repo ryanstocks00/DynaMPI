@@ -30,6 +30,11 @@
 
 Header-only C++20 library for efficient manager–worker dynamic load distribution over MPI.
 
+One rank manages a task queue; the rest pull work as they finish, keeping every
+rank busy when task costs are irregular or unknown up front. Six distributors
+implement that contract behind one interface, from a plain two-sided loop to a
+tree of one-sided RMA windows.
+
 Licensed under the Apache License 2.0.
 
 ## Usage
@@ -43,30 +48,27 @@ Licensed under the Apache License 2.0.
 auto worker_task = [](size_t task) -> size_t { return task * task; };
 auto result = dynampi::mpi_manager_worker_distribution<size_t>(4, worker_task);
 if (result.has_value()) {
-  // Manager: one result per task. Default distributor is hierarchical and
-  // unordered — use NaiveMPIWorkDistributor if you need results in
-  // task-index order.
+  // Manager: one result per task. The default distributor is hierarchical and
+  // unordered — result[i] is *not* task i. Pass NaiveMPIWorkDistributor as the
+  // second template argument if you need task-index order.
   assert(result->size() == 4);
 }
 ```
 
-The default distributor is `MPIDynamicWorkDistributor` (hierarchical). Pass another
-distributor as a template argument if needed (e.g. `NaiveMPIWorkDistributor` for
-strictly ordered results on small communicator sizes).
-
 ### Dynamic / incremental tasks
 
-When the task set is not known up front, use `MPIDynamicWorkDistributor`
-and alternate `insert_tasks` with `run_tasks` / `finish_remaining_tasks`:
+When the task set is not known up front, construct a distributor directly and
+alternate `insert_tasks` with `run_tasks` / `finish_remaining_tasks`:
 
 ```cpp
+#include <cmath>
 #include <dynampi/dynampi.hpp>
 
 using Task = int;
-using Result = std::vector<int>;
+using Result = double;
 
 auto worker_task = [](Task task) -> Result {
-  return Result{task, task * task, task * task * task};
+  return std::sqrt(static_cast<double>(task));
 };
 
 dynampi::MPIDynamicWorkDistributor<Task, Result> distributor(worker_task);
@@ -82,17 +84,32 @@ if (distributor.is_root_manager()) {
 ```
 
 With `auto_run_workers = true` (the default), non-manager ranks enter the worker
-loop in the constructor. Optional compile-time features include task
-prioritization (naive distributor), statistics tracking, and custom MPI
-datatypes via `dynampi::MPI_Type`.
+loop in the constructor. Construction and destruction are collective.
 
-See the [documentation](https://ryanstocks00.github.io/DynaMPI/) for
-distributor choice (naive, hierarchical, lock-free RMA) and configuration.
+### Distributors
+
+| Class | Communication | Ordered | Notes |
+|-------|---------------|---------|-------|
+| `NaiveMPIWorkDistributor` | Two-sided | Yes | Task priorities, variable-length payloads; manager-bound at scale |
+| `MPIDynamicWorkDistributor` (hierarchical) | Two-sided, batched | No | Default. Node-aware tree; fixed-size payloads only |
+| `HierarchicalNonBlockingMPIWorkDistributor` | Two-sided, batched, `Isend` | No | A/B variant of the above |
+| `AsyncPutLockFreeMPIWorkDistributor` | Passive-target RMA | No | No collectives on the hot path; preallocated window |
+| `HierarchicalAsyncPutLockFreeMPIWorkDistributor` | Passive-target RMA, per level | No | RMA protocol applied per tree level, for large node counts |
+| `MinimalLockFreeMPIWorkDistributor` | RMA counter + `Gatherv` | Yes | Parallel-for over `0 .. n-1` |
+
+Optional compile-time features: task prioritization
+(`dynampi::enable_prioritization`), statistics tracking
+(`dynampi::track_statistics<Mode>`), and custom payloads via
+`dynampi::MPI_Type`.
+
+See the [documentation](https://ryanstocks00.github.io/DynaMPI/) for how each
+distributor works, its constraints, and its configuration, and
+[`examples/`](examples/) for short runnable programs covering each concept.
 
 ## Installation
 
-DynaMPI depends only on MPI. Copy `include/` into your project, or consume it
-with CMake:
+DynaMPI depends only on MPI. Copy `include/` into your project — no macros to
+define, nothing to link — or consume it with CMake:
 
 ```cmake
 include(FetchContent)

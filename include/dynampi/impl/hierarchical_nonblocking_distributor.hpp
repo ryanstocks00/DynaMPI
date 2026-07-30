@@ -373,6 +373,11 @@ class HierarchicalNonBlockingMPIWorkDistributor
         m_worker_function(worker_function),
         m_config(runtime_config),
         _statistics{create_statistics(m_communicator)} {
+    // Same batched-message requirement as the blocking variant -- see
+    // check_fixed_size_mpi_type().
+    check_fixed_size_mpi_type<TaskT>("task", "HierarchicalNonBlockingMPIWorkDistributor");
+    check_fixed_size_mpi_type<ResultT>("result", "HierarchicalNonBlockingMPIWorkDistributor");
+
     // --- Initialize Topology Groups ---
     if (m_config.coordinator_per_node) {
       // 1. Identify physical nodes via split_by_node

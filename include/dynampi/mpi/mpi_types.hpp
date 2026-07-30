@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -100,6 +101,45 @@ struct MPI_Type<std::vector<T>, std::enable_if_t<has_dynampi_mpi_type<T>::value>
                 "std::vector<bool> is bit-packed and not contiguous. "
                 "Use std::vector<unsigned char> or a custom container.");
 };
+
+// Verifies the contract that `resize_required == false` implies: exactly ONE
+// element of `value` covers the whole object, i.e. count() == 1 and
+// MPI_Type_size(value) == sizeof(T).
+//
+// Distributors that reserve fixed-width RMA window slots, or that batch values
+// into a single std::vector<T> message, size those buffers as one element per
+// value and so depend on this. A type that violates it -- e.g. a struct of
+// three doubles declaring MPI_DOUBLE with count() == 3 and
+// resize_required == false -- silently truncates or overruns instead of
+// failing any existing size check, which is why this throws unconditionally
+// rather than asserting: NDEBUG builds are exactly where silent corruption
+// does the most damage.
+//
+// Such a struct should declare resize_required = true with a no-op resize(),
+// which asks the distributor to size its buffers from count() instead.
+// MPI_Type<T> specializations for genuinely variable-length types (and
+// distributors like NaiveMPIWorkDistributor, which sends count() elements
+// directly and needs no fixed-width slot) are unaffected.
+template <typename T>
+inline void check_fixed_size_mpi_type(const char* type_role, const char* distributor_name) {
+  if constexpr (!MPI_Type<T>::resize_required) {
+    int element_bytes = 0;
+    if (MPI_Type_size(MPI_Type<T>::value, &element_bytes) != MPI_SUCCESS) {
+      throw std::invalid_argument(std::string(distributor_name) + ": could not query the MPI " +
+                                  "datatype of its " + type_role + " type");
+    }
+    if (static_cast<size_t>(element_bytes) != sizeof(T)) {
+      throw std::invalid_argument(
+          std::string(distributor_name) + ": the " + type_role +
+          " type's MPI_Type specialization declares resize_required == false, which requires one "
+          "element of its datatype to cover the whole object (" +
+          std::to_string(sizeof(T)) + " bytes), but one element is " +
+          std::to_string(element_bytes) +
+          " bytes. For a fixed-size struct spanning several elements, declare "
+          "resize_required = true with a no-op resize() instead.");
+    }
+  }
+}
 
 // std::string specialization
 template <>

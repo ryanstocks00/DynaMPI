@@ -90,11 +90,19 @@ class NaiveMPIWorkDistributor {
  public:
   struct Statistics {
     const CommStatistics& comm_statistics;
+    // Tasks dispatched to each worker, indexed by worker index (this rank's
+    // communicator rank with the manager removed -- see rank_to_worker_idx).
     std::vector<size_t> worker_task_counts;
   };
 
+  // Any tracking mode above None populates both members; Detailed additionally
+  // makes MPICommunicator time its blocking calls. Keying this on `!= None`
+  // rather than `== Detailed` is what makes track_statistics<Aggregated>
+  // usable: the constructor and send_next_task_to_worker() both write
+  // worker_task_counts at >= Aggregated, which cannot compile against
+  // std::monostate.
   using StatisticsT =
-      std::conditional_t<statistics_mode == StatisticsMode::Detailed, Statistics, std::monostate>;
+      std::conditional_t<statistics_mode != StatisticsMode::None, Statistics, std::monostate>;
 
  private:
   StatisticsT m_statistics;

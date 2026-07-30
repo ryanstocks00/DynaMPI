@@ -452,6 +452,13 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         m_worker_function(worker_function),
         m_config(runtime_config),
         _statistics{create_statistics(m_communicator)} {
+    // Coordinators exchange whole batches as one std::vector<T> message, whose
+    // element count is the number of values -- so a non-resizable payload
+    // spanning more than one datatype element would send a fraction of each.
+    // See check_fixed_size_mpi_type().
+    check_fixed_size_mpi_type<TaskT>("task", "HierarchicalMPIWorkDistributor");
+    check_fixed_size_mpi_type<ResultT>("result", "HierarchicalMPIWorkDistributor");
+
     // --- Initialize Topology Groups ---
     if (m_config.coordinator_per_node) {
       // 1. Identify physical nodes via split_by_node, optionally partitioning

@@ -423,6 +423,10 @@ class AsyncPutLevel {
   bool m_seen_finished = false;
 
   void initialize_window() {
+    // Same fixed-width slot requirement as the flat distributor's window.
+    check_fixed_size_mpi_type<TaskT>("task", "AsyncPutLevel");
+    check_fixed_size_mpi_type<ResultT>("result", "AsyncPutLevel");
+
     m_task_elem = static_cast<size_t>(detail::mpi_type_size_bytes<TaskT>());
     m_result_elem = static_cast<size_t>(detail::mpi_type_size_bytes<ResultT>());
     m_max_task_count =
