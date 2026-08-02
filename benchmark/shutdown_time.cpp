@@ -7,6 +7,8 @@
 
 #include <cstdint>
 #include <cxxopts.hpp>
+#include <dynampi/impl/async_put_lockfree_distributor.hpp>
+#include <dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp>
 #include <dynampi/impl/hierarchical_distributor.hpp>
 #include <dynampi/impl/naive_distributor.hpp>
 #include <dynampi/mpi/mpi_communicator.hpp>
@@ -18,11 +20,17 @@
 using Task = uint32_t;
 using Result = uint32_t;
 
-enum class DistributorKind { Naive, Hierarchical };
+enum class DistributorKind {
+  Naive,
+  Hierarchical,
+  AsyncPutLockFree,
+  HierarchicalAsyncPutLockFree,
+};
 
 struct BenchmarkOptions {
   DistributorKind distributor = DistributorKind::Naive;
   uint64_t nodes = 0;
+  int max_upper_fanout = -1;
   std::string system;
   std::string output_path;
 };
@@ -37,6 +45,9 @@ struct BenchmarkResult {
 static DistributorKind parse_distributor(const std::string& value) {
   if (value == "naive") return DistributorKind::Naive;
   if (value == "hierarchical") return DistributorKind::Hierarchical;
+  if (value == "async_put_lockfree") return DistributorKind::AsyncPutLockFree;
+  if (value == "hierarchical_async_put_lockfree")
+    return DistributorKind::HierarchicalAsyncPutLockFree;
   throw std::runtime_error("Unknown distributor: " + value);
 }
 
@@ -46,19 +57,24 @@ static std::string to_string(DistributorKind kind) {
       return "naive";
     case DistributorKind::Hierarchical:
       return "hierarchical";
+    case DistributorKind::AsyncPutLockFree:
+      return "async_put_lockfree";
+    case DistributorKind::HierarchicalAsyncPutLockFree:
+      return "hierarchical_async_put_lockfree";
   }
   return "unknown";
 }
 
 static void write_csv_header(std::ostream& os) {
-  os << "system,distributor,nodes,world_size,workers,time_per_shutdown_us,iterations\n";
+  os << "system,distributor,nodes,max_upper_fanout,world_size,workers,time_per_shutdown_us,"
+        "iterations\n";
 }
 
 static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts,
                           const BenchmarkResult& result) {
   os << opts.system << "," << to_string(opts.distributor) << "," << opts.nodes << ","
-     << result.world_size << "," << result.workers << "," << result.time_per_shutdown_us << ","
-     << result.iterations << "\n";
+     << opts.max_upper_fanout << "," << result.world_size << "," << result.workers << ","
+     << result.time_per_shutdown_us << "," << result.iterations << "\n";
 }
 
 template <typename Distributor>
@@ -95,6 +111,7 @@ static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& op
     // Ensure all workers are ready
     MPI_Barrier(comm_wrapper);
 
+    bool is_manager = (rank == 0);
     {
       // No max_tasks override needed here (unlike strong_scaling_distribution_rate.cpp):
       // this benchmark never calls insert_task/insert_tasks, so lockfree's
@@ -103,16 +120,45 @@ static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& op
       // default is fine.
       typename Distributor::Config config{
           .comm = comm, .manager_rank = 0, .auto_run_workers = true};
+      if constexpr (requires { config.max_upper_fanout; }) {
+        config.max_upper_fanout = opts.max_upper_fanout;
+      }
       Distributor distributor(worker_function, config);
 
       if (distributor.is_root_manager()) {
         iteration_timer.reset(dynampi::Timer::AutoStart::Yes);
         auto _ = distributor.finish_remaining_tasks();
         (void)_;
-        iteration_timer.stop();
-        total_shutdown_time += iteration_timer.elapsed().count();
-        iterations++;
+        // Explicitly finalize here, inside the timed region, rather than
+        // leaving it to distributor's destructor at the closing brace
+        // below. finalize() is what actually does the real shutdown
+        // signaling (e.g. HierarchicalMPIWorkDistributor's
+        // send_done_to_children_when_free(), which tells the whole
+        // coordinator tree to stop) -- finish_remaining_tasks() alone has
+        // nothing to do here since this benchmark never publishes any
+        // tasks, so it returns near-instantly regardless of distributor
+        // kind. Before this fix, finalize() only ran via "if
+        // (!m_finalized) finalize();" in the destructor, which fires
+        // *after* the timer already stopped -- so every hierarchical-class
+        // measurement was timing a no-op, not real teardown (confirmed:
+        // consistently ~60-70ns, flat across every node count from 1 to
+        // 128, orders of magnitude faster than a single network round
+        // trip, while naive -- whose real signaling apparently happens
+        // synchronously inside finish_remaining_tasks() rather than being
+        // deferred -- measured real, node-count-scaling numbers).
+        distributor.finalize();
       }
+      // Left in scope deliberately: distributor's destructor (window
+      // free, communicator cleanup, etc. -- real teardown cost, not just
+      // the done-signaling finalize() already covers above) still needs
+      // to run before we stop the clock, so the timer stop is placed
+      // after this block closes rather than immediately after
+      // finalize().
+    }
+    if (is_manager) {
+      iteration_timer.stop();
+      total_shutdown_time += iteration_timer.elapsed().count();
+      iterations++;
     }
 
     // Barrier to ensure all processes complete shutdown before next iteration
@@ -135,10 +181,18 @@ int main(int argc, char** argv) {
 
   cxxopts::Options options("shutdown_time",
                            "Benchmark distributor construct/shutdown time with no tasks");
-  options.add_options()("D,distribution", "Distribution strategy: naive or hierarchical",
+  options.add_options()("D,distribution",
+                        "Distribution strategy: naive, hierarchical, async_put_lockfree, "
+                        "or hierarchical_async_put_lockfree",
                         cxxopts::value<std::string>()->default_value("naive"))(
       "n,nodes", "Number of nodes for labeling output (defaults to world size)",
       cxxopts::value<uint64_t>()->default_value("0"))(
+      "max_upper_fanout",
+      "hierarchical and hierarchical_async_put_lockfree only: max direct children per "
+      "coordinator above the node-local level. Negative (default) = auto; 0 = single "
+      "unbounded coordinator level (1-layer); >0 activates k-ary grouping into multiple "
+      "upper levels once coordinator count exceeds this fanout.",
+      cxxopts::value<int>()->default_value("-1"))(
       "S,system", "System label for plotting (frontier, aurora, ...)",
       cxxopts::value<std::string>()->default_value(""))(
       "o,output", "Append results to CSV file", cxxopts::value<std::string>()->default_value(""))(
@@ -167,6 +221,7 @@ int main(int argc, char** argv) {
   try {
     opts.distributor = parse_distributor(args["distribution"].as<std::string>());
     opts.nodes = args["nodes"].as<uint64_t>();
+    opts.max_upper_fanout = args["max_upper_fanout"].as<int>();
     opts.system = args["system"].as<std::string>();
     opts.output_path = args["output"].as<std::string>();
   } catch (const std::exception& e) {
@@ -195,11 +250,20 @@ int main(int argc, char** argv) {
       case DistributorKind::Hierarchical:
         result = run_benchmark<dynampi::HierarchicalMPIWorkDistributor<Task, Result>>(opts, comm);
         break;
+      case DistributorKind::AsyncPutLockFree:
+        result =
+            run_benchmark<dynampi::AsyncPutLockFreeMPIWorkDistributor<Task, Result>>(opts, comm);
+        break;
+      case DistributorKind::HierarchicalAsyncPutLockFree:
+        result = run_benchmark<dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, Result>>(
+            opts, comm);
+        break;
     }
 
     if (rank == 0) {
       std::cout << "RESULT"
                 << " distributor=" << to_string(opts.distributor) << " nodes=" << opts.nodes
+                << " max_upper_fanout=" << opts.max_upper_fanout
                 << " world_size=" << result.world_size << " workers=" << result.workers
                 << " time_per_shutdown_us=" << result.time_per_shutdown_us
                 << " iterations=" << result.iterations << std::endl;

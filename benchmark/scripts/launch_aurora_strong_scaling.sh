@@ -91,6 +91,16 @@ for nodes in "${NODE_LIST[@]}"; do
       for expected_us in "${TASK_US_LIST[@]}"; do
           echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist} mode=${mode} expected_us=${expected_us} max_upper_fanout=${fanout}"
         launcher_base="$(basename "${LAUNCHER}")"
+        # `|| true` on both launches below: strong_scaling_distribution_rate
+        # now prints its RESULT line and then calls MPI_Abort itself (see
+        # print_result_and_abort's comment) instead of returning/finalizing
+        # normally, so every run -- success or not -- now exits non-zero.
+        # Without `|| true`, this script's `set -e` (line 4) would treat
+        # that as a fatal error and kill the whole node-count's remaining
+        # combos after just the first one (confirmed: three real jobs each
+        # stopped after exactly 1 of 36 combos this way). Exit code is no
+        # longer a meaningful success signal for this benchmark either way
+        # -- check for a RESULT line in the CSV/log instead.
         if [[ "${launcher_base}" == mpiexec || "${launcher_base}" == mpirun ]]; then
           "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -n "${total_ranks}" --ppn "${ranks_per_node}" \
             "${APP}" \
@@ -101,7 +111,7 @@ for nodes in "${NODE_LIST[@]}"; do
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
             --max_upper_fanout "${fanout}" \
-            --output "${CSV}"
+            --output "${CSV}" || true
         else
           "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -N "${nodes}" -n "${total_ranks}" \
             --ntasks-per-node="${ranks_per_node}" \
@@ -113,7 +123,7 @@ for nodes in "${NODE_LIST[@]}"; do
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
             --max_upper_fanout "${fanout}" \
-            --output "${CSV}"
+            --output "${CSV}" || true
         fi
         done
       done

@@ -119,6 +119,47 @@ static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts,
      << result.total_tasks << "," << result.elapsed_s << "," << throughput << "\n";
 }
 
+// Prints the result and tears the whole job down immediately via MPI_Abort
+// instead of returning normally and letting the distributor finalize/
+// destruct cooperatively. finalize() (called explicitly or from the
+// destructor if not already finalized) unconditionally drains every
+// published-but-unclaimed task before returning; for the async-put classes
+// that drain has no time bound at all, and at compute-bound or
+// contention-collapsed configs it can take orders of magnitude longer than
+// duration_s -- burning node-hours for a drain nobody needs once the
+// measurement is already captured (confirmed: a single expected_us=1000000
+// config left ~100K+ tasks unclaimed after a 20s window, whose finalize()
+// drain alone would need ~1000s+ at that class's achievable rate). Must be
+// called with the distributor still alive/in scope: returning normally and
+// letting it go out of scope hits the exact same unbounded drain one frame
+// up, via the destructor.
+[[noreturn]] static void print_result_and_abort(MPI_Comm comm, const BenchmarkOptions& opts,
+                                                const BenchmarkResult& result) {
+  const double throughput =
+      result.elapsed_s > 0.0 ? static_cast<double>(result.total_tasks) / result.elapsed_s : 0.0;
+  std::cout << "RESULT"
+            << " distributor=" << to_string(opts.distributor)
+            << " mode=" << to_string(opts.duration_mode) << " expected_us=" << opts.expected_us
+            << " nodes=" << opts.nodes << " world_size=" << result.world_size
+            << " max_upper_fanout=" << opts.max_upper_fanout
+            << " total_tasks=" << result.total_tasks << " elapsed_s=" << result.elapsed_s
+            << " throughput_tasks_per_s=" << throughput << std::endl;
+  if (!opts.output_path.empty()) {
+    std::ifstream check(opts.output_path);
+    const bool needs_header =
+        !check.good() || check.peek() == std::ifstream::traits_type::eof();
+    check.close();
+    std::ofstream out(opts.output_path, std::ios::app);
+    if (needs_header) {
+      write_csv_header(out);
+    }
+    write_csv_row(out, opts, result);
+  }
+  std::cout.flush();
+  MPI_Abort(comm, 0);
+  std::_Exit(1);  // MPI_Abort should not return; fallback in case it does
+}
+
 struct WorkerFunctor {
   uint64_t expected_us;
   DurationMode duration_mode;
@@ -215,7 +256,9 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
       total_tasks += results.size();
     }
     timer.stop();
-    distributor.finalize();
+    print_result_and_abort(comm, opts,
+                           BenchmarkResult{total_tasks, num_workers, static_cast<uint64_t>(size),
+                                           timer.elapsed().count()});
   }
 
   return BenchmarkResult{total_tasks, num_workers, static_cast<uint64_t>(size),
@@ -325,7 +368,9 @@ static BenchmarkResult run_benchmark_async_put_style(const BenchmarkOptions& opt
     }
     timer.stop();
 
-    distributor.finalize();
+    print_result_and_abort(comm, opts,
+                           BenchmarkResult{total_tasks, num_workers, static_cast<uint64_t>(size),
+                                           timer.elapsed().count()});
   }
 
   return BenchmarkResult{total_tasks, num_workers, static_cast<uint64_t>(size),
@@ -410,53 +455,36 @@ int main(int argc, char** argv) {
 
   {
     MPI_Comm comm = MPI_COMM_WORLD;
-    int rank = 0;
     int size = 0;
-    MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &size);
     if (opts.nodes == 0) {
       opts.nodes = static_cast<uint64_t>(size);
     }
 
-    BenchmarkResult result;
+    // Each driver prints the RESULT line and calls MPI_Abort itself, on the
+    // manager rank, right after its own timer stops (see
+    // print_result_and_abort's comment) -- so for every distributor kind,
+    // either the manager rank aborts the whole job from inside the driver
+    // call below, or (for non-manager ranks) control never returns from
+    // constructing Distributor in the first place, since worker ranks block
+    // there until they're killed by that same abort. Nothing below this
+    // switch statement executes on a normal run; it only remains reachable
+    // for build-configuration correctness.
     switch (opts.distributor) {
       case DistributorKind::Naive:
-        result = run_benchmark<dynampi::NaiveMPIWorkDistributor<Task, uint32_t>>(opts, comm);
+        run_benchmark<dynampi::NaiveMPIWorkDistributor<Task, uint32_t>>(opts, comm);
         break;
       case DistributorKind::Hierarchical:
-        result = run_benchmark<dynampi::HierarchicalMPIWorkDistributor<Task, uint32_t>>(opts, comm);
+        run_benchmark<dynampi::HierarchicalMPIWorkDistributor<Task, uint32_t>>(opts, comm);
         break;
       case DistributorKind::AsyncPutLockFree:
-        result = run_benchmark_async_put_style<
-            dynampi::AsyncPutLockFreeMPIWorkDistributor<Task, uint32_t>>(opts, comm);
+        run_benchmark_async_put_style<dynampi::AsyncPutLockFreeMPIWorkDistributor<Task, uint32_t>>(
+            opts, comm);
         break;
       case DistributorKind::HierarchicalAsyncPutLockFree:
-        result = run_benchmark_async_put_style<
+        run_benchmark_async_put_style<
             dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, uint32_t>>(opts, comm);
         break;
-    }
-
-    if (rank == 0) {
-      const double throughput =
-          result.elapsed_s > 0.0 ? static_cast<double>(result.total_tasks) / result.elapsed_s : 0.0;
-      std::cout << "RESULT"
-                << " distributor=" << to_string(opts.distributor)
-                << " mode=" << to_string(opts.duration_mode) << " expected_us=" << opts.expected_us
-                << " nodes=" << opts.nodes << " world_size=" << result.world_size
-                << " max_upper_fanout=" << opts.max_upper_fanout
-                << " total_tasks=" << result.total_tasks << " elapsed_s=" << result.elapsed_s
-                << " throughput_tasks_per_s=" << throughput << std::endl;
-      if (!opts.output_path.empty()) {
-        std::ifstream check(opts.output_path);
-        const bool needs_header =
-            !check.good() || check.peek() == std::ifstream::traits_type::eof();
-        check.close();
-        std::ofstream out(opts.output_path, std::ios::app);
-        if (needs_header) {
-          write_csv_header(out);
-        }
-        write_csv_row(out, opts, result);
-      }
     }
   }
   MPI_Finalize();
