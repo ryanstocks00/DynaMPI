@@ -7,14 +7,16 @@
 
 #include <cassert>
 #include <chrono>
-#include <optional>
 #include <ostream>
 
 namespace dynampi {
 
 class Timer {
-  std::optional<std::chrono::time_point<std::chrono::high_resolution_clock>> _start_time;
+  // Prefer bool + initialized time_point over optional: GCC 12 -Werror
+  // -Wmaybe-uninitialized false-positives on optional's inactive storage.
+  std::chrono::time_point<std::chrono::high_resolution_clock> _start_time{};
   std::chrono::nanoseconds _elapsed_time{0};
+  bool _running{false};
 
  public:
   enum class AutoStart { Yes, No };
@@ -26,21 +28,21 @@ class Timer {
   }
 
   void start() {
-    assert(!_start_time.has_value() && "Timer already started");
+    assert(!_running && "Timer already started");
     _start_time = std::chrono::high_resolution_clock::now();
+    _running = true;
   }
 
   std::chrono::duration<double> stop() {
-    assert(_start_time.has_value() && "Timer not started");
+    assert(_running && "Timer not started");
     auto end_time = std::chrono::high_resolution_clock::now();
-    _elapsed_time +=
-        std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - _start_time.value());
-    _start_time.reset();
+    _elapsed_time += std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - _start_time);
+    _running = false;
     return std::chrono::duration<double>(_elapsed_time);
   }
 
   void reset(AutoStart auto_start = AutoStart::Yes) {
-    _start_time.reset();
+    _running = false;
     _elapsed_time = std::chrono::nanoseconds{0};
     if (auto_start == AutoStart::Yes) {
       start();
@@ -48,10 +50,10 @@ class Timer {
   }
 
   [[nodiscard]] std::chrono::duration<double> elapsed() const {
-    if (_start_time.has_value()) {
+    if (_running) {
       auto current_elapsed =
           _elapsed_time + std::chrono::duration_cast<std::chrono::nanoseconds>(
-                              std::chrono::high_resolution_clock::now() - _start_time.value());
+                              std::chrono::high_resolution_clock::now() - _start_time);
       return std::chrono::duration<double>(current_elapsed);
     }
     return std::chrono::duration<double>(_elapsed_time);

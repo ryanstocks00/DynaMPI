@@ -146,8 +146,7 @@ static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts,
             << " throughput_tasks_per_s=" << throughput << std::endl;
   if (!opts.output_path.empty()) {
     std::ifstream check(opts.output_path);
-    const bool needs_header =
-        !check.good() || check.peek() == std::ifstream::traits_type::eof();
+    const bool needs_header = !check.good() || check.peek() == std::ifstream::traits_type::eof();
     check.close();
     std::ofstream out(opts.output_path, std::ios::app);
     if (needs_header) {
