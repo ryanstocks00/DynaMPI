@@ -12,6 +12,7 @@ OUTPUT_DIR="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 SYSTEM="frontier"
 
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512 1024 2048 4096 8192}"
+IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
 IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-core}"
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
@@ -44,22 +45,26 @@ for nodes in "${NODE_LIST[@]}"; do
       ranks_per_node="${rpn}"
     fi
     total_ranks=$((nodes * ranks_per_node))
-    echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node}"
-    launcher_base="$(basename "${LAUNCHER}")"
-    if [[ "${launcher_base}" == mpiexec || "${launcher_base}" == mpirun ]]; then
-      "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -n "${total_ranks}" --ppn "${ranks_per_node}" \
-        "${APP}" \
-        --nodes "${nodes}" \
-        --system "${SYSTEM}" \
-        --output "${CSV}"
-    else
-      "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -N "${nodes}" -n "${total_ranks}" \
-        --ntasks-per-node="${ranks_per_node}" \
-        "${APP}" \
-        --nodes "${nodes}" \
-        --system "${SYSTEM}" \
-        --output "${CSV}"
-    fi
+    for dist in "${DISTRIBUTIONS[@]}"; do
+      echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist}"
+      launcher_base="$(basename "${LAUNCHER}")"
+      if [[ "${launcher_base}" == mpiexec || "${launcher_base}" == mpirun ]]; then
+        "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -n "${total_ranks}" --ppn "${ranks_per_node}" \
+          "${APP}" \
+          --distribution "${dist}" \
+          --nodes "${nodes}" \
+          --system "${SYSTEM}" \
+          --output "${CSV}"
+      else
+        "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -N "${nodes}" -n "${total_ranks}" \
+          --ntasks-per-node="${ranks_per_node}" \
+          "${APP}" \
+          --distribution "${dist}" \
+          --nodes "${nodes}" \
+          --system "${SYSTEM}" \
+          --output "${CSV}"
+      fi
+    done
   done
 done
 

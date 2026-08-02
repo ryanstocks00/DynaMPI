@@ -22,6 +22,8 @@ ACCOUNT="${ACCOUNT:-chm213}"
 WALLTIME="${WALLTIME:-00:15:00}"
 LAUNCHER="${LAUNCHER:-}"
 LAUNCHER_ARGS="${LAUNCHER_ARGS:-}"
+DISTRIBUTIONS="${DISTRIBUTIONS:-}"
+RANKS_PER_NODE_LIST="${RANKS_PER_NODE_LIST:-}"
 OUTPUT_BASE="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 
 for nodes in "${NODE_LIST[@]}"; do
@@ -30,12 +32,22 @@ for nodes in "${NODE_LIST[@]}"; do
   if [[ -n "${ACCOUNT}" ]]; then
     submit_args+=(--account="${ACCOUNT}")
   fi
-  wrap="cd ${ROOT_DIR} && OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${SLURM_JOB_ID:-manual}\" ${SCRIPT}"
-  echo "sbatch ${submit_args[*]} --job-name=\"${job_name}\" --nodes=${nodes} --time=${WALLTIME} --export=ALL,NODE_LIST=${nodes},LAUNCHER=${LAUNCHER},LAUNCHER_ARGS=${LAUNCHER_ARGS} --wrap=\"${wrap}\""
+  job_script="#!/usr/bin/env bash
+set -euo pipefail
+cd \"${ROOT_DIR}\"
+export NODE_LIST=\"${nodes}\"
+export LAUNCHER=\"${LAUNCHER}\"
+export LAUNCHER_ARGS=\"${LAUNCHER_ARGS}\"
+export DISTRIBUTIONS=\"${DISTRIBUTIONS}\"
+export RANKS_PER_NODE_LIST=\"${RANKS_PER_NODE_LIST}\"
+export OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${SLURM_JOB_ID:-manual}\"
+${SCRIPT}
+"
+  echo "sbatch ${submit_args[*]} --job-name=\"${job_name}\" --nodes=${nodes} --time=${WALLTIME} <<'SBATCHEOF'"
+  echo "${job_script}"
+  echo "SBATCHEOF"
   sbatch "${submit_args[@]}" \
     --job-name="${job_name}" \
     --nodes="${nodes}" \
-    --time="${WALLTIME}" \
-    --export=ALL,NODE_LIST="${nodes}",LAUNCHER="${LAUNCHER}",LAUNCHER_ARGS="${LAUNCHER_ARGS}" \
-    --wrap="${wrap}"
+    --time="${WALLTIME}" <<< "${job_script}"
 done

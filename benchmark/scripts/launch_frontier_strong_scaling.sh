@@ -16,6 +16,12 @@ IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-1 10 100 1000 10000 100000 
 IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
 IFS=' ' read -r -a MODES <<< "${MODES:-fixed random}"
 DURATION_S="${DURATION_S:-10}"
+# hierarchical_async_put_lockfree and hierarchical only: forwarded as
+# --max_upper_fanout (ignored by every other distributor, which is run
+# exactly once regardless of how many values are listed here). Negative
+# (default) = auto. 0 = single unbounded coordinator level. See
+# launch_aurora_strong_scaling.sh for the matching Aurora behavior.
+IFS=' ' read -r -a MAX_UPPER_FANOUT_LIST <<< "${MAX_UPPER_FANOUT_LIST:-${MAX_UPPER_FANOUT:--1}}"
 IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-core}"
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
@@ -49,10 +55,26 @@ for nodes in "${NODE_LIST[@]}"; do
     fi
     total_ranks=$((nodes * ranks_per_node))
     for dist in "${DISTRIBUTIONS[@]}"; do
+      # Only hierarchical and hierarchical_async_put_lockfree's behavior
+      # depends on max_upper_fanout; every other distributor would just
+      # repeat identical runs, so collapse its fanout list down to one (the
+      # first) value.
+      if [[ "${dist}" == "hierarchical_async_put_lockfree" || "${dist}" == "hierarchical" ]]; then
+        fanouts=("${MAX_UPPER_FANOUT_LIST[@]}")
+      else
+        fanouts=("${MAX_UPPER_FANOUT_LIST[0]}")
+      fi
+      for fanout in "${fanouts[@]}"; do
       for mode in "${MODES[@]}"; do
       for expected_us in "${TASK_US_LIST[@]}"; do
-        echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist} mode=${mode} expected_us=${expected_us}"
+        echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist} mode=${mode} expected_us=${expected_us} max_upper_fanout=${fanout}"
         launcher_base="$(basename "${LAUNCHER}")"
+        # `|| true`: strong_scaling_distribution_rate prints its RESULT line
+        # and then calls MPI_Abort itself instead of returning/finalizing
+        # normally, so every run -- success or not -- exits non-zero. Without
+        # `|| true`, this script's `set -e` would kill the whole node-count's
+        # remaining combos after just the first one (see
+        # launch_aurora_strong_scaling.sh for the same fix).
         if [[ "${launcher_base}" == mpiexec || "${launcher_base}" == mpirun ]]; then
           "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -n "${total_ranks}" --ppn "${ranks_per_node}" \
             "${APP}" \
@@ -62,7 +84,8 @@ for nodes in "${NODE_LIST[@]}"; do
             --duration_s "${DURATION_S}" \
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
-            --output "${CSV}"
+            --max_upper_fanout "${fanout}" \
+            --output "${CSV}" || true
         else
           "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -N "${nodes}" -n "${total_ranks}" \
             --ntasks-per-node="${ranks_per_node}" \
@@ -73,9 +96,11 @@ for nodes in "${NODE_LIST[@]}"; do
             --duration_s "${DURATION_S}" \
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
-            --output "${CSV}"
+            --max_upper_fanout "${fanout}" \
+            --output "${CSV}" || true
         fi
         done
+      done
       done
     done
   done
