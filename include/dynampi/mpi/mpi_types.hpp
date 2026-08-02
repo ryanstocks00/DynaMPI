@@ -154,7 +154,11 @@ template <typename T>
 inline void check_fixed_size_mpi_type(const char* type_role, const char* distributor_name) {
   if constexpr (!MPI_Type<T>::resize_required) {
     int element_bytes = 0;
-    if (MPI_Type_size(MPI_Type<T>::value, &element_bytes) != MPI_SUCCESS || element_bytes <= 0) {
+    // Check NULL before MPI_Type_size: with the default MPI_ERRORS_ARE_FATAL
+    // handler many implementations abort on an invalid datatype rather than
+    // returning an error code, so a C++ throw would never be reachable.
+    if (MPI_Type<T>::value == MPI_DATATYPE_NULL ||
+        MPI_Type_size(MPI_Type<T>::value, &element_bytes) != MPI_SUCCESS || element_bytes <= 0) {
       throw std::invalid_argument(std::string(distributor_name) + ": could not query the MPI " +
                                   "datatype of its " + type_role + " type");
     }

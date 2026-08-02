@@ -11,6 +11,8 @@
 #include <cmath>
 #include <cstdint>
 #include <dynampi/dynampi.hpp>
+#include <stdexcept>
+#include <string>
 #include <thread>
 #include <type_traits>
 #include <utility>
@@ -615,6 +617,12 @@ struct Vec3 {
 struct Unaligned {
   float a, b, c;
 };
+
+// MPI_Type_size(MPI_DATATYPE_NULL) fails, covering the "could not query"
+// branch of check_fixed_size_mpi_type.
+struct UnqueryableDatatype {
+  int x;
+};
 }  // namespace
 
 template <>
@@ -635,6 +643,16 @@ struct dynampi::MPI_Type<Unaligned> {
   static void resize(Unaligned&, int) noexcept {}
   static void* ptr(Unaligned& v) noexcept { return &v; }
   static const void* ptr(const Unaligned& v) noexcept { return &v; }
+};
+
+template <>
+struct dynampi::MPI_Type<UnqueryableDatatype> {
+  inline static const MPI_Datatype value = MPI_DATATYPE_NULL;
+  inline static const bool resize_required = false;
+  static int count(const UnqueryableDatatype&) noexcept { return 1; }
+  static void resize(UnqueryableDatatype&, int) noexcept {}
+  static void* ptr(UnqueryableDatatype& v) noexcept { return &v; }
+  static const void* ptr(const UnqueryableDatatype& v) noexcept { return &v; }
 };
 
 TYPED_TEST(DynamicDistribution, MultiElementFixedSizePayload) {
@@ -703,6 +721,17 @@ TEST(FixedSizeMPIType, RejectsPayloadThatIsNotAWholeNumberOfElements) {
     typename Distributor::Config config;
     config.comm = MPI_COMM_SELF;
     EXPECT_THROW(Distributor(identity, config), std::invalid_argument);
+  }
+}
+
+TEST(FixedSizeMPIType, RejectsUnqueryableDatatype) {
+  EXPECT_THROW((dynampi::check_fixed_size_mpi_type<UnqueryableDatatype>("task", "TestDistributor")),
+               std::invalid_argument);
+  try {
+    dynampi::check_fixed_size_mpi_type<UnqueryableDatatype>("task", "TestDistributor");
+    FAIL() << "expected invalid_argument";
+  } catch (const std::invalid_argument& e) {
+    EXPECT_NE(std::string(e.what()).find("could not query the MPI datatype"), std::string::npos);
   }
 }
 
