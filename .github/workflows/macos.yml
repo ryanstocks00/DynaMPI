@@ -13,7 +13,7 @@ env:
 jobs:
   macos-clang:
     runs-on: macos-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     strategy:
       matrix:
         build-type: [Debug, Release]
@@ -40,5 +40,33 @@ jobs:
         run: |
           cd build
           echo "Testing with $MPI_TYPE"
+          mpiexec --version || true
           export DYNAMPI_MAX_MPI_RANK=8
-          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
+          # Sequential: concurrent mpiexec oversubscribe on shared macOS
+          # runners has been flaky; keep output for the failure comment below.
+          if ! ctest --output-on-failure --output-junit TestResults.xml \
+              -C ${{ matrix.build-type }} 2>&1 | tee ctest.log; then
+            echo "CTEST_FAILED=1" >> "$GITHUB_ENV"
+            exit 1
+          fi
+      - name: Comment ctest failures on PR
+        if: failure() && env.CTEST_FAILED == '1' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          {
+            echo "### macOS ctest failure (${{ matrix.build-type }})"
+            echo
+            echo '```'
+            # Prefer failed-test excerpts; fall back to the tail of the log.
+            if grep -n -E 'FAILED|failed|Error|Assertion|SEGFAULT|TIMEOUT' build/ctest.log \
+                | head -n 80; then
+              :
+            else
+              tail -n 120 build/ctest.log
+            fi
+            echo '```'
+          } > /tmp/macos-ctest-comment.md
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --body-file /tmp/macos-ctest-comment.md
