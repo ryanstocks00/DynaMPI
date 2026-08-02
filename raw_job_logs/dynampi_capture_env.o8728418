@@ -1,0 +1,863 @@
++ echo '=== hostname ==='
+=== hostname ===
++ hostname -f
+x4016c5s1b0n0.hostmgmt.cm.aurora.alcf.anl.gov
++ date
+Sun 02 Aug 2026 11:12:07 AM CDT
++ echo '=== OS / kernel ==='
+=== OS / kernel ===
++ cat /etc/os-release
+NAME="SLES"
+VERSION="15-SP4"
+VERSION_ID="15.4"
+PRETTY_NAME="SUSE Linux Enterprise Server 15 SP4"
+ID="sles"
+ID_LIKE="suse"
+ANSI_COLOR="0;32"
+CPE_NAME="cpe:/o:suse:sles:15:sp4"
+DOCUMENTATION_URL="https://documentation.suse.com/"
++ uname -a
+Linux x4016c5s1b0n0 5.14.21-150400.24.225-default #1 SMP PREEMPT_DYNAMIC Wed Jun 17 13:14:30 UTC 2026 (82c2e59) x86_64 x86_64 x86_64 GNU/Linux
++ echo '=== lscpu ==='
+=== lscpu ===
++ lscpu
+Architecture:                            x86_64
+CPU op-mode(s):                          32-bit, 64-bit
+Address sizes:                           52 bits physical, 57 bits virtual
+Byte Order:                              Little Endian
+CPU(s):                                  208
+On-line CPU(s) list:                     0-207
+Vendor ID:                               GenuineIntel
+Model name:                              Intel(R) Xeon(R) CPU Max 9470C
+CPU family:                              6
+Model:                                   143
+Thread(s) per core:                      2
+Core(s) per socket:                      52
+Socket(s):                               2
+Stepping:                                8
+Frequency boost:                         enabled
+CPU max MHz:                             2001.0000
+CPU min MHz:                             800.0000
+BogoMIPS:                                4000.00
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb cat_l3 cat_l2 cdp_l3 invpcid_single intel_ppin cdp_l2 ssbd mba ibrs ibpb stibp ibrs_enhanced tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm cqm rdt_a avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb intel_pt avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local split_lock_detect avx_vnni avx512_bf16 wbnoinvd dtherm ida arat pln pts hwp hwp_act_window hwp_epp hwp_pkg_req avx512vbmi umip pku ospke waitpkg avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg tme avx512_vpopcntdq la57 rdpid bus_lock_detect cldemote movdiri movdir64b enqcmd fsrm md_clear serialize tsxldtrk pconfig arch_lbr avx512_fp16 amx_tile flush_l1d arch_capabilities
+Virtualization:                          VT-x
+L1d cache:                               4.9 MiB (104 instances)
+L1i cache:                               3.3 MiB (104 instances)
+L2 cache:                                208 MiB (104 instances)
+L3 cache:                                210 MiB (2 instances)
+NUMA node(s):                            4
+NUMA node0 CPU(s):                       0-51,104-155
+NUMA node1 CPU(s):                       52-103,156-207
+NUMA node2 CPU(s):                       
+NUMA node3 CPU(s):                       
+Vulnerability Gather data sampling:      Not affected
+Vulnerability Indirect target selection: Not affected
+Vulnerability Itlb multihit:             Not affected
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Not affected
+Vulnerability Reg file data sampling:    Not affected
+Vulnerability Retbleed:                  Not affected
+Vulnerability Spec rstack overflow:      Not affected
+Vulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl and seccomp
+Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS, IBPB conditional, RSB filling, PBRSB-eIBRS SW sequence; BHI BHI_DIS_S
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Not affected
++ echo '=== NUMA layout ==='
+=== NUMA layout ===
++ numactl -H
+available: 4 nodes (0-3)
+node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155
+node 0 size: 515524 MB
+node 0 free: 479530 MB
+node 1 cpus: 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198 199 200 201 202 203 204 205 206 207
+node 1 size: 514982 MB
+node 1 free: 475780 MB
+node 2 cpus:
+node 2 size: 65536 MB
+node 2 free: 65464 MB
+node 3 cpus:
+node 3 size: 65536 MB
+node 3 free: 65076 MB
+node distances:
+node   0   1   2   3 
+  0:  10  21  13  23 
+  1:  21  10  23  13 
+  2:  13  23  10  23 
+  3:  23  13  23  10 
++ echo '=== memory ==='
+=== memory ===
++ free -h
+              total        used        free      shared  buff/cache   available
+Mem:          1.1Ti        15Gi       1.0Ti       881Mi        10Gi       1.1Ti
+Swap:            0B          0B          0B
++ cat /proc/meminfo
++ head -5
+MemTotal:       1189456432 kB
+MemFree:        1111911612 kB
+MemAvailable:   1172881748 kB
+Buffers:               0 kB
+Cached:         10032700 kB
++ echo '=== GPU: sycl-ls ==='
+=== GPU: sycl-ls ===
++ sycl-ls
+INFO: Output filtered by ONEAPI_DEVICE_SELECTOR environment variable, which is set to level_zero:gpu.
+To see device ids, use the --ignore-device-selectors CLI option.
+
+[level_zero:gpu] Intel(R) oneAPI Unified Runtime over Level-Zero, Intel(R) Data Center GPU Max 1550 12.60.7 [1.6.33578+42]
+[level_zero:gpu] Intel(R) oneAPI Unified Runtime over Level-Zero, Intel(R) Data Center GPU Max 1550 12.60.7 [1.6.33578+42]
+[level_zero:gpu] Intel(R) oneAPI Unified Runtime over Level-Zero, Intel(R) Data Center GPU Max 1550 12.60.7 [1.6.33578+42]
+[level_zero:gpu] Intel(R) oneAPI Unified Runtime over Level-Zero, Intel(R) Data Center GPU Max 1550 12.60.7 [1.6.33578+42]
+[level_zero:gpu] Intel(R) oneAPI Unified Runtime over Level-Zero, Intel(R) Data Center GPU Max 1550 12.60.7 [1.6.33578+42]
+[level_zero:gpu] Intel(R) oneAPI Unified Runtime over Level-Zero, Intel(R) Data Center GPU Max 1550 12.60.7 [1.6.33578+42]
++ echo '=== GPU: xpu-smi discovery ==='
+=== GPU: xpu-smi discovery ===
++ xpu-smi discovery
+/var/spool/pbs/mom_priv/jobs/8728418.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov.SC: line 33: xpu-smi: command not found
++ echo 'xpu-smi not available'
+xpu-smi not available
++ echo '=== GPU: xpu-smi firmware ==='
+=== GPU: xpu-smi firmware ===
++ xpu-smi discovery -d 0 -j
+/var/spool/pbs/mom_priv/jobs/8728418.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov.SC: line 36: xpu-smi: command not found
++ echo 'xpu-smi -j not available'
+xpu-smi -j not available
++ echo '=== GPU: clinfo ==='
+=== GPU: clinfo ===
++ clinfo
++ head -60
+Number of platforms                               2
+  Platform Name                                   Intel(R) OpenCL
+  Platform Vendor                                 Intel(R) Corporation
+  Platform Version                                OpenCL 3.0 LINUX
+  Platform Profile                                FULL_PROFILE
+  Platform Extensions                             cl_khr_spirv_linkonce_odr cl_khr_fp64 cl_khr_fp16 cl_khr_global_int32_base_atomics cl_khr_global_int32_extended_atomics cl_khr_local_int32_base_atomics cl_khr_local_int32_extended_atomics cl_ext_float_atomics cl_khr_3d_image_writes cl_khr_byte_addressable_store cl_khr_depth_images cl_khr_extended_bit_ops cl_khr_icd cl_khr_il_program cl_khr_suggested_local_work_size cl_intel_unified_shared_memory cl_intel_devicelib_assert cl_khr_subgroup_ballot cl_khr_subgroup_shuffle cl_khr_subgroup_shuffle_relative cl_khr_subgroup_extended_types cl_khr_subgroup_non_uniform_arithmetic cl_khr_subgroup_non_uniform_vote cl_khr_subgroup_clustered_reduce cl_intel_subgroups cl_intel_subgroups_char cl_intel_subgroups_short cl_intel_subgroups_long cl_intel_required_subgroup_size cl_intel_spirv_subgroups cl_khr_int64_base_atomics cl_khr_int64_extended_atomics cl_intel_device_attribute_query cl_intel_exec_by_local_thread cl_intel_vec_len_hint cl_intel_device_partition_by_names cl_khr_spir cl_khr_image2d_from_buffer cl_intel_concurrent_dispatch cl_khr_device_uuid cl_khr_integer_dot_product cl_khr_command_buffer cl_khr_command_buffer_mutable_dispatch cl_intel_subgroup_local_block_io cl_khr_kernel_clock cl_khr_spirv_queries
+  Platform Extensions with Version                cl_khr_spirv_linkonce_odr                                        0x400000 (1.0.0)
+                                                  cl_khr_fp64                                                      0x400000 (1.0.0)
+                                                  cl_khr_fp16                                                      0x400000 (1.0.0)
+                                                  cl_khr_global_int32_base_atomics                                 0x400000 (1.0.0)
+                                                  cl_khr_global_int32_extended_atomics                             0x400000 (1.0.0)
+                                                  cl_khr_local_int32_base_atomics                                  0x400000 (1.0.0)
+                                                  cl_khr_local_int32_extended_atomics                              0x400000 (1.0.0)
+                                                  cl_ext_float_atomics                                             0x400000 (1.0.0)
+                                                  cl_khr_3d_image_writes                                           0x400000 (1.0.0)
+                                                  cl_khr_byte_addressable_store                                    0x400000 (1.0.0)
+                                                  cl_khr_depth_images                                              0x400000 (1.0.0)
+                                                  cl_khr_extended_bit_ops                                          0x400000 (1.0.0)
+                                                  cl_khr_icd                                                       0x400000 (1.0.0)
+                                                  cl_khr_il_program                                                0x400000 (1.0.0)
+                                                  cl_khr_suggested_local_work_size                                 0x400000 (1.0.0)
+                                                  cl_intel_unified_shared_memory                                   0x401000 (1.1.0)
+                                                  cl_intel_devicelib_assert                                        0x400000 (1.0.0)
+                                                  cl_khr_subgroup_ballot                                           0x400000 (1.0.0)
+                                                  cl_khr_subgroup_shuffle                                          0x400000 (1.0.0)
+                                                  cl_khr_subgroup_shuffle_relative                                 0x400000 (1.0.0)
+                                                  cl_khr_subgroup_extended_types                                   0x400000 (1.0.0)
+                                                  cl_khr_subgroup_non_uniform_arithmetic                           0x400000 (1.0.0)
+                                                  cl_khr_subgroup_non_uniform_vote                                 0x400000 (1.0.0)
+                                                  cl_khr_subgroup_clustered_reduce                                 0x400000 (1.0.0)
+                                                  cl_intel_subgroups                                               0x400000 (1.0.0)
+                                                  cl_intel_subgroups_char                                          0x400000 (1.0.0)
+                                                  cl_intel_subgroups_short                                         0x400000 (1.0.0)
+                                                  cl_intel_subgroups_long                                          0x400000 (1.0.0)
+                                                  cl_intel_required_subgroup_size                                  0x400000 (1.0.0)
+                                                  cl_intel_spirv_subgroups                                         0x400000 (1.0.0)
+                                                  cl_khr_int64_base_atomics                                        0x400000 (1.0.0)
+                                                  cl_khr_int64_extended_atomics                                    0x400000 (1.0.0)
+                                                  cl_intel_device_attribute_query                                  0x400000 (1.0.0)
+                                                  cl_intel_exec_by_local_thread                                    0x400000 (1.0.0)
+                                                  cl_intel_vec_len_hint                                            0x400000 (1.0.0)
+                                                  cl_intel_device_partition_by_names                               0x400000 (1.0.0)
+                                                  cl_khr_spir                                                      0x400000 (1.0.0)
+                                                  cl_khr_image2d_from_buffer                                       0x400000 (1.0.0)
+                                                  cl_intel_concurrent_dispatch                                     0x400000 (1.0.0)
+                                                  cl_khr_device_uuid                                               0x400000 (1.0.0)
+                                                  cl_khr_integer_dot_product                                       0x800000 (2.0.0)
+                                                  cl_khr_command_buffer                                              0x9007 (0.9.7)
+                                                  cl_khr_command_buffer_mutable_dispatch                             0x9003 (0.9.3)
+                                                  cl_intel_subgroup_local_block_io                                 0x400000 (1.0.0)
+                                                  cl_khr_kernel_clock                                              0x400000 (1.0.0)
+                                                  cl_khr_spirv_queries                                             0x400000 (1.0.0)
+  Platform Numeric Version                        0xc00000 (3.0.0)
+  Platform Extensions function suffix             INTEL
+  Platform Host timer resolution                  1ns
+
+  Platform Name                                   Intel(R) OpenCL Graphics
+  Platform Vendor                                 Intel(R) Corporation
+  Platform Version                                OpenCL 3.0 
+  Platform Profile                                FULL_PROFILE
++ echo '=== loaded modules ==='
+=== loaded modules ===
++ module list
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+
+Currently Loaded Modules:
+  1) gcc/13.4.0                            4) libfabric/1.22.0
+  2) oneapi/release/2025.3.1               5) cray-pals/1.8.0
+  3) mpich/opt/5.0.0.aurora_test.3c70a61   6) cray-libpals/1.8.0
+
+ 
+
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ echo '=== module versions (key ones) ==='
+=== module versions (key ones) ===
++ module show gcc
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+----------------------------------------------------------------------------
+   /opt/aurora/26.26.0/spack/unified/1.1.1/install/modulefiles/Core/gcc/13.4.0.lua:
+----------------------------------------------------------------------------
+whatis("Name : gcc")
+whatis("Version : 13.4.0")
+whatis("Target : x86_64")
+whatis("Short description : The GNU Compiler Collection includes front ends for C, C++, Objective-C, Fortran, Ada, and Go, as well as libraries for these languages.")
+whatis("Configure options : --with-pkgversion=Spack GCC --with-bugurl=https://github.com/spack/spack/issues --disable-multilib --enable-languages=c,c++,fortran --disable-nls --disable-canonical-system-headers --with-system-zlib --with-zstd-include=/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/zstd-1.5.7-3o3i2rc/include --with-zstd-lib=/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/zstd-1.5.7-3o3i2rc/lib --enable-bootstrap --with-mpfr-include=/usr/include --with-mpfr-lib=/usr/lib64 --with-gmp-include=/usr/include --with-gmp-lib=/usr/lib64 --with-mpc-include=/usr/include --with-mpc-lib=/usr/lib64 --without-isl --with-stage1-ldflags=-Wl,-rpath,/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/lib -Wl,-rpath,/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/lib64 -Wl,-rpath,/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-runtime-13.4.0-nx6g4l4/lib -Wl,-rpath,/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/zstd-1.5.7-3o3i2rc/lib --with-boot-ldflags=-Wl,-rpath,/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/lib -Wl,-rpath,/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/lib64 -Wl,-rpath,/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-runtime-13.4.0-nx6g4l4/lib -Wl,-rpath,/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/zstd-1.5.7-3o3i2rc/lib -static-libstdc++ -static-libgcc --with-build-config=spack")
+help([[Name   : gcc]])
+help([[Version: 13.4.0]])
+help([[Target : x86_64]])
+]])
+help([[The GNU Compiler Collection includes front ends for C, C++, Objective-C,
+Fortran, Ada, and Go, as well as libraries for these languages.]])
+family("compiler")
+prepend_path("MODULEPATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/modulefiles/Core")
+prepend_path{"PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/bin",delim=":"}
+prepend_path{"LD_LIBRARY_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/lib",delim=":"}
+prepend_path{"LIBRARY_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/lib",delim=":"}
+prepend_path{"LD_LIBRARY_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/lib64",delim=":"}
+prepend_path{"LIBRARY_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/lib64",delim=":"}
+prepend_path{"C_INCLUDE_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/include",delim=":"}
+prepend_path{"CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/include",delim=":"}
+prepend_path{"INCLUDE","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/include",delim=":"}
+prepend_path{"CPATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/include",delim=":"}
+prepend_path{"PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/bin",delim=":"}
+prepend_path{"MANPATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/share/man",delim=":"}
+prepend_path{"CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/.",delim=":"}
+setenv("CC","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/bin/gcc")
+setenv("CXX","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/bin/g++")
+setenv("FC","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/bin/gfortran")
+setenv("F77","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/gcc-13.4.0-hgnyg4p/bin/gfortran")
+append_path{"MANPATH","",delim=":"}
+
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ module show oneapi
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+----------------------------------------------------------------------------
+   /opt/aurora/26.26.0/modulefiles/oneapi/release/2025.3.1:
+----------------------------------------------------------------------------
+family("oneapi")
+prepend_path("MODULEPATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/modulefiles/Core")
+prepend_path("MODULEPATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/modulefiles/intel-oneapi-compilers/2025.3.1")
+depends_on("gcc/13.4.0")
+setenv("A21_SDK_ROOT","/opt/aurora/26.26.0")
+setenv("CMPROOT","/opt/aurora/26.26.0/oneapi/compiler/latest")
+setenv("TBBROOT","/opt/aurora/26.26.0/oneapi/tbb/latest")
+setenv("MKLROOT","/opt/aurora/26.26.0/oneapi/mkl/latest")
+setenv("DAALROOT","/opt/aurora/26.26.0/oneapi/dal/latest")
+setenv("DALROOT","/opt/aurora/26.26.0/oneapi/dal/latest")
+setenv("DNNLROOT","/opt/aurora/26.26.0/oneapi/dnnl/latest")
+setenv("DPCTROOT","/opt/aurora/26.26.0/oneapi/dpcpp-ct/latest")
+setenv("IDPROOT","/opt/aurora/26.26.0/oneapi/intel-conda-miniforge")
+setenv("GDBROOT","/opt/aurora/26.26.0/oneapi/debugger/latest")
+setenv("DPLROOT","/opt/aurora/26.26.0/oneapi/dpl/latest")
+setenv("ONEAPI_ROOT","/opt/aurora/26.26.0/oneapi")
+setenv("TBB_ROOT","/opt/aurora/26.26.0/oneapi/tbb/latest")
+setenv("MKL_ROOT","/opt/aurora/26.26.0/oneapi/mkl/latest")
+setenv("CMPLR_ROOT","/opt/aurora/26.26.0/oneapi/compiler/latest")
+setenv("CCL_ROOT","/opt/aurora/26.26.0/oneapi/ccl/latest")
+setenv("DPL_ROOT","/opt/aurora/26.26.0/oneapi/dpl/latest")
+setenv("DNNL_ROOT","/opt/aurora/26.26.0/oneapi/dnnl/latest")
+setenv("dnnl_ROOT","/opt/aurora/26.26.0/oneapi/dnnl")
+setenv("VTUNE_PROFILER_2025_DIR","/opt/aurora/26.26.0/oneapi/vtune/latest")
+setenv("VTUNE_PROFILER_DIR","/opt/aurora/26.26.0/oneapi/vtune/latest")
+setenv("ADVISOR_2025_DIR","/opt/aurora/26.26.0/oneapi/advisor/latest")
+setenv("APM","/opt/aurora/26.26.0/oneapi/advisor/latest/perfmodels")
+setenv("ZE_ENABLE_API_TRACING","1")
+prepend_path("CLASSPATH","/opt/aurora/26.26.0/oneapi/dal/latest/lib")
+prepend_path("PYTHONPATH","/opt/aurora/26.26.0/oneapi/advisor/latest/pythonapi")
+setenv("DPCT_BUNDLE_ROOT","/opt/aurora/26.26.0/oneapi/dpcpp-ct/latest")
+setenv("INTEL_PYTHON_SHADOW_PREFIX","/opt/aurora/26.26.0")
+setenv("CCL_CONFIGURATION","cpu_gpu_dpcpp")
+setenv("CCL_CONFIGURATION_PATH","")
+setenv("OCL_ICD_FILENAMES","libigdrcl.so:libintelocl.so")
+setenv("AURORA_BASE_ENV","2025.3.1")
+setenv("LIBOMPTARGET_PLUGIN","LEVEL0")
+setenv("OMP_TARGET_OFFLOAD","MANDATORY")
+unsetenv("SYCL_BE","")
+setenv("ONEAPI_DEVICE_SELECTOR","level_zero:gpu")
+prepend_path("MANPATH","/opt/aurora/26.26.0/oneapi/compiler/latest/share/man")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/compiler/latest/lib")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/compiler/latest/lib")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/compiler/latest/opt/compiler/lib")
+prepend_path("PATH","/opt/aurora/26.26.0/oneapi/compiler/latest/bin")
+prepend_path("CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/oneapi/compiler/latest")
+prepend_path("PKG_CONFIG_PATH","/opt/aurora/26.26.0/oneapi/compiler/latest/lib/pkgconfig")
+prepend_path("NLSPATH","/opt/aurora/26.26.0/oneapi/compiler/latest/lib/compiler/locale/%l_%t/%N")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/mkl/latest/lib")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/mkl/latest/lib")
+prepend_path("C_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/mkl/latest/include")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/mkl/latest/include")
+prepend_path("CPATH","/opt/aurora/26.26.0/oneapi/mkl/latest/include")
+prepend_path("PATH","/opt/aurora/26.26.0/oneapi/mkl/latest/bin")
+prepend_path("CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/oneapi/mkl/latest/lib/cmake")
+prepend_path("PKG_CONFIG_PATH","/opt/aurora/26.26.0/oneapi/mkl/latest/lib/pkgconfig")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/tbb/latest/lib/intel64/gcc4.8")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/tbb/latest/lib/intel64/gcc4.8")
+prepend_path("C_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/tbb/latest/include")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/tbb/latest/include")
+prepend_path("CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/oneapi/tbb/latest")
+prepend_path("PKG_CONFIG_PATH","/opt/aurora/26.26.0/oneapi/tbb/latest/lib/pkgconfig")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/dnnl/latest/lib")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/dnnl/latest/lib")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/dnnl/latest/include")
+prepend_path("C_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/dnnl/latest/include")
+prepend_path("CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/oneapi/dnnl/latest/lib/cmake")
+prepend_path("PKG_CONFIG_PATH","/opt/aurora/26.26.0/oneapi/dnnl/latest/lib/pkgconfig")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/dal/latest/lib")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/dal/latest/lib")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/dal/latest/include")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/dal/latest/include/dal")
+prepend_path("CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/oneapi/dal/latest")
+prepend_path("PKG_CONFIG_PATH","/opt/aurora/26.26.0/oneapi/dal/latest/lib/pkgconfig")
+setenv("DAL_MAJOR_BINARY","3")
+setenv("DAL_MINOR_BINARY","0")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/ccl/latest/lib")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/ccl/latest/lib")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/ccl/latest/include")
+prepend_path("PKG_CONFIG_PATH","/opt/aurora/26.26.0/oneapi/ccl/latest/lib/pkgconfig")
+prepend_path("CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/oneapi/ccl/latest/lib/cmake/oneCCL")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/debugger/latest/opt/debugger/lib")
+prepend_path("PATH","/opt/aurora/26.26.0/oneapi/debugger/latest/opt/debugger/bin")
+prepend_path("MANPATH","/opt/aurora/26.26.0/oneapi/debugger/latest/share/man")
+prepend_path("INFOPATH","/opt/aurora/26.26.0/oneapi/debugger/latest/share/info")
+setenv("GDB_INFO","/opt/aurora/26.26.0/oneapi/debugger/latest/share/info")
+setenv("INTEL_PYTHONHOME","/opt/aurora/26.26.0/oneapi/debugger/latest/opt/debugger")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/dpl/latest/include")
+prepend_path("CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/oneapi/dpl/latest/lib/cmake/oneDPL")
+prepend_path("PKG_CONFIG_PATH","/opt/aurora/26.26.0/oneapi/dpl/latest/lib/pkgconfig")
+prepend_path("PATH","/opt/aurora/26.26.0/oneapi/vtune/latest/bin64")
+prepend_path("PKG_CONFIG_PATH","/opt/aurora/26.26.0/oneapi/vtune/latest/include/pkgconfig/lib64")
+prepend_path("PATH","/opt/aurora/26.26.0/oneapi/advisor/latest/bin64")
+prepend_path("PKG_CONFIG_PATH","/opt/aurora/26.26.0/oneapi/advisor/latest/include/pkgconfig/lib64")
+prepend_path("PATH","/opt/aurora/26.26.0/oneapi/dpcpp-ct/latest/bin")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/dpcpp-ct/latest/include")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/ippcp/latest/lib")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/ippcp/latest/lib")
+prepend_path("C_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/ippcp/latest/include")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/ippcp/latest/include")
+prepend_path("PKG_CONFIG_PATH","/opt/aurora/26.26.0/oneapi/ippcp/latest/lib/pkgconfig")
+setenv("IPPCRYPTOROOT","/opt/aurora/26.26.0/oneapi/ippcp/latest")
+setenv("IPPCP_TARGET_ARCH","intel64")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/ipp/latest/lib")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/ipp/latest/lib")
+prepend_path("C_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/ipp/latest/include")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/ipp/latest/include")
+prepend_path("CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/oneapi/ipp/latest/lib/cmake/ipp")
+setenv("IPPROOT","/opt/aurora/26.26.0/oneapi/ipp/latest")
+setenv("IPP_TARGET_ARCH","intel64")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/umf/latest/lib")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/umf/latest/lib")
+prepend_path("C_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/umf/latest/include")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/umf/latest/include")
+prepend_path("CPATH","/opt/aurora/26.26.0/oneapi/umf/latest/include")
+setenv("UMFROOT","/opt/aurora/26.26.0/oneapi/umf/latest")
+setenv("UMF_ROOT","/opt/aurora/26.26.0/oneapi/umf/latest")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/tcm/latest/lib")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/tcm/latest/lib")
+setenv("TCMROOT","/opt/aurora/26.26.0/oneapi/tcm/latest")
+setenv("TCM_ROOT","/opt/aurora/26.26.0/oneapi/tcm/latest")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/pti/latest/lib")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/pti/latest/lib")
+prepend_path("C_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/pti/latest/include")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/pti/latest/include")
+prepend_path("CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/oneapi/pti/latest/lib/cmake/pti")
+setenv("PTIROOT","/opt/aurora/26.26.0/oneapi/pti/latest")
+setenv("Pti_DIR","/opt/aurora/26.26.0/oneapi/pti/latest/lib/cmake/pti")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/ishmem/latest/lib")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/oneapi/ishmem/latest/lib")
+prepend_path("CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/ishmem/latest/include")
+prepend_path("C_INCLUDE_PATH","/opt/aurora/26.26.0/oneapi/ishmem/latest/include")
+prepend_path("PATH","/opt/aurora/26.26.0/oneapi/ishmem/latest/bin")
+prepend_path("PKG_CONFIG_PATH","/opt/aurora/26.26.0/oneapi/ishmem/latest/lib/pkgconfig")
+prepend_path("CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/oneapi/ishmem/latest/lib/cmake/ishmem")
+setenv("ISHMEM_ROOT","/opt/aurora/26.26.0/oneapi/ishmem/latest")
+prepend_path("PATH","/opt/aurora/26.26.0/support/tools/mpi_wrapper_utils")
+unsetenv("UMD_MODULE","")
+setenv("CC","icx")
+setenv("CXX","icpx")
+setenv("FC","ifx")
+setenv("F77","ifx")
+prepend_path("CPATH","/opt/aurora/26.26.0/support/libraries/khronos/default/include")
+prepend_path("LIBRARY_PATH","/opt/aurora/26.26.0/support/libraries/khronos/default/lib64")
+prepend_path("LD_LIBRARY_PATH","/opt/aurora/26.26.0/support/libraries/khronos/default/lib64")
+prepend_path("CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/support/libraries/khronos/default")
+prepend_path("PATH","/opt/aurora/26.26.0/support/tools/gpu_validation")
+setenv("ZE_FLAT_DEVICE_HIERARCHY","COMPOSITE")
+setenv("ZE_ENABLE_PCI_ID_DEVICE_ORDER","1")
+setenv("NEOReadDebugKeys","1")
+setenv("EnableChipsetUniqueUUID","1")
+setenv("NEO_CACHE_PERSISTENT","0")
+help([[    This module loads the oneAPI environment
+    Currently it sets OpenMP, OpenCL, DPCPP, MKL related variables
+    
+    -----------------------------------------------------------------------------------------------
+    OpenMP Offload environment
+    -----------------------------------------------------------------------------------------------
+    To compile a simple code use the following:
+    
+    $ icpx -fiopenmp -fopenmp-targets=spir64 -D__STRICT_ANSI__ source.cpp
+    
+    Debug and profiling info available by setting:
+    LIBOMPTARGET_DEBUG=1
+    LIBOMPTARGET_PROFILE=T
+    
+    Test OPENCL plugin by setting:
+    LIBOMPTARGET_PLUGIN=OPENCL
+    
+    OMP_TARGET_OFFLOAD=MANDATORY is set be default.
+    LIBOMPTARGET_PLUGIN=LEVEL0 is set by default.
+    -----------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------
+    DPC++ environment
+    -----------------------------------------------------------------------------------------------
+    To compile a simple code use the following:
+    
+    $ dpcpp source.cpp 
+    
+    Test opencl plugin by setting:
+    SYCL_DEVICE_FILTER=opencl
+    
+    SYCL_DEVICE_FILTER=level_zero is set by default.
+    
+    To enable the runtime to choose automatically 
+    between both, unset the SYCL_DEVICE_FILTER variable.
+    
+    -----------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------
+    MKL environment
+    -----------------------------------------------------------------------------------------------
+    Variable MKLROOT defined to ease linking and compilation
+    
+    -----------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------
+    DAAL environment
+    -----------------------------------------------------------------------------------------------
+    Variable DAALROOT defined to ease linking and compilation
+    
+    -----------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------
+    Advisor environment
+    -----------------------------------------------------------------------------------------------
+    Variable APM defined for offload analysis
+    
+    To perform an offload analysis of a non-MPI code
+    you may use the unified collection/analysis method:
+    
+    $ python3 $APM/run_oa.py <data-collection-dir> -a gen  
+      -o <results-dir> [options] -- <app> [app_options] 
+    
+    
+    -----------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------
+    VTune environment
+    -----------------------------------------------------------------------------------------------
+    To perform a basic GPU analysis of a non-MPI code:
+    
+    $ vtune -c gpu-hotspots -- <app> [app_options] 
+    
+    
+    -----------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------
+    DNNL environment
+    -----------------------------------------------------------------------------------------------
+    Variable DNNLROOT defined to ease linking and compilation
+    
+    -----------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------
+    Intel Distributed Python environment
+    -----------------------------------------------------------------------------------------------
+    To activate the environment:
+    
+    $ source $IDPROOT/bin/activate
+    $ conda activate $AURORA_BASE_ENV
+    
+    Deep learning frameworks have been moved into frameworks modulefile.
+    
+    $ module add frameworks
+    
+[1;96m----------------------------------------------------------------------------------------------[0m
+     [1;96mIntel oneAPI SDK [1;33m2025.3.1 Public[1;96m (2025.3.1) successfully loaded, provides:[0m
+         [1;96mUMD: NONE[0m
+         [1;96mCompiler: icx, icpx, ifx, dpcpp[0m
+         [1;96mLibraries: MKL, DNNL, DAAL[0m
+         [1;96mTools: VTune, Advisor[0m
+         [1;96mFrameworks in IDP Base Environment: numba, daal4py[0m
+         [1;96mPytorch/Tensorflow: Please load the frameworks modulefile[0m
+             [1;96muse module switch or set ONEAPI_MPICH_OVERRIDE[0m
+             [1;96mto choose version (NONE to skip)[0m
+[1;96m----------------------------------------------------------------------------------------------[0m
+]])
+
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ module show mpich
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+----------------------------------------------------------------------------
+   /opt/aurora/26.26.0/spack/unified/1.1.1/install/modulefiles/intel-oneapi-compilers/2025.3.1/mpich/opt/5.0.0.aurora_test.3c70a61.lua:
+----------------------------------------------------------------------------
+whatis("Name : mpich")
+whatis("Version : 5.0.0.aurora_test.3c70a61")
+whatis("Target : x86_64")
+whatis("Short description : MPICH is a high performance and widely portable implementation of the Message Passing Interface (MPI) standard.")
+whatis("Configure options : --disable-maintainer-mode --disable-silent-rules --enable-shared --enable-static --with-pm=no --enable-romio --without-ibverbs --enable-wrapper-rpath=yes --with-yaksa=embedded --with-ze --with-ch4-shmmods=posix,gpudirect --with-hwloc=/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/hwloc-2.12.2-alpfchq --enable-fortran --with-slurm=no --with-pmi=pmix --with-pmix=/usr --without-cuda --without-hip --with-device=ch4:ofi --with-libfabric=/opt/cray/libfabric/1.22.0 --enable-libxml2 --with-datatype-engine=yaksa --with-xpmem=/usr --with-file-system=daos+lustre+nfs+ufs --with-daos=/usr --enable-timer-type=linux86_cycle --enable-fast=O3,alwaysinline,avx,avx2,avx512f,ndebug,sse2 --enable-g=no --disable-debuginfo --enable-error-checking=no --without-valgrind --enable-ch4-mt=runtime --with-ze=/usr --enable-ze-native=pvc --disable-opencl CC=icx CXX=icpx FC=ifx F77=ifx")
+help([[Name   : mpich]])
+help([[Version: 5.0.0.aurora_test.3c70a61]])
+help([[Target : x86_64]])
+]])
+help([[MPICH is a high performance and widely portable implementation of the
+Message Passing Interface (MPI) standard.]])
+family("mpi")
+prepend_path("MODULEPATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/modulefiles/mpich/5.0.0.aurora_test.3c70a61-hlkigtk/intel-oneapi-compilers/2025.3.1")
+prepend_path("MODULEPATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/modulefiles/mpich/5.0.0.aurora_test.3c70a61-hlkigtk/Core")
+pushenv("LMOD_MPI_NAME","mpich")
+pushenv("LMOD_MPI_VERSION","5.0.0.aurora_test.3c70a61-hlkigtk")
+conflict("mpich")
+prepend_path{"PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/bin",delim=":"}
+prepend_path{"LD_LIBRARY_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/lib",delim=":"}
+prepend_path{"LIBRARY_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/lib",delim=":"}
+prepend_path{"PKG_CONFIG_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/lib/pkgconfig",delim=":"}
+prepend_path{"C_INCLUDE_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/include",delim=":"}
+prepend_path{"CPLUS_INCLUDE_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/include",delim=":"}
+prepend_path{"INCLUDE","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/include",delim=":"}
+prepend_path{"CPATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/include",delim=":"}
+prepend_path{"PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/bin",delim=":"}
+prepend_path{"PKG_CONFIG_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/lib/pkgconfig",delim=":"}
+prepend_path{"CMAKE_PREFIX_PATH","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/.",delim=":"}
+prepend_path{"LD_LIBRARY_PATH","/opt/cray/libfabric/1.22.0/lib",delim=":"}
+prepend_path{"LD_LIBRARY_PATH","/opt/cray/libfabric/1.22.0/lib64",delim=":"}
+pushenv("MPICC","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/bin/mpicc")
+pushenv("MPICXX","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/bin/mpicxx")
+pushenv("MPIF77","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/bin/mpif77")
+pushenv("MPIF90","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/bin/mpif90")
+pushenv("MPICH_ROOT","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk")
+pushenv("MPI_ROOT","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk")
+pushenv("MPI_HOME","/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk")
+pushenv("HWLOC_XMLFILE","/run/hwloc/topology.xml")
+pushenv("HWLOC_THISSYSTEM","1")
+pushenv("FI_PROVIDER","cxi,tcp;ofi_rxm")
+pushenv("PALS_PMI","pmix")
+pushenv("MPIR_CVAR_CH4_SHM_POSIX_TOPO_ENABLE","1")
+pushenv("MPIR_CVAR_INIT_SKIP_PMI_BARRIER","0")
+pushenv("MPIR_CVAR_CH4_OFI_MAX_NICS","1")
+pushenv("FI_CXI_RDZV_THRESHOLD","16384")
+pushenv("FI_CXI_RDZV_EAGER_SIZE","2048")
+pushenv("FI_CXI_DEFAULT_CQ_SIZE","131072")
+pushenv("FI_CXI_DEFAULT_TX_SIZE","1024")
+pushenv("FI_CXI_OFLOW_BUF_SIZE","12582912")
+pushenv("FI_CXI_OFLOW_BUF_COUNT","3")
+pushenv("FI_CXI_RX_MATCH_MODE","hardware")
+pushenv("FI_CXI_REQ_BUF_MIN_POSTED","6")
+pushenv("FI_CXI_REQ_BUF_SIZE","12582912")
+pushenv("FI_CXI_REQ_BUF_MAX_CACHED","0")
+pushenv("FI_MR_CACHE_MAX_SIZE","-1")
+pushenv("FI_MR_CACHE_MAX_COUNT","524288")
+
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ module show libfabric
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+----------------------------------------------------------------------------
+   /opt/cray/modulefiles/libfabric/1.22.0:
+----------------------------------------------------------------------------
+whatis(""This module adds Libfabric 1.22.0 to the environment"")
+prepend_path("PATH","/opt/cray/libfabric/1.22.0/bin")
+prepend_path("LD_LIBRARY_PATH","/opt/cray/libfabric/1.22.0/lib64")
+prepend_path("MANPATH","/opt/cray/libfabric/1.22.0/share/man")
+prepend_path("PKG_CONFIG_PATH","/opt/cray/libfabric/1.22.0/lib64/pkgconfig")
+help([[]])
+
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ module show cray-pals
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+----------------------------------------------------------------------------
+   /opt/cray/pals/lmod/modulefiles/core/cray-pals/1.8.0.lua:
+----------------------------------------------------------------------------
+whatis("PALS - Parallel Application Launch Service")
+always_load("cray-libpals/1.8.0")
+prepend_path("PATH","/opt/cray/pals/1.8/bin")
+prepend_path("MANPATH","/opt/cray/pals/1.8/man")
+
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ module show cray-libpals
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+----------------------------------------------------------------------------
+   /opt/cray/pals/lmod/modulefiles/core/cray-libpals/1.8.0.lua:
+----------------------------------------------------------------------------
+whatis("libpals - Parallel Application Launch Service library")
+prepend_path("PKG_CONFIG_PATH","/opt/cray/pals/1.8/lib/pkgconfig")
+prepend_path("PE_PKGCONFIG_PRODUCTS","PE_PALS")
+prepend_path("PE_PALS_PKGCONFIG_LIBS","libpals")
+prepend_path("LD_LIBRARY_PATH","/opt/cray/pals/1.8/lib")
+prepend_path("MANPATH","/opt/cray/pals/1.8/man")
+
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ echo '=== compilers ==='
+=== compilers ===
++ gcc --version
+gcc (Spack GCC) 13.4.0
+Copyright (C) 2023 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
++ icx --version
+Intel(R) oneAPI DPC++/C++ Compiler 2025.3.2 (2025.3.2.20260112)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /opt/aurora/26.26.0/oneapi/compiler/2025.3/bin/compiler
+Configuration file: /opt/aurora/26.26.0/oneapi/compiler/2025.3/bin/compiler/../icx.cfg
++ mpicc --version
+Intel(R) oneAPI DPC++/C++ Compiler 2025.3.2 (2025.3.2.20260112)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /opt/aurora/26.26.0/oneapi/compiler/2025.3/bin/compiler
+Configuration file: /opt/aurora/26.26.0/oneapi/compiler/2025.3/bin/compiler/../icx.cfg
++ mpicxx --version
+Intel(R) oneAPI DPC++/C++ Compiler 2025.3.2 (2025.3.2.20260112)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /opt/aurora/26.26.0/oneapi/compiler/2025.3/bin/compiler
+Configuration file: /opt/aurora/26.26.0/oneapi/compiler/2025.3/bin/compiler/../icpx.cfg
++ echo '=== MPI info ==='
+=== MPI info ===
++ mpiexec --version
+mpiexec version 1.8.0 revision a3475e5c9cce built Aug 25 2025
++ mpichversion
+MPICH Version:      5.0.0b1
+MPICH Release date: unreleased development copy
+MPICH ABI:          17:0:5
+MPICH Device:       ch4:ofi
+MPICH configure:    --prefix=/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk --disable-maintainer-mode --disable-silent-rules --enable-shared --enable-static --with-pm=no --enable-romio --without-ibverbs --enable-wrapper-rpath=yes --with-yaksa=embedded --with-ze --with-ch4-shmmods=posix,gpudirect --with-hwloc=/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/hwloc-2.12.2-alpfchq --enable-fortran --with-slurm=no --with-pmi=pmix --with-pmix=/usr --without-cuda --without-hip --with-device=ch4:ofi --with-libfabric=/opt/cray/libfabric/1.22.0 --enable-libxml2 --with-datatype-engine=yaksa --with-xpmem=/usr --with-file-system=daos+lustre+nfs+ufs --with-daos=/usr --enable-timer-type=linux86_cycle --enable-fast=O3,alwaysinline,avx,avx2,avx512f,ndebug,sse2 --enable-g=no --disable-debuginfo --enable-error-checking=no --without-valgrind --enable-ch4-mt=runtime --with-ze=/usr --enable-ze-native=pvc --disable-opencl CC=icx CXX=icpx FC=ifx F77=ifx
+MPICH CC:           icx     -DNDEBUG -DNVALGRIND  -mavx2 -mavx512f -O3
+MPICH CXX:          icpx   -DNDEBUG -DNVALGRIND -O3
+MPICH F77:          ifx   -O3
+MPICH FC:           ifx   -O3
+MPICH features:     threadcomm
+
++ echo '=== libfabric providers ==='
+=== libfabric providers ===
++ fi_info --version
+fi_info: 1.22.0
+libfabric: 1.22.0
+libfabric api: 1.22
++ fi_info -l
+cxi:
+    version: 0.1
+ofi_rxm:
+    version: 122.0
+ofi_rxd:
+    version: 122.0
+shm:
+    version: 122.0
+udp:
+    version: 122.0
+tcp:
+    version: 122.0
+ofi_hook_debug:
+    version: 122.0
+ofi_hook_noop:
+    version: 122.0
+ofi_hook_hmem:
+    version: 122.0
+ofi_hook_dmabuf_peer_mem:
+    version: 122.0
+off_coll:
+    version: 122.0
+sm2:
+    version: 122.0
++ echo '=== network / HSN ==='
+=== network / HSN ===
++ ip -brief addr
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+enp0s31f6        UP             
+bond0            UP             10.115.8.43/25 fded:fcc2:56d2:2016:9a4f:eeff:fe1a:da4/64 fe80::9a4f:eeff:fe1a:da4/64 
+hsn0             UP             10.113.23.12/15 fe80::ff:fe00:cda3/64 
+hsn1             UP             10.113.23.3/15 fe80::5eed:8cff:fe4d:423b/64 
+hsn2             UP             10.113.23.4/15 fe80::ff:fe00:cde3/64 
+hsn3             UP             10.113.23.2/15 fe80::ff:fe00:cde2/64 
+hsn4             UP             10.113.23.6/15 fe80::ff:fe00:cd63/64 
+hsn5             UP             10.113.23.5/15 fe80::ff:fe00:cd62/64 
+hsn6             UP             10.113.23.8/15 fe80::ff:fe00:cd22/64 
+hsn7             UP             10.113.23.7/15 fe80::ff:fe00:cd23/64 
++ ibstat
+/var/spool/pbs/mom_priv/jobs/8728418.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov.SC: line 68: ibstat: command not found
++ echo 'ibstat not available'
+ibstat not available
++ echo '=== filesystems ==='
+=== filesystems ===
++ df -h
+Filesystem                                                                                                                                                                         Size  Used Avail Use% Mounted on
+devtmpfs                                                                                                                                                                           504G     0  504G   0% /dev
+tmpfs                                                                                                                                                                              504G  4.0K  504G   1% /dev/shm
+/dev/loop0                                                                                                                                                                         1.9G  1.9G     0 100% /root_ro
+tmpfs                                                                                                                                                                              504G  845M  503G   1% /rootfs.rw
+overlay                                                                                                                                                                            504G  845M  503G   1% /
+tmpfs                                                                                                                                                                              504G   20K  504G   1% /tmp
+10.114.32.225:/cm_shared/image/images_rw_nfs/pe                                                                                                                                    138T   48T   90T  35% /pe
+tmpfs                                                                                                                                                                              202G   32M  202G   1% /run
+tmpfs                                                                                                                                                                              4.0M     0  4.0M   0% /sys/fs/cgroup
+hawk.lb.aurora.alcf.anl.gov:/aurora_soft_squashfs                                                                                                                                  501G   68G  433G  14% /run/sqfs
+hawk.lb.aurora.alcf.anl.gov:/aurora_soft                                                                                                                                           971G  434G  537G  45% /soft
+/dev/loop1                                                                                                                                                                         768M  768M     0 100% /var/opt/cray/pe/pe_images/base-25.03
+pe_opt_cray_pe                                                                                                                                                                     202G   32M  202G   1% /opt/cray/pe
+/dev/loop2                                                                                                                                                                         8.8G  8.8G     0 100% /opt/aurora/25.190.0/frameworks
+/dev/loop3                                                                                                                                                                         3.2G  3.2G     0 100% /opt/aurora/25.190.0/oneapi
+/dev/loop4                                                                                                                                                                          18G   18G     0 100% /opt/aurora/25.190.0/spack/unified/0.10.1
+/dev/loop5                                                                                                                                                                         175M  175M     0 100% /opt/aurora/25.190.0/support
+/dev/loop6                                                                                                                                                                         1.0M  1.0M     0 100% /opt/aurora/25.190.0/updates/mpich
+/dev/loop7                                                                                                                                                                         1.0M  1.0M     0 100% /opt/aurora/25.190.0/updates/oneapi
+/dev/loop8                                                                                                                                                                          11G   11G     0 100% /opt/aurora/26.26.0/frameworks
+/dev/loop9                                                                                                                                                                         3.2G  3.2G     0 100% /opt/aurora/26.26.0/oneapi
+/dev/loop11                                                                                                                                                                        154M  154M     0 100% /opt/aurora/26.26.0/support
+/dev/loop10                                                                                                                                                                         11G   11G     0 100% /opt/aurora/26.26.0/spack/unified/1.1.1
+overlay                                                                                                                                                                            3.2G  3.2G     0 100% /opt/aurora/25.190.0/modulefiles
+/dev/loop13                                                                                                                                                                        1.0M  1.0M     0 100% /opt/aurora/26.26.0/updates/oneapi
+/dev/loop12                                                                                                                                                                        1.0M  1.0M     0 100% /opt/aurora/26.26.0/updates/mpich
+overlay                                                                                                                                                                            3.2G  3.2G     0 100% /opt/aurora/26.26.0/modulefiles
+172.22.12.130@o2ib21:172.22.12.131@o2ib21:/grand                                                                                                                                    91P   59P   32P  65% /lus/flare
+192.168.10.8@o2ib25,192.168.10.9@o2ib25:192.168.10.12@o2ib25,192.168.10.13@o2ib25:192.168.10.10@o2ib25,192.168.10.11@o2ib25:192.168.10.14@o2ib25,192.168.10.15@o2ib25:/gecko/home   14P  636T   12P   6% /home
++ mount
++ grep -E 'flare|home|lustre|daos'
+172.22.12.130@o2ib21:172.22.12.131@o2ib21:/grand on /lus/flare type lustre (rw,relatime,checksum,rchecksum_force,flock,user_xattr,lruresize,lazystatfs,nouser_fid2path,verbose,noencrypt,statfs_project)
+192.168.10.8@o2ib25,192.168.10.9@o2ib25:192.168.10.12@o2ib25,192.168.10.13@o2ib25:192.168.10.10@o2ib25,192.168.10.11@o2ib25:192.168.10.14@o2ib25,192.168.10.15@o2ib25:/gecko/home on /home type lustre (rw,relatime,checksum,rchecksum_force,flock,user_xattr,lruresize,lazystatfs,nouser_fid2path,verbose,encrypt,statfs_project)
++ echo '=== PBS/scheduler ==='
+=== PBS/scheduler ===
++ qstat --version
+pbs_version = 2022.1.7.20241004133957
++ pbs_version
+/var/spool/pbs/mom_priv/jobs/8728418.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov.SC: line 76: pbs_version: command not found
++ echo 'pbs_version not available'
+pbs_version not available
++ echo '=== cmake ==='
+=== cmake ===
++ cmake --version
+/var/spool/pbs/mom_priv/jobs/8728418.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov.SC: line 79: cmake: command not found
++ echo 'cmake not loaded (module load cmake needed)'
+cmake not loaded (module load cmake needed)
++ echo '=== relevant env vars ==='
+=== relevant env vars ===
++ env
++ sort
++ grep -E 'FI_CXI|PALS|MPICH|LIBFABRIC|ONEAPI|ZE_|SYCL'
+FI_CXI_DEFAULT_CQ_SIZE=131072
+FI_CXI_DEFAULT_TX_SIZE=1024
+FI_CXI_OFLOW_BUF_COUNT=3
+FI_CXI_OFLOW_BUF_SIZE=12582912
+FI_CXI_RDZV_EAGER_SIZE=2048
+FI_CXI_RDZV_THRESHOLD=16384
+FI_CXI_REQ_BUF_MAX_CACHED=0
+FI_CXI_REQ_BUF_MIN_POSTED=6
+FI_CXI_REQ_BUF_SIZE=12582912
+FI_CXI_RX_MATCH_MODE=hardware
+LMOD_FAMILY_ONEAPI=oneapi
+LMOD_FAMILY_ONEAPI_VERSION=release/2025.3.1
+__LMOD_REF_COUNT_PE_PALS_PKGCONFIG_LIBS=libpals:1
+__LMOD_REF_COUNT_PE_PKGCONFIG_PRODUCTS=PE_PALS:1
+__LMOD_STACK_FI_CXI_DEFAULT_CQ_SIZE=MTMxMDcy
+__LMOD_STACK_FI_CXI_DEFAULT_TX_SIZE=MTAyNA==
+__LMOD_STACK_FI_CXI_OFLOW_BUF_COUNT=Mw==
+__LMOD_STACK_FI_CXI_OFLOW_BUF_SIZE=MTI1ODI5MTI=
+__LMOD_STACK_FI_CXI_RDZV_EAGER_SIZE=MjA0OA==
+__LMOD_STACK_FI_CXI_RDZV_THRESHOLD=MTYzODQ=
+__LMOD_STACK_FI_CXI_REQ_BUF_MAX_CACHED=MA==
+__LMOD_STACK_FI_CXI_REQ_BUF_MIN_POSTED=Ng==
+__LMOD_STACK_FI_CXI_REQ_BUF_SIZE=MTI1ODI5MTI=
+__LMOD_STACK_FI_CXI_RX_MATCH_MODE=aGFyZHdhcmU=
+__LMOD_STACK_MPICH_ROOT=L29wdC9hdXJvcmEvMjYuMjYuMC9zcGFjay91bmlmaWVkLzEuMS4xL2luc3RhbGwvbGludXgteDg2XzY0L21waWNoLTUuMC4wLmF1cm9yYV90ZXN0LjNjNzBhNjEtaGxraWd0aw==
+__LMOD_STACK_PALS_PMI=cG1peA==
+MPICH_ROOT=/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk
+ONEAPI_DEVICE_SELECTOR=level_zero:gpu
+ONEAPI_ROOT=/opt/aurora/26.26.0/oneapi
+PALS_PMI=pmix
+PALS_TRANSFER=0
+PE_PALS_PKGCONFIG_LIBS=libpals
+PE_PKGCONFIG_PRODUCTS=PE_PALS
+ZE_ENABLE_API_TRACING=1
+ZE_ENABLE_PCI_ID_DEVICE_ORDER=1
+ZE_FLAT_DEVICE_HIERARCHY=COMPOSITE
++ echo '=== ulimits ==='
+=== ulimits ===
++ ulimit -a
+core file size          (blocks, -c) 0
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 4121804
+max locked memory       (kbytes, -l) unlimited
+max memory size         (kbytes, -m) unlimited
+open files                      (-n) 1048575
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) unlimited
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 4121804
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
++ echo 'ALL DONE'
+ALL DONE

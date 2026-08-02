@@ -1,0 +1,6 @@
+Allocated cores per node: 7
+Running aurora nodes=1024 ranks_per_node=7 dist=naive
+RESULT distributor=naive nodes=1024 world_size=7168 workers=7167 time_per_shutdown_us=80923.7 iterations=121
+Running aurora nodes=1024 ranks_per_node=7 dist=hierarchical
+RESULT distributor=hierarchical nodes=1024 world_size=7168 workers=7167 time_per_shutdown_us=0.0400482 iterations=4477
+Results written to /home/ryans/DynaMPI/benchmark/results/aurora/1024-dynampi_shutdown_aurora_1024-8720430.aurora/shutdown_aurora.csv

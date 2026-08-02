@@ -1,0 +1,7 @@
+=== dedicated driver, expected_us=10 ===
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=467699 elapsed_s=5.0045 throughput_tasks_per_s=93455.7
+=== unified driver, expected_us=10 ===
+RESULT distributor=async_put_lockfree_unified_experiment mode=fixed expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=1000000 elapsed_s=236.657 throughput_tasks_per_s=4225.52
+=== dedicated driver, expected_us=100 ===
+=>> PBS: job killed: walltime 988 exceeded limit 900
+x4311c6s7b0n0.hsn.cm.aurora.alcf.anl.gov: rank 5 died from signal 15

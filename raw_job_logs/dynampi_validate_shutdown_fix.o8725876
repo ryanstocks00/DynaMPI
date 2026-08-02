@@ -1,0 +1,13 @@
+##### naive (sanity, should be unchanged/real) #####
+RESULT distributor=naive nodes=2 max_upper_fanout=-1 world_size=204 workers=203 time_per_shutdown_us=272.086 iterations=28575
+##### hierarchical, fanout=0 (1-layer), should now show REAL (non-near-zero) timing #####
+RESULT distributor=hierarchical nodes=2 max_upper_fanout=0 world_size=204 workers=203 time_per_shutdown_us=88.2411 iterations=15517
+##### hierarchical, fanout=-1 (auto), should also show REAL timing #####
+RESULT distributor=hierarchical nodes=2 max_upper_fanout=-1 world_size=204 workers=203 time_per_shutdown_us=88.0343 iterations=15460
+##### hierarchical_async_put_lockfree, fanout=0 #####
+RESULT distributor=hierarchical_async_put_lockfree nodes=2 max_upper_fanout=0 world_size=204 workers=203 time_per_shutdown_us=16905.8 iterations=560
+##### hierarchical_async_put_lockfree, fanout=-1 #####
+RESULT distributor=hierarchical_async_put_lockfree nodes=2 max_upper_fanout=-1 world_size=204 workers=203 time_per_shutdown_us=16917 iterations=559
+##### async_put_lockfree (no fanout concept, should still work) #####
+RESULT distributor=async_put_lockfree nodes=2 max_upper_fanout=-1 world_size=204 workers=203 time_per_shutdown_us=4068.36 iterations=542
+ALL DONE

@@ -1,0 +1,49 @@
+=== login node hostname ===
+aurora-uan-0011.hostmgmt.cm.aurora.alcf.anl.gov
+
+=== loaded modules (login node) ===
+
+Currently Loaded Modules:
+  1) gcc/13.4.0                            4) libfabric/1.22.0
+  2) oneapi/release/2025.3.1               5) cray-pals/1.8.0
+  3) mpich/opt/5.0.0.aurora_test.3c70a61   6) cray-libpals/1.8.0
+
+ 
+
+
+=== compiler versions ===
+gcc (Spack GCC) 13.4.0
+Copyright (C) 2023 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+---
+Intel(R) oneAPI DPC++/C++ Compiler 2025.3.2 (2025.3.2.20260112)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /opt/aurora/26.26.0/oneapi/compiler/2025.3/bin/compiler
+Configuration file: /opt/aurora/26.26.0/oneapi/compiler/2025.3/bin/compiler/../icx.cfg
+---
+Intel(R) oneAPI DPC++/C++ Compiler 2025.3.2 (2025.3.2.20260112)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /opt/aurora/26.26.0/oneapi/compiler/2025.3/bin/compiler
+Configuration file: /opt/aurora/26.26.0/oneapi/compiler/2025.3/bin/compiler/../icpx.cfg
+
+=== cmake ===
+/bin/bash: line 38: cmake: command not found
+
+=== OS ===
+NAME="SLES"
+VERSION="15-SP4"
+VERSION_ID="15.4"
+PRETTY_NAME="SUSE Linux Enterprise Server 15 SP4"
+ID="sles"
+ID_LIKE="suse"
+ANSI_COLOR="0;32"
+CPE_NAME="cpe:/o:suse:sles:15:sp4"
+DOCUMENTATION_URL="https://documentation.suse.com/"
+Linux aurora-uan-0011 5.14.21-150400.24.225-default #1 SMP PREEMPT_DYNAMIC Wed Jun 17 13:14:30 UTC 2026 (82c2e59) x86_64 x86_64 x86_64 GNU/Linux
+cmake version 3.31.11
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).

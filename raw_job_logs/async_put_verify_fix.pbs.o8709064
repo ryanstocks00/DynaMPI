@@ -1,0 +1,49 @@
+##### async_put_lockfree nodes=1 expected_us=10 #####
+x4716c0s6b0n0.hsn.cm.aurora.alcf.anl.gov: rank 12 died from signal 15
+exit=124
+##### hierarchical_async_put_lockfree nodes=1 expected_us=10 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=684603 elapsed_s=8.01176 throughput_tasks_per_s=85449.8
+exit=0
+##### async_put_lockfree nodes=1 expected_us=100 #####
+x4716c0s6b0n0.hsn.cm.aurora.alcf.anl.gov: rank 22 died from signal 15
+exit=124
+##### hierarchical_async_put_lockfree nodes=1 expected_us=100 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=100 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=612069 elapsed_s=8.01049 throughput_tasks_per_s=76408.5
+exit=0
+##### async_put_lockfree nodes=1 expected_us=1000 #####
+RESULT distributor=async_put_lockfree mode=fixed expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=750083 elapsed_s=8.01182 throughput_tasks_per_s=93622
+exit=0
+##### hierarchical_async_put_lockfree nodes=1 expected_us=1000 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=101001 elapsed_s=8.00188 throughput_tasks_per_s=12622.2
+exit=0
+##### async_put_lockfree nodes=1 expected_us=10000 #####
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=76963 elapsed_s=8.00129 throughput_tasks_per_s=9618.83
+exit=0
+##### hierarchical_async_put_lockfree nodes=1 expected_us=10000 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=10101 elapsed_s=8.0002 throughput_tasks_per_s=1262.59
+exit=0
+##### async_put_lockfree nodes=2 expected_us=10 #####
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1790167 elapsed_s=8.02428 throughput_tasks_per_s=223094
+exit=0
+##### hierarchical_async_put_lockfree nodes=2 expected_us=10 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=936095 elapsed_s=8.01762 throughput_tasks_per_s=116755
+exit=0
+##### async_put_lockfree nodes=2 expected_us=100 #####
+RESULT distributor=async_put_lockfree mode=fixed expected_us=100 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1797466 elapsed_s=8.02299 throughput_tasks_per_s=224039
+exit=0
+##### hierarchical_async_put_lockfree nodes=2 expected_us=100 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=100 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=964558 elapsed_s=8.02403 throughput_tasks_per_s=120209
+exit=0
+##### async_put_lockfree nodes=2 expected_us=1000 #####
+RESULT distributor=async_put_lockfree mode=fixed expected_us=1000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1167218 elapsed_s=8.02476 throughput_tasks_per_s=145452
+exit=0
+##### hierarchical_async_put_lockfree nodes=2 expected_us=1000 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=1000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=203001 elapsed_s=8.00497 throughput_tasks_per_s=25359.4
+exit=0
+##### async_put_lockfree nodes=2 expected_us=10000 #####
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=161653 elapsed_s=8.0032 throughput_tasks_per_s=20198.5
+exit=0
+##### hierarchical_async_put_lockfree nodes=2 expected_us=10000 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=20301 elapsed_s=8.00044 throughput_tasks_per_s=2537.49
+exit=0
+ALL DONE

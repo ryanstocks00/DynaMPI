@@ -1,0 +1,20 @@
+Allocated cores per node: 102
+Running aurora nodes=8 ranks_per_node=102 dist=naive mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=100 nodes=8 world_size=816 max_upper_fanout=0 total_tasks=2152394 elapsed_s=5.01953 throughput_tasks_per_s=428804
+Running aurora nodes=8 ranks_per_node=102 dist=naive mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=8 world_size=816 max_upper_fanout=0 total_tasks=2009305 elapsed_s=5.2971 throughput_tasks_per_s=379322
+Running aurora nodes=8 ranks_per_node=102 dist=minimal_lockfree mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=minimal_lockfree mode=fixed expected_us=100 nodes=8 world_size=816 max_upper_fanout=0 total_tasks=269287 elapsed_s=5.00191 throughput_tasks_per_s=53836.9
+Running aurora nodes=8 ranks_per_node=102 dist=minimal_lockfree mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=minimal_lockfree mode=fixed expected_us=1000 nodes=8 world_size=816 max_upper_fanout=0 total_tasks=36255 elapsed_s=5.0829 throughput_tasks_per_s=7132.73
+Running aurora nodes=8 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=100 nodes=8 world_size=816 max_upper_fanout=0 total_tasks=7401808 elapsed_s=5.13494 throughput_tasks_per_s=1.44146e+06
+Running aurora nodes=8 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=1000 nodes=8 world_size=816 max_upper_fanout=0 total_tasks=3973608 elapsed_s=5.05102 throughput_tasks_per_s=786694
+Running aurora nodes=8 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=100 nodes=8 world_size=816 max_upper_fanout=0 total_tasks=4077522 elapsed_s=5.06527 throughput_tasks_per_s=804996
+Running aurora nodes=8 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=1000 nodes=8 world_size=816 max_upper_fanout=0 total_tasks=2576676 elapsed_s=5.04409 throughput_tasks_per_s=510830
+Running aurora nodes=8 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=100 max_upper_fanout=2
+=>> PBS: job killed: walltime 990 exceeded limit 900
+x4204c2s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 564 died from signal 15

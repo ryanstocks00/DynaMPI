@@ -1,0 +1,17 @@
+Allocated cores per node: 102
+Running aurora nodes=2 ranks_per_node=102 dist=naive mode=random expected_us=10 max_upper_fanout=-1
+RESULT distributor=naive mode=random expected_us=10 nodes=2 world_size=204 max_upper_fanout=-1 total_tasks=13562246 elapsed_s=30 throughput_tasks_per_s=452074
+Running aurora nodes=2 ranks_per_node=102 dist=naive mode=random expected_us=1000 max_upper_fanout=-1
+RESULT distributor=naive mode=random expected_us=1000 nodes=2 world_size=204 max_upper_fanout=-1 total_tasks=4455969 elapsed_s=30.0014 throughput_tasks_per_s=148525
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical mode=random expected_us=10 max_upper_fanout=-1
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=2 world_size=204 max_upper_fanout=-1 total_tasks=23023206 elapsed_s=30.0081 throughput_tasks_per_s=767233
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical mode=random expected_us=1000 max_upper_fanout=-1
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=2 world_size=204 max_upper_fanout=-1 total_tasks=3961378 elapsed_s=30.0023 throughput_tasks_per_s=132036
+Running aurora nodes=2 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=10 max_upper_fanout=-1
+RESULT distributor=async_put_lockfree mode=random expected_us=10 nodes=2 world_size=204 max_upper_fanout=-1 total_tasks=9733044 elapsed_s=30.2078 throughput_tasks_per_s=322203
+Running aurora nodes=2 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=1000 max_upper_fanout=-1
+RESULT distributor=async_put_lockfree mode=random expected_us=1000 nodes=2 world_size=204 max_upper_fanout=-1 total_tasks=5732635 elapsed_s=30.1026 throughput_tasks_per_s=190437
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=random expected_us=10 max_upper_fanout=-1
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10 nodes=2 world_size=204 max_upper_fanout=-1 total_tasks=4798194 elapsed_s=30.0886 throughput_tasks_per_s=159469
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=random expected_us=1000 max_upper_fanout=-1
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=1000 nodes=2 world_size=204 max_upper_fanout=-1 total_tasks=2999475 elapsed_s=30.0515 throughput_tasks_per_s=99811.2

@@ -1,0 +1,20 @@
+##### hierarchical_async_put_lockfree nodes=1 expected_us=1000 duration_s=3 #####
+[coordinator DIAG] rank=1 pending_relays=9 pending_task_count=833 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=9 pending_task_count=877 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=9 pending_task_count=881 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=8 pending_task_count=791 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=9 pending_task_count=833 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=9 pending_task_count=841 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=8 pending_task_count=795 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=0 pending_task_count=0 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=0 pending_task_count=0 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=0 pending_task_count=0 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=0 pending_task_count=0 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=0 pending_task_count=0 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=0 pending_task_count=0 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=0 pending_task_count=0 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=0 pending_task_count=0 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+[coordinator DIAG] rank=1 pending_relays=0 pending_task_count=0 relay_buffer=0 finish_marked=0 child_drained=0 parent_drained=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=60601 elapsed_s=3.00115 throughput_tasks_per_s=20192.6
+exit=0
+DONE

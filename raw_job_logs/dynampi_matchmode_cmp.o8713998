@@ -1,0 +1,21 @@
+===== software matching =====
+##### hierarchical nodes=8 expected_us=1000 duration_s=10 software trial=1 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=8 world_size=816 max_upper_fanout=-1 total_tasks=6231764 elapsed_s=10.1158 throughput_tasks_per_s=616040
+exit=0
+##### hierarchical nodes=8 expected_us=1000 duration_s=10 software trial=2 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=8 world_size=816 max_upper_fanout=-1 total_tasks=5997984 elapsed_s=10.1459 throughput_tasks_per_s=591174
+exit=0
+##### hierarchical nodes=8 expected_us=1000 duration_s=10 software trial=3 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=8 world_size=816 max_upper_fanout=-1 total_tasks=6220662 elapsed_s=10.2292 throughput_tasks_per_s=608126
+exit=0
+===== hardware (default) matching =====
+##### hierarchical nodes=8 expected_us=1000 duration_s=10 hardware trial=1 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=8 world_size=816 max_upper_fanout=-1 total_tasks=6239222 elapsed_s=10.2397 throughput_tasks_per_s=609318
+exit=0
+##### hierarchical nodes=8 expected_us=1000 duration_s=10 hardware trial=2 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=8 world_size=816 max_upper_fanout=-1 total_tasks=5939946 elapsed_s=10.2356 throughput_tasks_per_s=580325
+exit=0
+##### hierarchical nodes=8 expected_us=1000 duration_s=10 hardware trial=3 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=8 world_size=816 max_upper_fanout=-1 total_tasks=6264600 elapsed_s=10.0712 throughput_tasks_per_s=622032
+exit=0
+ALL DONE

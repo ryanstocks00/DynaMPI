@@ -1,0 +1,129 @@
+=== nodes=1 dist=naive expected_us=100 ===
+RESULT distributor=naive mode=fixed expected_us=100 nodes=1 world_size=8 total_tasks=338374 elapsed_s=5.00005 throughput_tasks_per_s=67674.1
+=== nodes=1 dist=hierarchical expected_us=100 ===
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=1 world_size=8 total_tasks=282775 elapsed_s=5.00026 throughput_tasks_per_s=56552
+=== nodes=1 dist=lockfree expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=1 world_size=8 total_tasks=87985 elapsed_s=5.0002 throughput_tasks_per_s=17596.3
+=== nodes=1 dist=lockfree gather_mode=final expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=1 world_size=8 total_tasks=122862 elapsed_s=5.01742 throughput_tasks_per_s=24487.1
+=== nodes=1 dist=naive expected_us=1000 ===
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=1 world_size=8 total_tasks=34882 elapsed_s=5.00121 throughput_tasks_per_s=6974.71
+=== nodes=1 dist=hierarchical expected_us=1000 ===
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=1 world_size=8 total_tasks=29820 elapsed_s=5.00261 throughput_tasks_per_s=5960.89
+=== nodes=1 dist=lockfree expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=1 world_size=8 total_tasks=9645 elapsed_s=5.00683 throughput_tasks_per_s=1926.37
+=== nodes=1 dist=lockfree gather_mode=final expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=1 world_size=8 total_tasks=34907 elapsed_s=5.01158 throughput_tasks_per_s=6965.27
+=== nodes=2 dist=naive expected_us=100 ===
+RESULT distributor=naive mode=fixed expected_us=100 nodes=2 world_size=16 total_tasks=716028 elapsed_s=5.0001 throughput_tasks_per_s=143203
+=== nodes=2 dist=hierarchical expected_us=100 ===
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=2 world_size=16 total_tasks=620701 elapsed_s=5.00031 throughput_tasks_per_s=124132
+=== nodes=2 dist=lockfree expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=2 world_size=16 total_tasks=216060 elapsed_s=5.00035 throughput_tasks_per_s=43209
+=== nodes=2 dist=lockfree gather_mode=final expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=2 world_size=16 total_tasks=121164 elapsed_s=5.01758 throughput_tasks_per_s=24147.9
+=== nodes=2 dist=naive expected_us=1000 ===
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=2 world_size=16 total_tasks=74660 elapsed_s=5.00074 throughput_tasks_per_s=14929.8
+=== nodes=2 dist=hierarchical expected_us=1000 ===
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=2 world_size=16 total_tasks=64645 elapsed_s=5.00324 throughput_tasks_per_s=12920.6
+=== nodes=2 dist=lockfree expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=2 world_size=16 total_tasks=30295 elapsed_s=5.00578 throughput_tasks_per_s=6052.01
+=== nodes=2 dist=lockfree gather_mode=final expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=2 world_size=16 total_tasks=73913 elapsed_s=5.01745 throughput_tasks_per_s=14731.2
+=== nodes=4 dist=naive expected_us=100 ===
+RESULT distributor=naive mode=fixed expected_us=100 nodes=4 world_size=32 total_tasks=1463413 elapsed_s=5.0001 throughput_tasks_per_s=292677
+=== nodes=4 dist=hierarchical expected_us=100 ===
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=4 world_size=32 total_tasks=1286706 elapsed_s=5.00037 throughput_tasks_per_s=257322
+=== nodes=4 dist=lockfree expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=4 world_size=32 total_tasks=246427 elapsed_s=5.00077 throughput_tasks_per_s=49277.8
+=== nodes=4 dist=lockfree gather_mode=final expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=4 world_size=32 total_tasks=116768 elapsed_s=5.02204 throughput_tasks_per_s=23251.1
+=== nodes=4 dist=naive expected_us=1000 ===
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=4 world_size=32 total_tasks=154115 elapsed_s=5.00088 throughput_tasks_per_s=30817.6
+=== nodes=4 dist=hierarchical expected_us=1000 ===
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=4 world_size=32 total_tasks=134259 elapsed_s=5.0033 throughput_tasks_per_s=26834.1
+=== nodes=4 dist=lockfree expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=4 world_size=32 total_tasks=63379 elapsed_s=5.01093 throughput_tasks_per_s=12648.1
+=== nodes=4 dist=lockfree gather_mode=final expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=4 world_size=32 total_tasks=121337 elapsed_s=5.01746 throughput_tasks_per_s=24182.9
+=== nodes=8 dist=naive expected_us=100 ===
+RESULT distributor=naive mode=fixed expected_us=100 nodes=8 world_size=64 total_tasks=2932479 elapsed_s=5.00012 throughput_tasks_per_s=586482
+=== nodes=8 dist=hierarchical expected_us=100 ===
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=8 world_size=64 total_tasks=2618396 elapsed_s=5.00049 throughput_tasks_per_s=523628
+=== nodes=8 dist=lockfree expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=8 world_size=64 total_tasks=293422 elapsed_s=5.00065 throughput_tasks_per_s=58676.8
+=== nodes=8 dist=lockfree gather_mode=final expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=8 world_size=64 total_tasks=117118 elapsed_s=5.01858 throughput_tasks_per_s=23336.9
+=== nodes=8 dist=naive expected_us=1000 ===
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=8 world_size=64 total_tasks=312624 elapsed_s=5.00074 throughput_tasks_per_s=62515.5
+=== nodes=8 dist=hierarchical expected_us=1000 ===
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=8 world_size=64 total_tasks=273492 elapsed_s=5.00379 throughput_tasks_per_s=54657
+=== nodes=8 dist=lockfree expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=8 world_size=64 total_tasks=75435 elapsed_s=5.00961 throughput_tasks_per_s=15058.1
+=== nodes=8 dist=lockfree gather_mode=final expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=8 world_size=64 total_tasks=121145 elapsed_s=5.01797 throughput_tasks_per_s=24142.2
+=== nodes=16 dist=naive expected_us=100 ===
+RESULT distributor=naive mode=fixed expected_us=100 nodes=16 world_size=128 total_tasks=3431515 elapsed_s=5.00014 throughput_tasks_per_s=686284
+=== nodes=16 dist=hierarchical expected_us=100 ===
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=16 world_size=128 total_tasks=5283909 elapsed_s=5.00045 throughput_tasks_per_s=1.05669e+06
+=== nodes=16 dist=lockfree expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=16 world_size=128 total_tasks=314730 elapsed_s=5.00088 throughput_tasks_per_s=62934.9
+=== nodes=16 dist=lockfree gather_mode=final expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=16 world_size=128 total_tasks=116851 elapsed_s=5.01804 throughput_tasks_per_s=23286.2
+=== nodes=16 dist=naive expected_us=1000 ===
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=16 world_size=128 total_tasks=629150 elapsed_s=5.00106 throughput_tasks_per_s=125803
+=== nodes=16 dist=hierarchical expected_us=1000 ===
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=16 world_size=128 total_tasks=551905 elapsed_s=5.00382 throughput_tasks_per_s=110297
+=== nodes=16 dist=lockfree expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=16 world_size=128 total_tasks=54577 elapsed_s=5.00317 throughput_tasks_per_s=10908.5
+=== nodes=16 dist=lockfree gather_mode=final expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=16 world_size=128 total_tasks=117038 elapsed_s=5.02088 throughput_tasks_per_s=23310.3
+=== nodes=32 dist=naive expected_us=100 ===
+RESULT distributor=naive mode=fixed expected_us=100 nodes=32 world_size=256 total_tasks=3477737 elapsed_s=5.00025 throughput_tasks_per_s=695513
+=== nodes=32 dist=hierarchical expected_us=100 ===
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=32 world_size=256 total_tasks=10609969 elapsed_s=5.00041 throughput_tasks_per_s=2.12182e+06
+=== nodes=32 dist=lockfree expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=32 world_size=256 total_tasks=323721 elapsed_s=5.00316 throughput_tasks_per_s=64703.2
+=== nodes=32 dist=lockfree gather_mode=final expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=32 world_size=256 total_tasks=116613 elapsed_s=5.02194 throughput_tasks_per_s=23220.7
+=== nodes=32 dist=naive expected_us=1000 ===
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=32 world_size=256 total_tasks=1261572 elapsed_s=5.00101 throughput_tasks_per_s=252263
+=== nodes=32 dist=hierarchical expected_us=1000 ===
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=32 world_size=256 total_tasks=1108765 elapsed_s=5.00417 throughput_tasks_per_s=221568
+=== nodes=32 dist=lockfree expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=32 world_size=256 total_tasks=46092 elapsed_s=5.00382 throughput_tasks_per_s=9211.37
+=== nodes=32 dist=lockfree gather_mode=final expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=32 world_size=256 total_tasks=85314 elapsed_s=5.02391 throughput_tasks_per_s=16981.6
+=== nodes=64 dist=naive expected_us=100 ===
+RESULT distributor=naive mode=fixed expected_us=100 nodes=64 world_size=512 total_tasks=3480635 elapsed_s=5.00189 throughput_tasks_per_s=695863
+=== nodes=64 dist=hierarchical expected_us=100 ===
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=64 world_size=512 total_tasks=21258297 elapsed_s=5.00042 throughput_tasks_per_s=4.25131e+06
+=== nodes=64 dist=lockfree expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=64 world_size=512 total_tasks=316798 elapsed_s=5.00168 throughput_tasks_per_s=63338.4
+=== nodes=64 dist=lockfree gather_mode=final expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=64 world_size=512 total_tasks=116238 elapsed_s=5.02336 throughput_tasks_per_s=23139.5
+=== nodes=64 dist=naive expected_us=1000 ===
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=64 world_size=512 total_tasks=2524477 elapsed_s=5.00102 throughput_tasks_per_s=504793
+=== nodes=64 dist=hierarchical expected_us=1000 ===
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=64 world_size=512 total_tasks=2221734 elapsed_s=5.00419 throughput_tasks_per_s=443975
+=== nodes=64 dist=lockfree expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=64 world_size=512 total_tasks=38405 elapsed_s=5.00925 throughput_tasks_per_s=7666.81
+=== nodes=64 dist=lockfree gather_mode=final expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=64 world_size=512 total_tasks=45360 elapsed_s=5.01984 throughput_tasks_per_s=9036.14
+=== nodes=128 dist=naive expected_us=100 ===
+RESULT distributor=naive mode=fixed expected_us=100 nodes=128 world_size=1024 total_tasks=3523333 elapsed_s=5.00091 throughput_tasks_per_s=704538
+=== nodes=128 dist=hierarchical expected_us=100 ===
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=128 world_size=1024 total_tasks=26202274 elapsed_s=5.00032 throughput_tasks_per_s=5.24012e+06
+=== nodes=128 dist=lockfree expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=128 world_size=1024 total_tasks=277031 elapsed_s=5.01035 throughput_tasks_per_s=55291.8
+=== nodes=128 dist=lockfree gather_mode=final expected_us=100 ===
+RESULT distributor=lockfree mode=fixed expected_us=100 nodes=128 world_size=1024 total_tasks=114232 elapsed_s=5.02969 throughput_tasks_per_s=22711.5
+=== nodes=128 dist=naive expected_us=1000 ===
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=128 world_size=1024 total_tasks=3422363 elapsed_s=5.00102 throughput_tasks_per_s=684333
+=== nodes=128 dist=hierarchical expected_us=1000 ===
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=128 world_size=1024 total_tasks=4450157 elapsed_s=5.00405 throughput_tasks_per_s=889311
+=== nodes=128 dist=lockfree expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=128 world_size=1024 total_tasks=37689 elapsed_s=5.02344 throughput_tasks_per_s=7502.62
+=== nodes=128 dist=lockfree gather_mode=final expected_us=1000 ===
+RESULT distributor=lockfree mode=fixed expected_us=1000 nodes=128 world_size=1024 total_tasks=22072 elapsed_s=5.02188 throughput_tasks_per_s=4395.17
+SWEEP COMPLETE

@@ -1,0 +1,32 @@
+#!/bin/bash
+#PBS -l select=2:ncpus=102:mpiprocs=102
+#PBS -l walltime=00:10:00
+#PBS -q debug
+#PBS -A DynaMPI
+#PBS -l filesystems=flare
+#PBS -N dynampi_validate_shutdown_fix
+#PBS -j oe
+
+cd "$HOME/DynaMPI" || exit 1
+export FI_CXI_RX_MATCH_MODE=software
+SD="$HOME/DynaMPI/build/benchmark/shutdown_time"
+
+echo "##### naive (sanity, should be unchanged/real) #####"
+timeout 30 mpiexec -n 204 --ppn 102 "$SD" --distribution naive --nodes 2 --system aurora
+
+echo "##### hierarchical, fanout=0 (1-layer), should now show REAL (non-near-zero) timing #####"
+timeout 30 mpiexec -n 204 --ppn 102 "$SD" --distribution hierarchical --nodes 2 --max_upper_fanout 0 --system aurora
+
+echo "##### hierarchical, fanout=-1 (auto), should also show REAL timing #####"
+timeout 30 mpiexec -n 204 --ppn 102 "$SD" --distribution hierarchical --nodes 2 --max_upper_fanout -1 --system aurora
+
+echo "##### hierarchical_async_put_lockfree, fanout=0 #####"
+timeout 30 mpiexec -n 204 --ppn 102 "$SD" --distribution hierarchical_async_put_lockfree --nodes 2 --max_upper_fanout 0 --system aurora
+
+echo "##### hierarchical_async_put_lockfree, fanout=-1 #####"
+timeout 30 mpiexec -n 204 --ppn 102 "$SD" --distribution hierarchical_async_put_lockfree --nodes 2 --max_upper_fanout -1 --system aurora
+
+echo "##### async_put_lockfree (no fanout concept, should still work) #####"
+timeout 30 mpiexec -n 204 --ppn 102 "$SD" --distribution async_put_lockfree --nodes 2 --system aurora
+
+echo "ALL DONE"

@@ -1,0 +1,120 @@
+===== CORRECTNESS (regression, small scale) =====
+=== ranks=1 ppn=1 ===
+[  SKIPPED ] DynamicDistribution/4.GatherOnce
+[  SKIPPED ] DynamicDistribution/5.ManagerRankNonZero
+[  SKIPPED ] DynamicDistribution/5.PriorityQueue
+[  SKIPPED ] MinimalLockFree.ManagerRankNonZero
+[  SKIPPED ] HierarchicalAsyncPutLockFree.ManagerRankNonZero
+[  SKIPPED ] LockFreeFinalization.FlatDrainsOutstandingWork
+[  SKIPPED ] LockFreeFinalization.HierarchicalDrainsOutstandingWork
+[  SKIPPED ] MPICommunicatorWrapper.PutGetAndStatistics
+=== ranks=1 exit=0 ===
+=== ranks=2 ppn=2 ===
+[ RUN      ] DynamicDistribution/1.Naive2
+[       OK ] DynamicDistribution/1.BasicFlow (1 ms)
+[ RUN      ] DynamicDistribution/1.Naive2
+[       OK ] DynamicDistribution/1.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+x4709c7s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 1 died from signal 15
+=== ranks=2 exit=0 ===
+=== ranks=4 ppn=4 ===
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+x4709c7s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 2 died from signal 15
+=== ranks=4 exit=0 ===
+=== ranks=8 ppn=8 ===
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+x4709c7s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 0 died from signal 15
+=== ranks=8 exit=0 ===
+=== ranks=102 ppn=102 ===
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (3 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (3 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (2 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+x4709c7s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 24 died from signal 15
+=== ranks=102 exit=0 ===
+=== ranks=150 ppn=102 ===
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (2 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (2 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (2 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+x4709c7s1b0n0.hsn.cm.aurora.alcf.anl.gov: rank 107 died from signal 15
+=== ranks=150 exit=0 ===
+=== ranks=204 ppn=102 ===
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (3 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (3 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+[       OK ] DynamicDistribution/1.Naive2 (3 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+x4709c7s1b0n0.hsn.cm.aurora.alcf.anl.gov: rank 129 died from signal 15
+=== ranks=204 exit=0 ===
+===== CORRECTNESS (8 physical nodes, real grouping coverage) =====
+[==========] 10 tests from 3 test suites ran. (5222 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5148 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5365 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5207 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5129 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5364 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5178 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5118 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5362 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5135 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5038 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5067 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5269 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5480 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5464 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5453 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5473 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5144 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5490 ms total)
+[  PASSED  ] 10 tests.
+[==========] 10 tests from 3 test suites ran. (5560 ms total)
+[  PASSED  ] 10 tests.
+exit=0
+===== BENCHMARK SANITY: hierarchical, explicit fanout=2, 8 nodes =====
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=8 world_size=816 max_upper_fanout=2 total_tasks=6957511 elapsed_s=8.00207 throughput_tasks_per_s=869464
+exit=0
+===== BENCHMARK SANITY: hierarchical, auto fanout, 8 nodes (should stay flat, <=32) =====
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=8 world_size=816 max_upper_fanout=-1 total_tasks=8091805 elapsed_s=8.16636 throughput_tasks_per_s=990871
+exit=0
+ALL DONE

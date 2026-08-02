@@ -1,0 +1,4 @@
+Allocated cores per node: 102
+Running aurora nodes=8 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=100 max_upper_fanout=4
+=>> PBS: job killed: walltime 992 exceeded limit 900
+x4704c4s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 56 died from signal 15

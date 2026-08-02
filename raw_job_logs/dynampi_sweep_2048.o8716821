@@ -1,0 +1,37 @@
+##### dist=naive fanout=-1 nodes=2048 expected_us=10 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=10 nodes=2048 world_size=208896 max_upper_fanout=-1 total_tasks=11902933 elapsed_s=22.5007 throughput_tasks_per_s=529003
+exit=0
+##### dist=hierarchical fanout=0 nodes=2048 expected_us=10 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=2048 world_size=208896 max_upper_fanout=0 total_tasks=25405198 elapsed_s=21.1593 throughput_tasks_per_s=1.20066e+06
+exit=0
+##### dist=hierarchical fanout=-1 nodes=2048 expected_us=10 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=2048 world_size=208896 max_upper_fanout=-1 total_tasks=23232858 elapsed_s=21.3456 throughput_tasks_per_s=1.08842e+06
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=2048 expected_us=10 duration_s=20 #####
+x4005c5s5b0n0.hsn.cm.aurora.alcf.anl.gov: rank 1641 died from signal 15
+exit=124
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=2048 expected_us=10 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10 nodes=2048 world_size=208896 max_upper_fanout=0 total_tasks=95815542 elapsed_s=20.0018 throughput_tasks_per_s=4.79035e+06
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=2048 expected_us=10 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10 nodes=2048 world_size=208896 max_upper_fanout=-1 total_tasks=346904630 elapsed_s=20.0008 throughput_tasks_per_s=1.73445e+07
+exit=0
+##### dist=naive fanout=-1 nodes=2048 expected_us=1000 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=1000 nodes=2048 world_size=208896 max_upper_fanout=-1 total_tasks=6833011 elapsed_s=23.371 throughput_tasks_per_s=292371
+exit=0
+##### dist=hierarchical fanout=0 nodes=2048 expected_us=1000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=2048 world_size=208896 max_upper_fanout=0 total_tasks=18622764 elapsed_s=21.2555 throughput_tasks_per_s=876138
+exit=0
+##### dist=hierarchical fanout=-1 nodes=2048 expected_us=1000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=2048 world_size=208896 max_upper_fanout=-1 total_tasks=45833788 elapsed_s=21.3113 throughput_tasks_per_s=2.15068e+06
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=2048 expected_us=1000 duration_s=20 #####
+x4016c1s3b0n0.hsn.cm.aurora.alcf.anl.gov: rank 137930 died from signal 15
+exit=124
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=2048 expected_us=1000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=1000 nodes=2048 world_size=208896 max_upper_fanout=0 total_tasks=95107171 elapsed_s=20.0011 throughput_tasks_per_s=4.75509e+06
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=2048 expected_us=1000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=1000 nodes=2048 world_size=208896 max_upper_fanout=-1 total_tasks=338000000 elapsed_s=20.0036 throughput_tasks_per_s=1.6897e+07
+exit=0
+ALL DONE

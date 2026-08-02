@@ -1,0 +1,54 @@
+===== CORRECTNESS =====
+=== ranks=1 ppn=1 ===
+[  SKIPPED ] MinimalLockFree.ManagerRankNonZero
+[  SKIPPED ] HierarchicalAsyncPutLockFree.ManagerRankNonZero
+[  SKIPPED ] LockFreeFinalization.FlatDrainsOutstandingWork
+[  SKIPPED ] LockFreeFinalization.HierarchicalDrainsOutstandingWork
+[  SKIPPED ] MPICommunicatorWrapper.PutGetAndStatistics
+=== ranks=1 exit=0 ===
+=== ranks=2 ppn=2 ===
+[  SKIPPED ] DynamicDistribution/3.GatherOnce
+[  SKIPPED ] DynamicDistribution/4.Example2
+[  SKIPPED ] DynamicDistribution/4.PriorityQueue
+[  SKIPPED ] DynamicDistribution/4.GatherOnce
+[  SKIPPED ] DynamicDistribution/5.PriorityQueue
+=== ranks=2 exit=0 ===
+=== ranks=4 ppn=4 ===
+[  SKIPPED ] DynamicDistribution/3.GatherOnce
+[  SKIPPED ] DynamicDistribution/4.Example2
+[  SKIPPED ] DynamicDistribution/4.PriorityQueue
+[  SKIPPED ] DynamicDistribution/4.GatherOnce
+[  SKIPPED ] DynamicDistribution/5.PriorityQueue
+=== ranks=4 exit=0 ===
+=== ranks=8 ppn=8 ===
+[  SKIPPED ] DynamicDistribution/3.GatherOnce
+[  SKIPPED ] DynamicDistribution/4.Example2
+[  SKIPPED ] DynamicDistribution/4.PriorityQueue
+[  SKIPPED ] DynamicDistribution/4.GatherOnce
+[  SKIPPED ] DynamicDistribution/5.PriorityQueue
+=== ranks=8 exit=0 ===
+=== ranks=102 ppn=102 ===
+[  SKIPPED ] DynamicDistribution/3.GatherOnce
+[  SKIPPED ] DynamicDistribution/4.Example2
+[  SKIPPED ] DynamicDistribution/4.PriorityQueue
+[  SKIPPED ] DynamicDistribution/4.GatherOnce
+[  SKIPPED ] DynamicDistribution/5.PriorityQueue
+=== ranks=102 exit=0 ===
+=== ranks=150 ppn=102 ===
+[  SKIPPED ] DynamicDistribution/3.GatherOnce
+[  SKIPPED ] DynamicDistribution/4.Example2
+[  SKIPPED ] DynamicDistribution/4.PriorityQueue
+[  SKIPPED ] DynamicDistribution/4.GatherOnce
+[  SKIPPED ] DynamicDistribution/5.PriorityQueue
+=== ranks=150 exit=0 ===
+=== ranks=204 ppn=102 ===
+[  SKIPPED ] DynamicDistribution/3.GatherOnce
+[  SKIPPED ] DynamicDistribution/4.Example2
+[  SKIPPED ] DynamicDistribution/4.PriorityQueue
+[  SKIPPED ] DynamicDistribution/4.GatherOnce
+[  SKIPPED ] DynamicDistribution/5.PriorityQueue
+=== ranks=204 exit=0 ===
+===== AUTO-FANOUT SANITY (small scale, should stay disabled/flat) =====
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10 nodes=2 world_size=204 max_upper_fanout=-1 total_tasks=1255938 elapsed_s=8.01843 throughput_tasks_per_s=156631
+exit=0
+ALL DONE

@@ -1,0 +1,25 @@
+=== async_put_lockfree expected_us=10 ===
+x4311c4s3b0n0.hsn.cm.aurora.alcf.anl.gov: rank 7 died from signal 15
+exit=124
+=== async_put_lockfree expected_us=100 ===
+x4311c4s3b0n0.hsn.cm.aurora.alcf.anl.gov: rank 8 died from signal 15
+exit=124
+=== async_put_lockfree expected_us=1000 ===
+x4311c4s3b0n0.hsn.cm.aurora.alcf.anl.gov: rank 30 died from signal 15
+exit=124
+=== async_put_lockfree expected_us=10000 ===
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=46621 elapsed_s=5.00069 throughput_tasks_per_s=9322.91
+exit=0
+=== hierarchical_async_put_lockfree expected_us=10 ===
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=377200 elapsed_s=5.00671 throughput_tasks_per_s=75338.8
+exit=0
+=== hierarchical_async_put_lockfree expected_us=100 ===
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=100 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=342000 elapsed_s=5.00703 throughput_tasks_per_s=68303.9
+exit=0
+=== hierarchical_async_put_lockfree expected_us=1000 ===
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=101001 elapsed_s=5.00183 throughput_tasks_per_s=20192.8
+exit=0
+=== hierarchical_async_put_lockfree expected_us=10000 ===
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=10101 elapsed_s=5.00017 throughput_tasks_per_s=2020.13
+exit=0
+ALL DONE

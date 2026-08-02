@@ -1,0 +1,7 @@
+##### adlb nodes=1 expected_us=10 num_servers=1 #####
+RESULT system=adlb num_servers=1 expected_us=10 duration_s=8.000 world_size=102 workers=100 total_tasks=163600 elapsed_s=8.0095 throughput_tasks_per_s=20425.6
+exit=0
+##### adlb nodes=1 expected_us=1000 num_servers=1 #####
+RESULT system=adlb num_servers=1 expected_us=1000 duration_s=8.000 world_size=102 workers=100 total_tasks=176000 elapsed_s=8.0121 throughput_tasks_per_s=21966.6
+exit=0
+DONE

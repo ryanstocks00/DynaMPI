@@ -1,0 +1,31 @@
+=== HierarchicalAsyncPutLockFree.* at ranks=1 ===
+Note: Google Test filter = HierarchicalAsyncPutLockFree.*
+[==========] Running 7 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 7 tests from HierarchicalAsyncPutLockFree
+[ RUN      ] HierarchicalAsyncPutLockFree.BasicFlow
+[       OK ] HierarchicalAsyncPutLockFree.BasicFlow (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.ManagerRankNonZero
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:584: Skipped
+Need at least 2 ranks for non-zero manager rank
+
+[  SKIPPED ] HierarchicalAsyncPutLockFree.ManagerRankNonZero (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.MultipleRoundsOfTasks
+[       OK ] HierarchicalAsyncPutLockFree.MultipleRoundsOfTasks (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.RunTasksMaxTasks
+[       OK ] HierarchicalAsyncPutLockFree.RunTasksMaxTasks (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.GroupedUpperHierarchy
+[       OK ] HierarchicalAsyncPutLockFree.GroupedUpperHierarchy (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.AutoRunWorkers
+[       OK ] HierarchicalAsyncPutLockFree.AutoRunWorkers (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.GatherOnce
+[       OK ] HierarchicalAsyncPutLockFree.GatherOnce (0 ms)
+[----------] 7 tests from HierarchicalAsyncPutLockFree (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 7 tests from 1 test suite ran. (420 ms total)
+[  PASSED  ] 6 tests.
+[  SKIPPED ] 1 test, listed below:
+[  SKIPPED ] HierarchicalAsyncPutLockFree.ManagerRankNonZero
+exit=0
+ALL DONE

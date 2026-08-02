@@ -1,0 +1,312 @@
+=== full suite at ranks=1, verbose ===
+[==========] Running 90 tests from 13 test suites.
+[----------] Global test environment set-up.
+[----------] 11 tests from DynamicDistribution/0, where TypeParam = DistributerTypeWrapper<dynampi::NaiveMPIWorkDistributor>
+[ RUN      ] DynamicDistribution/0.BasicFlow
+[       OK ] DynamicDistribution/0.BasicFlow (0 ms)
+[ RUN      ] DynamicDistribution/0.Naive2
+[       OK ] DynamicDistribution/0.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/0.ManagerRankNonZero
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:188: Skipped
+Need at least 2 ranks for non-zero manager rank
+
+[  SKIPPED ] DynamicDistribution/0.ManagerRankNonZero (0 ms)
+[ RUN      ] DynamicDistribution/0.Example1
+[       OK ] DynamicDistribution/0.Example1 (0 ms)
+[ RUN      ] DynamicDistribution/0.Example2
+[       OK ] DynamicDistribution/0.Example2 (0 ms)
+[ RUN      ] DynamicDistribution/0.RunTasksMaxTasks
+[       OK ] DynamicDistribution/0.RunTasksMaxTasks (0 ms)
+[ RUN      ] DynamicDistribution/0.RunTasksMinTasksWithTimeLimit
+[       OK ] DynamicDistribution/0.RunTasksMinTasksWithTimeLimit (0 ms)
+[ RUN      ] DynamicDistribution/0.PriorityQueue
+[       OK ] DynamicDistribution/0.PriorityQueue (0 ms)
+[ RUN      ] DynamicDistribution/0.Statistics
+[       OK ] DynamicDistribution/0.Statistics (0 ms)
+[ RUN      ] DynamicDistribution/0.AutoRunWorkers
+[       OK ] DynamicDistribution/0.AutoRunWorkers (0 ms)
+[ RUN      ] DynamicDistribution/0.GatherOnce
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:455: Skipped
+gather_once is only on lock-free RMA distributors
+
+[  SKIPPED ] DynamicDistribution/0.GatherOnce (0 ms)
+[----------] 11 tests from DynamicDistribution/0 (0 ms total)
+
+[----------] 11 tests from DynamicDistribution/1, where TypeParam = HierarchicalDistributerTypeWrapper<true>
+[ RUN      ] DynamicDistribution/1.BasicFlow
+[       OK ] DynamicDistribution/1.BasicFlow (0 ms)
+[ RUN      ] DynamicDistribution/1.Naive2
+[       OK ] DynamicDistribution/1.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/1.ManagerRankNonZero
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:188: Skipped
+Need at least 2 ranks for non-zero manager rank
+
+[  SKIPPED ] DynamicDistribution/1.ManagerRankNonZero (0 ms)
+[ RUN      ] DynamicDistribution/1.Example1
+[       OK ] DynamicDistribution/1.Example1 (0 ms)
+[ RUN      ] DynamicDistribution/1.Example2
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:244: Skipped
+This test is not applicable for this distributor.
+
+[  SKIPPED ] DynamicDistribution/1.Example2 (0 ms)
+[ RUN      ] DynamicDistribution/1.RunTasksMaxTasks
+[       OK ] DynamicDistribution/1.RunTasksMaxTasks (0 ms)
+[ RUN      ] DynamicDistribution/1.RunTasksMinTasksWithTimeLimit
+[       OK ] DynamicDistribution/1.RunTasksMinTasksWithTimeLimit (0 ms)
+[ RUN      ] DynamicDistribution/1.PriorityQueue
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:329: Skipped
+This test requires ordered results with priority, which is not supported by this distributer.
+
+[  SKIPPED ] DynamicDistribution/1.PriorityQueue (0 ms)
+[ RUN      ] DynamicDistribution/1.Statistics
+[       OK ] DynamicDistribution/1.Statistics (0 ms)
+[ RUN      ] DynamicDistribution/1.AutoRunWorkers
+[       OK ] DynamicDistribution/1.AutoRunWorkers (0 ms)
+[ RUN      ] DynamicDistribution/1.GatherOnce
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:455: Skipped
+gather_once is only on lock-free RMA distributors
+
+[  SKIPPED ] DynamicDistribution/1.GatherOnce (0 ms)
+[----------] 11 tests from DynamicDistribution/1 (0 ms total)
+
+[----------] 11 tests from DynamicDistribution/2, where TypeParam = HierarchicalDistributerTypeWrapper<false>
+[ RUN      ] DynamicDistribution/2.BasicFlow
+[       OK ] DynamicDistribution/2.BasicFlow (0 ms)
+[ RUN      ] DynamicDistribution/2.Naive2
+[       OK ] DynamicDistribution/2.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/2.ManagerRankNonZero
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:188: Skipped
+Need at least 2 ranks for non-zero manager rank
+
+[  SKIPPED ] DynamicDistribution/2.ManagerRankNonZero (0 ms)
+[ RUN      ] DynamicDistribution/2.Example1
+[       OK ] DynamicDistribution/2.Example1 (0 ms)
+[ RUN      ] DynamicDistribution/2.Example2
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:244: Skipped
+This test is not applicable for this distributor.
+
+[  SKIPPED ] DynamicDistribution/2.Example2 (0 ms)
+[ RUN      ] DynamicDistribution/2.RunTasksMaxTasks
+[       OK ] DynamicDistribution/2.RunTasksMaxTasks (0 ms)
+[ RUN      ] DynamicDistribution/2.RunTasksMinTasksWithTimeLimit
+[       OK ] DynamicDistribution/2.RunTasksMinTasksWithTimeLimit (0 ms)
+[ RUN      ] DynamicDistribution/2.PriorityQueue
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:329: Skipped
+This test requires ordered results with priority, which is not supported by this distributer.
+
+[  SKIPPED ] DynamicDistribution/2.PriorityQueue (0 ms)
+[ RUN      ] DynamicDistribution/2.Statistics
+[       OK ] DynamicDistribution/2.Statistics (0 ms)
+[ RUN      ] DynamicDistribution/2.AutoRunWorkers
+[       OK ] DynamicDistribution/2.AutoRunWorkers (0 ms)
+[ RUN      ] DynamicDistribution/2.GatherOnce
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:455: Skipped
+gather_once is only on lock-free RMA distributors
+
+[  SKIPPED ] DynamicDistribution/2.GatherOnce (0 ms)
+[----------] 11 tests from DynamicDistribution/2 (0 ms total)
+
+[----------] 11 tests from DynamicDistribution/3, where TypeParam = HierarchicalNonBlockingDistributerTypeWrapper<true>
+[ RUN      ] DynamicDistribution/3.BasicFlow
+[       OK ] DynamicDistribution/3.BasicFlow (0 ms)
+[ RUN      ] DynamicDistribution/3.Naive2
+[       OK ] DynamicDistribution/3.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/3.ManagerRankNonZero
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:188: Skipped
+Need at least 2 ranks for non-zero manager rank
+
+[  SKIPPED ] DynamicDistribution/3.ManagerRankNonZero (0 ms)
+[ RUN      ] DynamicDistribution/3.Example1
+[       OK ] DynamicDistribution/3.Example1 (0 ms)
+[ RUN      ] DynamicDistribution/3.Example2
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:244: Skipped
+This test is not applicable for this distributor.
+
+[  SKIPPED ] DynamicDistribution/3.Example2 (0 ms)
+[ RUN      ] DynamicDistribution/3.RunTasksMaxTasks
+[       OK ] DynamicDistribution/3.RunTasksMaxTasks (0 ms)
+[ RUN      ] DynamicDistribution/3.RunTasksMinTasksWithTimeLimit
+[       OK ] DynamicDistribution/3.RunTasksMinTasksWithTimeLimit (0 ms)
+[ RUN      ] DynamicDistribution/3.PriorityQueue
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:329: Skipped
+This test requires ordered results with priority, which is not supported by this distributer.
+
+[  SKIPPED ] DynamicDistribution/3.PriorityQueue (0 ms)
+[ RUN      ] DynamicDistribution/3.Statistics
+[       OK ] DynamicDistribution/3.Statistics (0 ms)
+[ RUN      ] DynamicDistribution/3.AutoRunWorkers
+[       OK ] DynamicDistribution/3.AutoRunWorkers (0 ms)
+[ RUN      ] DynamicDistribution/3.GatherOnce
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:455: Skipped
+gather_once is only on lock-free RMA distributors
+
+[  SKIPPED ] DynamicDistribution/3.GatherOnce (0 ms)
+[----------] 11 tests from DynamicDistribution/3 (0 ms total)
+
+[----------] 11 tests from DynamicDistribution/4, where TypeParam = HierarchicalNonBlockingDistributerTypeWrapper<false>
+[ RUN      ] DynamicDistribution/4.BasicFlow
+[       OK ] DynamicDistribution/4.BasicFlow (0 ms)
+[ RUN      ] DynamicDistribution/4.Naive2
+[       OK ] DynamicDistribution/4.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/4.ManagerRankNonZero
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:188: Skipped
+Need at least 2 ranks for non-zero manager rank
+
+[  SKIPPED ] DynamicDistribution/4.ManagerRankNonZero (0 ms)
+[ RUN      ] DynamicDistribution/4.Example1
+[       OK ] DynamicDistribution/4.Example1 (0 ms)
+[ RUN      ] DynamicDistribution/4.Example2
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:244: Skipped
+This test is not applicable for this distributor.
+
+[  SKIPPED ] DynamicDistribution/4.Example2 (0 ms)
+[ RUN      ] DynamicDistribution/4.RunTasksMaxTasks
+[       OK ] DynamicDistribution/4.RunTasksMaxTasks (0 ms)
+[ RUN      ] DynamicDistribution/4.RunTasksMinTasksWithTimeLimit
+[       OK ] DynamicDistribution/4.RunTasksMinTasksWithTimeLimit (0 ms)
+[ RUN      ] DynamicDistribution/4.PriorityQueue
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:329: Skipped
+This test requires ordered results with priority, which is not supported by this distributer.
+
+[  SKIPPED ] DynamicDistribution/4.PriorityQueue (0 ms)
+[ RUN      ] DynamicDistribution/4.Statistics
+[       OK ] DynamicDistribution/4.Statistics (0 ms)
+[ RUN      ] DynamicDistribution/4.AutoRunWorkers
+[       OK ] DynamicDistribution/4.AutoRunWorkers (0 ms)
+[ RUN      ] DynamicDistribution/4.GatherOnce
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:455: Skipped
+gather_once is only on lock-free RMA distributors
+
+[  SKIPPED ] DynamicDistribution/4.GatherOnce (0 ms)
+[----------] 11 tests from DynamicDistribution/4 (0 ms total)
+
+[----------] 11 tests from DynamicDistribution/5, where TypeParam = DistributerTypeWrapper<dynampi::AsyncPutLockFreeMPIWorkDistributor>
+[ RUN      ] DynamicDistribution/5.BasicFlow
+[       OK ] DynamicDistribution/5.BasicFlow (0 ms)
+[ RUN      ] DynamicDistribution/5.Naive2
+[       OK ] DynamicDistribution/5.Naive2 (0 ms)
+[ RUN      ] DynamicDistribution/5.ManagerRankNonZero
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:188: Skipped
+Need at least 2 ranks for non-zero manager rank
+
+[  SKIPPED ] DynamicDistribution/5.ManagerRankNonZero (0 ms)
+[ RUN      ] DynamicDistribution/5.Example1
+[       OK ] DynamicDistribution/5.Example1 (0 ms)
+[ RUN      ] DynamicDistribution/5.Example2
+[       OK ] DynamicDistribution/5.Example2 (0 ms)
+[ RUN      ] DynamicDistribution/5.RunTasksMaxTasks
+[       OK ] DynamicDistribution/5.RunTasksMaxTasks (0 ms)
+[ RUN      ] DynamicDistribution/5.RunTasksMinTasksWithTimeLimit
+[       OK ] DynamicDistribution/5.RunTasksMinTasksWithTimeLimit (0 ms)
+[ RUN      ] DynamicDistribution/5.PriorityQueue
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:329: Skipped
+This test requires ordered results with priority, which is not supported by this distributer.
+
+[  SKIPPED ] DynamicDistribution/5.PriorityQueue (0 ms)
+[ RUN      ] DynamicDistribution/5.Statistics
+[       OK ] DynamicDistribution/5.Statistics (0 ms)
+[ RUN      ] DynamicDistribution/5.AutoRunWorkers
+[       OK ] DynamicDistribution/5.AutoRunWorkers (0 ms)
+[ RUN      ] DynamicDistribution/5.GatherOnce
+[       OK ] DynamicDistribution/5.GatherOnce (0 ms)
+[----------] 11 tests from DynamicDistribution/5 (0 ms total)
+
+[----------] 4 tests from MinimalLockFree
+[ RUN      ] MinimalLockFree.ScalarResults
+[       OK ] MinimalLockFree.ScalarResults (0 ms)
+[ RUN      ] MinimalLockFree.ManagerRankNonZero
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:503: Skipped
+Need at least 2 ranks for non-zero manager rank
+
+[  SKIPPED ] MinimalLockFree.ManagerRankNonZero (0 ms)
+[ RUN      ] MinimalLockFree.VariableSizeResults
+[       OK ] MinimalLockFree.VariableSizeResults (0 ms)
+[ RUN      ] MinimalLockFree.EmptyAndReusable
+[       OK ] MinimalLockFree.EmptyAndReusable (0 ms)
+[----------] 4 tests from MinimalLockFree (0 ms total)
+
+[----------] 1 test from LockFreeCapacity
+[ RUN      ] LockFreeCapacity.RejectsTaskTableOverflow
+[       OK ] LockFreeCapacity.RejectsTaskTableOverflow (0 ms)
+[----------] 1 test from LockFreeCapacity (0 ms total)
+
+[----------] 1 test from AsyncPutLevel
+[ RUN      ] AsyncPutLevel.SingletonCommunicator
+[       OK ] AsyncPutLevel.SingletonCommunicator (0 ms)
+[----------] 1 test from AsyncPutLevel (0 ms total)
+
+[----------] 8 tests from HierarchicalAsyncPutLockFree
+[ RUN      ] HierarchicalAsyncPutLockFree.BasicFlow
+[       OK ] HierarchicalAsyncPutLockFree.BasicFlow (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.ManagerRankNonZero
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:616: Skipped
+Need at least 2 ranks for non-zero manager rank
+
+[  SKIPPED ] HierarchicalAsyncPutLockFree.ManagerRankNonZero (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.MultipleRoundsOfTasks
+[       OK ] HierarchicalAsyncPutLockFree.MultipleRoundsOfTasks (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.RunTasksMaxTasks
+[       OK ] HierarchicalAsyncPutLockFree.RunTasksMaxTasks (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.GroupedUpperHierarchy
+[       OK ] HierarchicalAsyncPutLockFree.GroupedUpperHierarchy (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.SingletonGatherAndFinalize
+[       OK ] HierarchicalAsyncPutLockFree.SingletonGatherAndFinalize (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.AutoRunWorkers
+[       OK ] HierarchicalAsyncPutLockFree.AutoRunWorkers (0 ms)
+[ RUN      ] HierarchicalAsyncPutLockFree.GatherOnce
+[       OK ] HierarchicalAsyncPutLockFree.GatherOnce (0 ms)
+[----------] 8 tests from HierarchicalAsyncPutLockFree (0 ms total)
+
+[----------] 1 test from LockFreeFinalization
+[ RUN      ] LockFreeFinalization.DrainsOutstandingWork
+/home/ryans/DynaMPI/test/mpi/test_distributers.cpp:801: Skipped
+Need a worker rank to exercise remote finalization
+
+[  SKIPPED ] LockFreeFinalization.DrainsOutstandingWork (0 ms)
+[----------] 1 test from LockFreeFinalization (0 ms total)
+
+[----------] 1 test from MPI
+[ RUN      ] MPI.ErrorCheck
+x4703c2s1b0n0.hsn.cm.aurora.alcf.anl.gov: rank 0 died from signal 11 and dumped core
+exit=139
+=== gdb backtrace ===
+
+warning: Can't open file /var/tmp/pbs.8708547.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov/f1e1d318-adfd-4763-a1dc-039564a08370/tmp/pmix_dstor_ds12_186244/dstore_sm.lock during file-backed mapping note processing
+
+warning: Can't open file /var/tmp/pbs.8708547.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov/f1e1d318-adfd-4763-a1dc-039564a08370/tmp/pmix_dstor_ds12_186244/initial-pmix_shared-segment-0 during file-backed mapping note processing
+
+warning: Can't open file /dev/shm/mpich_shm_af10fc25_0 during file-backed mapping note processing
+
+warning: Can't open file /var/tmp/pbs.8708547.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov/f1e1d318-adfd-4763-a1dc-039564a08370/tmp/pmix_dstor_ds21_186244/smdataseg-pals.pmix.f1e1d318-adfd-4763-a1dc-039564a08370.8708547.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov-0 during file-backed mapping note processing
+
+warning: Can't open file /var/tmp/pbs.8708547.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov/f1e1d318-adfd-4763-a1dc-039564a08370/tmp/pmix_dstor_ds21_186244/smseg-pals.pmix.f1e1d318-adfd-4763-a1dc-039564a08370.8708547.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov-0 during file-backed mapping note processing
+
+warning: Can't open file anon_inode:i915.gem during file-backed mapping note processing
+
+warning: Can't open file /var/tmp/pbs.8708547.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov/f1e1d318-adfd-4763-a1dc-039564a08370/tmp/hwloc.sm during file-backed mapping note processing
+
+warning: Can't open file /var/tmp/pbs.8708547.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov/f1e1d318-adfd-4763-a1dc-039564a08370/tmp/pmix_dstor_ds21_186244/initial-pmix_shared-segment-0 during file-backed mapping note processing
+
+warning: Can't open file /var/tmp/pbs.8708547.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov/f1e1d318-adfd-4763-a1dc-039564a08370/tmp/pmix_dstor_ds21_186244/smlockseg-pals.pmix.f1e1d318-adfd-4763-a1dc-039564a08370.8708547.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov during file-backed mapping note processing
+
+warning: exec file is newer than core file.
+[New LWP 186288]
+[New LWP 186307]
+Core was generated by `/home/ryans/DynaMPI/build/test/mpi_test'.
+Program terminated with signal SIGSEGV, Segmentation fault.
+#0  0x000014da15a7a692 in ?? ()
+[Current thread is 1 (LWP 186288)]
+
+Thread 2 (LWP 186307):
+#0  0x000014da15561cdf in ?? ()
+#1  0x000014da08fedda0 in ?? ()
+#2  0x000014da15525a60 in ?? ()
+#3  0x0000000000000000 in ?? ()
+
+Thread 1 (LWP 186288):
+#0  0x000014da15a7a692 in ?? ()
+#1  0x000000000053b57e in ?? ()
+#2  0x00000000004c820f in dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>::setup_upper_chain(dynampi::MPICommunicator<>, bool) ()
+#3  0x00007ffda8b1ddd0 in ?? ()
+#4  0x0000000000000000 in ?? ()
+ALL DONE

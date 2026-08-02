@@ -1,0 +1,31 @@
+#!/bin/bash
+#PBS -l select=8:ncpus=102:mpiprocs=102
+#PBS -l walltime=00:20:00
+#PBS -q debug-scaling
+#PBS -A DynaMPI
+#PBS -l filesystems=flare
+#PBS -N dynampi_matchmode_cmp
+#PBS -j oe
+
+cd "$HOME/DynaMPI" || exit 1
+SS="$HOME/DynaMPI/build/benchmark/strong_scaling_distribution_rate"
+
+echo "===== software matching ====="
+export FI_CXI_RX_MATCH_MODE=software
+for i in 1 2 3; do
+  echo "##### hierarchical nodes=8 expected_us=1000 duration_s=10 software trial=$i #####"
+  timeout 30 mpiexec -n 816 --ppn 102 "$SS" --distribution hierarchical --mode random \
+    --expected_us 1000 --duration_s 10 --nodes 8 --system aurora
+  echo "exit=$?"
+done
+
+echo "===== hardware (default) matching ====="
+unset FI_CXI_RX_MATCH_MODE
+for i in 1 2 3; do
+  echo "##### hierarchical nodes=8 expected_us=1000 duration_s=10 hardware trial=$i #####"
+  timeout 30 mpiexec -n 816 --ppn 102 "$SS" --distribution hierarchical --mode random \
+    --expected_us 1000 --duration_s 10 --nodes 8 --system aurora
+  echo "exit=$?"
+done
+
+echo "ALL DONE"

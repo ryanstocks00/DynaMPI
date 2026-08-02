@@ -1,0 +1,49 @@
+=== CMakeCache build config ===
+CMAKE_BUILD_TYPE:STRING=Release
+CMAKE_CXX_COMPILER:FILEPATH=/opt/aurora/26.26.0/oneapi/compiler/latest/bin/icpx
+CMAKE_CXX_FLAGS:STRING=
+CMAKE_CXX_FLAGS_DEBUG:STRING=-g -Rno-debug-disables-optimization
+CMAKE_CXX_FLAGS_MINSIZEREL:STRING=-Os -DNDEBUG
+CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
+CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
+CMAKE_C_COMPILER:FILEPATH=/opt/aurora/26.26.0/oneapi/compiler/latest/bin/icx
+//Add warnings to CMAKE_CXX_FLAGS
+MPI_CXX_ADDITIONAL_INCLUDE_DIRS:STRING=
+MPI_CXX_COMPILER:FILEPATH=/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/bin/mpicxx
+MPI_CXX_COMPILER_INCLUDE_DIRS:STRING=/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/include
+MPI_CXX_COMPILE_DEFINITIONS:STRING=
+MPI_CXX_COMPILE_OPTIONS:STRING=
+MPI_CXX_HEADER_DIR:PATH=/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/include
+MPI_CXX_LIB_NAMES:STRING=mpicxx;mpi
+MPI_CXX_LINK_FLAGS:STRING=-Wl,-rpath -Wl,/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/lib
+MPI_CXX_SKIP_MPICXX:BOOL=OFF
+//ADVANCED property for variable: CMAKE_CXX_FLAGS
+CMAKE_CXX_FLAGS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_CXX_FLAGS_DEBUG
+CMAKE_CXX_FLAGS_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_CXX_FLAGS_MINSIZEREL
+CMAKE_CXX_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_CXX_FLAGS_RELEASE
+CMAKE_CXX_FLAGS_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CMAKE_CXX_FLAGS_RELWITHDEBINFO
+CMAKE_CXX_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
+//Details about finding MPI_CXX
+FIND_PACKAGE_MESSAGE_DETAILS_MPI_CXX:INTERNAL=[/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/lib/libmpicxx.so][/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/lib/libmpi.so][mpicxx;mpi][/opt/aurora/26.26.0/spack/unified/1.1.1/install/linux-x86_64/mpich-5.0.0.aurora_test.3c70a61-hlkigtk/include][TRUE][v4.1()]
+//ADVANCED property for variable: MPI_CXX_ADDITIONAL_INCLUDE_DIRS
+MPI_CXX_ADDITIONAL_INCLUDE_DIRS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_COMPILER
+MPI_CXX_COMPILER-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_COMPILER_INCLUDE_DIRS
+MPI_CXX_COMPILER_INCLUDE_DIRS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_COMPILE_DEFINITIONS
+MPI_CXX_COMPILE_DEFINITIONS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_COMPILE_OPTIONS
+MPI_CXX_COMPILE_OPTIONS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_HEADER_DIR
+MPI_CXX_HEADER_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_LIB_NAMES
+MPI_CXX_LIB_NAMES-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_LINK_FLAGS
+MPI_CXX_LINK_FLAGS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_SKIP_MPICXX
+MPI_CXX_SKIP_MPICXX-ADVANCED:INTERNAL=1

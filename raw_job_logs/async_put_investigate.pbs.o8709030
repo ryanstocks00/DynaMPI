@@ -1,0 +1,51 @@
+##### raw RMA atomic ceiling, 1 node (102 ranks) #####
+RESULT phase=faa_flushed world_size=102 participants=101 succeeded=1492127 attempted=1492127 duration_s=3 succeeded_per_s=497376 attempted_per_s=497376 succeeded_per_s_per_rank=4924.51
+RESULT phase=cas_flushed world_size=102 participants=101 succeeded=17944 attempted=1724485 duration_s=3 succeeded_per_s=5981.33 attempted_per_s=574828 succeeded_per_s_per_rank=59.2211
+RESULT phase=faa_pipelined_depth1 world_size=102 participants=101 succeeded=1518658 attempted=1518658 duration_s=3 succeeded_per_s=506219 attempted_per_s=506219 succeeded_per_s_per_rank=5012.07
+RESULT phase=faa_pipelined_depth8 world_size=102 participants=101 succeeded=1264184 attempted=1264184 duration_s=3 succeeded_per_s=421395 attempted_per_s=421395 succeeded_per_s_per_rank=4172.22
+RESULT phase=faa_pipelined_depth32 world_size=102 participants=101 succeeded=1133696 attempted=1133696 duration_s=3 succeeded_per_s=377899 attempted_per_s=377899 succeeded_per_s_per_rank=3741.57
+RESULT phase=faa_pipelined_depth128 world_size=102 participants=101 succeeded=1184256 attempted=1184256 duration_s=3 succeeded_per_s=394752 attempted_per_s=394752 succeeded_per_s_per_rank=3908.44
+##### raw RMA atomic ceiling, 2 nodes (204 ranks) #####
+RESULT phase=faa_flushed world_size=204 participants=203 succeeded=1580976 attempted=1580976 duration_s=3 succeeded_per_s=526992 attempted_per_s=526992 succeeded_per_s_per_rank=2596.02
+RESULT phase=cas_flushed world_size=204 participants=203 succeeded=17381 attempted=1751603 duration_s=3 succeeded_per_s=5793.67 attempted_per_s=583868 succeeded_per_s_per_rank=28.5402
+RESULT phase=faa_pipelined_depth1 world_size=204 participants=203 succeeded=1406272 attempted=1406272 duration_s=3 succeeded_per_s=468757 attempted_per_s=468757 succeeded_per_s_per_rank=2309.15
+RESULT phase=faa_pipelined_depth8 world_size=204 participants=203 succeeded=1639448 attempted=1639448 duration_s=3 succeeded_per_s=546483 attempted_per_s=546483 succeeded_per_s_per_rank=2692.03
+RESULT phase=faa_pipelined_depth32 world_size=204 participants=203 succeeded=1657632 attempted=1657632 duration_s=3 succeeded_per_s=552544 attempted_per_s=552544 succeeded_per_s_per_rank=2721.89
+RESULT phase=faa_pipelined_depth128 world_size=204 participants=203 succeeded=1644032 attempted=1644032 duration_s=3 succeeded_per_s=548011 attempted_per_s=548011 succeeded_per_s_per_rank=2699.56
+##### async_put_lockfree nodes=1 expected_us=10 #####
+x4719c5s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 15 died from signal 15
+exit=124
+##### hierarchical_async_put_lockfree nodes=1 expected_us=10 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=665700 elapsed_s=8.01254 throughput_tasks_per_s=83082.2
+exit=0
+##### async_put_lockfree nodes=1 expected_us=100 #####
+x4719c5s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 16 died from signal 15
+exit=124
+##### hierarchical_async_put_lockfree nodes=1 expected_us=100 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=100 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=643400 elapsed_s=8.01082 throughput_tasks_per_s=80316.3
+exit=0
+##### async_put_lockfree nodes=1 expected_us=1000 #####
+RESULT distributor=async_put_lockfree mode=fixed expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=716914 elapsed_s=8.01035 throughput_tasks_per_s=89498.5
+exit=0
+##### hierarchical_async_put_lockfree nodes=1 expected_us=1000 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=101001 elapsed_s=8.00192 throughput_tasks_per_s=12622.1
+exit=0
+##### async_put_lockfree nodes=2 expected_us=10 #####
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1768559 elapsed_s=8.02299 throughput_tasks_per_s=220436
+exit=0
+##### hierarchical_async_put_lockfree nodes=2 expected_us=10 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=958242 elapsed_s=8.0256 throughput_tasks_per_s=119398
+exit=0
+##### async_put_lockfree nodes=2 expected_us=100 #####
+RESULT distributor=async_put_lockfree mode=fixed expected_us=100 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1802941 elapsed_s=8.03513 throughput_tasks_per_s=224382
+exit=0
+##### hierarchical_async_put_lockfree nodes=2 expected_us=100 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=100 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=951940 elapsed_s=8.03194 throughput_tasks_per_s=118519
+exit=0
+##### async_put_lockfree nodes=2 expected_us=1000 #####
+RESULT distributor=async_put_lockfree mode=fixed expected_us=1000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1167772 elapsed_s=8.02072 throughput_tasks_per_s=145594
+exit=0
+##### hierarchical_async_put_lockfree nodes=2 expected_us=1000 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=1000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=203001 elapsed_s=8.00405 throughput_tasks_per_s=25362.3
+exit=0
+ALL DONE

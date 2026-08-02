@@ -1,0 +1,49 @@
+=== nodes=1 dist=naive ===
+RESULT distributor=naive nodes=1 world_size=8 workers=7 time_per_shutdown_us=4.94365 iterations=395571
+=== nodes=1 dist=hierarchical ===
+RESULT distributor=hierarchical nodes=1 world_size=8 workers=7 time_per_shutdown_us=0.0367992 iterations=85284
+=== nodes=1 dist=lockfree ===
+RESULT distributor=lockfree nodes=1 world_size=8 workers=7 time_per_shutdown_us=0.0456845 iterations=48313
+=== nodes=2 dist=naive ===
+RESULT distributor=naive nodes=2 world_size=16 workers=15 time_per_shutdown_us=11.8703 iterations=202577
+=== nodes=2 dist=hierarchical ===
+RESULT distributor=hierarchical nodes=2 world_size=16 workers=15 time_per_shutdown_us=0.0369948 iterations=63453
+=== nodes=2 dist=lockfree ===
+RESULT distributor=lockfree nodes=2 world_size=16 workers=15 time_per_shutdown_us=0.0557533 iterations=4483
+=== nodes=4 dist=naive ===
+RESULT distributor=naive nodes=4 world_size=32 workers=31 time_per_shutdown_us=26.4829 iterations=134372
+=== nodes=4 dist=hierarchical ===
+RESULT distributor=hierarchical nodes=4 world_size=32 workers=31 time_per_shutdown_us=0.0369155 iterations=53152
+=== nodes=4 dist=lockfree ===
+RESULT distributor=lockfree nodes=4 world_size=32 workers=31 time_per_shutdown_us=0.056296 iterations=4317
+=== nodes=8 dist=naive ===
+RESULT distributor=naive nodes=8 world_size=64 workers=63 time_per_shutdown_us=53.6286 iterations=80602
+=== nodes=8 dist=hierarchical ===
+RESULT distributor=hierarchical nodes=8 world_size=64 workers=63 time_per_shutdown_us=0.037379 iterations=38949
+=== nodes=8 dist=lockfree ===
+RESULT distributor=lockfree nodes=8 world_size=64 workers=63 time_per_shutdown_us=0.0528102 iterations=4041
+=== nodes=16 dist=naive ===
+RESULT distributor=naive nodes=16 world_size=128 workers=127 time_per_shutdown_us=107.718 iterations=47731
+=== nodes=16 dist=hierarchical ===
+RESULT distributor=hierarchical nodes=16 world_size=128 workers=127 time_per_shutdown_us=0.036992 iterations=29852
+=== nodes=16 dist=lockfree ===
+RESULT distributor=lockfree nodes=16 world_size=128 workers=127 time_per_shutdown_us=0.0724629 iterations=3636
+=== nodes=32 dist=naive ===
+RESULT distributor=naive nodes=32 world_size=256 workers=255 time_per_shutdown_us=215.859 iterations=26346
+=== nodes=32 dist=hierarchical ===
+RESULT distributor=hierarchical nodes=32 world_size=256 workers=255 time_per_shutdown_us=0.0381357 iterations=20151
+=== nodes=32 dist=lockfree ===
+RESULT distributor=lockfree nodes=32 world_size=256 workers=255 time_per_shutdown_us=0.125215 iterations=3048
+=== nodes=64 dist=naive ===
+RESULT distributor=naive nodes=64 world_size=512 workers=511 time_per_shutdown_us=434.016 iterations=14619
+=== nodes=64 dist=hierarchical ===
+RESULT distributor=hierarchical nodes=64 world_size=512 workers=511 time_per_shutdown_us=0.0432194 iterations=16299
+=== nodes=64 dist=lockfree ===
+RESULT distributor=lockfree nodes=64 world_size=512 workers=511 time_per_shutdown_us=0.115129 iterations=2361
+=== nodes=128 dist=naive ===
+RESULT distributor=naive nodes=128 world_size=1024 workers=1023 time_per_shutdown_us=886.008 iterations=7617
+=== nodes=128 dist=hierarchical ===
+RESULT distributor=hierarchical nodes=128 world_size=1024 workers=1023 time_per_shutdown_us=0.039826 iterations=11786
+=== nodes=128 dist=lockfree ===
+RESULT distributor=lockfree nodes=128 world_size=1024 workers=1023 time_per_shutdown_us=0.12393 iterations=1654
+SHUTDOWN SWEEP COMPLETE

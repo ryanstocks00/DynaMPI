@@ -1,0 +1,38 @@
+=== git commit history for this results collection effort ===
+e0f9321 Add final missing 2048-node combo (async_put_lockfree crash retry)
+c434f33 Add gpu7 strong-scaling results for 2048 nodes
+64e71b1 Bring Frontier launch/submit scripts to parity with Aurora's
+692295d Cover check_fixed_size_mpi_type's unqueryable-datatype throw path.
+9d46fee Add Frontier strong-scaling and shutdown results for 1-1024 nodes
+943242f Restore Timer optional with narrow GCC suppress; fix macOS/coverage gaps.
+40aa8a2 Fix flaky macOS Statistics timing assertion and stabilize ctest.
+7c800a6 Fix macOS failure reporting: pipefail, artifacts, and PR comment.
+663edc6 Diagnose macOS ctest failures and run tests sequentially.
+33c7487 Fix GCC 12 -Wmaybe-uninitialized in Timer and clang-format drift.
+0ad2a66 Fix shutdown_time timer start/stop mismatch that broke GCC -Werror.
+8d3c174 Add shutdown_time results for 1024/2048 nodes
+cf409dd Fill in final 17 missing strong-scaling combos
+ce2103a Remove aurora_interactive results
+70b86e2 Recover strong-scaling results already run but never extracted
+6945c87 Add gpu7 fixed-mode strong-scaling results for 64-128 nodes
+a9984e2 Add gpu7 fixed-mode strong-scaling results for 4-32 nodes
+d51bc6a Normalize benchmark/results/ onto one canonical schema per benchmark type
+c859035 Extract remaining strong-scaling and shutdown-time results from job logs
+e842a26 Terminate strong-scaling benchmark via MPI_Abort, fix shutdown_time timing
+3770248 Exclude examples from coverage tracking
+3e2a46a Add strong-scaling and shutdown-time results for 256-2048 nodes
+f890149 Support multi-element fixed-size payloads instead of rejecting them
+54828c7 Add Aurora strong-scaling and shutdown-time sweep results
+d961f85 Rewrite docs for all six distributors, add examples, fix statistics modes
+7a1d6a4 Remove calibration from strong-scaling benchmark drivers, fix chunk sizing
+765e38f Deduplicate hierarchical upper-hierarchy square-task tests
+53cb13c Drop unnecessary AutoFanoutUpperHierarchy rank skips
+a388bc6 Cover hierarchical auto-fanout and grouping on single-node CI
+57202fd Fix hierarchical leader parent lookup when manager_rank != 0
+
+=== current HEAD (aurora_results branch point) ===
+e0f932124c510b74e6ecee32b052e29430eadbfa
+
+=== binary build timestamps ===
+-rwxr-xr-x 1 ryans users 568312 Aug  2 03:10 [0m[00;32mbuild/benchmark/shutdown_time[0m*
+-rwxr-xr-x 1 ryans users 592360 Aug  2 03:10 [00;32mbuild/benchmark/strong_scaling_distribution_rate[0m*

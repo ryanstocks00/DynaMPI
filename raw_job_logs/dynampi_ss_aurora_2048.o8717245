@@ -1,0 +1,6 @@
+Allocated cores per node: 7
+Running aurora nodes=2048 ranks_per_node=7 dist=naive mode=random expected_us=10 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=10 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=15689764 elapsed_s=20.0541 throughput_tasks_per_s=782373
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4520c0s5b0n0.hsn.cm.aurora.alcf.anl.gov: rank 0 died from signal 15

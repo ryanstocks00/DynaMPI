@@ -1,0 +1,19 @@
+##### shutdown dist=naive fanout=-1 nodes=512 rpn=102 #####
+RESULT distributor=naive nodes=512 max_upper_fanout=-1 world_size=52224 workers=52223 time_per_shutdown_us=251786 iterations=27
+exit=0
+##### shutdown dist=hierarchical fanout=0 nodes=512 rpn=102 #####
+RESULT distributor=hierarchical nodes=512 max_upper_fanout=0 world_size=52224 workers=52223 time_per_shutdown_us=1318.56 iterations=104
+exit=0
+##### shutdown dist=hierarchical fanout=-1 nodes=512 rpn=102 #####
+RESULT distributor=hierarchical nodes=512 max_upper_fanout=-1 world_size=52224 workers=52223 time_per_shutdown_us=48.5276 iterations=99
+exit=0
+##### shutdown dist=async_put_lockfree fanout=-1 nodes=512 rpn=102 #####
+RESULT distributor=async_put_lockfree nodes=512 max_upper_fanout=-1 world_size=52224 workers=52223 time_per_shutdown_us=374075 iterations=25
+exit=0
+##### shutdown dist=hierarchical_async_put_lockfree fanout=0 nodes=512 rpn=102 #####
+RESULT distributor=hierarchical_async_put_lockfree nodes=512 max_upper_fanout=0 world_size=52224 workers=52223 time_per_shutdown_us=20920.6 iterations=45
+exit=0
+##### shutdown dist=hierarchical_async_put_lockfree fanout=-1 nodes=512 rpn=102 #####
+RESULT distributor=hierarchical_async_put_lockfree nodes=512 max_upper_fanout=-1 world_size=52224 workers=52223 time_per_shutdown_us=21083.6 iterations=76
+exit=0
+ALL DONE

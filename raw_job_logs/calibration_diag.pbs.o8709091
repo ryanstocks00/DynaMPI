@@ -1,0 +1,9 @@
+##### hierarchical_async_put_lockfree nodes=1 expected_us=1000 #####
+[calibration DIAG] calibration_batch=101000 calibration_collected=0 calibration_elapsed_s=1.000007 observed_rate=101000.000000 estimate=0.000000 batch_size=1
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=101001 elapsed_s=8.00202 throughput_tasks_per_s=12621.9
+exit=0
+##### hierarchical_async_put_lockfree nodes=1 expected_us=10000 #####
+[calibration DIAG] calibration_batch=10100 calibration_collected=0 calibration_elapsed_s=1.000007 observed_rate=10100.000000 estimate=0.000000 batch_size=1
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=10101 elapsed_s=8.0002 throughput_tasks_per_s=1262.59
+exit=0
+ALL DONE

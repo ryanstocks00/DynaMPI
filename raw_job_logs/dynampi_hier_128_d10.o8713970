@@ -1,0 +1,41 @@
+##### hierarchical nodes=1 expected_us=1000 duration_s=10 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=1 world_size=102 max_upper_fanout=-1 total_tasks=949808 elapsed_s=10.0078 throughput_tasks_per_s=94906.4
+exit=0
+##### hierarchical nodes=2 expected_us=1000 duration_s=10 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=2 world_size=204 max_upper_fanout=-1 total_tasks=1463422 elapsed_s=10.0402 throughput_tasks_per_s=145756
+exit=0
+##### hierarchical nodes=4 expected_us=1000 duration_s=10 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=4 world_size=408 max_upper_fanout=-1 total_tasks=2478134 elapsed_s=10.009 throughput_tasks_per_s=247589
+exit=0
+##### hierarchical nodes=8 expected_us=1000 duration_s=10 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=8 world_size=816 max_upper_fanout=-1 total_tasks=5058932 elapsed_s=10.1263 throughput_tasks_per_s=499584
+exit=0
+##### hierarchical nodes=16 expected_us=1000 duration_s=10 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=16 world_size=1632 max_upper_fanout=-1 total_tasks=10170712 elapsed_s=10.2392 throughput_tasks_per_s=993311
+exit=0
+##### hierarchical nodes=32 expected_us=1000 duration_s=10 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=32 world_size=3264 max_upper_fanout=-1 total_tasks=14203526 elapsed_s=10.3967 throughput_tasks_per_s=1.36616e+06
+exit=0
+##### hierarchical nodes=64 expected_us=1000 duration_s=10 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=33511740 elapsed_s=10.3445 throughput_tasks_per_s=3.23958e+06
+exit=0
+##### hierarchical nodes=128 expected_us=1000 duration_s=10 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=51388476 elapsed_s=10.3962 throughput_tasks_per_s=4.94299e+06
+exit=0
+===== 128-node reliability trials (5x) =====
+##### hierarchical nodes=128 expected_us=1000 duration_s=10 trial=1 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=55186436 elapsed_s=10.5947 throughput_tasks_per_s=5.20889e+06
+exit=0
+##### hierarchical nodes=128 expected_us=1000 duration_s=10 trial=2 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=52730000 elapsed_s=10.2975 throughput_tasks_per_s=5.12064e+06
+exit=0
+##### hierarchical nodes=128 expected_us=1000 duration_s=10 trial=3 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=53528338 elapsed_s=10.3272 throughput_tasks_per_s=5.18321e+06
+exit=0
+##### hierarchical nodes=128 expected_us=1000 duration_s=10 trial=4 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=52771398 elapsed_s=10.5996 throughput_tasks_per_s=4.97864e+06
+exit=0
+##### hierarchical nodes=128 expected_us=1000 duration_s=10 trial=5 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=55393418 elapsed_s=10.3102 throughput_tasks_per_s=5.37268e+06
+exit=0
+ALL DONE

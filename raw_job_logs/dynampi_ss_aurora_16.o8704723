@@ -1,0 +1,333 @@
+Allocated cores per node: 102
+Running aurora nodes=16 ranks_per_node=102 dist=naive mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=10 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=4501848 elapsed_s=10.0404 throughput_tasks_per_s=448375
+Running aurora nodes=16 ranks_per_node=102 dist=naive mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=100 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=4908973 elapsed_s=10.0633 throughput_tasks_per_s=487807
+Running aurora nodes=16 ranks_per_node=102 dist=naive mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=4041331 elapsed_s=10.0017 throughput_tasks_per_s=404065
+Running aurora nodes=16 ranks_per_node=102 dist=naive mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=10000 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=1274325 elapsed_s=10.0111 throughput_tasks_per_s=127291
+Running aurora nodes=16 ranks_per_node=102 dist=minimal_lockfree mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=minimal_lockfree mode=fixed expected_us=10 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=2498863 elapsed_s=10.0106 throughput_tasks_per_s=249622
+Running aurora nodes=16 ranks_per_node=102 dist=minimal_lockfree mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=minimal_lockfree mode=fixed expected_us=100 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=536917 elapsed_s=10.002 throughput_tasks_per_s=53680.7
+Running aurora nodes=16 ranks_per_node=102 dist=minimal_lockfree mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=minimal_lockfree mode=fixed expected_us=1000 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=85700 elapsed_s=10.1602 throughput_tasks_per_s=8434.85
+Running aurora nodes=16 ranks_per_node=102 dist=minimal_lockfree mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=minimal_lockfree mode=fixed expected_us=10000 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=8262 elapsed_s=11.735 throughput_tasks_per_s=704.05
+Running aurora nodes=16 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=6599868 elapsed_s=10.1008 throughput_tasks_per_s=653401
+Running aurora nodes=16 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=100 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=6243921 elapsed_s=10.1066 throughput_tasks_per_s=617805
+Running aurora nodes=16 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=1000 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=15535272 elapsed_s=10.2242 throughput_tasks_per_s=1.51946e+06
+Running aurora nodes=16 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10000 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=1611436 elapsed_s=10.0238 throughput_tasks_per_s=160761
+Running aurora nodes=16 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=10 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=68792876 elapsed_s=10.2605 throughput_tasks_per_s=6.70464e+06
+Running aurora nodes=16 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=58780971 elapsed_s=10.3512 throughput_tasks_per_s=5.67864e+06
+Running aurora nodes=16 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=9376528 elapsed_s=10.1354 throughput_tasks_per_s=925129
+Running aurora nodes=16 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=10000 nodes=16 world_size=1632 max_upper_fanout=0 total_tasks=1063158 elapsed_s=10.2486 throughput_tasks_per_s=103737
+Running aurora nodes=16 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=10 max_upper_fanout=0
+[coord rank=1] iters=1 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=200,relay_buf=0}
+[coord rank=1428] iters=1 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=1530] iters=1 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=714] iters=1 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=816] iters=1 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=1020] iters=1 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=204] iters=1 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=408] iters=1 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=1122] iters=1 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=510] iters=1 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=918] iters=18 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=0}
+[coord rank=1326] iters=74 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=0}
+[coord rank=306] iters=96 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=0}
+[coord rank=102] iters=201 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=34}
+[coord rank=1224] iters=230 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=196}
+[coord rank=612] iters=812 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=0}
+[coord rank=714] iters=8625 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=122}
+[coord rank=816] iters=8640 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=170}
+[coord rank=1428] iters=8678 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=158}
+[coord rank=408] iters=8653 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=194}
+[coord rank=1530] iters=8635 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=8}
+[coord rank=1] iters=2520 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=400,relay_buf=24}
+[coord rank=204] iters=8659 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=112}
+[coord rank=1020] iters=8669 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=174}
+[coord rank=1122] iters=8693 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=138}
+[coord rank=510] iters=8683 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=20}
+[coord rank=918] iters=8648 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=164}
+[coord rank=1326] iters=8707 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=190}
+[coord rank=306] iters=8759 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=0}
+[coord rank=102] iters=8844 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=200}
+[coord rank=1224] iters=8899 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=0}
+[coord rank=612] iters=9521 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=192}
+[coord rank=816] iters=17355 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=184}
+[coord rank=714] iters=17327 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=30}
+[coord rank=1122] iters=17415 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=174}
+[coord rank=1428] iters=17386 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=140}
+[coord rank=1530] iters=17341 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=8}
+[coord rank=408] iters=17362 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=170}
+[coord rank=1020] iters=17373 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=132}
+[coord rank=1] iters=4960 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=400,relay_buf=0}
+[coord rank=204] iters=17353 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=160}
+[coord rank=510] iters=17403 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=84}
+[coord rank=918] iters=17371 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=180}
+[coord rank=1326] iters=17430 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=126}
+[coord rank=306] iters=17470 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=7,pending_task_count=1414,relay_buf=88}
+[coord rank=102] iters=17536 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=108}
+[coord rank=1224] iters=17602 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=7,pending_task_count=1414,relay_buf=2}
+[coord rank=612] iters=18232 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=106}
+[coord rank=816] iters=26078 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=164}
+[coord rank=1428] iters=26073 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=7,pending_task_count=1414,relay_buf=4}
+[coord rank=1530] iters=26051 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=192}
+[coord rank=714] iters=26041 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=7,pending_task_count=1414,relay_buf=14}
+[coord rank=1020] iters=26105 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=152}
+[coord rank=1122] iters=26148 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=52}
+[coord rank=204] iters=26055 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=174}
+[coord rank=408] iters=26079 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=154}
+[coord rank=1] iters=7399 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=400,relay_buf=56}
+[coord rank=510] iters=26106 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=78}
+[coord rank=918] iters=26097 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=70}
+[coord rank=1326] iters=26144 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=172}
+[coord rank=306] iters=26202 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=7,pending_task_count=1414,relay_buf=6}
+[coord rank=102] iters=26249 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=158}
+[coord rank=1224] iters=26304 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=84}
+[coord rank=612] iters=26948 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=7,pending_task_count=1414,relay_buf=8}
+[coord rank=816] iters=34809 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=124}
+[coord rank=1428] iters=34765 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=60}
+[coord rank=714] iters=34760 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=174}
+[coord rank=1530] iters=34771 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=126}
+[coord rank=408] iters=34791 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=162}
+[coord rank=1020] iters=34837 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=106}
+[coord rank=1122] iters=34883 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=24}
+[coord rank=204] iters=34767 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=98}
+[coord rank=1] iters=9828 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=400,relay_buf=0}
+[coord rank=510] iters=34818 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=144}
+[coord rank=918] iters=34822 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=162}
+[coord rank=1326] iters=34865 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=144}
+[coord rank=306] iters=34947 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=140}
+[coord rank=102] iters=34951 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=22}
+[coord rank=1224] iters=35024 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=138}
+[coord rank=612] iters=35668 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=104}
+[coord rank=816] iters=43535 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=194}
+[coord rank=1428] iters=43450 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=160}
+[coord rank=1530] iters=43492 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=158}
+[coord rank=714] iters=43475 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=124}
+[coord rank=1122] iters=43605 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=116}
+[coord rank=408] iters=43497 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=112}
+[coord rank=1020] iters=43568 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=126}
+[coord rank=204] iters=43476 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=156}
+[coord rank=1] iters=12262 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=400,relay_buf=48}
+[coord rank=510] iters=43520 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=62}
+[coord rank=918] iters=43540 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=176}
+[coord rank=1326] iters=43590 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=80}
+[coord rank=306] iters=43707 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=26}
+[coord rank=102] iters=43656 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=166}
+[coord rank=1224] iters=43738 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=84}
+[coord rank=612] iters=44381 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=104}
+[coord rank=816] iters=52260 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=184}
+[coord rank=1428] iters=52152 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=62}
+[coord rank=408] iters=52202 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=134}
+[coord rank=1122] iters=52331 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=24}
+[coord rank=714] iters=52192 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=160}
+[coord rank=1020] iters=52303 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=166}
+[coord rank=1530] iters=52213 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=130}
+[coord rank=204] iters=52193 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=176}
+[coord rank=1] iters=14693 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=400,relay_buf=64}
+[coord rank=510] iters=52184 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=106}
+[coord rank=918] iters=52270 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=176}
+[coord rank=1326] iters=52309 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=190}
+[coord rank=306] iters=52436 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=110}
+[coord rank=102] iters=52358 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=134}
+[coord rank=1224] iters=52456 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=118}
+[coord rank=612] iters=53099 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=164}
+[coord rank=816] iters=60983 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=152}
+[coord rank=1428] iters=60849 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=156}
+[coord rank=408] iters=60914 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=106}
+[coord rank=1020] iters=61037 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=136}
+[coord rank=714] iters=60889 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=150}
+[coord rank=1122] iters=61055 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=132}
+[coord rank=1530] iters=60932 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=130}
+[coord rank=204] iters=60887 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=110}
+[coord rank=1] iters=17128 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=400,relay_buf=40}
+[coord rank=510] iters=60884 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=170}
+[coord rank=918] iters=61003 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=106}
+[coord rank=1326] iters=61031 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=144}
+[coord rank=306] iters=61154 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=7,pending_task_count=1414,relay_buf=36}
+[coord rank=102] iters=61068 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=7,pending_task_count=1414,relay_buf=36}
+[coord rank=1224] iters=61174 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=7,pending_task_count=1414,relay_buf=18}
+[coord rank=612] iters=61817 any_progress=0 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=8,pending_task_count=1616,relay_buf=104}
+[coord rank=408] iters=67093 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=714] iters=67103 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=816] iters=67133 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=48}
+[coord rank=204] iters=67076 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1020] iters=67109 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=24}
+[coord rank=1122] iters=67283 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1428] iters=67072 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1530] iters=67153 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1] iters=18936 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=200,relay_buf=0}
+[coord rank=510] iters=67055 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=918] iters=67190 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=1326] iters=67170 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=96}
+[coord rank=306] iters=67310 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=102] iters=67147 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1224] iters=67226 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=612] iters=67316 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[manager rank=0] top.collected=24188544 top.published=101999999
+[coord rank=714] iters=70152 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=30}
+[coord rank=1530] iters=70207 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1428] iters=70120 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=408] iters=70136 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1020] iters=70137 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1122] iters=70339 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=816] iters=70180 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=24}
+[coord rank=204] iters=70181 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=1] iters=20676 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=200,relay_buf=0}
+[coord rank=510] iters=70088 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=4}
+[coord rank=918] iters=70227 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1326] iters=70206 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=6}
+[coord rank=306] iters=70432 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=102] iters=70246 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1224] iters=70252 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=154}
+[coord rank=612] iters=70319 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[manager rank=0] top.collected=33388698 top.published=101999999
+[coord rank=1020] iters=73017 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=1530] iters=73110 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=714] iters=73047 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1428] iters=73009 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=1122] iters=73241 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=184}
+[coord rank=408] iters=73036 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=204] iters=73140 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=816] iters=73072 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=1] iters=22358 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=200,relay_buf=0}
+[coord rank=510] iters=72968 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=918] iters=73114 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=152}
+[coord rank=1326] iters=73095 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=154}
+[coord rank=306] iters=73394 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=102] iters=73215 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1224] iters=73149 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=612] iters=73242 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[manager rank=0] top.collected=42727362 top.published=101999999
+[coord rank=1] iters=24015 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=200,relay_buf=0}
+[coord rank=816] iters=75936 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=1428] iters=75871 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=510] iters=75816 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=918] iters=75961 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1020] iters=75873 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1122] iters=76109 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=1530] iters=75982 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=204] iters=76065 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=408] iters=75896 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=714] iters=75914 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=1326] iters=75935 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=306] iters=76310 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=102] iters=76117 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=1224] iters=75972 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=612] iters=76071 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[manager rank=0] top.collected=51706622 top.published=101999999
+[coord rank=1428] iters=78841 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=510] iters=78781 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1122] iters=79093 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1] iters=25725 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=200,relay_buf=0}
+[coord rank=1530] iters=78960 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=918] iters=78928 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=816] iters=78906 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1020] iters=78843 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=204] iters=79098 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=714] iters=78887 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=408] iters=78869 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1326] iters=78897 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=40}
+[coord rank=306] iters=79370 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=102] iters=79156 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1224] iters=78938 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=612] iters=79018 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[manager rank=0] top.collected=60946942 top.published=101999999
+[coord rank=1428] iters=81785 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=510] iters=81716 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1122] iters=82046 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=1] iters=27430 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=200,relay_buf=0}
+[coord rank=1530] iters=81898 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=5,pending_task_count=1010,relay_buf=0}
+[coord rank=918] iters=81863 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=48}
+[coord rank=714] iters=81825 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=408] iters=81813 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1020] iters=81779 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=204] iters=82115 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=5,pending_task_count=1010,relay_buf=0}
+[coord rank=816] iters=81857 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=1326] iters=81831 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=306] iters=82396 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=102] iters=82158 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1224] iters=81867 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=612] iters=81962 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[manager rank=0] top.collected=70177972 top.published=101999999
+[coord rank=1] iters=29131 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=400,relay_buf=144}
+[coord rank=1428] iters=84707 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1530] iters=84817 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=510] iters=84614 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=1122] iters=84970 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=170}
+[coord rank=714] iters=84749 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=408] iters=84720 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=918] iters=84766 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=110}
+[coord rank=1020] iters=84690 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=136}
+[coord rank=816] iters=84776 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=204] iters=85098 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1326] iters=84737 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=306] iters=85395 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=102] iters=85139 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1224] iters=84775 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=612] iters=84898 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[manager rank=0] top.collected=78745916 top.published=101999999
+[coord rank=1] iters=30690 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=400,relay_buf=0}
+[coord rank=1020] iters=87394 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1428] iters=87419 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=510] iters=87316 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=816] iters=87471 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=60}
+[coord rank=918] iters=87464 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=6}
+[coord rank=1530] iters=87540 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=158}
+[coord rank=204] iters=87878 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=408] iters=87432 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=714] iters=87466 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1122] iters=87683 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=64}
+[coord rank=1326] iters=87448 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=306] iters=88175 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=102] iters=87916 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1224] iters=87481 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=30}
+[coord rank=612] iters=87617 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[manager rank=0] top.collected=87708688 top.published=101999999
+[coord rank=816] iters=90272 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1428] iters=90225 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1] iters=32386 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=200,relay_buf=0}
+[coord rank=1020] iters=90193 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1122] iters=90506 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=510] iters=90118 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=918] iters=90257 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=204] iters=90747 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=408] iters=90232 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1530] iters=90346 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=714] iters=90275 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1326] iters=90252 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=306] iters=91052 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=2}
+[coord rank=102] iters=90784 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=32}
+[coord rank=1224] iters=90270 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=612] iters=90414 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[manager rank=0] top.collected=96866394 top.published=101999999
+[coord rank=204] iters=93679 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1020] iters=93053 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1428] iters=93089 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=72}
+[coord rank=816] iters=93129 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=918] iters=93109 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1530] iters=93221 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1] iters=34079 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=200,relay_buf=0}
+[coord rank=510] iters=92976 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+[coord rank=1122] iters=93389 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=408] iters=93091 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=128}
+[coord rank=714] iters=93143 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=1326] iters=93119 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=1,pending_task_count=202,relay_buf=0}
+[coord rank=306] iters=93994 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=112}
+[coord rank=102] iters=93708 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=4,pending_task_count=808,relay_buf=0}
+[coord rank=1224] iters=93126 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=2,pending_task_count=404,relay_buf=0}
+[coord rank=612] iters=93285 any_progress=1 n_hops=1 hop0{done=0,finish_marked=0,pending_relays=3,pending_task_count=606,relay_buf=0}
+x4217c0s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 0 died from signal 11
+x4217c0s1b0n0.hsn.cm.aurora.alcf.anl.gov: rank 159 died from signal 15

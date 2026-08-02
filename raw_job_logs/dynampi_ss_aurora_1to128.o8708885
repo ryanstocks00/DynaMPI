@@ -1,0 +1,186 @@
+Allocated cores per node: 102
+Running aurora nodes=1 ranks_per_node=102 dist=naive mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=6678201 elapsed_s=10 throughput_tasks_per_s=667817
+Running aurora nodes=1 ranks_per_node=102 dist=naive mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=100 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=7053847 elapsed_s=10.0001 throughput_tasks_per_s=705377
+Running aurora nodes=1 ranks_per_node=102 dist=naive mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=886088 elapsed_s=10.0014 throughput_tasks_per_s=88596.2
+Running aurora nodes=1 ranks_per_node=102 dist=naive mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=93680 elapsed_s=10.0124 throughput_tasks_per_s=9356.38
+Running aurora nodes=1 ranks_per_node=102 dist=naive mode=random expected_us=10 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=6600518 elapsed_s=10.0001 throughput_tasks_per_s=660048
+Running aurora nodes=1 ranks_per_node=102 dist=naive mode=random expected_us=100 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=100 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=6821342 elapsed_s=10.0002 throughput_tasks_per_s=682121
+Running aurora nodes=1 ranks_per_node=102 dist=naive mode=random expected_us=1000 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=904488 elapsed_s=10.0018 throughput_tasks_per_s=90432.7
+Running aurora nodes=1 ranks_per_node=102 dist=naive mode=random expected_us=10000 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=93516 elapsed_s=10.0168 throughput_tasks_per_s=9335.92
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=8117068 elapsed_s=10.0003 throughput_tasks_per_s=811680
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=8418233 elapsed_s=10.0004 throughput_tasks_per_s=841793
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=977801 elapsed_s=10.003 throughput_tasks_per_s=97750.8
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=99043 elapsed_s=10.0263 throughput_tasks_per_s=9878.3
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical mode=random expected_us=10 max_upper_fanout=0
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=8040774 elapsed_s=10.0004 throughput_tasks_per_s=804047
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical mode=random expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical mode=random expected_us=100 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=8326710 elapsed_s=10.0004 throughput_tasks_per_s=832636
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical mode=random expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=982725 elapsed_s=10.0036 throughput_tasks_per_s=98237.2
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical mode=random expected_us=10000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=random expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=99214 elapsed_s=10.0395 throughput_tasks_per_s=9882.36
+Running aurora nodes=1 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=956129 elapsed_s=10.0106 throughput_tasks_per_s=95512
+Running aurora nodes=1 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=100 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=957512 elapsed_s=10.0162 throughput_tasks_per_s=95596.8
+Running aurora nodes=1 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=960893 elapsed_s=10.016 throughput_tasks_per_s=95935.4
+Running aurora nodes=1 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=99584 elapsed_s=10.0019 throughput_tasks_per_s=9956.53
+Running aurora nodes=1 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=10 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=random expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=946880 elapsed_s=10.0105 throughput_tasks_per_s=94588.3
+Running aurora nodes=1 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=100 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=random expected_us=100 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=952900 elapsed_s=10.0158 throughput_tasks_per_s=95139.3
+Running aurora nodes=1 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=1000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=random expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=915229 elapsed_s=10.0154 throughput_tasks_per_s=91382.4
+Running aurora nodes=1 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=10000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=random expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=98874 elapsed_s=10.0018 throughput_tasks_per_s=9885.65
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=1011800 elapsed_s=10.0184 throughput_tasks_per_s=100994
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=100 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=989200 elapsed_s=10.0162 throughput_tasks_per_s=98760.2
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=101001 elapsed_s=10.0018 throughput_tasks_per_s=10098.3
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=10101 elapsed_s=10.0002 throughput_tasks_per_s=1010.08
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=random expected_us=10 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=1010400 elapsed_s=10.0168 throughput_tasks_per_s=100870
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=random expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=100 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=977300 elapsed_s=10.017 throughput_tasks_per_s=97563.8
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=random expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=101001 elapsed_s=10.0019 throughput_tasks_per_s=10098.2
+Running aurora nodes=1 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=random expected_us=10000 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=10101 elapsed_s=10.0002 throughput_tasks_per_s=1010.08
+Running aurora nodes=2 ranks_per_node=102 dist=naive mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=10 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=4942194 elapsed_s=10 throughput_tasks_per_s=494218
+Running aurora nodes=2 ranks_per_node=102 dist=naive mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=100 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=5124465 elapsed_s=10.1235 throughput_tasks_per_s=506194
+Running aurora nodes=2 ranks_per_node=102 dist=naive mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1669056 elapsed_s=10.0009 throughput_tasks_per_s=166891
+Running aurora nodes=2 ranks_per_node=102 dist=naive mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=10000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=176203 elapsed_s=10.0131 throughput_tasks_per_s=17597.2
+Running aurora nodes=2 ranks_per_node=102 dist=naive mode=random expected_us=10 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=10 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=5436427 elapsed_s=10 throughput_tasks_per_s=543641
+Running aurora nodes=2 ranks_per_node=102 dist=naive mode=random expected_us=100 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=100 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=5895859 elapsed_s=10.0001 throughput_tasks_per_s=589581
+Running aurora nodes=2 ranks_per_node=102 dist=naive mode=random expected_us=1000 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=1000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1743960 elapsed_s=10.0016 throughput_tasks_per_s=174369
+Running aurora nodes=2 ranks_per_node=102 dist=naive mode=random expected_us=10000 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=10000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=173637 elapsed_s=10.0168 throughput_tasks_per_s=17334.5
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=10 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=8604396 elapsed_s=10.0006 throughput_tasks_per_s=860389
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=10879399 elapsed_s=10.0004 throughput_tasks_per_s=1.0879e+06
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1477656 elapsed_s=10.0031 throughput_tasks_per_s=147720
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=10000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=156421 elapsed_s=10.2068 throughput_tasks_per_s=15325.2
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical mode=random expected_us=10 max_upper_fanout=0
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=8149843 elapsed_s=10.0005 throughput_tasks_per_s=814942
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical mode=random expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical mode=random expected_us=100 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=11221200 elapsed_s=10.1607 throughput_tasks_per_s=1.10437e+06
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical mode=random expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1465250 elapsed_s=10.122 throughput_tasks_per_s=144759
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical mode=random expected_us=10000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=random expected_us=10000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=152140 elapsed_s=10.0499 throughput_tasks_per_s=15138.5
+Running aurora nodes=2 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=2115984 elapsed_s=10.0583 throughput_tasks_per_s=210371
+Running aurora nodes=2 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=100 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=2059720 elapsed_s=10.0407 throughput_tasks_per_s=205137
+Running aurora nodes=2 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=1000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1715108 elapsed_s=10.0324 throughput_tasks_per_s=170957
+Running aurora nodes=2 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=202285 elapsed_s=10.0038 throughput_tasks_per_s=20220.8
+Running aurora nodes=2 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=10 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=random expected_us=10 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=2045615 elapsed_s=10.0536 throughput_tasks_per_s=203472
+Running aurora nodes=2 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=100 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=random expected_us=100 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=2034837 elapsed_s=10.0383 throughput_tasks_per_s=202707
+Running aurora nodes=2 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=1000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=random expected_us=1000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1701653 elapsed_s=10.0297 throughput_tasks_per_s=169661
+Running aurora nodes=2 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=10000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=random expected_us=10000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=202024 elapsed_s=10.0039 throughput_tasks_per_s=20194.5
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1291206 elapsed_s=10.0323 throughput_tasks_per_s=128705
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=100 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1292094 elapsed_s=10.0396 throughput_tasks_per_s=128700
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=1000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=203001 elapsed_s=10.0046 throughput_tasks_per_s=20290.7
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=20301 elapsed_s=10.0004 throughput_tasks_per_s=2030.02
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=random expected_us=10 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1273205 elapsed_s=10.029 throughput_tasks_per_s=126952
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=random expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=100 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=1285687 elapsed_s=10.0309 throughput_tasks_per_s=128172
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=random expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=1000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=203001 elapsed_s=10.004 throughput_tasks_per_s=20292
+Running aurora nodes=2 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=random expected_us=10000 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=20301 elapsed_s=10.0004 throughput_tasks_per_s=2030.02
+Running aurora nodes=4 ranks_per_node=102 dist=naive mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=10 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=5336988 elapsed_s=10.0006 throughput_tasks_per_s=533665
+Running aurora nodes=4 ranks_per_node=102 dist=naive mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=100 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=6505088 elapsed_s=10.0001 throughput_tasks_per_s=650500
+Running aurora nodes=4 ranks_per_node=102 dist=naive mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=3767897 elapsed_s=10.0009 throughput_tasks_per_s=376755
+Running aurora nodes=4 ranks_per_node=102 dist=naive mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=10000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=377002 elapsed_s=10.0087 throughput_tasks_per_s=37667.2
+Running aurora nodes=4 ranks_per_node=102 dist=naive mode=random expected_us=10 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=10 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=5344751 elapsed_s=10.0004 throughput_tasks_per_s=534456
+Running aurora nodes=4 ranks_per_node=102 dist=naive mode=random expected_us=100 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=100 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=6489967 elapsed_s=10.0003 throughput_tasks_per_s=648974
+Running aurora nodes=4 ranks_per_node=102 dist=naive mode=random expected_us=1000 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=1000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=3717436 elapsed_s=10.0018 throughput_tasks_per_s=371677
+Running aurora nodes=4 ranks_per_node=102 dist=naive mode=random expected_us=10000 max_upper_fanout=0
+RESULT distributor=naive mode=random expected_us=10000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=379194 elapsed_s=10.0178 throughput_tasks_per_s=37851.9
+Running aurora nodes=4 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=10 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=14257131 elapsed_s=10.076 throughput_tasks_per_s=1.41496e+06
+Running aurora nodes=4 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=17814498 elapsed_s=10.2092 throughput_tasks_per_s=1.74495e+06
+Running aurora nodes=4 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=3106488 elapsed_s=10.0043 throughput_tasks_per_s=310514
+Running aurora nodes=4 ranks_per_node=102 dist=hierarchical mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=fixed expected_us=10000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=327924 elapsed_s=10.0563 throughput_tasks_per_s=32608.8
+Running aurora nodes=4 ranks_per_node=102 dist=hierarchical mode=random expected_us=10 max_upper_fanout=0
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=14010324 elapsed_s=10.1549 throughput_tasks_per_s=1.37966e+06
+Running aurora nodes=4 ranks_per_node=102 dist=hierarchical mode=random expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical mode=random expected_us=100 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=17493941 elapsed_s=10.0655 throughput_tasks_per_s=1.73802e+06
+Running aurora nodes=4 ranks_per_node=102 dist=hierarchical mode=random expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=3133354 elapsed_s=10.0054 throughput_tasks_per_s=313167
+Running aurora nodes=4 ranks_per_node=102 dist=hierarchical mode=random expected_us=10000 max_upper_fanout=0
+RESULT distributor=hierarchical mode=random expected_us=10000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=328598 elapsed_s=10.0515 throughput_tasks_per_s=32691.5
+Running aurora nodes=4 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=2019334 elapsed_s=10.0387 throughput_tasks_per_s=201154
+Running aurora nodes=4 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=100 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=1962133 elapsed_s=10.0543 throughput_tasks_per_s=195153
+Running aurora nodes=4 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=1000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=2009146 elapsed_s=10.0427 throughput_tasks_per_s=200060
+Running aurora nodes=4 ranks_per_node=102 dist=async_put_lockfree mode=fixed expected_us=10000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=fixed expected_us=10000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=404781 elapsed_s=10.0081 throughput_tasks_per_s=40445.2
+Running aurora nodes=4 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=10 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=random expected_us=10 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=2019779 elapsed_s=10.0401 throughput_tasks_per_s=201172
+Running aurora nodes=4 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=100 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=random expected_us=100 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=1989243 elapsed_s=10.0556 throughput_tasks_per_s=197825
+Running aurora nodes=4 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=1000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=random expected_us=1000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=2025183 elapsed_s=10.0459 throughput_tasks_per_s=201594
+Running aurora nodes=4 ranks_per_node=102 dist=async_put_lockfree mode=random expected_us=10000 max_upper_fanout=0
+RESULT distributor=async_put_lockfree mode=random expected_us=10000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=404673 elapsed_s=10.0082 throughput_tasks_per_s=40434.3
+Running aurora nodes=4 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=10 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=10 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=1493946 elapsed_s=10.0267 throughput_tasks_per_s=148996
+Running aurora nodes=4 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=100 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=1501011 elapsed_s=10.0269 throughput_tasks_per_s=149698
+Running aurora nodes=4 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree mode=fixed expected_us=1000 nodes=4 world_size=408 max_upper_fanout=0 total_tasks=407001 elapsed_s=10.0084 throughput_tasks_per_s=40666
+Running aurora nodes=4 ranks_per_node=102 dist=hierarchical_async_put_lockfree mode=fixed expected_us=10000 max_upper_fanout=0
+=>> PBS: job killed: walltime 3630 exceeded limit 3600
+x4305c4s3b0n0.hsn.cm.aurora.alcf.anl.gov: rank 205 died from signal 15

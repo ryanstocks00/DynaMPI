@@ -1,0 +1,10 @@
+=== unified driver (fixed), expected_us=10 ===
+RESULT distributor=async_put_lockfree_unified_experiment mode=fixed expected_us=10 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=29451 elapsed_s=5.10943 throughput_tasks_per_s=5764.05
+exit=0
+=== unified driver (fixed), expected_us=100 ===
+RESULT distributor=async_put_lockfree_unified_experiment mode=fixed expected_us=100 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=28973 elapsed_s=5.19759 throughput_tasks_per_s=5574.31
+exit=0
+=== unified driver (fixed), expected_us=1000 ===
+RESULT distributor=async_put_lockfree_unified_experiment mode=fixed expected_us=1000 nodes=1 world_size=102 max_upper_fanout=0 total_tasks=27870 elapsed_s=5.04953 throughput_tasks_per_s=5519.32
+exit=0
+ALL DONE

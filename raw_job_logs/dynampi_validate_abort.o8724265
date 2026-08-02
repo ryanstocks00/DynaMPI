@@ -1,0 +1,26 @@
+##### sanity: naive, fast, should complete normally #####
+RESULT distributor=naive mode=random expected_us=10 nodes=2 world_size=204 max_upper_fanout=-1 total_tasks=2287676 elapsed_s=5.00066 throughput_tasks_per_s=457475
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4311c6s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 2 died from signal 15
+exit=143 elapsed=11s
+##### the actual failure case: async_put_lockfree, expected_us=1000000 (1s/task) #####
+##### previously hung/timed out at 90s waiting on finalize() drain #####
+RESULT distributor=async_put_lockfree mode=random expected_us=1000000 nodes=2 world_size=204 max_upper_fanout=-1 total_tasks=768 elapsed_s=5.0473 throughput_tasks_per_s=152.161
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4311c6s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 4 died from signal 15
+exit=143 elapsed=18s
+##### hierarchical_async_put_lockfree, same failure case #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=1000000 nodes=2 world_size=204 max_upper_fanout=0 total_tasks=463 elapsed_s=5.00004 throughput_tasks_per_s=92.5992
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4311c6s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 11 died from signal 15
+exit=143 elapsed=25s
+##### shutdown_time sanity: new async_put_lockfree support #####
+RESULT distributor=async_put_lockfree nodes=2 world_size=204 workers=203 time_per_shutdown_us=0.343301 iterations=542
+exit=0 elapsed=16s
+##### shutdown_time sanity: new hierarchical_async_put_lockfree support #####
+RESULT distributor=hierarchical_async_put_lockfree nodes=2 world_size=204 workers=203 time_per_shutdown_us=0.239096 iterations=561
+exit=0 elapsed=15s
+ALL DONE

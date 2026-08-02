@@ -1,0 +1,49 @@
+##### shutdown dist=naive nodes=128 ranks_per_node=7 #####
+RESULT distributor=naive nodes=128 world_size=896 workers=895 time_per_shutdown_us=754.847 iterations=8777
+exit=0
+##### shutdown dist=hierarchical nodes=128 ranks_per_node=7 #####
+RESULT distributor=hierarchical nodes=128 world_size=896 workers=895 time_per_shutdown_us=0.0385253 iterations=9026
+exit=0
+##### shutdown dist=naive nodes=64 ranks_per_node=7 #####
+RESULT distributor=naive nodes=64 world_size=448 workers=447 time_per_shutdown_us=380.807 iterations=16526
+exit=0
+##### shutdown dist=hierarchical nodes=64 ranks_per_node=7 #####
+RESULT distributor=hierarchical nodes=64 world_size=448 workers=447 time_per_shutdown_us=0.0383219 iterations=11126
+exit=0
+##### shutdown dist=naive nodes=32 ranks_per_node=7 #####
+RESULT distributor=naive nodes=32 world_size=224 workers=223 time_per_shutdown_us=188.94 iterations=29504
+exit=0
+##### shutdown dist=hierarchical nodes=32 ranks_per_node=7 #####
+RESULT distributor=hierarchical nodes=32 world_size=224 workers=223 time_per_shutdown_us=0.0375251 iterations=20679
+exit=0
+##### shutdown dist=naive nodes=16 ranks_per_node=7 #####
+RESULT distributor=naive nodes=16 world_size=112 workers=111 time_per_shutdown_us=97.2066 iterations=49768
+exit=0
+##### shutdown dist=hierarchical nodes=16 ranks_per_node=7 #####
+RESULT distributor=hierarchical nodes=16 world_size=112 workers=111 time_per_shutdown_us=0.0373446 iterations=26210
+exit=0
+##### shutdown dist=naive nodes=8 ranks_per_node=7 #####
+RESULT distributor=naive nodes=8 world_size=56 workers=55 time_per_shutdown_us=49.2558 iterations=75195
+exit=0
+##### shutdown dist=hierarchical nodes=8 ranks_per_node=7 #####
+RESULT distributor=hierarchical nodes=8 world_size=56 workers=55 time_per_shutdown_us=0.0384671 iterations=31085
+exit=0
+##### shutdown dist=naive nodes=4 ranks_per_node=7 #####
+RESULT distributor=naive nodes=4 world_size=28 workers=27 time_per_shutdown_us=24.737 iterations=123527
+exit=0
+##### shutdown dist=hierarchical nodes=4 ranks_per_node=7 #####
+RESULT distributor=hierarchical nodes=4 world_size=28 workers=27 time_per_shutdown_us=0.0369976 iterations=43785
+exit=0
+##### shutdown dist=naive nodes=2 ranks_per_node=7 #####
+RESULT distributor=naive nodes=2 world_size=14 workers=13 time_per_shutdown_us=10.6725 iterations=210494
+exit=0
+##### shutdown dist=hierarchical nodes=2 ranks_per_node=7 #####
+RESULT distributor=hierarchical nodes=2 world_size=14 workers=13 time_per_shutdown_us=0.0368738 iterations=63589
+exit=0
+##### shutdown dist=naive nodes=1 ranks_per_node=7 #####
+RESULT distributor=naive nodes=1 world_size=7 workers=6 time_per_shutdown_us=4.32664 iterations=434361
+exit=0
+##### shutdown dist=hierarchical nodes=1 ranks_per_node=7 #####
+RESULT distributor=hierarchical nodes=1 world_size=7 workers=6 time_per_shutdown_us=0.0365901 iterations=84914
+exit=0
+ALL DONE

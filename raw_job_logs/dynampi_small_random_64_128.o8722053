@@ -1,0 +1,217 @@
+##### dist=naive fanout=-1 nodes=64 mode=random expected_us=10 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=10 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=8935907 elapsed_s=20.0189 throughput_tasks_per_s=446372
+exit=0
+##### dist=hierarchical fanout=0 nodes=64 mode=random expected_us=10 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=64 world_size=6528 max_upper_fanout=0 total_tasks=29847512 elapsed_s=20.254 throughput_tasks_per_s=1.47366e+06
+exit=0
+##### dist=hierarchical fanout=-1 nodes=64 mode=random expected_us=10 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=28295106 elapsed_s=20.4498 throughput_tasks_per_s=1.38364e+06
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=64 mode=random expected_us=10 duration_s=20 #####
+RESULT distributor=async_put_lockfree mode=random expected_us=10 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=3627909 elapsed_s=20.003 throughput_tasks_per_s=181368
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=64 mode=random expected_us=10 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10 nodes=64 world_size=6528 max_upper_fanout=0 total_tasks=170800247 elapsed_s=20.0007 throughput_tasks_per_s=8.53972e+06
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=64 mode=random expected_us=10 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=31842321 elapsed_s=20.0016 throughput_tasks_per_s=1.59199e+06
+exit=0
+##### dist=naive fanout=-1 nodes=64 mode=random expected_us=100 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=100 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=10426423 elapsed_s=20.026 throughput_tasks_per_s=520644
+exit=0
+##### dist=hierarchical fanout=0 nodes=64 mode=random expected_us=100 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=100 nodes=64 world_size=6528 max_upper_fanout=0 total_tasks=31958954 elapsed_s=20.3558 throughput_tasks_per_s=1.57002e+06
+exit=0
+##### dist=hierarchical fanout=-1 nodes=64 mode=random expected_us=100 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=100 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=30486660 elapsed_s=20.5225 throughput_tasks_per_s=1.48552e+06
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=64 mode=random expected_us=100 duration_s=20 #####
+RESULT distributor=async_put_lockfree mode=random expected_us=100 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=3609587 elapsed_s=20.0057 throughput_tasks_per_s=180428
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=64 mode=random expected_us=100 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=100 nodes=64 world_size=6528 max_upper_fanout=0 total_tasks=177169137 elapsed_s=20.0011 throughput_tasks_per_s=8.85796e+06
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=64 mode=random expected_us=100 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=100 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=30092705 elapsed_s=20.0002 throughput_tasks_per_s=1.50462e+06
+exit=0
+##### dist=naive fanout=-1 nodes=64 mode=random expected_us=1000 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=1000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=7455704 elapsed_s=20.0512 throughput_tasks_per_s=371833
+exit=0
+##### dist=hierarchical fanout=0 nodes=64 mode=random expected_us=1000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=64 world_size=6528 max_upper_fanout=0 total_tasks=21310608 elapsed_s=20.345 throughput_tasks_per_s=1.04746e+06
+exit=0
+##### dist=hierarchical fanout=-1 nodes=64 mode=random expected_us=1000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=63861706 elapsed_s=20.2848 throughput_tasks_per_s=3.14825e+06
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=64 mode=random expected_us=1000 duration_s=20 #####
+RESULT distributor=async_put_lockfree mode=random expected_us=1000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=3595150 elapsed_s=20.0053 throughput_tasks_per_s=179710
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=64 mode=random expected_us=1000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=1000 nodes=64 world_size=6528 max_upper_fanout=0 total_tasks=117089009 elapsed_s=20.001 throughput_tasks_per_s=5.85415e+06
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=64 mode=random expected_us=1000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=1000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=31682470 elapsed_s=20.0015 throughput_tasks_per_s=1.584e+06
+exit=0
+##### dist=naive fanout=-1 nodes=64 mode=random expected_us=10000 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=10000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=7236554 elapsed_s=20.323 throughput_tasks_per_s=356077
+exit=0
+##### dist=hierarchical fanout=0 nodes=64 mode=random expected_us=10000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=10000 nodes=64 world_size=6528 max_upper_fanout=0 total_tasks=8381550 elapsed_s=20.4964 throughput_tasks_per_s=408928
+exit=0
+##### dist=hierarchical fanout=-1 nodes=64 mode=random expected_us=10000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=10000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=7147102 elapsed_s=20.4854 throughput_tasks_per_s=348888
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=64 mode=random expected_us=10000 duration_s=20 #####
+RESULT distributor=async_put_lockfree mode=random expected_us=10000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=3875931 elapsed_s=20.004 throughput_tasks_per_s=193758
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=64 mode=random expected_us=10000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10000 nodes=64 world_size=6528 max_upper_fanout=0 total_tasks=12662542 elapsed_s=20.0006 throughput_tasks_per_s=633109
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=64 mode=random expected_us=10000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=12581839 elapsed_s=20.0006 throughput_tasks_per_s=629074
+exit=0
+##### dist=naive fanout=-1 nodes=64 mode=random expected_us=100000 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=100000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=1079924 elapsed_s=20.6886 throughput_tasks_per_s=52198.9
+exit=0
+##### dist=hierarchical fanout=0 nodes=64 mode=random expected_us=100000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=100000 nodes=64 world_size=6528 max_upper_fanout=0 total_tasks=1189840 elapsed_s=21.0258 throughput_tasks_per_s=56589.6
+exit=0
+##### dist=hierarchical fanout=-1 nodes=64 mode=random expected_us=100000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=100000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=1148174 elapsed_s=21.5243 throughput_tasks_per_s=53343
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=64 mode=random expected_us=100000 duration_s=20 #####
+RESULT distributor=async_put_lockfree mode=random expected_us=100000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=1287352 elapsed_s=20.0006 throughput_tasks_per_s=64365.6
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=64 mode=random expected_us=100000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=100000 nodes=64 world_size=6528 max_upper_fanout=0 total_tasks=1277552 elapsed_s=20.0013 throughput_tasks_per_s=63873.5
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=64 mode=random expected_us=100000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=100000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=1274933 elapsed_s=20.0012 throughput_tasks_per_s=63742.7
+exit=0
+##### dist=naive fanout=-1 nodes=64 mode=random expected_us=1000000 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=1000000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=154737 elapsed_s=26.3104 throughput_tasks_per_s=5881.21
+exit=0
+##### dist=hierarchical fanout=0 nodes=64 mode=random expected_us=1000000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=1000000 nodes=64 world_size=6528 max_upper_fanout=0 total_tasks=179806 elapsed_s=29.9475 throughput_tasks_per_s=6004.03
+exit=0
+##### dist=hierarchical fanout=-1 nodes=64 mode=random expected_us=1000000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=1000000 nodes=64 world_size=6528 max_upper_fanout=-1 total_tasks=172172 elapsed_s=30.2616 throughput_tasks_per_s=5689.45
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=64 mode=random expected_us=1000000 duration_s=20 #####
+x4005c0s5b0n0.hsn.cm.aurora.alcf.anl.gov: rank 260 died from signal 15
+exit=124
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=64 mode=random expected_us=1000000 duration_s=20 #####
+x4514c1s3b0n0.hsn.cm.aurora.alcf.anl.gov: rank 2808 died from signal 15
+exit=124
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=64 mode=random expected_us=1000000 duration_s=20 #####
+x4514c4s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 4539 died from signal 15
+exit=124
+##### dist=naive fanout=-1 nodes=128 mode=random expected_us=10 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=10 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=10028250 elapsed_s=20.0862 throughput_tasks_per_s=499260
+exit=0
+##### dist=hierarchical fanout=0 nodes=128 mode=random expected_us=10 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=128 world_size=13056 max_upper_fanout=0 total_tasks=29458288 elapsed_s=20.6309 throughput_tasks_per_s=1.42787e+06
+exit=0
+##### dist=hierarchical fanout=-1 nodes=128 mode=random expected_us=10 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=25323208 elapsed_s=20.8075 throughput_tasks_per_s=1.21702e+06
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=128 mode=random expected_us=10 duration_s=20 #####
+RESULT distributor=async_put_lockfree mode=random expected_us=10 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=3237890 elapsed_s=20.0024 throughput_tasks_per_s=161875
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=128 mode=random expected_us=10 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10 nodes=128 world_size=13056 max_upper_fanout=0 total_tasks=254000000 elapsed_s=20.0001 throughput_tasks_per_s=1.26999e+07
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=128 mode=random expected_us=10 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=62981126 elapsed_s=20.0009 throughput_tasks_per_s=3.14892e+06
+exit=0
+##### dist=naive fanout=-1 nodes=128 mode=random expected_us=100 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=100 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=10667322 elapsed_s=20.1771 throughput_tasks_per_s=528686
+exit=0
+##### dist=hierarchical fanout=0 nodes=128 mode=random expected_us=100 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=100 nodes=128 world_size=13056 max_upper_fanout=0 total_tasks=32128482 elapsed_s=20.3854 throughput_tasks_per_s=1.57605e+06
+exit=0
+##### dist=hierarchical fanout=-1 nodes=128 mode=random expected_us=100 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=100 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=28970690 elapsed_s=20.5006 throughput_tasks_per_s=1.41317e+06
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=128 mode=random expected_us=100 duration_s=20 #####
+RESULT distributor=async_put_lockfree mode=random expected_us=100 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=3005776 elapsed_s=20.0269 throughput_tasks_per_s=150087
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=128 mode=random expected_us=100 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=100 nodes=128 world_size=13056 max_upper_fanout=0 total_tasks=266000000 elapsed_s=20.0066 throughput_tasks_per_s=1.32956e+07
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=128 mode=random expected_us=100 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=100 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=61371831 elapsed_s=20.0013 throughput_tasks_per_s=3.06839e+06
+exit=0
+##### dist=naive fanout=-1 nodes=128 mode=random expected_us=1000 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=1000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=7469350 elapsed_s=20.2967 throughput_tasks_per_s=368008
+exit=0
+##### dist=hierarchical fanout=0 nodes=128 mode=random expected_us=1000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=128 world_size=13056 max_upper_fanout=0 total_tasks=21051586 elapsed_s=20.4878 throughput_tasks_per_s=1.02752e+06
+exit=0
+##### dist=hierarchical fanout=-1 nodes=128 mode=random expected_us=1000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=97783140 elapsed_s=20.7538 throughput_tasks_per_s=4.71158e+06
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=128 mode=random expected_us=1000 duration_s=20 #####
+RESULT distributor=async_put_lockfree mode=random expected_us=1000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=3057390 elapsed_s=20.0641 throughput_tasks_per_s=152381
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=128 mode=random expected_us=1000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=1000 nodes=128 world_size=13056 max_upper_fanout=0 total_tasks=213034368 elapsed_s=20.001 throughput_tasks_per_s=1.06512e+07
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=128 mode=random expected_us=1000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=1000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=61050571 elapsed_s=20.001 throughput_tasks_per_s=3.05237e+06
+exit=0
+##### dist=naive fanout=-1 nodes=128 mode=random expected_us=10000 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=10000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=7195996 elapsed_s=20.333 throughput_tasks_per_s=353908
+exit=0
+##### dist=hierarchical fanout=0 nodes=128 mode=random expected_us=10000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=10000 nodes=128 world_size=13056 max_upper_fanout=0 total_tasks=16506046 elapsed_s=20.4388 throughput_tasks_per_s=807585
+exit=0
+##### dist=hierarchical fanout=-1 nodes=128 mode=random expected_us=10000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=10000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=13009150 elapsed_s=20.6728 throughput_tasks_per_s=629289
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=128 mode=random expected_us=10000 duration_s=20 #####
+RESULT distributor=async_put_lockfree mode=random expected_us=10000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=3101757 elapsed_s=20.0253 throughput_tasks_per_s=154892
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=128 mode=random expected_us=10000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10000 nodes=128 world_size=13056 max_upper_fanout=0 total_tasks=25003655 elapsed_s=20.0012 throughput_tasks_per_s=1.25011e+06
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=128 mode=random expected_us=10000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=10000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=24781066 elapsed_s=20.0008 throughput_tasks_per_s=1.239e+06
+exit=0
+##### dist=naive fanout=-1 nodes=128 mode=random expected_us=100000 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=100000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=2151979 elapsed_s=20.6888 throughput_tasks_per_s=104016
+exit=0
+##### dist=hierarchical fanout=0 nodes=128 mode=random expected_us=100000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=100000 nodes=128 world_size=13056 max_upper_fanout=0 total_tasks=2370582 elapsed_s=21.2226 throughput_tasks_per_s=111701
+exit=0
+##### dist=hierarchical fanout=-1 nodes=128 mode=random expected_us=100000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=100000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=2163322 elapsed_s=21.2784 throughput_tasks_per_s=101667
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=128 mode=random expected_us=100000 duration_s=20 #####
+RESULT distributor=async_put_lockfree mode=random expected_us=100000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=2290937 elapsed_s=20.0003 throughput_tasks_per_s=114545
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=128 mode=random expected_us=100000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=100000 nodes=128 world_size=13056 max_upper_fanout=0 total_tasks=2524241 elapsed_s=20.0007 throughput_tasks_per_s=126207
+exit=0
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=128 mode=random expected_us=100000 duration_s=20 #####
+RESULT distributor=hierarchical_async_put_lockfree mode=random expected_us=100000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=2516378 elapsed_s=20.0005 throughput_tasks_per_s=125816
+exit=0
+##### dist=naive fanout=-1 nodes=128 mode=random expected_us=1000000 duration_s=20 #####
+RESULT distributor=naive mode=random expected_us=1000000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=311299 elapsed_s=26.3258 throughput_tasks_per_s=11824.8
+exit=0
+##### dist=hierarchical fanout=0 nodes=128 mode=random expected_us=1000000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=1000000 nodes=128 world_size=13056 max_upper_fanout=0 total_tasks=360246 elapsed_s=30.2349 throughput_tasks_per_s=11914.9
+exit=0
+##### dist=hierarchical fanout=-1 nodes=128 mode=random expected_us=1000000 duration_s=20 #####
+RESULT distributor=hierarchical mode=random expected_us=1000000 nodes=128 world_size=13056 max_upper_fanout=-1 total_tasks=341442 elapsed_s=30.241 throughput_tasks_per_s=11290.7
+exit=0
+##### dist=async_put_lockfree fanout=-1 nodes=128 mode=random expected_us=1000000 duration_s=20 #####
+x4516c3s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 13018 died from signal 15
+exit=124
+##### dist=hierarchical_async_put_lockfree fanout=0 nodes=128 mode=random expected_us=1000000 duration_s=20 #####
+x4005c1s7b0n0.hsn.cm.aurora.alcf.anl.gov: rank 1227 died from signal 15
+exit=124
+##### dist=hierarchical_async_put_lockfree fanout=-1 nodes=128 mode=random expected_us=1000000 duration_s=20 #####
+x4515c7s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 10052 died from signal 15
+exit=124
+ALL DONE

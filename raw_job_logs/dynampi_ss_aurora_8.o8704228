@@ -1,0 +1,7 @@
+Allocated cores per node: 102
+Running aurora nodes=8 ranks_per_node=102 dist=naive mode=fixed expected_us=100 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=100 nodes=8 world_size=816 max_upper_fanout=0 total_tasks=3784884 elapsed_s=10.0001 throughput_tasks_per_s=378485
+Running aurora nodes=8 ranks_per_node=102 dist=naive mode=fixed expected_us=1000 max_upper_fanout=0
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=8 world_size=816 max_upper_fanout=0 total_tasks=3024471 elapsed_s=10.0001 throughput_tasks_per_s=302443
+Running aurora nodes=8 ranks_per_node=102 dist=lockfree mode=fixed expected_us=100 max_upper_fanout=0
+x4717c2s1b0n0.hsn.cm.aurora.alcf.anl.gov: rank 203 died from signal 15

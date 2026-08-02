@@ -1,0 +1,44 @@
+#!/bin/bash
+#PBS -l select=2:ncpus=102:mpiprocs=102
+#PBS -l walltime=00:10:00
+#PBS -q debug
+#PBS -A DynaMPI
+#PBS -l filesystems=flare
+#PBS -N dynampi_validate_abort
+#PBS -j oe
+
+cd "$HOME/DynaMPI" || exit 1
+export FI_CXI_RX_MATCH_MODE=software
+SS="$HOME/DynaMPI/build/benchmark/strong_scaling_distribution_rate"
+SD="$HOME/DynaMPI/build/benchmark/shutdown_time"
+
+echo "##### sanity: naive, fast, should complete normally #####"
+start=$(date +%s)
+timeout 30 mpiexec -n 204 --ppn 102 "$SS" --distribution naive --mode random \
+  --expected_us 10 --duration_s 5 --nodes 2 --system aurora
+echo "exit=$? elapsed=$(($(date +%s) - start))s"
+
+echo "##### the actual failure case: async_put_lockfree, expected_us=1000000 (1s/task) #####"
+echo "##### previously hung/timed out at 90s waiting on finalize() drain #####"
+start=$(date +%s)
+timeout 30 mpiexec -n 204 --ppn 102 "$SS" --distribution async_put_lockfree --mode random \
+  --expected_us 1000000 --duration_s 5 --nodes 2 --system aurora
+echo "exit=$? elapsed=$(($(date +%s) - start))s"
+
+echo "##### hierarchical_async_put_lockfree, same failure case #####"
+start=$(date +%s)
+timeout 30 mpiexec -n 204 --ppn 102 "$SS" --distribution hierarchical_async_put_lockfree --mode random \
+  --expected_us 1000000 --duration_s 5 --nodes 2 --max_upper_fanout 0 --system aurora
+echo "exit=$? elapsed=$(($(date +%s) - start))s"
+
+echo "##### shutdown_time sanity: new async_put_lockfree support #####"
+start=$(date +%s)
+timeout 30 mpiexec -n 204 --ppn 102 "$SD" --distribution async_put_lockfree --nodes 2 --system aurora
+echo "exit=$? elapsed=$(($(date +%s) - start))s"
+
+echo "##### shutdown_time sanity: new hierarchical_async_put_lockfree support #####"
+start=$(date +%s)
+timeout 30 mpiexec -n 204 --ppn 102 "$SD" --distribution hierarchical_async_put_lockfree --nodes 2 --system aurora
+echo "exit=$? elapsed=$(($(date +%s) - start))s"
+
+echo "ALL DONE"
