@@ -1,0 +1,36 @@
+Running frontier nodes=2048 ranks_per_node=56 dist=naive mode=fixed expected_us=1
+RESULT distributor=naive mode=fixed expected_us=1 nodes=2048 world_size=114688 total_tasks=10893156 elapsed_s=10.3818 throughput_tasks_per_s=1.04925e+06
+Running frontier nodes=2048 ranks_per_node=56 dist=naive mode=fixed expected_us=10
+RESULT distributor=naive mode=fixed expected_us=10 nodes=2048 world_size=114688 total_tasks=11115538 elapsed_s=10.3717 throughput_tasks_per_s=1.07171e+06
+Running frontier nodes=2048 ranks_per_node=56 dist=naive mode=fixed expected_us=100
+srun: Step created for StepId=4057690.2
+RESULT distributor=naive mode=fixed expected_us=100 nodes=2048 world_size=114688 total_tasks=2726173 elapsed_s=10.0993 throughput_tasks_per_s=269937
+Running frontier nodes=2048 ranks_per_node=56 dist=naive mode=fixed expected_us=1000
+srun: Step created for StepId=4057690.3
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=2048 world_size=114688 total_tasks=1300161 elapsed_s=10.0527 throughput_tasks_per_s=129334
+Running frontier nodes=2048 ranks_per_node=56 dist=naive mode=fixed expected_us=10000
+srun: Step created for StepId=4057690.4
+RESULT distributor=naive mode=fixed expected_us=10000 nodes=2048 world_size=114688 total_tasks=1168343 elapsed_s=10.0905 throughput_tasks_per_s=115786
+Running frontier nodes=2048 ranks_per_node=56 dist=naive mode=fixed expected_us=100000
+srun: Step created for StepId=4057690.5
+RESULT distributor=naive mode=fixed expected_us=100000 nodes=2048 world_size=114688 total_tasks=756428 elapsed_s=10.7467 throughput_tasks_per_s=70387.2
+Running frontier nodes=2048 ranks_per_node=56 dist=naive mode=fixed expected_us=1000000
+RESULT distributor=naive mode=fixed expected_us=1000000 nodes=2048 world_size=114688 total_tasks=645094 elapsed_s=15.0226 throughput_tasks_per_s=42941.5
+Running frontier nodes=2048 ranks_per_node=56 dist=naive mode=random expected_us=1
+srun: Step created for StepId=4057690.7
+RESULT distributor=naive mode=random expected_us=1 nodes=2048 world_size=114688 total_tasks=11170848 elapsed_s=10.3471 throughput_tasks_per_s=1.07961e+06
+Running frontier nodes=2048 ranks_per_node=56 dist=naive mode=random expected_us=10
+srun: Step created for StepId=4057690.8
+RESULT distributor=naive mode=random expected_us=10 nodes=2048 world_size=114688 total_tasks=11326472 elapsed_s=10.3568 throughput_tasks_per_s=1.09362e+06
+Running frontier nodes=2048 ranks_per_node=56 dist=naive mode=random expected_us=100
+srun: Step created for StepId=4057690.9
+RESULT distributor=naive mode=random expected_us=100 nodes=2048 world_size=114688 total_tasks=2760365 elapsed_s=10.0711 throughput_tasks_per_s=274089
+Running frontier nodes=2048 ranks_per_node=56 dist=naive mode=random expected_us=1000
+srun: Step created for StepId=4057690.10
+RESULT distributor=naive mode=random expected_us=1000 nodes=2048 world_size=114688 total_tasks=1302027 elapsed_s=10.0518 throughput_tasks_per_s=129531
+Running frontier nodes=2048 ranks_per_node=56 dist=naive mode=random expected_us=10000
+srun: Step created for StepId=4057690.11
+RESULT distributor=naive mode=random expected_us=10000 nodes=2048 world_size=114688 total_tasks=1163961 elapsed_s=10.0674 throughput_tasks_per_s=115616
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 4057690.11 ON frontier00002 CANCELLED AT 2026-01-21T00:48:32 ***
+slurmstepd: error: *** JOB 4057690 ON frontier00002 CANCELLED AT 2026-01-21T00:48:32 ***

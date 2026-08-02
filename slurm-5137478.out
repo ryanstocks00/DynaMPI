@@ -1,0 +1,22 @@
+Running frontier nodes=16 ranks_per_node=9 dist=naive
+RESULT distributor=naive nodes=16 max_upper_fanout=-1 world_size=144 workers=143 time_per_shutdown_us=525.305 iterations=16377
+Running frontier nodes=16 ranks_per_node=9 dist=hierarchical
+srun: Step created for StepId=5137478.1
+RESULT distributor=hierarchical nodes=16 max_upper_fanout=-1 world_size=144 workers=143 time_per_shutdown_us=65.044 iterations=19047
+Running frontier nodes=16 ranks_per_node=9 dist=async_put_lockfree
+srun: Step created for StepId=5137478.2
+RESULT distributor=async_put_lockfree nodes=16 max_upper_fanout=-1 world_size=144 workers=143 time_per_shutdown_us=1655.93 iterations=3611
+Running frontier nodes=16 ranks_per_node=9 dist=hierarchical_async_put_lockfree
+srun: Step created for StepId=5137478.3
+RESULT distributor=hierarchical_async_put_lockfree nodes=16 max_upper_fanout=-1 world_size=144 workers=143 time_per_shutdown_us=2403.86 iterations=2093
+Running frontier nodes=16 ranks_per_node=56 dist=naive
+RESULT distributor=naive nodes=16 max_upper_fanout=-1 world_size=896 workers=895 time_per_shutdown_us=3606.75 iterations=2674
+Running frontier nodes=16 ranks_per_node=56 dist=hierarchical
+srun: Step created for StepId=5137478.5
+RESULT distributor=hierarchical nodes=16 max_upper_fanout=-1 world_size=896 workers=895 time_per_shutdown_us=71.82 iterations=12485
+Running frontier nodes=16 ranks_per_node=56 dist=async_put_lockfree
+RESULT distributor=async_put_lockfree nodes=16 max_upper_fanout=-1 world_size=896 workers=895 time_per_shutdown_us=3669.25 iterations=1576
+Running frontier nodes=16 ranks_per_node=56 dist=hierarchical_async_put_lockfree
+srun: Step created for StepId=5137478.7
+RESULT distributor=hierarchical_async_put_lockfree nodes=16 max_upper_fanout=-1 world_size=896 workers=895 time_per_shutdown_us=2380.03 iterations=1685
+Results written to /autofs/nccs-svm1_home2/ryan/DynaMPI/benchmark/results/frontier/16-dynampi_shutdown_frontier_16-5137478/shutdown_frontier.csv

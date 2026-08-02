@@ -11,3 +11,9 @@ path = "**/*.png"
 SPDX-FileCopyrightText = "2025 QDX Technologies"
 SPDX-License-Identifier = "Apache-2.0"
 SPDX-Comment = "Generated result plots."
+
+[[annotations]]
+path = ["slurm-*.out", "mpi_pair_bench*.csv"]
+SPDX-FileCopyrightText = "2026 Ryan Stocks"
+SPDX-License-Identifier = "Apache-2.0"
+SPDX-Comment = "Raw Slurm job output and scratch benchmark csvs."

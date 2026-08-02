@@ -1,0 +1,62 @@
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=fixed expected_us=1
+RESULT distributor=naive mode=fixed expected_us=1 nodes=4 world_size=224 total_tasks=6718213 elapsed_s=10.0002 throughput_tasks_per_s=671807
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=fixed expected_us=10
+RESULT distributor=naive mode=fixed expected_us=10 nodes=4 world_size=224 total_tasks=6750264 elapsed_s=10.0003 throughput_tasks_per_s=675008
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=fixed expected_us=100
+RESULT distributor=naive mode=fixed expected_us=100 nodes=4 world_size=224 total_tasks=6582528 elapsed_s=10.0007 throughput_tasks_per_s=658208
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=fixed expected_us=1000
+srun: Step created for StepId=4057681.3
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=4 world_size=224 total_tasks=2202232 elapsed_s=10.001 throughput_tasks_per_s=220201
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=fixed expected_us=10000
+RESULT distributor=naive mode=fixed expected_us=10000 nodes=4 world_size=224 total_tasks=222863 elapsed_s=10.0146 throughput_tasks_per_s=22253.7
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=fixed expected_us=100000
+RESULT distributor=naive mode=fixed expected_us=100000 nodes=4 world_size=224 total_tasks=22295 elapsed_s=10.0033 throughput_tasks_per_s=2228.76
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=fixed expected_us=1000000
+RESULT distributor=naive mode=fixed expected_us=1000000 nodes=4 world_size=224 total_tasks=2205 elapsed_s=10.0028 throughput_tasks_per_s=220.439
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=random expected_us=1
+srun: Step created for StepId=4057681.7
+RESULT distributor=naive mode=random expected_us=1 nodes=4 world_size=224 total_tasks=6744675 elapsed_s=10.0004 throughput_tasks_per_s=674438
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=random expected_us=10
+RESULT distributor=naive mode=random expected_us=10 nodes=4 world_size=224 total_tasks=6839443 elapsed_s=10.0003 throughput_tasks_per_s=683925
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=random expected_us=100
+RESULT distributor=naive mode=random expected_us=100 nodes=4 world_size=224 total_tasks=6663443 elapsed_s=10.0007 throughput_tasks_per_s=666298
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=random expected_us=1000
+srun: Step created for StepId=4057681.10
+RESULT distributor=naive mode=random expected_us=1000 nodes=4 world_size=224 total_tasks=2195329 elapsed_s=10.002 throughput_tasks_per_s=219490
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=random expected_us=10000
+RESULT distributor=naive mode=random expected_us=10000 nodes=4 world_size=224 total_tasks=223166 elapsed_s=10.0195 throughput_tasks_per_s=22273.2
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=random expected_us=100000
+RESULT distributor=naive mode=random expected_us=100000 nodes=4 world_size=224 total_tasks=22576 elapsed_s=10.2016 throughput_tasks_per_s=2213
+Running frontier nodes=4 ranks_per_node=56 dist=naive mode=random expected_us=1000000
+RESULT distributor=naive mode=random expected_us=1000000 nodes=4 world_size=224 total_tasks=2420 elapsed_s=11.8554 throughput_tasks_per_s=204.126
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=1
+RESULT distributor=hierarchical mode=fixed expected_us=1 nodes=4 world_size=224 total_tasks=46984457 elapsed_s=10.0001 throughput_tasks_per_s=4.69838e+06
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=10
+RESULT distributor=hierarchical mode=fixed expected_us=10 nodes=4 world_size=224 total_tasks=36852094 elapsed_s=10.0001 throughput_tasks_per_s=3.68516e+06
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=100
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=4 world_size=224 total_tasks=14228956 elapsed_s=10.0003 throughput_tasks_per_s=1.42286e+06
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=1000
+srun: Step created for StepId=4057681.17
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=4 world_size=224 total_tasks=1886103 elapsed_s=10.0018 throughput_tasks_per_s=188576
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=10000
+RESULT distributor=hierarchical mode=fixed expected_us=10000 nodes=4 world_size=224 total_tasks=195532 elapsed_s=10.0251 throughput_tasks_per_s=19504.2
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=100000
+RESULT distributor=hierarchical mode=fixed expected_us=100000 nodes=4 world_size=224 total_tasks=19769 elapsed_s=10.2054 throughput_tasks_per_s=1937.12
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=1000000
+srun: Step created for StepId=4057681.20
+RESULT distributor=hierarchical mode=fixed expected_us=1000000 nodes=4 world_size=224 total_tasks=1868 elapsed_s=10.0024 throughput_tasks_per_s=186.756
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=random expected_us=1
+RESULT distributor=hierarchical mode=random expected_us=1 nodes=4 world_size=224 total_tasks=47032483 elapsed_s=10.0001 throughput_tasks_per_s=4.7032e+06
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=random expected_us=10
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=4 world_size=224 total_tasks=37724761 elapsed_s=10.0001 throughput_tasks_per_s=3.77243e+06
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=random expected_us=100
+RESULT distributor=hierarchical mode=random expected_us=100 nodes=4 world_size=224 total_tasks=11766580 elapsed_s=10.0003 throughput_tasks_per_s=1.17662e+06
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=random expected_us=1000
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=4 world_size=224 total_tasks=1322856 elapsed_s=10.0032 throughput_tasks_per_s=132243
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=random expected_us=10000
+RESULT distributor=hierarchical mode=random expected_us=10000 nodes=4 world_size=224 total_tasks=134103 elapsed_s=10.0282 throughput_tasks_per_s=13372.6
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=random expected_us=100000
+RESULT distributor=hierarchical mode=random expected_us=100000 nodes=4 world_size=224 total_tasks=13617 elapsed_s=10.2988 throughput_tasks_per_s=1322.19
+Running frontier nodes=4 ranks_per_node=56 dist=hierarchical mode=random expected_us=1000000
+srun: Step created for StepId=4057681.27
+RESULT distributor=hierarchical mode=random expected_us=1000000 nodes=4 world_size=224 total_tasks=1676 elapsed_s=13.0893 throughput_tasks_per_s=128.044

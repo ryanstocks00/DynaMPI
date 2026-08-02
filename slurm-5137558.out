@@ -1,0 +1,23 @@
+Running frontier nodes=512 ranks_per_node=9 dist=naive
+RESULT distributor=naive nodes=512 max_upper_fanout=-1 world_size=4608 workers=4607 time_per_shutdown_us=27487.4 iterations=361
+Running frontier nodes=512 ranks_per_node=9 dist=hierarchical
+srun: Step created for StepId=5137558.1
+RESULT distributor=hierarchical nodes=512 max_upper_fanout=-1 world_size=4608 workers=4607 time_per_shutdown_us=66.841 iterations=3602
+Running frontier nodes=512 ranks_per_node=9 dist=async_put_lockfree
+srun: Step created for StepId=5137558.2
+RESULT distributor=async_put_lockfree nodes=512 max_upper_fanout=-1 world_size=4608 workers=4607 time_per_shutdown_us=15194 iterations=542
+Running frontier nodes=512 ranks_per_node=9 dist=hierarchical_async_put_lockfree
+srun: Step created for StepId=5137558.3
+RESULT distributor=hierarchical_async_put_lockfree nodes=512 max_upper_fanout=-1 world_size=4608 workers=4607 time_per_shutdown_us=3305.25 iterations=1086
+Running frontier nodes=512 ranks_per_node=56 dist=naive
+srun: Step created for StepId=5137558.4
+RESULT distributor=naive nodes=512 max_upper_fanout=-1 world_size=28672 workers=28671 time_per_shutdown_us=159348 iterations=63
+Running frontier nodes=512 ranks_per_node=56 dist=hierarchical
+RESULT distributor=hierarchical nodes=512 max_upper_fanout=-1 world_size=28672 workers=28671 time_per_shutdown_us=73.0072 iterations=879
+Running frontier nodes=512 ranks_per_node=56 dist=async_put_lockfree
+srun: Step created for StepId=5137558.6
+RESULT distributor=async_put_lockfree nodes=512 max_upper_fanout=-1 world_size=28672 workers=28671 time_per_shutdown_us=267551 iterations=35
+Running frontier nodes=512 ranks_per_node=56 dist=hierarchical_async_put_lockfree
+srun: Step created for StepId=5137558.7
+RESULT distributor=hierarchical_async_put_lockfree nodes=512 max_upper_fanout=-1 world_size=28672 workers=28671 time_per_shutdown_us=3233.56 iterations=553
+Results written to /autofs/nccs-svm1_home2/ryan/DynaMPI/benchmark/results/frontier/512-dynampi_shutdown_frontier_512-5137558/shutdown_frontier.csv

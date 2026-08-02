@@ -47,6 +47,7 @@ repos:
       - id: check-merge-conflict
       - id: check-added-large-files
         args: ['--maxkb=100']
+        exclude: '^(slurm-.*\.out|mpi_pair_bench.*\.csv)$'
       - id: check-json
       - id: check-yaml
       - id: check-toml

@@ -1,0 +1,56 @@
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=fixed expected_us=1
+RESULT distributor=naive mode=fixed expected_us=1 nodes=1 world_size=56 total_tasks=11937064 elapsed_s=10 throughput_tasks_per_s=1.1937e+06
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=fixed expected_us=10
+RESULT distributor=naive mode=fixed expected_us=10 nodes=1 world_size=56 total_tasks=12672017 elapsed_s=10 throughput_tasks_per_s=1.2672e+06
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=fixed expected_us=100
+RESULT distributor=naive mode=fixed expected_us=100 nodes=1 world_size=56 total_tasks=5399118 elapsed_s=10.0001 throughput_tasks_per_s=539907
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=fixed expected_us=1000
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=1 world_size=56 total_tasks=548946 elapsed_s=10.0005 throughput_tasks_per_s=54892.1
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=fixed expected_us=10000
+RESULT distributor=naive mode=fixed expected_us=10000 nodes=1 world_size=56 total_tasks=55033 elapsed_s=10.0132 throughput_tasks_per_s=5496.04
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=fixed expected_us=100000
+RESULT distributor=naive mode=fixed expected_us=100000 nodes=1 world_size=56 total_tasks=5499 elapsed_s=10.0021 throughput_tasks_per_s=549.787
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=fixed expected_us=1000000
+RESULT distributor=naive mode=fixed expected_us=1000000 nodes=1 world_size=56 total_tasks=543 elapsed_s=10.0009 throughput_tasks_per_s=54.2949
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=random expected_us=1
+RESULT distributor=naive mode=random expected_us=1 nodes=1 world_size=56 total_tasks=12185790 elapsed_s=10 throughput_tasks_per_s=1.21858e+06
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=random expected_us=10
+RESULT distributor=naive mode=random expected_us=10 nodes=1 world_size=56 total_tasks=13112303 elapsed_s=10 throughput_tasks_per_s=1.31123e+06
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=random expected_us=100
+RESULT distributor=naive mode=random expected_us=100 nodes=1 world_size=56 total_tasks=5386795 elapsed_s=10.0002 throughput_tasks_per_s=538671
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=random expected_us=1000
+RESULT distributor=naive mode=random expected_us=1000 nodes=1 world_size=56 total_tasks=550024 elapsed_s=10.002 throughput_tasks_per_s=54991.6
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=random expected_us=10000
+RESULT distributor=naive mode=random expected_us=10000 nodes=1 world_size=56 total_tasks=54919 elapsed_s=10.0183 throughput_tasks_per_s=5481.89
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=random expected_us=100000
+RESULT distributor=naive mode=random expected_us=100000 nodes=1 world_size=56 total_tasks=5542 elapsed_s=10.2009 throughput_tasks_per_s=543.287
+Running frontier nodes=1 ranks_per_node=56 dist=naive mode=random expected_us=1000000
+RESULT distributor=naive mode=random expected_us=1000000 nodes=1 world_size=56 total_tasks=572 elapsed_s=11.8349 throughput_tasks_per_s=48.3318
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=1
+RESULT distributor=hierarchical mode=fixed expected_us=1 nodes=1 world_size=56 total_tasks=76872229 elapsed_s=10 throughput_tasks_per_s=7.68721e+06
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=10
+RESULT distributor=hierarchical mode=fixed expected_us=10 nodes=1 world_size=56 total_tasks=32374901 elapsed_s=10 throughput_tasks_per_s=3.23748e+06
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=100
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=1 world_size=56 total_tasks=4586005 elapsed_s=10.0002 throughput_tasks_per_s=458591
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=1000
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=1 world_size=56 total_tasks=477761 elapsed_s=10.0017 throughput_tasks_per_s=47767.8
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=10000
+RESULT distributor=hierarchical mode=fixed expected_us=10000 nodes=1 world_size=56 total_tasks=48014 elapsed_s=10.0261 throughput_tasks_per_s=4788.91
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=100000
+RESULT distributor=hierarchical mode=fixed expected_us=100000 nodes=1 world_size=56 total_tasks=4797 elapsed_s=10.0016 throughput_tasks_per_s=479.624
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=1000000
+RESULT distributor=hierarchical mode=fixed expected_us=1000000 nodes=1 world_size=56 total_tasks=502 elapsed_s=12.0005 throughput_tasks_per_s=41.8317
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=random expected_us=1
+RESULT distributor=hierarchical mode=random expected_us=1 nodes=1 world_size=56 total_tasks=74346745 elapsed_s=10 throughput_tasks_per_s=7.43467e+06
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=random expected_us=10
+RESULT distributor=hierarchical mode=random expected_us=10 nodes=1 world_size=56 total_tasks=27508786 elapsed_s=10 throughput_tasks_per_s=2.75087e+06
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=random expected_us=100
+RESULT distributor=hierarchical mode=random expected_us=100 nodes=1 world_size=56 total_tasks=3398289 elapsed_s=10.0003 throughput_tasks_per_s=339819
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=random expected_us=1000
+RESULT distributor=hierarchical mode=random expected_us=1000 nodes=1 world_size=56 total_tasks=347177 elapsed_s=10.0022 throughput_tasks_per_s=34710.1
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=random expected_us=10000
+RESULT distributor=hierarchical mode=random expected_us=10000 nodes=1 world_size=56 total_tasks=34668 elapsed_s=10.0254 throughput_tasks_per_s=3458.01
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=random expected_us=100000
+RESULT distributor=hierarchical mode=random expected_us=100000 nodes=1 world_size=56 total_tasks=3603 elapsed_s=10.2833 throughput_tasks_per_s=350.375
+Running frontier nodes=1 ranks_per_node=56 dist=hierarchical mode=random expected_us=1000000
+RESULT distributor=hierarchical mode=random expected_us=1000000 nodes=1 world_size=56 total_tasks=412 elapsed_s=13.9514 throughput_tasks_per_s=29.5311

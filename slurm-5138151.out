@@ -1,0 +1,10 @@
+Running frontier nodes=512 ranks_per_node=9 dist=hierarchical max_upper_fanout=0
+RESULT distributor=hierarchical nodes=512 max_upper_fanout=0 world_size=4608 workers=4607 time_per_shutdown_us=2260.58 iterations=2332
+Running frontier nodes=512 ranks_per_node=9 dist=hierarchical_async_put_lockfree max_upper_fanout=0
+srun: Step created for StepId=5138151.1
+RESULT distributor=hierarchical_async_put_lockfree nodes=512 max_upper_fanout=0 world_size=4608 workers=4607 time_per_shutdown_us=4774.5 iterations=900
+Running frontier nodes=512 ranks_per_node=56 dist=hierarchical max_upper_fanout=0
+RESULT distributor=hierarchical nodes=512 max_upper_fanout=0 world_size=28672 workers=28671 time_per_shutdown_us=2299.82 iterations=805
+Running frontier nodes=512 ranks_per_node=56 dist=hierarchical_async_put_lockfree max_upper_fanout=0
+RESULT distributor=hierarchical_async_put_lockfree nodes=512 max_upper_fanout=0 world_size=28672 workers=28671 time_per_shutdown_us=3872.48 iterations=559
+Results written to /autofs/nccs-svm1_home2/ryan/DynaMPI/benchmark/results/frontier/512-dynampi_shutdown_frontier_512-5138151/shutdown_frontier.csv
