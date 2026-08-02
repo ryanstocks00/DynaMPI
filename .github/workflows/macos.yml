@@ -7,9 +7,6 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
-permissions:
-  contents: read
-  pull-requests: write
 env:
   CMAKE_CXX_STANDARD: 20
   CMAKE_VERBOSE_MAKEFILE: ON
@@ -39,45 +36,12 @@ jobs:
         shell: bash
         run: cmake --build build --config ${{ matrix.build-type }} --parallel
       - name: Test on macOS
-        id: ctest
         shell: bash
         run: |
           set -o pipefail
           cd build
           echo "Testing with $MPI_TYPE"
-          mpiexec --version || true
           export DYNAMPI_MAX_MPI_RANK=8
-          # Sequential: concurrent mpiexec oversubscribe on shared macOS runners
-          # has been flaky; keep a log for the failure comment below.
-          ctest --output-on-failure -C ${{ matrix.build-type }} 2>&1 | tee ctest.log
-      - name: Upload ctest log
-        if: failure() && steps.ctest.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-ctest-${{ matrix.build-type }}
-          path: build/ctest.log
-          if-no-files-found: ignore
-      - name: Comment ctest failures on PR
-        if: failure() && steps.ctest.outcome == 'failure' && github.event_name ==
-          'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const logPath = 'build/ctest.log';
-            let body = `### macOS ctest failure (${{ matrix.build-type }})\n\n`;
-            if (fs.existsSync(logPath)) {
-              const log = fs.readFileSync(logPath, 'utf8');
-              const lines = log.split('\n');
-              const hits = lines.filter(l => /FAILED|failed|Error|Assertion|SEGFAULT|TIMEOUT/.test(l)).slice(0, 80);
-              const excerpt = (hits.length ? hits : lines.slice(-120)).join('\n');
-              body += '```\n' + excerpt.slice(0, 60000) + '\n```\n';
-            } else {
-              body += '_ctest.log was not produced._\n';
-            }
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body,
-            });
+          # Sequential: concurrent mpiexec --oversubscribe on shared macOS
+          # runners races and produces spurious failures.
+          ctest --output-on-failure -C ${{ matrix.build-type }}
