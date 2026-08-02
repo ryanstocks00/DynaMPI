@@ -26,11 +26,20 @@ from plot_common import (
 
 class ShutdownRow(TypedDict):
     system: str
+    distributor: str
     nodes: int
+    max_upper_fanout: int
     world_size: int
     workers: int
     time_per_shutdown_us: float
     file_mtime: float
+
+
+def series_label(distributor: str, max_upper_fanout: int) -> str:
+    label = distributor.replace("_", " ").capitalize()
+    if max_upper_fanout != -1:
+        label += f" (fanout={max_upper_fanout})"
+    return label
 
 
 def parse_rows(paths: Sequence[str]) -> list[ShutdownRow]:
@@ -48,7 +57,9 @@ def parse_rows(paths: Sequence[str]) -> list[ShutdownRow]:
                 rows.append(
                     {
                         "system": row.get("system", "").strip() or "unknown",
+                        "distributor": row.get("distributor", "").strip() or "naive",
                         "nodes": int(float(row.get("nodes", 0))),
+                        "max_upper_fanout": int(float(row.get("max_upper_fanout", -1) or -1)),
                         "world_size": int(float(row.get("world_size", 0))),
                         "workers": int(float(row.get("workers", 0))),
                         "time_per_shutdown_us": time_per_shutdown_us,
@@ -58,33 +69,51 @@ def parse_rows(paths: Sequence[str]) -> list[ShutdownRow]:
     return rows
 
 
-def group_rows(rows: Sequence[ShutdownRow]) -> dict[str, list[tuple[int, float]]]:
-    newest = dedupe_newest(rows, lambda row: (row["system"], row["nodes"]), "time_per_shutdown_us")
-    grouped: dict[str, list[tuple[int, float]]] = defaultdict(list)
-    for (system, nodes), (time_per_shutdown_us, _) in newest.items():
-        grouped[system].append((nodes, time_per_shutdown_us))
+def group_rows(
+    rows: Sequence[ShutdownRow],
+) -> dict[tuple[str, str, int], list[tuple[int, float]]]:
+    newest = dedupe_newest(
+        rows,
+        lambda row: (row["system"], row["distributor"], row["max_upper_fanout"], row["nodes"]),
+        "time_per_shutdown_us",
+    )
+    grouped: dict[tuple[str, str, int], list[tuple[int, float]]] = defaultdict(list)
+    for (system, distributor, max_upper_fanout, nodes), (
+        time_per_shutdown_us,
+        _,
+    ) in newest.items():
+        grouped[(system, distributor, max_upper_fanout)].append((nodes, time_per_shutdown_us))
     return grouped
 
 
-def plot_all_systems(
-    grouped: dict[str, list[tuple[int, float]]],
+def plot_system(
+    system: str,
+    grouped: dict[tuple[str, str, int], list[tuple[int, float]]],
     output_dir: str,
     image_format: str,
 ) -> None:
+    series = sorted(
+        (key for key in grouped if key[0] == system),
+        key=lambda key: (key[1], key[2]),
+    )
+    if not series:
+        return
+
     with plt.style.context(['science', 'ieee']):
         fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT))
 
-        systems = sorted(system for system in grouped if system != "local")
         all_nodes: set[int] = set()
         handles = []
         labels = []
 
-        for idx, system in enumerate(systems):
-            points_sorted = sorted(grouped[system], key=lambda point: point[0])
+        for idx, key in enumerate(series):
+            _, distributor, max_upper_fanout = key
+            points_sorted = sorted(grouped[key], key=lambda point: point[0])
             nodes = [point[0] for point in points_sorted]
             time_per_shutdown_s = [point[1] / 1_000_000.0 for point in points_sorted]
             all_nodes.update(nodes)
 
+            label = series_label(distributor, max_upper_fanout)
             line, = ax.plot(
                 nodes,
                 time_per_shutdown_s,
@@ -93,18 +122,19 @@ def plot_all_systems(
                 markeredgewidth=1.0,
                 linewidth=1.0,
                 color=series_color(idx),
-                label=system.capitalize(),
+                label=label,
             )
             handles.append(line)
-            labels.append(system.capitalize())
+            labels.append(label)
 
         ax.set_xlabel("Nodes")
         ax.set_ylabel("Shutdown time (s)")
+        ax.set_yscale("log")
         set_log_node_axes(ax, all_nodes)
         add_light_grid(ax)
         ax.legend(handles, labels, frameon=False, loc='best')
 
-        save_figure(fig, output_dir, f"shutdown_time_combined.{image_format}")
+        save_figure(fig, output_dir, f"shutdown_time_{system}.{image_format}")
 
 
 def main() -> None:
@@ -114,8 +144,12 @@ def main() -> None:
 
     os.makedirs(args.output_dir, exist_ok=True)
     input_paths = collect_csv_paths(args.input, "shutdown")
-    grouped = group_rows(parse_rows(input_paths))
-    plot_all_systems(grouped, args.output_dir, args.format)
+    rows = parse_rows(input_paths)
+    grouped = group_rows(rows)
+
+    systems = sorted({row["system"] for row in rows})
+    for system in systems:
+        plot_system(system, grouped, args.output_dir, args.format)
 
 
 if __name__ == "__main__":

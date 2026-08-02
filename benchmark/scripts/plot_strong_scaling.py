@@ -32,6 +32,7 @@ class StrongScalingRow(TypedDict):
     expected_ns: int
     nodes: int
     ranks_per_node: int
+    max_upper_fanout: int
     throughput: float
     file_mtime: float
 
@@ -66,6 +67,7 @@ def parse_rows(paths: Sequence[str]) -> list[StrongScalingRow]:
                 nodes = int(float(row.get("nodes", 0)))
                 world_size = int(float(row.get("world_size", 0)))
                 ranks_per_node = int(round(world_size / nodes)) if nodes else 0
+                max_upper_fanout = int(float(row.get("max_upper_fanout", -1) or -1))
                 rows.append(
                     {
                         "system": row.get("system", "").strip() or "unknown",
@@ -74,6 +76,7 @@ def parse_rows(paths: Sequence[str]) -> list[StrongScalingRow]:
                         "expected_ns": expected_ns,
                         "nodes": nodes,
                         "ranks_per_node": ranks_per_node,
+                        "max_upper_fanout": max_upper_fanout,
                         "throughput": float(row.get("throughput_tasks_per_s", 0.0)),
                         "file_mtime": file_mtime,
                     }
@@ -83,7 +86,7 @@ def parse_rows(paths: Sequence[str]) -> list[StrongScalingRow]:
 
 def group_rows(
     rows: Sequence[StrongScalingRow],
-) -> dict[tuple[str, str, str, int, int], list[tuple[int, float]]]:
+) -> dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]]:
     newest = dedupe_newest(
         rows,
         lambda row: (
@@ -92,27 +95,32 @@ def group_rows(
             normalize_mode(row["mode"]),
             row["expected_ns"],
             row["ranks_per_node"],
+            row["max_upper_fanout"],
             row["nodes"],
         ),
         "throughput",
     )
-    grouped: dict[tuple[str, str, str, int, int], list[tuple[int, float]]] = defaultdict(list)
+    grouped: dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]] = defaultdict(list)
     for (
         system,
         distributor,
         mode,
         expected_ns,
         ranks_per_node,
+        max_upper_fanout,
         nodes,
     ), (throughput, _) in newest.items():
-        grouped[(system, distributor, mode, expected_ns, ranks_per_node)].append((nodes, throughput))
+        grouped[(system, distributor, mode, expected_ns, ranks_per_node, max_upper_fanout)].append(
+            (nodes, throughput)
+        )
     return grouped
 
 
 def plot_distributor(
     system: str,
     distributor: str,
-    grouped: dict[tuple[str, str, str, int, int], list[tuple[int, float]]],
+    max_upper_fanout: int,
+    grouped: dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]],
     output_dir: str,
     image_format: str,
 ) -> None:
@@ -129,8 +137,14 @@ def plot_distributor(
                 mode_name,
                 expected_ns,
                 ranks_per_node,
+                fanout,
             ), points in grouped.items():
-                if sys_name != system or dist != distributor or normalize_mode(mode_name) != mode:
+                if (
+                    sys_name != system
+                    or dist != distributor
+                    or normalize_mode(mode_name) != mode
+                    or fanout != max_upper_fanout
+                ):
                     continue
                 points_sorted = sorted(points, key=lambda point: point[0])
                 nodes = [point[0] for point in points_sorted]
@@ -208,7 +222,10 @@ def plot_distributor(
             )
 
             rpn_str = f"_{ranks_per_node_value}rpn" if ranks_per_node_value is not None else ""
-            filename = f"strong_scaling_{system}_{distributor}_{mode}{rpn_str}.{image_format}"
+            fanout_str = f"_fanout{max_upper_fanout}" if max_upper_fanout != -1 else ""
+            filename = (
+                f"strong_scaling_{system}_{distributor}_{mode}{rpn_str}{fanout_str}.{image_format}"
+            )
             save_figure(
                 fig,
                 output_dir,
@@ -230,7 +247,17 @@ def main() -> None:
     distributors = sorted({row["distributor"] for row in rows if row["distributor"].strip()})
     for system in systems:
         for distributor in distributors:
-            plot_distributor(system, distributor, grouped, args.output_dir, args.format)
+            fanouts = sorted(
+                {
+                    row["max_upper_fanout"]
+                    for row in rows
+                    if row["system"] == system and row["distributor"] == distributor
+                }
+            )
+            for max_upper_fanout in fanouts:
+                plot_distributor(
+                    system, distributor, max_upper_fanout, grouped, args.output_dir, args.format
+                )
 
 
 if __name__ == "__main__":
