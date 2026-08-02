@@ -80,9 +80,7 @@ static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts,
 template <typename Distributor>
 static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& opts, MPI_Comm comm) {
   dynampi::MPICommunicator<> comm_wrapper(comm, dynampi::MPICommunicator<>::Ownership::Reference);
-  int rank = 0;
   int size = 0;
-  MPI_Comm_rank(comm, &rank);
   MPI_Comm_size(comm, &size);
 
   const uint64_t num_workers = (size == 1) ? 1 : static_cast<uint64_t>(size - 1);
@@ -111,7 +109,8 @@ static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& op
     // Ensure all workers are ready
     MPI_Barrier(comm_wrapper);
 
-    bool is_manager = (rank == 0);
+    // Must match the is_root_manager() start path (not rank==0 alone).
+    bool timed_this_iteration = false;
     {
       // No max_tasks override needed here (unlike strong_scaling_distribution_rate.cpp):
       // this benchmark never calls insert_task/insert_tasks, so lockfree's
@@ -127,6 +126,7 @@ static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& op
 
       if (distributor.is_root_manager()) {
         iteration_timer.reset(dynampi::Timer::AutoStart::Yes);
+        timed_this_iteration = true;
         auto _ = distributor.finish_remaining_tasks();
         (void)_;
         // Explicitly finalize here, inside the timed region, rather than
@@ -155,7 +155,7 @@ static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& op
       // after this block closes rather than immediately after
       // finalize().
     }
-    if (is_manager) {
+    if (timed_this_iteration) {
       iteration_timer.stop();
       total_shutdown_time += iteration_timer.elapsed().count();
       iterations++;
@@ -255,8 +255,9 @@ int main(int argc, char** argv) {
             run_benchmark<dynampi::AsyncPutLockFreeMPIWorkDistributor<Task, Result>>(opts, comm);
         break;
       case DistributorKind::HierarchicalAsyncPutLockFree:
-        result = run_benchmark<dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, Result>>(
-            opts, comm);
+        result =
+            run_benchmark<dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, Result>>(
+                opts, comm);
         break;
     }
 
