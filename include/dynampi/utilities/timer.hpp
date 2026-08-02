@@ -7,16 +7,14 @@
 
 #include <cassert>
 #include <chrono>
+#include <optional>
 #include <ostream>
 
 namespace dynampi {
 
 class Timer {
-  // Prefer bool + initialized time_point over optional: GCC 12 -Werror
-  // -Wmaybe-uninitialized false-positives on optional's inactive storage.
-  std::chrono::time_point<std::chrono::high_resolution_clock> _start_time{};
+  std::optional<std::chrono::time_point<std::chrono::high_resolution_clock>> _start_time;
   std::chrono::nanoseconds _elapsed_time{0};
-  bool _running{false};
 
  public:
   enum class AutoStart { Yes, No };
@@ -28,21 +26,30 @@ class Timer {
   }
 
   void start() {
-    assert(!_running && "Timer already started");
+    assert(!_start_time.has_value() && "Timer already started");
     _start_time = std::chrono::high_resolution_clock::now();
-    _running = true;
   }
 
   std::chrono::duration<double> stop() {
-    assert(_running && "Timer not started");
+    assert(_start_time.has_value() && "Timer not started");
     auto end_time = std::chrono::high_resolution_clock::now();
-    _elapsed_time += std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - _start_time);
-    _running = false;
+    // GCC 12 -O2 -Wmaybe-uninitialized false-positives on optional's inactive
+    // storage when stop() is inlined across a branch (e.g. shutdown_time).
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+    _elapsed_time +=
+        std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - _start_time.value());
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+    _start_time.reset();
     return std::chrono::duration<double>(_elapsed_time);
   }
 
   void reset(AutoStart auto_start = AutoStart::Yes) {
-    _running = false;
+    _start_time.reset();
     _elapsed_time = std::chrono::nanoseconds{0};
     if (auto_start == AutoStart::Yes) {
       start();
@@ -50,10 +57,10 @@ class Timer {
   }
 
   [[nodiscard]] std::chrono::duration<double> elapsed() const {
-    if (_running) {
+    if (_start_time.has_value()) {
       auto current_elapsed =
           _elapsed_time + std::chrono::duration_cast<std::chrono::nanoseconds>(
-                              std::chrono::high_resolution_clock::now() - _start_time);
+                              std::chrono::high_resolution_clock::now() - _start_time.value());
       return std::chrono::duration<double>(current_elapsed);
     }
     return std::chrono::duration<double>(_elapsed_time);

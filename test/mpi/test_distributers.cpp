@@ -13,6 +13,7 @@
 #include <dynampi/dynampi.hpp>
 #include <thread>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "dynampi/impl/async_put_lockfree_distributor.hpp"
@@ -416,13 +417,16 @@ TYPED_TEST(DynamicDistribution, Statistics) {
         EXPECT_DOUBLE_EQ(work_distributer.get_statistics().comm_statistics.average_send_size(),
                          expected_num_bytes);
       }
-      // Detailed exposes send_time/recv_time. Do not require them to be
-      // strictly positive: MPI_Wtime can round short shared-memory sends to
-      // zero (seen on macOS CI). AggregatedStatistics asserts the opposite
-      // contract -- times stay exactly zero when timing is disabled.
+      // Detailed is the only mode that times the calls it counts.
       const auto& comm_stats = work_distributer.get_statistics().comm_statistics;
       EXPECT_GE(comm_stats.send_time, 0.0);
       EXPECT_GE(comm_stats.recv_time, 0.0);
+      // macOS CI: MPI_Wtime can round short shared-memory sends to zero.
+#if !defined(__APPLE__)
+      if (MPIEnvironment::world_comm_size() > 1) {
+        EXPECT_GT(comm_stats.send_time + comm_stats.recv_time, 0.0);
+      }
+#endif
     }
   }
 }
@@ -678,6 +682,15 @@ TEST(FixedSizeMPIType, ElementsPerValue) {
 }
 
 TEST(FixedSizeMPIType, RejectsPayloadThatIsNotAWholeNumberOfElements) {
+  // Rejection runs in check_fixed_size_mpi_type before any send/recv, so
+  // exercise the MPI_Type surface explicitly for coverage.
+  Unaligned value{1.f, 2.f, 3.f};
+  EXPECT_EQ(dynampi::MPI_Type<Unaligned>::count(value), 2);
+  dynampi::MPI_Type<Unaligned>::resize(value, 2);
+  EXPECT_EQ(dynampi::MPI_Type<Unaligned>::ptr(value), static_cast<void*>(&value));
+  EXPECT_EQ(dynampi::MPI_Type<Unaligned>::ptr(std::as_const(value)),
+            static_cast<const void*>(&value));
+
   auto identity = [](Unaligned v) { return v; };
   {
     using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<Unaligned, Unaligned>;
