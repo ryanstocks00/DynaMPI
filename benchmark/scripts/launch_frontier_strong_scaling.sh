@@ -38,6 +38,8 @@ if [[ -z "${LAUNCHER}" ]]; then
   fi
 fi
 
+export FI_CXI_RX_MATCH_MODE=software
+
 mkdir -p "${OUTPUT_DIR}"
 CSV="${OUTPUT_DIR}/strong_scaling_${SYSTEM}.csv"
 

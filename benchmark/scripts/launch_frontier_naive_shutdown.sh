@@ -13,6 +13,9 @@ SYSTEM="frontier"
 
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512 1024 2048 4096 8192}"
 IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
+# hierarchical and hierarchical_async_put_lockfree only: see the matching
+# comment in launch_frontier_strong_scaling.sh / launch_aurora_strong_scaling.sh.
+IFS=' ' read -r -a MAX_UPPER_FANOUT_LIST <<< "${MAX_UPPER_FANOUT_LIST:-${MAX_UPPER_FANOUT:--1}}"
 IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-core}"
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
@@ -28,6 +31,8 @@ if [[ -z "${LAUNCHER}" ]]; then
     exit 1
   fi
 fi
+
+export FI_CXI_RX_MATCH_MODE=software
 
 mkdir -p "${OUTPUT_DIR}"
 CSV="${OUTPUT_DIR}/shutdown_${SYSTEM}.csv"
@@ -46,7 +51,13 @@ for nodes in "${NODE_LIST[@]}"; do
     fi
     total_ranks=$((nodes * ranks_per_node))
     for dist in "${DISTRIBUTIONS[@]}"; do
-      echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist}"
+      if [[ "${dist}" == "hierarchical_async_put_lockfree" || "${dist}" == "hierarchical" ]]; then
+        fanouts=("${MAX_UPPER_FANOUT_LIST[@]}")
+      else
+        fanouts=("${MAX_UPPER_FANOUT_LIST[0]}")
+      fi
+      for fanout in "${fanouts[@]}"; do
+      echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist} max_upper_fanout=${fanout}"
       launcher_base="$(basename "${LAUNCHER}")"
       if [[ "${launcher_base}" == mpiexec || "${launcher_base}" == mpirun ]]; then
         "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -n "${total_ranks}" --ppn "${ranks_per_node}" \
@@ -54,6 +65,7 @@ for nodes in "${NODE_LIST[@]}"; do
           --distribution "${dist}" \
           --nodes "${nodes}" \
           --system "${SYSTEM}" \
+          --max_upper_fanout "${fanout}" \
           --output "${CSV}"
       else
         "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -N "${nodes}" -n "${total_ranks}" \
@@ -62,8 +74,10 @@ for nodes in "${NODE_LIST[@]}"; do
           --distribution "${dist}" \
           --nodes "${nodes}" \
           --system "${SYSTEM}" \
+          --max_upper_fanout "${fanout}" \
           --output "${CSV}"
       fi
+      done
     done
   done
 done
