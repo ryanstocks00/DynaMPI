@@ -13,17 +13,26 @@
 #include "dynampi/mpi/mpi_communicator.hpp"
 
 TEST(MPI, ErrorCheck) {
-  MPI_Errhandler previous_handler = MPI_ERRHANDLER_NULL;
-  MPI_Comm_get_errhandler(MPI_COMM_WORLD, &previous_handler);
-  MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
-  EXPECT_THROW(DYNAMPI_MPI_CHECK(MPI_Comm_rank, (MPI_COMM_NULL, nullptr)), std::runtime_error);
+  // What's actually under test is DYNAMPI_MPI_CHECK's own logic (return code
+  // -> exception, with the formatted MPI_Error_string message included) --
+  // not any particular MPI implementation's error-checking behavior. Feeding
+  // it a genuinely invalid call (MPI_COMM_NULL, a null output pointer, ...)
+  // to *produce* that error code turned out to be unreliable across MPI
+  // builds: two different invalid-argument combinations here both segfaulted
+  // inside MPICH's own internals on this specific Aurora build (confirmed
+  // via gdb -- crashes inside MPIR_Comm_rank_impl/PMPI_Comm_rank, not in
+  // application code), regardless of MPI_ERRORS_RETURN being set on
+  // MPI_COMM_WORLD. A mock callable returning a real MPI error code exercises
+  // the exact same DYNAMPI_MPI_CHECK/mpi_fail code path (including the real
+  // MPI_Error_string formatting) without depending on any implementation's
+  // willingness to error-return instead of crash for a given invalid input.
+  auto fake_mpi_call = [](int) { return MPI_ERR_COMM; };
+  int unused = 0;
+  EXPECT_THROW(DYNAMPI_MPI_CHECK(fake_mpi_call, (unused)), std::runtime_error);
   try {
-    DYNAMPI_MPI_CHECK(MPI_Comm_rank, (MPI_COMM_NULL, nullptr));
+    DYNAMPI_MPI_CHECK(fake_mpi_call, (unused));
   } catch (const std::runtime_error &e) {
-    EXPECT_TRUE(std::string(e.what()).find("MPI error in MPI_Comm_rank") != std::string::npos);
-  }
-  if (previous_handler != MPI_ERRHANDLER_NULL) {
-    MPI_Comm_set_errhandler(MPI_COMM_WORLD, previous_handler);
+    EXPECT_TRUE(std::string(e.what()).find("MPI error in fake_mpi_call") != std::string::npos);
   }
 }
 
@@ -179,4 +188,53 @@ TEST(MPICommunicatorWrapper, RecvEmptyMessage) {
     }
     MPI_Barrier(MPI_COMM_WORLD);
   }
+}
+
+TEST(MPICommunicatorWrapper, PutGetAndStatistics) {
+  using TrackedComm =
+      dynampi::MPICommunicator<dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>;
+  TrackedComm comm(MPI_COMM_WORLD);
+  const int rank = comm.rank();
+  const int size = comm.size();
+  if (size < 2) {
+    GTEST_SKIP() << "Need at least 2 ranks for Put/Get";
+  }
+
+  int local = (rank == 0) ? 0 : -1;
+  MPI_Win win = MPI_WIN_NULL;
+  DYNAMPI_MPI_CHECK(MPI_Win_create, (&local, static_cast<MPI_Aint>(sizeof(int)), 1, MPI_INFO_NULL,
+                                     comm.get(), &win));
+  DYNAMPI_MPI_CHECK(MPI_Win_lock_all, (MPI_MODE_NOCHECK, win));
+
+  if (rank == 1) {
+    const int value = 42;
+    comm.put_bytes(&value, sizeof(int), 0, 0, win);
+    DYNAMPI_MPI_CHECK(MPI_Win_flush, (0, win));
+  }
+  MPI_Barrier(comm.get());
+
+  if (rank == 1) {
+    int got = 0;
+    comm.get_bytes(&got, sizeof(int), 0, 0, win);
+    DYNAMPI_MPI_CHECK(MPI_Win_flush, (0, win));
+    EXPECT_EQ(got, 42);
+  }
+  MPI_Barrier(comm.get());
+
+  const auto &stats = comm.get_statistics();
+  if (rank == 1) {
+    EXPECT_EQ(stats.send_count, 1);
+    EXPECT_EQ(stats.bytes_sent, sizeof(int));
+    EXPECT_EQ(stats.recv_count, 1);
+    EXPECT_EQ(stats.bytes_received, sizeof(int));
+  } else {
+    EXPECT_EQ(stats.send_count, 0);
+    EXPECT_EQ(stats.recv_count, 0);
+  }
+  // Do not assert on rank 0's plain load of `local`: under MPI_WIN_SEPARATE
+  // (e.g. MS-MPI) remote Puts update the public window copy only, so ordinary
+  // loads are not required to observe them. The Get above is the portable check.
+
+  DYNAMPI_MPI_CHECK(MPI_Win_unlock_all, (win));
+  DYNAMPI_MPI_CHECK(MPI_Win_free, (&win));
 }

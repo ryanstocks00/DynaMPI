@@ -3,14 +3,19 @@
 
 compile_commands.json
 build
+build-*
 bin
 .cache/
 Testing
 *.btr
 commands.txt
+core
 core.*
+.nfs*
 __pycache__/
 *.png
+slurm-*.out
+mpi_pair_bench*.csv
 
 # Docs build output (CI deploys via mike to gh-pages)
 docs/site/

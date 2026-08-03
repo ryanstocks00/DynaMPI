@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup Microsoft MPI
-        uses: mpi4py/setup-mpi@3eef4c7b925e108e534a3856830963dedefac76f
+        uses: mpi4py/setup-mpi@3417e34f1394a16723d7913c236642c24e95fd5a
         with:
           mpi: msmpi
       - name: Configure CMake (MS-MPI)

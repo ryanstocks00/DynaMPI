@@ -33,8 +33,17 @@ class Timer {
   std::chrono::duration<double> stop() {
     assert(_start_time.has_value() && "Timer not started");
     auto end_time = std::chrono::high_resolution_clock::now();
+    // GCC 12 -O2 -Wmaybe-uninitialized false-positives on optional's inactive
+    // storage when stop() is inlined across a branch (e.g. shutdown_time).
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     _elapsed_time +=
         std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - _start_time.value());
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
     _start_time.reset();
     return std::chrono::duration<double>(_elapsed_time);
   }

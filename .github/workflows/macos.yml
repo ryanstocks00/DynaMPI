@@ -13,7 +13,7 @@ env:
 jobs:
   macos-clang:
     runs-on: macos-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     strategy:
       matrix:
         build-type: [Debug, Release]
@@ -38,7 +38,10 @@ jobs:
       - name: Test on macOS
         shell: bash
         run: |
+          set -o pipefail
           cd build
           echo "Testing with $MPI_TYPE"
           export DYNAMPI_MAX_MPI_RANK=8
-          ctest --output-on-failure --parallel -C ${{ matrix.build-type }}
+          # Sequential: concurrent mpiexec --oversubscribe on shared macOS
+          # runners races and produces spurious failures.
+          ctest --output-on-failure -C ${{ matrix.build-type }}

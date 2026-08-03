@@ -1,0 +1,13 @@
+system,distributor,mode,expected_us,duration_s,nodes,world_size,workers,max_upper_fanout,total_tasks,elapsed_s,throughput_tasks_per_s
+aurora,hierarchical_async_put_lockfree,fixed,10,20,256,1792,1791,-1,111131510,20.0001,5.55655e+06
+aurora,hierarchical_async_put_lockfree,fixed,100,20,256,1792,1791,-1,106109709,20.0003,5.30541e+06
+aurora,hierarchical_async_put_lockfree,fixed,1000,20,256,1792,1791,-1,27659252,20.0006,1.38292e+06
+aurora,hierarchical_async_put_lockfree,fixed,10000,20,256,1792,1791,-1,3023334,20.0011,151159
+aurora,hierarchical_async_put_lockfree,fixed,100000,20,256,1792,1791,-1,304320,20.0003,15215.8
+aurora,hierarchical_async_put_lockfree,fixed,1000000,20,256,1792,1791,-1,28960,20,1448
+aurora,hierarchical_async_put_lockfree,random,10,20,256,1792,1791,-1,110690088,20.0009,5.53424e+06
+aurora,hierarchical_async_put_lockfree,random,100,20,256,1792,1791,-1,102087000,20.0067,5.10264e+06
+aurora,hierarchical_async_put_lockfree,random,1000,20,256,1792,1791,-1,28191601,20.0011,1.4095e+06
+aurora,hierarchical_async_put_lockfree,random,10000,20,256,1792,1791,-1,3016064,20.001,150796
+aurora,hierarchical_async_put_lockfree,random,100000,20,256,1792,1791,-1,297810,20.0003,14890.3
+aurora,hierarchical_async_put_lockfree,random,1000000,20,256,1792,1791,-1,24909,20,1245.45
