@@ -309,8 +309,19 @@ TYPED_TEST(DynamicDistribution, VariableSizeTaskAndResult) {
     expected.reserve(tasks.size());
     for (auto& t : tasks) expected.push_back(worker_task(t));
 
-    std::sort(results.begin(), results.end());
-    std::sort(expected.begin(), expected.end());
+    // A hand-rolled comparator, rather than vector<byte>'s default <=>,
+    // sidesteps a GCC false positive (-Werror=stringop-overread on the
+    // inlined memcmp) seen on some toolchains when three-way-comparing
+    // variable-length byte buffers.
+    auto byte_vector_less = [](const Result& a, const Result& b) {
+      const size_t n = std::min(a.size(), b.size());
+      for (size_t i = 0; i < n; ++i) {
+        if (a[i] != b[i]) return a[i] < b[i];
+      }
+      return a.size() < b.size();
+    };
+    std::sort(results.begin(), results.end(), byte_vector_less);
+    std::sort(expected.begin(), expected.end(), byte_vector_less);
     EXPECT_EQ(results, expected);
   }
 }
@@ -1226,6 +1237,36 @@ TEST(HierarchicalLockFreeRMA, TaskErrorIsRecoverable) {
   auto errors = distributor.take_task_errors();
   ASSERT_EQ(errors.size(), 1u);
   EXPECT_NE(errors[0].message.find("task blew up"), std::string::npos);
+}
+
+// max_upper_fanout=2 with max_local_group_size=1 forces real grouping (see
+// GroupedUpperHierarchy above), and an odd coordinator count leaves one
+// group of exactly one coordinator at some round (setup_upper_chain's
+// round_comm->rank() / effective_fanout split). That leftover coordinator
+// owns a singleton-communicator level -- Open MPI refuses Win_create on a
+// size-1 comm, so the level never gets a window -- and self-claims and runs
+// tasks directly against it (run_leaf_leader_worker()), so a failure there
+// takes report_task_error()'s local_only() path, which no other error test
+// exercises. Every task fails so whichever rank(s) execute one, including
+// that leftover coordinator, hit it regardless of how claiming interleaves.
+TEST(HierarchicalLockFreeRMA, TaskErrorInSingletonUpperGroup) {
+  using Distributor = dynampi::HierarchicalLockFreeRMAWorkDistributor<int, int>;
+  Distributor::Config config;
+  config.max_upper_fanout = 2;
+  config.max_local_group_size = 1;
+  config.rethrow_task_errors = false;
+  Distributor distributor([](int) -> int { throw std::runtime_error("task blew up"); }, config);
+
+  if (!distributor.is_root_manager()) return;
+
+  std::vector<int> tasks;
+  for (int i = 0; i < kTaskCount; ++i) tasks.push_back(i);
+  distributor.insert_tasks(tasks);
+  auto results = distributor.finish_remaining_tasks();
+  EXPECT_EQ(results.size(), static_cast<size_t>(kTaskCount));
+
+  auto errors = distributor.take_task_errors();
+  EXPECT_EQ(errors.size(), static_cast<size_t>(kTaskCount));
 }
 
 TEST(HierarchicalLockFreeRMA, TaskErrorPropagatesToManager) {

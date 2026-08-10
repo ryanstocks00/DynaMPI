@@ -61,6 +61,11 @@ if(NOT CMAKE_CXX_COMPILER MATCHES "smpicxx")
 endif()
 
 create_test(mpi_test mpi "GTest::gtest;dynampi")
+if(MSVC)
+  # test_distributers.cpp's heavily templated TYPED_TEST suite exceeds MSVC's
+  # default COFF section limit (C1128).
+  target_compile_options(mpi_test PRIVATE /bigobj)
+endif()
 
 # --------------------------------------------------------------------
 # Detect MPI implementation and configure oversubscribe flags

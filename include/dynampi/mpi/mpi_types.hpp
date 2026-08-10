@@ -100,7 +100,7 @@ inline int mpi_elements_per_value() {
     static const int elements = [] {
       int element_bytes = 0;
       if (MPI_Type_size(MPI_Type<T>::value, &element_bytes) != MPI_SUCCESS || element_bytes <= 0) {
-        return 1;
+        return 1;  // LCOV_EXCL_LINE -- only reachable if MPI_Type_size fails on a live datatype
       }
       const size_t per_value = sizeof(T) / static_cast<size_t>(element_bytes);
       return per_value > 0 ? static_cast<int>(per_value) : 1;
