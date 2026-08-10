@@ -264,6 +264,57 @@ TYPED_TEST(DynamicDistribution, Example2) {
   }
 }
 
+// Mirrors how EXESS ships serialized MBE fragment requests/results through
+// DynaMPI: both TaskT and ResultT are variable-length std::vector<std::byte>
+// buffers, well past the single-element case. HierarchicalMPIWorkDistributor
+// and HierarchicalNonBlockingMPIWorkDistributor's leaf-result path
+// (receive_result_from) hits `if constexpr (result_mpi_type::resize_required)
+// DYNAMPI_UNIMPLEMENTED(...)` for such ResultT types; under NDEBUG,
+// DYNAMPI_ASSERT/DYNAMPI_UNIMPLEMENTED compile to nothing followed by
+// __builtin_unreachable(), so a reachable "unimplemented" branch is undefined
+// behavior rather than a clean abort -- in practice manifesting as heap
+// corruption/segfaults far away from this function (e.g. in
+// allocate_task_to_child()), not a clean failure here. See also Example2,
+// which documents/skips this exact gap for ResultT = std::vector<int>.
+TYPED_TEST(DynamicDistribution, VariableSizeTaskAndResult) {
+  using Task = std::vector<std::byte>;
+  using Result = std::vector<std::byte>;
+  using Distributer = DistributerOf<TypeParam, Task, Result>;
+
+  auto worker_task = [](Task task) -> Result {
+    Result result(task.size() * 2);
+    for (size_t i = 0; i < task.size(); ++i) {
+      result[i] = task[i];
+      result[task.size() + i] = static_cast<std::byte>(static_cast<unsigned char>(task[i]) + 1);
+    }
+    return result;
+  };
+
+  auto config = get_distributer_config<TypeParam, Task, Result>();
+  Distributer distributor(worker_task, config);
+  if (distributor.is_root_manager()) {
+    std::vector<Task> tasks;
+    for (int i = 0; i < 20; ++i) {
+      Task task(static_cast<size_t>(3 + i));  // varying lengths 3..22 bytes
+      for (size_t b = 0; b < task.size(); ++b) {
+        task[b] = static_cast<std::byte>((i * 7 + b) % 251);
+      }
+      tasks.push_back(task);
+    }
+    for (auto& t : tasks) distributor.insert_task(t);
+    std::vector<Result> results = distributor.finish_remaining_tasks();
+    ASSERT_EQ(results.size(), tasks.size());
+
+    std::vector<Result> expected;
+    expected.reserve(tasks.size());
+    for (auto& t : tasks) expected.push_back(worker_task(t));
+
+    std::sort(results.begin(), results.end());
+    std::sort(expected.begin(), expected.end());
+    EXPECT_EQ(results, expected);
+  }
+}
+
 TYPED_TEST(DynamicDistribution, RunTasksMaxTasks) {
   using Task = int;
   using Result = int;

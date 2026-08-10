@@ -23,6 +23,7 @@
 #include "../mpi/mpi_communicator.hpp"
 #include "../mpi/mpi_types.hpp"
 #include "dynampi/impl/base_distributor.hpp"
+#include "dynampi/impl/variable_batch.hpp"
 #include "dynampi/task_error.hpp"
 #include "dynampi/utilities/assert.hpp"
 #include "dynampi/utilities/timer.hpp"
@@ -710,7 +711,11 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     std::vector<ResultT> results = std::move(m_results);
     m_results.clear();
 
-    send_to_parent(results, Tag::RESULT_BATCH);
+    if constexpr (result_mpi_type::resize_required) {
+      send_to_parent(detail::pack_variable_batch(results), Tag::RESULT_BATCH);
+    } else {
+      send_to_parent(results, Tag::RESULT_BATCH);
+    }
     m_results_sent_to_parent += results.size();
   }
 
@@ -787,7 +792,11 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
           }
         }
 
-        send_to_worker(tasks, worker_rank, Tag::TASK_BATCH, layer);
+        if constexpr (task_mpi_type::resize_required) {
+          send_to_worker(detail::pack_variable_batch(tasks), worker_rank, Tag::TASK_BATCH, layer);
+        } else {
+          send_to_worker(tasks, worker_rank, Tag::TASK_BATCH, layer);
+        }
         m_tasks_sent_to_child += tasks.size();
       } else {
         const TaskT task = get_next_task_to_send();
@@ -1000,31 +1009,47 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
 
   void receive_result_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
                            CommLayer layer) {
+    // With groups, always use global communicator and determine layer from source rank
+    int world_source = status.MPI_SOURCE;
+    if (m_config.coordinator_per_node) {
+      layer = determine_layer_from_world_rank(world_source);
+    }
     if constexpr (result_mpi_type::resize_required) {
-      DYNAMPI_UNIMPLEMENTED(  // LCOV_EXCL_LINE
-          "Dynamic resizing of results is not supported in hierarchical distribution");
+      int count;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, result_mpi_type::value, &count));
+      ResultT result{};
+      result_mpi_type::resize(result, count);
+      m_communicator.recv(result, world_source, Tag::RESULT);
+      m_results.push_back(std::move(result));
     } else {
       m_results.push_back(ResultT{});
-      // With groups, always use global communicator and determine layer from source rank
-      int world_source = status.MPI_SOURCE;
-      if (m_config.coordinator_per_node) {
-        layer = determine_layer_from_world_rank(world_source);
-      }
       m_communicator.recv(m_results.back(), world_source, Tag::RESULT);
-      m_results_received_from_child++;
-      m_free_worker_indices.push(TaskRequest{.worker_rank = world_source, .source_layer = layer});
     }
+    m_results_received_from_child++;
+    m_free_worker_indices.push(TaskRequest{.worker_rank = world_source, .source_layer = layer});
   }
 
   void receive_result_batch_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
                                  [[maybe_unused]] CommLayer layer) {
-    using message_type = MPI_Type<std::vector<ResultT>>;
-    int count;
-    DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
-    std::vector<ResultT> results;
-    message_type::resize(results, count);
     int world_source = status.MPI_SOURCE;
-    m_communicator.recv(results, world_source, Tag::RESULT_BATCH);
+    std::vector<ResultT> results;
+    if constexpr (result_mpi_type::resize_required) {
+      // See variable_batch.hpp: a batch of variable-length ResultT can't use
+      // the generic vector-of-T wire format, so it's packed as raw bytes.
+      using message_type = MPI_Type<std::vector<std::byte>>;
+      int count;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
+      std::vector<std::byte> packed;
+      message_type::resize(packed, count);
+      m_communicator.recv(packed, world_source, Tag::RESULT_BATCH);
+      results = detail::unpack_variable_batch<ResultT>(packed);
+    } else {
+      using message_type = MPI_Type<std::vector<ResultT>>;
+      int count;
+      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
+      message_type::resize(results, count);
+      m_communicator.recv(results, world_source, Tag::RESULT_BATCH);
+    }
     // Results and next-batch requests are independent messages (see the
     // double-buffering refill in run_worker()), so receiving results here
     // has no side effect on task allocation for this child.
@@ -1087,14 +1112,26 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     if constexpr (prioritize_tasks) {
       DYNAMPI_UNIMPLEMENTED("Prioritized hierarchical distribution");
     } else {
-      using message_type = MPI_Type<std::vector<TaskT>>;
-      int count;
-      DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
-      std::vector<TaskT> tasks;
-      message_type::resize(tasks, count);
       // With groups, always use global communicator
       int world_source = status.MPI_SOURCE;
-      m_communicator.recv(tasks, world_source, Tag::TASK_BATCH);
+      std::vector<TaskT> tasks;
+      if constexpr (task_mpi_type::resize_required) {
+        // See variable_batch.hpp: a batch of variable-length TaskT can't use
+        // the generic vector-of-T wire format, so it's packed as raw bytes.
+        using message_type = MPI_Type<std::vector<std::byte>>;
+        int count;
+        DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
+        std::vector<std::byte> packed;
+        message_type::resize(packed, count);
+        m_communicator.recv(packed, world_source, Tag::TASK_BATCH);
+        tasks = detail::unpack_variable_batch<TaskT>(packed);
+      } else {
+        using message_type = MPI_Type<std::vector<TaskT>>;
+        int count;
+        DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, message_type::value, &count));
+        message_type::resize(tasks, count);
+        m_communicator.recv(tasks, world_source, Tag::TASK_BATCH);
+      }
       m_tasks_received_from_parent += tasks.size();
       // This reply fulfills one of our outstanding pipelined requests (see
       // run_worker()'s top_up_pipeline()); only intermediate coordinators
