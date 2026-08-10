@@ -8,11 +8,7 @@ from collections import defaultdict
 from collections.abc import Sequence
 from typing import TypedDict
 
-import matplotlib.pyplot as plt
-
 from plot_common import (
-    IEEE_FIG_HEIGHT,
-    IEEE_FIG_WIDTH,
     Recency,
     add_light_grid,
     add_plot_cli_args,
@@ -22,6 +18,7 @@ from plot_common import (
     filter_ranks_per_node,
     filter_systems,
     format_distributor_label,
+    ieee_figure,
     legend_avoiding_data,
     path_recency,
     save_figure,
@@ -141,18 +138,7 @@ def plot_system_rpn(
     if not series:
         return
 
-    with plt.style.context(['science', 'ieee']):
-        plt.rcParams.update(
-            {
-                "font.size": 10,
-                "axes.labelsize": 10,
-                "xtick.labelsize": 9,
-                "ytick.labelsize": 9,
-                "legend.fontsize": 8,
-            }
-        )
-        fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT * 0.7))
-
+    with ieee_figure() as (fig, ax):
         all_nodes: set[int] = set()
         handles = []
         labels = []
@@ -220,18 +206,7 @@ def plot_cross_system_by_distributor(
             if key_a not in grouped or key_b not in grouped:
                 continue
 
-            with plt.style.context(['science', 'ieee']):
-                plt.rcParams.update(
-                    {
-                        "font.size": 10,
-                        "axes.labelsize": 10,
-                        "xtick.labelsize": 9,
-                        "ytick.labelsize": 9,
-                        "legend.fontsize": 8,
-                    }
-                )
-                fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT * 0.7))
-
+            with ieee_figure() as (fig, ax):
                 all_nodes: set[int] = set()
                 handles = []
                 labels = []
@@ -263,8 +238,8 @@ def plot_cross_system_by_distributor(
                 set_log_node_axes(ax, all_nodes)
                 add_light_grid(ax)
                 legend_avoiding_data(
-            ax, handles, labels, locations=("upper left",), **COMPACT_LEGEND_STYLE
-        )
+                    ax, handles, labels, locations=("upper left",), **COMPACT_LEGEND_STYLE
+                )
 
                 fanout_str = ""
                 if "hierarchical" in distributor:

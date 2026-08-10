@@ -6,7 +6,8 @@ from __future__ import annotations
 import argparse
 import os
 import re
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
+from contextlib import contextmanager
 from typing import Any, TypeVar, cast
 
 import matplotlib.pyplot as plt
@@ -378,6 +379,28 @@ def filter_systems(rows: Sequence[RowT], exclude_systems: Sequence[str]) -> list
     if not excluded:
         return list(rows)
     return [row for row in rows if str(row["system"]).lower() not in excluded]
+
+
+@contextmanager
+def ieee_figure() -> Iterator[tuple[Figure, Axes]]:
+    """Open a (fig, ax) pair styled and sized for the paper's IEEE figures.
+
+    Applies the style/rcParams/figsize shared by every per-series plot in
+    these scripts, so each caller only has to write what differs: the data,
+    the labels, the legend.
+    """
+    with plt.style.context(['science', 'ieee']):
+        plt.rcParams.update(
+            {
+                "font.size": 10,
+                "axes.labelsize": 10,
+                "xtick.labelsize": 9,
+                "ytick.labelsize": 9,
+                "legend.fontsize": 8,
+            }
+        )
+        fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT * 0.7))
+        yield fig, ax
 
 
 def save_figure(

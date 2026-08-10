@@ -21,8 +21,6 @@ from typing import TypedDict
 import matplotlib.pyplot as plt
 
 from plot_common import (
-    IEEE_FIG_HEIGHT,
-    IEEE_FIG_WIDTH,
     Recency,
     add_light_grid,
     add_plot_cli_args,
@@ -32,6 +30,7 @@ from plot_common import (
     filter_ranks_per_node,
     filter_systems,
     format_distributor_label,
+    ieee_figure,
     legend_avoiding_data,
     normalize_mode,
     path_recency,
@@ -155,18 +154,7 @@ def plot_distributor(
     image_format: str,
 ) -> None:
     for mode in ("fixed", "random"):
-        with plt.style.context(['science', 'ieee']):
-            plt.rcParams.update(
-                {
-                    "font.size": 10,
-                    "axes.labelsize": 10,
-                    "xtick.labelsize": 9,
-                    "ytick.labelsize": 9,
-                    "legend.fontsize": 8,
-                }
-            )
-            fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT * 0.7))
-
+        with ieee_figure() as (fig, ax):
             series = []
             all_nodes: set[int] = set()
             for (
@@ -286,18 +274,7 @@ def plot_distributor_comparison(
     image_format: str,
 ) -> None:
     """Compare distributors at one workload duration (cross-distributor view)."""
-    with plt.style.context(['science', 'ieee']):
-        plt.rcParams.update(
-            {
-                "font.size": 10,
-                "axes.labelsize": 10,
-                "xtick.labelsize": 9,
-                "ytick.labelsize": 9,
-                "legend.fontsize": 8,
-            }
-        )
-        fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT * 0.7))
-
+    with ieee_figure() as (fig, ax):
         series = []
         all_nodes: set[int] = set()
         for (
