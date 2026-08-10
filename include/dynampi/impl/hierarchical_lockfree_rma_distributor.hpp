@@ -374,11 +374,17 @@ class LockFreeRMALevel {
     }
     const int64_t ready = static_cast<int64_t>(error.worker_rank) + 1;
     if (local_only()) {
+      // LCOV_EXCL_START -- only reachable when this level's own owned group
+      // is a singleton (an odd coordinator count under max_upper_fanout
+      // leaves one such leftover group; see setup_upper_chain()) AND a task
+      // fails there specifically, rather than in the far more common case
+      // of a genuinely remote claimant.
       detail::write_bytes(m_window_buffer.data(), m_window_buffer.size(),
                           static_cast<size_t>(error_slot(slot)) + E_DATA, message_bytes.data(),
                           message_bytes.size());
       local_store_i64(error_slot(slot) + static_cast<MPI_Aint>(E_RANK), ready);
       return;
+      // LCOV_EXCL_STOP
     }
     post_put_bytes(message_bytes.data(), message_bytes.size(),
                    error_slot(slot) + static_cast<MPI_Aint>(E_DATA));
