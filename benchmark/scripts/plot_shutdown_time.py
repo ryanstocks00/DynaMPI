@@ -12,6 +12,7 @@ from plot_common import (
     add_plot_cli_args,
     collect_csv_paths,
     dedupe_newest,
+    distributor_series_index,
     filter_ranks_per_node,
     filter_systems,
     finish_compact_node_plot,
@@ -134,14 +135,15 @@ def plot_system_rpn(
         handles = []
         labels = []
 
-        for idx, key in enumerate(series):
+        for key in series:
             _, distributor, fanout, _rpn = key
             nodes, times_us = sorted_series_xy(grouped[key])
             time_per_shutdown_s = [t / 1_000_000.0 for t in times_us]
             all_nodes.update(nodes)
 
             label = format_distributor_label(distributor, fanout)
-            line = plot_node_series(ax, idx, nodes, time_per_shutdown_s, label, linewidth=1.0)
+            color_idx = distributor_series_index(distributor, fanout)
+            line = plot_node_series(ax, color_idx, nodes, time_per_shutdown_s, label, linewidth=1.0)
             handles.append(line)
             labels.append(label)
 

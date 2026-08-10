@@ -25,6 +25,7 @@ from plot_common import (
     add_plot_cli_args,
     collect_csv_paths,
     dedupe_newest,
+    distributor_series_index,
     filter_ranks_per_node,
     filter_systems,
     finish_compact_node_plot,
@@ -299,9 +300,10 @@ def plot_distributor_comparison(
         series_sorted = sorted(series, key=final_throughput, reverse=True)
         handles = []
         labels = []
-        for idx, (dist, fanout, nodes, throughput) in enumerate(series_sorted):
+        for dist, fanout, nodes, throughput in series_sorted:
             label = format_distributor_label(dist, fanout)
-            line = plot_node_series(ax, idx, nodes, throughput, label)
+            color_idx = distributor_series_index(dist, fanout)
+            line = plot_node_series(ax, color_idx, nodes, throughput, label)
             handles.append(line)
             labels.append(label)
 

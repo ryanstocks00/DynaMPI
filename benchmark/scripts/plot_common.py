@@ -158,6 +158,34 @@ def format_distributor_label(distributor: str, fanout: int | None = None) -> str
     return f"{label} ({format_fanout(fanout)})"
 
 
+# Fixed color/marker slot for each (distributor, fanout) identity, independent
+# of whatever order a given plot ranks its legend into. Cross-distributor
+# comparison plots (weak-scaling and shutdown-time) both index into this so
+# the same algorithm gets the same color/marker in every figure; legend
+# *order* within one plot is sorted separately by whatever ranking that plot
+# wants (e.g. fastest-first), decoupling "reading order" from "identity".
+DISTRIBUTOR_SERIES_ORDER: list[tuple[str, int]] = [
+    ("naive", -1),
+    ("hierarchical", 0),
+    ("hierarchical", -1),
+    ("lockfree_rma", -1),
+    ("hierarchical_lockfree_rma", 0),
+    ("hierarchical_lockfree_rma", -1),
+]
+
+
+def distributor_series_index(distributor: str, fanout: int) -> int:
+    """Stable color/marker index for a (distributor, fanout) identity.
+
+    Falls back to a slot past the known variants for anything else, so an
+    unexpected series still gets *a* consistent slot rather than crashing.
+    """
+    key = (distributor, fanout if "hierarchical" in distributor else -1)
+    if key in DISTRIBUTOR_SERIES_ORDER:
+        return DISTRIBUTOR_SERIES_ORDER.index(key)
+    return len(DISTRIBUTOR_SERIES_ORDER) + (hash(key) % 10)
+
+
 # A legend spanning most of the axes width has to clear the curves out at
 # the far end of the sweep, which on these diagonal log-log plots costs a
 # lot of axis range (~3 decades at the default sizing) and shrinks the data
