@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import os
 import re
 from collections.abc import Callable, Iterator, Mapping, Sequence
@@ -80,6 +81,22 @@ def path_recency(path: str, file_mtime: float) -> Recency:
     for match in _JOB_ID_RE.finditer(normalized):
         job_id = max(job_id, int(match.group(1)))
     return (final_boost, job_id, file_mtime)
+
+
+def iter_csv_rows(paths: Sequence[str]) -> Iterator[tuple[dict[str, str], str, float, Recency]]:
+    """Yield (row, path, file_mtime, recency) for every row across every CSV.
+
+    Factors out the file-iteration shell each script's parse_rows() wraps
+    around its own per-row filtering/extraction, so that part isn't
+    duplicated between scripts.
+    """
+    for path in paths:
+        file_mtime = os.path.getmtime(path)
+        recency = path_recency(path, file_mtime)
+        with open(path, "r", encoding="utf-8") as handle:
+            reader = csv.DictReader(handle)
+            for row in reader:
+                yield row, path, file_mtime, recency
 
 
 def dedupe_newest(
@@ -310,6 +327,52 @@ def series_marker(index: int) -> str:
 
 def series_color(index: int) -> Any:
     return colormaps['tab10'](index % 10)
+
+
+def sorted_series_xy(points: Sequence[tuple[int, float]]) -> tuple[list[int], list[float]]:
+    """Sort (node, value) points by node count and unzip into parallel lists."""
+    points_sorted = sorted(points, key=lambda point: point[0])
+    return [p[0] for p in points_sorted], [p[1] for p in points_sorted]
+
+
+def plot_node_series(
+    ax: Axes,
+    idx: int,
+    nodes: Sequence[int],
+    values: Sequence[float],
+    label: str,
+    *,
+    linewidth: float | None = None,
+) -> Any:
+    """Plot one node-count series in the shared marker/color style, returning its handle."""
+    kwargs: dict[str, Any] = {
+        "marker": series_marker(idx),
+        "label": label,
+        "fillstyle": "none",
+        "markeredgewidth": 1.0,
+        "color": series_color(idx),
+    }
+    if linewidth is not None:
+        kwargs["linewidth"] = linewidth
+    (line,) = ax.plot(nodes, values, **kwargs)
+    return line
+
+
+def finish_compact_node_plot(
+    ax: Axes, all_nodes: set[int], handles: Sequence[Any], labels: Sequence[str], ylabel: str
+) -> None:
+    """Common tail for a per-series node-count plot: axes, grid, and a compact legend.
+
+    Shared by the plotting functions whose legend just needs to clear the
+    data from the upper-left corner; a function whose legend needs a
+    different placement (locations, ncol, etc.) calls legend_avoiding_data()
+    directly instead.
+    """
+    ax.set_xlabel("Nodes")
+    ax.set_ylabel(ylabel)
+    set_log_node_axes(ax, all_nodes)
+    add_light_grid(ax)
+    legend_avoiding_data(ax, handles, labels, locations=("upper left",), **COMPACT_LEGEND_STYLE)
 
 
 def format_node_tick(nodes: int) -> str:

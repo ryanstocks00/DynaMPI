@@ -12,7 +12,6 @@ script writes are named ``weak_scaling_*``.
 """
 
 import argparse
-import csv
 import os
 from collections import defaultdict
 from collections.abc import Sequence
@@ -24,20 +23,21 @@ from plot_common import (
     Recency,
     add_light_grid,
     add_plot_cli_args,
-    COMPACT_LEGEND_STYLE,
     collect_csv_paths,
     dedupe_newest,
     filter_ranks_per_node,
     filter_systems,
+    finish_compact_node_plot,
     format_distributor_label,
     ieee_figure,
+    iter_csv_rows,
     legend_avoiding_data,
     normalize_mode,
-    path_recency,
+    plot_node_series,
     save_figure,
     series_color,
-    series_marker,
     set_log_node_axes,
+    sorted_series_xy,
 )
 
 
@@ -69,44 +69,39 @@ def format_duration(expected_ns: int | float) -> str:
 
 def parse_rows(paths: Sequence[str]) -> list[WeakScalingRow]:
     rows: list[WeakScalingRow] = []
-    for path in paths:
-        file_mtime = os.path.getmtime(path)
-        recency = path_recency(path, file_mtime)
-        with open(path, "r", encoding="utf-8") as handle:
-            reader = csv.DictReader(handle)
-            for row in reader:
-                expected_ns_raw = row.get("expected_ns", "").strip()
-                expected_us_raw = row.get("expected_us", "").strip()
-                if expected_ns_raw:
-                    expected_ns = int(float(expected_ns_raw))
-                elif expected_us_raw:
-                    expected_ns = int(float(expected_us_raw) * 1000)
-                else:
-                    expected_ns = 0
-                nodes = int(float(row.get("nodes", 0)))
-                world_size = int(float(row.get("world_size", 0)))
-                ranks_per_node = int(round(world_size / nodes)) if nodes else 0
-                distributor = row.get("distributor", "").strip()
-                if distributor == "minimal_lockfree":
-                    continue
-                fanout = int(float(row.get("max_upper_fanout", -1) or -1))
-                if "hierarchical" not in distributor:
-                    fanout = -1
-                rows.append(
-                    {
-                        "system": row.get("system", "").strip() or "unknown",
-                        "distributor": distributor,
-                        "mode": row.get("mode", "").strip(),
-                        "expected_ns": expected_ns,
-                        "nodes": nodes,
-                        "ranks_per_node": ranks_per_node,
-                        "fanout": fanout,
-                        "throughput": float(row.get("throughput_tasks_per_s", 0.0)),
-                        "file_mtime": file_mtime,
-                        "path": path,
-                        "recency": recency,
-                    }
-                )
+    for row, path, file_mtime, recency in iter_csv_rows(paths):
+        expected_ns_raw = row.get("expected_ns", "").strip()
+        expected_us_raw = row.get("expected_us", "").strip()
+        if expected_ns_raw:
+            expected_ns = int(float(expected_ns_raw))
+        elif expected_us_raw:
+            expected_ns = int(float(expected_us_raw) * 1000)
+        else:
+            expected_ns = 0
+        nodes = int(float(row.get("nodes", 0)))
+        world_size = int(float(row.get("world_size", 0)))
+        ranks_per_node = int(round(world_size / nodes)) if nodes else 0
+        distributor = row.get("distributor", "").strip()
+        if distributor == "minimal_lockfree":
+            continue
+        fanout = int(float(row.get("max_upper_fanout", -1) or -1))
+        if "hierarchical" not in distributor:
+            fanout = -1
+        rows.append(
+            {
+                "system": row.get("system", "").strip() or "unknown",
+                "distributor": distributor,
+                "mode": row.get("mode", "").strip(),
+                "expected_ns": expected_ns,
+                "nodes": nodes,
+                "ranks_per_node": ranks_per_node,
+                "fanout": fanout,
+                "throughput": float(row.get("throughput_tasks_per_s", 0.0)),
+                "file_mtime": file_mtime,
+                "path": path,
+                "recency": recency,
+            }
+        )
     return rows
 
 
@@ -173,9 +168,7 @@ def plot_distributor(
                     or series_fanout != fanout
                 ):
                     continue
-                points_sorted = sorted(points, key=lambda point: point[0])
-                nodes = [point[0] for point in points_sorted]
-                throughput = [point[1] for point in points_sorted]
+                nodes, throughput = sorted_series_xy(points)
                 all_nodes.update(nodes)
                 series.append((expected_ns, nodes, throughput))
 
@@ -189,15 +182,7 @@ def plot_distributor(
 
             for idx, (expected_ns, nodes, throughput) in enumerate(series_sorted):
                 label = format_duration(expected_ns)
-                line, = ax.plot(
-                    nodes,
-                    throughput,
-                    marker=series_marker(idx),
-                    label=label,
-                    fillstyle='none',
-                    markeredgewidth=1.0,
-                    color=series_color(idx),
-                )
+                line = plot_node_series(ax, idx, nodes, throughput, label)
                 handles.append(line)
                 labels.append(label)
 
@@ -295,9 +280,7 @@ def plot_distributor_comparison(
             # Keep auto and flat hierarchical topologies only.
             if "hierarchical" in dist and fanout not in (-1, 0):
                 continue
-            points_sorted = sorted(points, key=lambda point: point[0])
-            nodes = [point[0] for point in points_sorted]
-            throughput = [point[1] for point in points_sorted]
+            nodes, throughput = sorted_series_xy(points)
             all_nodes.update(nodes)
             series.append((dist, fanout, nodes, throughput))
 
@@ -318,25 +301,11 @@ def plot_distributor_comparison(
         labels = []
         for idx, (dist, fanout, nodes, throughput) in enumerate(series_sorted):
             label = format_distributor_label(dist, fanout)
-            line, = ax.plot(
-                nodes,
-                throughput,
-                marker=series_marker(idx),
-                label=label,
-                fillstyle='none',
-                markeredgewidth=1.0,
-                color=series_color(idx),
-            )
+            line = plot_node_series(ax, idx, nodes, throughput, label)
             handles.append(line)
             labels.append(label)
 
-        ax.set_xlabel("Nodes")
-        ax.set_ylabel("Tasks per second")
-        set_log_node_axes(ax, all_nodes)
-        add_light_grid(ax)
-        legend_avoiding_data(
-            ax, handles, labels, locations=("upper left",), **COMPACT_LEGEND_STYLE
-        )
+        finish_compact_node_plot(ax, all_nodes, handles, labels, "Tasks per second")
 
         duration = format_duration(expected_ns).replace(" ", "")
         mode_dir = os.path.join(output_dir, mode)

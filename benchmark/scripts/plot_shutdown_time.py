@@ -2,7 +2,6 @@
 # SPDX-FileCopyrightText: 2026 Ryan Stocks
 # SPDX-License-Identifier: Apache-2.0
 import argparse
-import csv
 import os
 from collections import defaultdict
 from collections.abc import Sequence
@@ -10,21 +9,18 @@ from typing import TypedDict
 
 from plot_common import (
     Recency,
-    add_light_grid,
     add_plot_cli_args,
-    COMPACT_LEGEND_STYLE,
     collect_csv_paths,
     dedupe_newest,
     filter_ranks_per_node,
     filter_systems,
+    finish_compact_node_plot,
     format_distributor_label,
     ieee_figure,
-    legend_avoiding_data,
-    path_recency,
+    iter_csv_rows,
+    plot_node_series,
     save_figure,
-    series_color,
-    series_marker,
-    set_log_node_axes,
+    sorted_series_xy,
 )
 
 
@@ -44,45 +40,40 @@ class ShutdownRow(TypedDict):
 
 def parse_rows(paths: Sequence[str]) -> list[ShutdownRow]:
     rows: list[ShutdownRow] = []
-    for path in paths:
-        file_mtime = os.path.getmtime(path)
-        recency = path_recency(path, file_mtime)
-        with open(path, "r", encoding="utf-8") as handle:
-            reader = csv.DictReader(handle)
-            for row in reader:
-                if "time_per_shutdown_us" not in row:
-                    continue
-                time_per_shutdown_us = float(row.get("time_per_shutdown_us", 0.0))
-                if time_per_shutdown_us <= 0.0:
-                    continue
-                nodes = int(float(row.get("nodes", 0)))
-                if nodes > 2048:
-                    continue
-                world_size = int(float(row.get("world_size", 0)))
-                ranks_per_node = int(round(world_size / nodes)) if nodes else 0
-                distributor = row.get("distributor", "").strip() or "naive"
-                fanout = int(float(row.get("max_upper_fanout", -1) or -1))
-                # Fanout only distinguishes hierarchical topologies.
-                if "hierarchical" not in distributor:
-                    fanout = -1
-                # Sanity-drop any leftover sub-microsecond hierarchical no-ops.
-                if "hierarchical" in distributor and time_per_shutdown_us < 1.0:
-                    continue
-                rows.append(
-                    {
-                        "system": row.get("system", "").strip() or "unknown",
-                        "distributor": distributor,
-                        "fanout": fanout,
-                        "ranks_per_node": ranks_per_node,
-                        "nodes": nodes,
-                        "world_size": world_size,
-                        "workers": int(float(row.get("workers", 0))),
-                        "time_per_shutdown_us": time_per_shutdown_us,
-                        "file_mtime": file_mtime,
-                        "path": path,
-                        "recency": recency,
-                    }
-                )
+    for row, path, file_mtime, recency in iter_csv_rows(paths):
+        if "time_per_shutdown_us" not in row:
+            continue
+        time_per_shutdown_us = float(row.get("time_per_shutdown_us", 0.0))
+        if time_per_shutdown_us <= 0.0:
+            continue
+        nodes = int(float(row.get("nodes", 0)))
+        if nodes > 2048:
+            continue
+        world_size = int(float(row.get("world_size", 0)))
+        ranks_per_node = int(round(world_size / nodes)) if nodes else 0
+        distributor = row.get("distributor", "").strip() or "naive"
+        fanout = int(float(row.get("max_upper_fanout", -1) or -1))
+        # Fanout only distinguishes hierarchical topologies.
+        if "hierarchical" not in distributor:
+            fanout = -1
+        # Sanity-drop any leftover sub-microsecond hierarchical no-ops.
+        if "hierarchical" in distributor and time_per_shutdown_us < 1.0:
+            continue
+        rows.append(
+            {
+                "system": row.get("system", "").strip() or "unknown",
+                "distributor": distributor,
+                "fanout": fanout,
+                "ranks_per_node": ranks_per_node,
+                "nodes": nodes,
+                "world_size": world_size,
+                "workers": int(float(row.get("workers", 0))),
+                "time_per_shutdown_us": time_per_shutdown_us,
+                "file_mtime": file_mtime,
+                "path": path,
+                "recency": recency,
+            }
+        )
     return rows
 
 
@@ -145,32 +136,16 @@ def plot_system_rpn(
 
         for idx, key in enumerate(series):
             _, distributor, fanout, _rpn = key
-            points_sorted = sorted(grouped[key], key=lambda point: point[0])
-            nodes = [point[0] for point in points_sorted]
-            time_per_shutdown_s = [point[1] / 1_000_000.0 for point in points_sorted]
+            nodes, times_us = sorted_series_xy(grouped[key])
+            time_per_shutdown_s = [t / 1_000_000.0 for t in times_us]
             all_nodes.update(nodes)
 
             label = format_distributor_label(distributor, fanout)
-            line, = ax.plot(
-                nodes,
-                time_per_shutdown_s,
-                marker=series_marker(idx),
-                fillstyle='none',
-                markeredgewidth=1.0,
-                linewidth=1.0,
-                color=series_color(idx),
-                label=label,
-            )
+            line = plot_node_series(ax, idx, nodes, time_per_shutdown_s, label, linewidth=1.0)
             handles.append(line)
             labels.append(label)
 
-        ax.set_xlabel("Nodes")
-        ax.set_ylabel("Shutdown time (s)")
-        set_log_node_axes(ax, all_nodes)
-        add_light_grid(ax)
-        legend_avoiding_data(
-            ax, handles, labels, locations=("upper left",), **COMPACT_LEGEND_STYLE
-        )
+        finish_compact_node_plot(ax, all_nodes, handles, labels, "Shutdown time (s)")
 
         save_figure(
             fig,
@@ -213,33 +188,17 @@ def plot_cross_system_by_distributor(
                 for idx, (system, rpn, key) in enumerate(
                     ((sys_a, rpn_a, key_a), (sys_b, rpn_b, key_b))
                 ):
-                    points_sorted = sorted(grouped[key], key=lambda point: point[0])
-                    nodes = [point[0] for point in points_sorted]
-                    time_per_shutdown_s = [
-                        point[1] / 1_000_000.0 for point in points_sorted
-                    ]
+                    nodes, times_us = sorted_series_xy(grouped[key])
+                    time_per_shutdown_s = [t / 1_000_000.0 for t in times_us]
                     all_nodes.update(nodes)
                     label = f"{system.capitalize()} ({rpn} rpn)"
-                    line, = ax.plot(
-                        nodes,
-                        time_per_shutdown_s,
-                        marker=series_marker(idx),
-                        fillstyle='none',
-                        markeredgewidth=1.0,
-                        linewidth=1.0,
-                        color=series_color(idx),
-                        label=label,
+                    line = plot_node_series(
+                        ax, idx, nodes, time_per_shutdown_s, label, linewidth=1.0
                     )
                     handles.append(line)
                     labels.append(label)
 
-                ax.set_xlabel("Nodes")
-                ax.set_ylabel("Shutdown time (s)")
-                set_log_node_axes(ax, all_nodes)
-                add_light_grid(ax)
-                legend_avoiding_data(
-                    ax, handles, labels, locations=("upper left",), **COMPACT_LEGEND_STYLE
-                )
+                finish_compact_node_plot(ax, all_nodes, handles, labels, "Shutdown time (s)")
 
                 fanout_str = ""
                 if "hierarchical" in distributor:
