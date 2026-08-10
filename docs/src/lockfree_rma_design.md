@@ -6,8 +6,8 @@
 # Lock-Free RMA Design Notes
 
 Design background for the three RMA-based distributors:
-`MinimalLockFreeMPIWorkDistributor`, `AsyncPutLockFreeMPIWorkDistributor`, and
-`HierarchicalAsyncPutLockFreeMPIWorkDistributor`.  For the user-facing summary
+`MinimalLockFreeWorkDistributor`, `LockFreeRMAWorkDistributor`, and
+`HierarchicalLockFreeRMAWorkDistributor`.  For the user-facing summary
 and configuration, see [Implementations](implementations.md).
 
 ## Why one-sided at all
@@ -30,7 +30,7 @@ collectives on the hot path.
 
 ## Minimal index parallel-for
 
-`MinimalLockFreeMPIWorkDistributor` is the smallest useful version: the task *is*
+`MinimalLockFreeWorkDistributor` is the smallest useful version: the task *is*
 its index, so the window holds nothing but a claim counter.
 
 ```text
@@ -54,9 +54,9 @@ Results are packed as `[int64 index][int64 count][data]` records, gathered with 
 single `MPI_Gatherv`, then sorted by index.  That terminal gather is the design's
 one collective and its scaling limit.
 
-## Async-put window protocol
+## Lock-free RMA window protocol
 
-`AsyncPutLockFreeMPIWorkDistributor` generalises this to arbitrary payloads and
+`LockFreeRMAWorkDistributor` generalises this to arbitrary payloads and
 removes the gather entirely.
 
 ### Layout
@@ -70,8 +70,8 @@ removes the gather entirely.
 
 Task and result slots are `[int64 count][data]`, padded to an 8-byte stride so
 every slot is independently addressable.  Exact offsets are in
-`include/dynampi/impl/async_put_lockfree_distributor.hpp`; the hierarchical
-variant reuses the identical layout per level via `detail::AsyncPutLevel`.
+`include/dynampi/impl/lockfree_rma_distributor.hpp`; the hierarchical
+variant reuses the identical layout per level via `detail::LockFreeRMALevel`.
 
 | Field | Written by | Read by | Purpose |
 |-------|-----------|---------|---------|
@@ -156,10 +156,17 @@ contention; `MPI_Iprobe` drives the two-sided progress engine, which some stacks
 Idle ranks additionally back off for tens of microseconds — staggered by rank on
 Windows — so oversubscribed ranks do not flood the window as a thundering herd.
 
+!!! warning "Validate RMA progress on your MPI"
+    Early `MPI_Win_sync` + `MPI_Fetch_and_op` experiments under
+    `MPI_Win_lock_all` did not make remote atomic updates visible to local loads
+    on some MPICH 4.0 (ch4:ofi) configurations without asynchronous progress.
+    The shipped distributors avoid that pattern and are exercised in CI, but
+    behaviour at scale is stack-dependent — measure before relying on it.
+
 ## Composing levels
 
-`HierarchicalAsyncPutLockFreeMPIWorkDistributor` instantiates the protocol above
-once per tree level (`detail::AsyncPutLevel`), which is possible precisely
+`HierarchicalLockFreeRMAWorkDistributor` instantiates the protocol above
+once per tree level (`detail::LockFreeRMALevel`), which is possible precisely
 because nothing in it is collective: publishing, claiming, writing and harvesting
 are independent one-sided operations with no requirement that all claimants
 participate together.
@@ -175,32 +182,3 @@ Size-1 levels skip `MPI_Win_create` entirely (some MPI implementations reject
 window creation on singleton communicators) and fall back to plain loads and
 stores on the owner's buffer, which is correct because owner and claimant are
 then the same process.
-
-## Historical context
-
-!!! note "`LockFreeMPIWorkDistributor` was removed"
-    An earlier arbitrary-payload, CAS-based distributor returned results with an
-    `MPI_Barrier` + `MPI_Gather`/`MPI_Gatherv` **per round**.  That scaled badly
-    under oversubscription — measured at 50+ seconds, sometimes timing out, for a
-    trivial test at 150–204 ranks on two nodes.  The async-put protocol above
-    replaced it: no collectives on the hot path, and batching at coordinator
-    levels rather than per flat claim.
-
-!!! note "`OneSidedMPIWorkDistributor` was removed"
-    A fence-based prototype used three `MPI_Win_fence` barriers per round.
-    Passive-target `MPI_Win_lock_all` replaced it and is the only RMA path in the
-    tree today.
-
-| | Fence prototype (removed) | Current lock-free |
-|---|---|---|
-| Barriers per round | 3 collective fences | 0 |
-| Lock/unlock per task | 0 | 0 (`lock_all` once) |
-| Result return | Puts inside fence epochs | Put + completion log, or one terminal `Gatherv` (minimal) |
-| Arbitrary payloads | — | Yes, within `max_task_count` / `max_result_count` |
-
-!!! warning "Validate RMA progress on your MPI"
-    Early `MPI_Win_sync` + `MPI_Fetch_and_op` experiments under
-    `MPI_Win_lock_all` did not make remote atomic updates visible to local loads
-    on some MPICH 4.0 (ch4:ofi) configurations without asynchronous progress.
-    The shipped distributors avoid that pattern and are exercised in CI, but
-    behaviour at scale is stack-dependent — measure before relying on it.

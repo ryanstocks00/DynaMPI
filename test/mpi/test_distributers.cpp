@@ -18,11 +18,11 @@
 #include <utility>
 #include <vector>
 
-#include "dynampi/impl/async_put_lockfree_distributor.hpp"
-#include "dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp"
 #include "dynampi/impl/hierarchical_distributor.hpp"
+#include "dynampi/impl/hierarchical_lockfree_rma_distributor.hpp"
 #include "dynampi/impl/hierarchical_nonblocking_distributor.hpp"
-#include "dynampi/impl/lockfree_distributor.hpp"
+#include "dynampi/impl/lockfree_rma_distributor.hpp"
+#include "dynampi/impl/minimal_lockfree_distributor.hpp"
 #include "dynampi/mpi/mpi_communicator.hpp"
 #include "mpi_test_environment.hpp"
 
@@ -46,39 +46,39 @@ struct DistributerTypeWrapper {
   }
 };
 
-// Specialized wrapper for HierarchicalMPIWorkDistributor with coordinator_per_node config
+// Specialized wrapper for HierarchicalWorkDistributor with coordinator_per_node config
 template <bool CoordinatorPerNode>
 struct HierarchicalDistributerTypeWrapper {
   template <typename TaskT, typename ResultT, typename... Options>
-  using type = dynampi::HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>;
+  using type = dynampi::HierarchicalWorkDistributor<TaskT, ResultT, Options...>;
 
   static constexpr bool use_immediate_recv = false;
   static constexpr size_t max_result_size = 1024;
 
   template <typename TaskT, typename ResultT, typename... Options>
-  static typename dynampi::HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>::Config
+  static typename dynampi::HierarchicalWorkDistributor<TaskT, ResultT, Options...>::Config
   get_config() {
-    typename dynampi::HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>::Config config;
+    typename dynampi::HierarchicalWorkDistributor<TaskT, ResultT, Options...>::Config config;
     config.coordinator_per_node = CoordinatorPerNode;
     return config;
   }
 };
 
-// Specialized wrapper for HierarchicalNonBlockingMPIWorkDistributor with coordinator_per_node
+// Specialized wrapper for HierarchicalNonBlockingWorkDistributor with coordinator_per_node
 // config
 template <bool CoordinatorPerNode>
 struct HierarchicalNonBlockingDistributerTypeWrapper {
   template <typename TaskT, typename ResultT, typename... Options>
-  using type = dynampi::HierarchicalNonBlockingMPIWorkDistributor<TaskT, ResultT, Options...>;
+  using type = dynampi::HierarchicalNonBlockingWorkDistributor<TaskT, ResultT, Options...>;
 
   static constexpr bool use_immediate_recv = false;
   static constexpr size_t max_result_size = 1024;
 
   template <typename TaskT, typename ResultT, typename... Options>
-  static typename dynampi::HierarchicalNonBlockingMPIWorkDistributor<TaskT, ResultT,
-                                                                     Options...>::Config
-  get_config() {
-    typename dynampi::HierarchicalNonBlockingMPIWorkDistributor<TaskT, ResultT, Options...>::Config
+  static
+      typename dynampi::HierarchicalNonBlockingWorkDistributor<TaskT, ResultT, Options...>::Config
+      get_config() {
+    typename dynampi::HierarchicalNonBlockingWorkDistributor<TaskT, ResultT, Options...>::Config
         config;
     config.coordinator_per_node = CoordinatorPerNode;
     return config;
@@ -118,13 +118,11 @@ class DynamicDistribution : public ::testing::Test {
   }
 };
 
-using DistributerTypes =
-    ::testing::Types<DistributerTypeWrapper<dynampi::NaiveMPIWorkDistributor>,
-                     HierarchicalDistributerTypeWrapper<true>,
-                     HierarchicalDistributerTypeWrapper<false>,
-                     HierarchicalNonBlockingDistributerTypeWrapper<true>,
-                     HierarchicalNonBlockingDistributerTypeWrapper<false>,
-                     DistributerTypeWrapper<dynampi::AsyncPutLockFreeMPIWorkDistributor>>;
+using DistributerTypes = ::testing::Types<
+    DistributerTypeWrapper<dynampi::NaiveWorkDistributor>, HierarchicalDistributerTypeWrapper<true>,
+    HierarchicalDistributerTypeWrapper<false>, HierarchicalNonBlockingDistributerTypeWrapper<true>,
+    HierarchicalNonBlockingDistributerTypeWrapper<false>,
+    DistributerTypeWrapper<dynampi::LockFreeRMAWorkDistributor>>;
 
 TYPED_TEST_SUITE(DynamicDistribution, DistributerTypes);
 
@@ -241,8 +239,8 @@ TYPED_TEST(DynamicDistribution, Example2) {
   using Result = std::vector<int>;
   using Distributer = DistributerOf<TypeParam, Task, Result>;
   // Variable-size ResultT is unimplemented for both hierarchical variants.
-  if constexpr (is_specialization_of<dynampi::HierarchicalMPIWorkDistributor, Distributer>::value ||
-                is_specialization_of<dynampi::HierarchicalNonBlockingMPIWorkDistributor,
+  if constexpr (is_specialization_of<dynampi::HierarchicalWorkDistributor, Distributer>::value ||
+                is_specialization_of<dynampi::HierarchicalNonBlockingWorkDistributor,
                                      Distributer>::value) {
     GTEST_SKIP() << "This test is not applicable for this distributor.";
   } else {
@@ -328,7 +326,7 @@ TYPED_TEST(DynamicDistribution, PriorityQueue) {
   using Result = int;
   using Distributer = DistributerOf<TypeParam, Task, Result, dynampi::enable_prioritization>;
   if (!Distributer::ordered ||
-      is_specialization_of<dynampi::AsyncPutLockFreeMPIWorkDistributor, Distributer>::value) {
+      is_specialization_of<dynampi::LockFreeRMAWorkDistributor, Distributer>::value) {
     GTEST_SKIP() << "This test requires ordered results with priority, which is not supported by "
                     "this distributer.";
   }
@@ -375,7 +373,7 @@ TYPED_TEST(DynamicDistribution, Statistics) {
       // Message-passing distributors send bare TaskT values. Lock-free RMA
       // paths also count window headers and atomics via MPICommunicator.
       constexpr bool is_rma =
-          is_specialization_of<dynampi::AsyncPutLockFreeMPIWorkDistributor, Distributer>::value;
+          is_specialization_of<dynampi::LockFreeRMAWorkDistributor, Distributer>::value;
       if constexpr (is_rma) {
         if (expected_size > 0) {
           EXPECT_GE(work_distributer.get_statistics().comm_statistics.bytes_sent,
@@ -387,7 +385,7 @@ TYPED_TEST(DynamicDistribution, Statistics) {
         EXPECT_EQ(work_distributer.get_statistics().comm_statistics.bytes_sent,
                   expected_size * sizeof(int));
       }
-      if constexpr (is_specialization_of<dynampi::NaiveMPIWorkDistributor, Distributer>::value) {
+      if constexpr (is_specialization_of<dynampi::NaiveWorkDistributor, Distributer>::value) {
         EXPECT_EQ(work_distributer.get_statistics().comm_statistics.send_count, expected_size);
         EXPECT_EQ(work_distributer.get_statistics().comm_statistics.recv_count,
                   expected_size + MPIEnvironment::world_comm_size() - 1);
@@ -406,7 +404,7 @@ TYPED_TEST(DynamicDistribution, Statistics) {
         EXPECT_EQ(work_distributer.get_statistics().comm_statistics.bytes_sent,
                   expected_size * sizeof(int));
       }
-      if constexpr (is_specialization_of<dynampi::NaiveMPIWorkDistributor, Distributer>::value) {
+      if constexpr (is_specialization_of<dynampi::NaiveWorkDistributor, Distributer>::value) {
         EXPECT_EQ(work_distributer.get_statistics().comm_statistics.send_count,
                   expected_size + MPIEnvironment::world_comm_size() - 1);
         double expected_num_bytes = 0;
@@ -481,18 +479,18 @@ TYPED_TEST(DynamicDistribution, AutoRunWorkers) {
 }
 
 // gather_once() is the non-looping snapshot API used by the strong-scaling
-// bench to avoid per-retry busy-spin harvest. Only AsyncPutLockFree exposes
+// bench to avoid per-retry busy-spin harvest. Only LockFreeRMA exposes
 // it.
 //
 // Under SMPI, busy-polling gather_once() (or OS-sleeping in workers) can
-// starve other ranks: AsyncPut's harvest is pure RMA and may not yield the
+// starve other ranks: LockFreeRMA's harvest is pure RMA and may not yield the
 // simulator, so workers never run and remaining_tasks_count never drains.
 // Exercise one snapshot, then drain with finish_remaining_tasks() which
 // already has a proper no-progress idle path.
 TYPED_TEST(DynamicDistribution, GatherOnce) {
   using Distributer = DistributerOf<TypeParam, int, int>;
   constexpr bool has_gather_once =
-      is_specialization_of<dynampi::AsyncPutLockFreeMPIWorkDistributor, Distributer>::value;
+      is_specialization_of<dynampi::LockFreeRMAWorkDistributor, Distributer>::value;
   if constexpr (!has_gather_once) {
     GTEST_SKIP() << "gather_once is only on lock-free RMA distributors";
   } else {
@@ -520,12 +518,12 @@ TYPED_TEST(DynamicDistribution, GatherOnce) {
   }
 }
 
-// --- MinimalLockFreeMPIWorkDistributor (index parallel-for) ---
+// --- MinimalLockFreeWorkDistributor (index parallel-for) ---
 // This distributor has a distinct, collective API (run(n)), so it is tested
 // directly rather than through the generic DynamicDistribution suite.
 
 TEST(MinimalLockFree, ScalarResults) {
-  dynampi::MinimalLockFreeMPIWorkDistributor<double> dist(
+  dynampi::MinimalLockFreeWorkDistributor<double> dist(
       [](size_t i) -> double { return std::sqrt(static_cast<double>(i)); });
 
   auto results = dist.run(20);
@@ -545,7 +543,7 @@ TEST(MinimalLockFree, ManagerRankNonZero) {
     GTEST_SKIP() << "Need at least 2 ranks for non-zero manager rank";
   }
   const int manager_rank = 1;
-  dynampi::MinimalLockFreeMPIWorkDistributor<size_t> dist(
+  dynampi::MinimalLockFreeWorkDistributor<size_t> dist(
       [](size_t i) -> size_t { return i * i; },
       {.comm = MPI_COMM_WORLD, .manager_rank = manager_rank});
 
@@ -560,11 +558,10 @@ TEST(MinimalLockFree, ManagerRankNonZero) {
 }
 
 TEST(MinimalLockFree, VariableSizeResults) {
-  dynampi::MinimalLockFreeMPIWorkDistributor<std::vector<int>> dist(
-      [](size_t i) -> std::vector<int> {
-        int v = static_cast<int>(i);
-        return {v, v * v, v * v * v};
-      });
+  dynampi::MinimalLockFreeWorkDistributor<std::vector<int>> dist([](size_t i) -> std::vector<int> {
+    int v = static_cast<int>(i);
+    return {v, v * v, v * v * v};
+  });
 
   auto results = dist.run(5);
 
@@ -578,7 +575,7 @@ TEST(MinimalLockFree, VariableSizeResults) {
 }
 
 TEST(MinimalLockFree, EmptyAndReusable) {
-  dynampi::MinimalLockFreeMPIWorkDistributor<int> dist(
+  dynampi::MinimalLockFreeWorkDistributor<int> dist(
       [](size_t i) -> int { return static_cast<int>(i) + 1; });
 
   auto empty = dist.run(0);
@@ -592,7 +589,7 @@ TEST(MinimalLockFree, EmptyAndReusable) {
 }
 
 TEST(LockFreeCapacity, RejectsTaskTableOverflow) {
-  using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<int, int>;
+  using Distributor = dynampi::LockFreeRMAWorkDistributor<int, int>;
   Distributor::Config config;
   config.comm = MPI_COMM_SELF;
   config.max_tasks = 1;
@@ -711,13 +708,13 @@ TEST(FixedSizeMPIType, RejectsPayloadThatIsNotAWholeNumberOfElements) {
 
   auto identity = [](Unaligned v) { return v; };
   {
-    using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<Unaligned, Unaligned>;
+    using Distributor = dynampi::LockFreeRMAWorkDistributor<Unaligned, Unaligned>;
     typename Distributor::Config config;
     config.comm = MPI_COMM_SELF;
     EXPECT_THROW(Distributor(identity, config), std::invalid_argument);
   }
   {
-    using Distributor = dynampi::HierarchicalMPIWorkDistributor<Unaligned, Unaligned>;
+    using Distributor = dynampi::HierarchicalWorkDistributor<Unaligned, Unaligned>;
     typename Distributor::Config config;
     config.comm = MPI_COMM_SELF;
     EXPECT_THROW(Distributor(identity, config), std::invalid_argument);
@@ -735,8 +732,8 @@ TEST(FixedSizeMPIType, RejectsUnqueryableDatatype) {
   }
 }
 
-TEST(AsyncPutLevel, SingletonCommunicator) {
-  using Level = dynampi::detail::AsyncPutLevel<int, int>;
+TEST(LockFreeRMALevel, SingletonCommunicator) {
+  using Level = dynampi::detail::LockFreeRMALevel<int, int>;
   Level::Config config;
   config.comm = MPI_COMM_SELF;
   config.owner_rank = 0;
@@ -759,16 +756,16 @@ TEST(AsyncPutLevel, SingletonCommunicator) {
   EXPECT_THROW(level.publish_tasks({1, 2, 3, 4, 5}), std::length_error);
 }
 
-// --- HierarchicalAsyncPutLockFreeMPIWorkDistributor ---
+// --- HierarchicalLockFreeRMAWorkDistributor ---
 // Node-aware tree topology (manager <-> per-node coordinators <-> local
-// workers) with AsyncPutLockFreeMPIWorkDistributor's one-sided,
+// workers) with LockFreeRMAWorkDistributor's one-sided,
 // collective-free protocol (fetch-and-add claiming, Put-based result return
 // via a completion log) at each level. Results are unordered, so tests sort
 // before comparing.
 
-TEST(HierarchicalAsyncPutLockFree, BasicFlow) {
+TEST(HierarchicalLockFreeRMA, BasicFlow) {
   using TaskT = int;
-  using Distributer = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<TaskT, double>;
+  using Distributer = dynampi::HierarchicalLockFreeRMAWorkDistributor<TaskT, double>;
   auto worker_task = [](TaskT task) -> double { return sqrt(static_cast<double>(task)); };
 
   Distributer::Config config;
@@ -791,14 +788,14 @@ TEST(HierarchicalAsyncPutLockFree, BasicFlow) {
   }
 }
 
-TEST(HierarchicalAsyncPutLockFree, ManagerRankNonZero) {
+TEST(HierarchicalLockFreeRMA, ManagerRankNonZero) {
   if (MPIEnvironment::world_comm_size() < 2) {
     GTEST_SKIP() << "Need at least 2 ranks for non-zero manager rank";
   }
   const int manager_rank = 1;
   using TaskT = int;
   using ResultT = double;
-  using Distributer = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<TaskT, ResultT>;
+  using Distributer = dynampi::HierarchicalLockFreeRMAWorkDistributor<TaskT, ResultT>;
   auto worker_task = [](TaskT task) -> ResultT { return sqrt(static_cast<double>(task)); };
 
   Distributer::Config config;
@@ -822,10 +819,10 @@ TEST(HierarchicalAsyncPutLockFree, ManagerRankNonZero) {
   }
 }
 
-TEST(HierarchicalAsyncPutLockFree, MultipleRoundsOfTasks) {
+TEST(HierarchicalLockFreeRMA, MultipleRoundsOfTasks) {
   using Task = int;
   using Result = int;
-  using Distributer = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, Result>;
+  using Distributer = dynampi::HierarchicalLockFreeRMAWorkDistributor<Task, Result>;
   auto worker_task = [](Task task) -> Result { return task * task; };
 
   Distributer::Config config;
@@ -843,10 +840,10 @@ TEST(HierarchicalAsyncPutLockFree, MultipleRoundsOfTasks) {
   }
 }
 
-TEST(HierarchicalAsyncPutLockFree, RunTasksMaxTasks) {
+TEST(HierarchicalLockFreeRMA, RunTasksMaxTasks) {
   using Task = int;
   using Result = int;
-  using Distributer = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, Result>;
+  using Distributer = dynampi::HierarchicalLockFreeRMAWorkDistributor<Task, Result>;
   auto worker_task = [](Task task) -> Result { return task * 2; };
 
   Distributer::Config config;
@@ -877,12 +874,12 @@ TEST(HierarchicalAsyncPutLockFree, RunTasksMaxTasks) {
 }
 
 // Shared body for the hierarchical upper-chain topology tests below.
-// Both HierarchicalMPIWorkDistributor and
-// HierarchicalAsyncPutLockFreeMPIWorkDistributor expose the same
+// Both HierarchicalWorkDistributor and
+// HierarchicalLockFreeRMAWorkDistributor expose the same
 // max_upper_fanout / max_local_group_size Config knobs and the same
 // insert_tasks / finish_remaining_tasks manager API, so one helper covers
 // send/recv and RMA. Keep the TEST() names distinct: Open MPI 4's
-// osc/pt2pt workaround in test/CMakeLists.txt filters the AsyncPut
+// osc/pt2pt workaround in test/CMakeLists.txt filters the LockFreeRMA
 // variants by exact suite.test name.
 template <typename Distributer>
 void expect_upper_hierarchy_squares(typename Distributer::Config config) {
@@ -906,8 +903,8 @@ void expect_upper_hierarchy_squares(typename Distributer::Config config) {
 // multiple coordinators on a single shared-memory node so CI still
 // exercises the grouping path; at tiny rank counts this degenerates to
 // the flat level, which is still a useful no-op-path regression check.
-TEST(HierarchicalAsyncPutLockFree, GroupedUpperHierarchy) {
-  using Dist = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;
+TEST(HierarchicalLockFreeRMA, GroupedUpperHierarchy) {
+  using Dist = dynampi::HierarchicalLockFreeRMAWorkDistributor<int, int>;
   Dist::Config config;
   config.max_upper_fanout = 2;
   config.max_local_group_size = 2;
@@ -915,7 +912,7 @@ TEST(HierarchicalAsyncPutLockFree, GroupedUpperHierarchy) {
 }
 
 TEST(Hierarchical, GroupedUpperHierarchy) {
-  using Dist = dynampi::HierarchicalMPIWorkDistributor<int, int>;
+  using Dist = dynampi::HierarchicalWorkDistributor<int, int>;
   Dist::Config config;
   config.max_upper_fanout = 2;
   config.max_local_group_size = 2;
@@ -927,26 +924,26 @@ TEST(Hierarchical, GroupedUpperHierarchy) {
 // world size > 33 that crosses the flat-topology cutoff (~32) so the
 // sqrt-based fanout pick and multi-round grouping both run. At smaller
 // rank counts this stays on the flat auto path, which is still a useful
-// smoke check. AsyncPut variant is excluded from Open MPI 4's default
+// smoke check. LockFreeRMA variant is excluded from Open MPI 4's default
 // suite and run under osc/pt2pt (see test/CMakeLists.txt).
 TEST(Hierarchical, AutoFanoutUpperHierarchy) {
-  using Dist = dynampi::HierarchicalMPIWorkDistributor<int, int>;
+  using Dist = dynampi::HierarchicalWorkDistributor<int, int>;
   Dist::Config config;
   config.max_upper_fanout = -1;
   config.max_local_group_size = 1;
   expect_upper_hierarchy_squares<Dist>(config);
 }
 
-TEST(HierarchicalAsyncPutLockFree, AutoFanoutUpperHierarchy) {
-  using Dist = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;
+TEST(HierarchicalLockFreeRMA, AutoFanoutUpperHierarchy) {
+  using Dist = dynampi::HierarchicalLockFreeRMAWorkDistributor<int, int>;
   Dist::Config config;
   config.max_upper_fanout = -1;
   config.max_local_group_size = 1;
   expect_upper_hierarchy_squares<Dist>(config);
 }
 
-TEST(HierarchicalAsyncPutLockFree, SingletonGatherAndFinalize) {
-  using Distributor = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;
+TEST(HierarchicalLockFreeRMA, SingletonGatherAndFinalize) {
+  using Distributor = dynampi::HierarchicalLockFreeRMAWorkDistributor<int, int>;
 
   {
     Distributor::Config config;
@@ -972,8 +969,8 @@ TEST(HierarchicalAsyncPutLockFree, SingletonGatherAndFinalize) {
   }
 }
 
-TEST(HierarchicalAsyncPutLockFree, AutoRunWorkers) {
-  using Distributer = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;
+TEST(HierarchicalLockFreeRMA, AutoRunWorkers) {
+  using Distributer = dynampi::HierarchicalLockFreeRMAWorkDistributor<int, int>;
   auto worker_task = [](int task) -> int { return task * task; };
 
   Distributer::Config config;
@@ -989,8 +986,8 @@ TEST(HierarchicalAsyncPutLockFree, AutoRunWorkers) {
   }
 }
 
-TEST(HierarchicalAsyncPutLockFree, GatherOnce) {
-  using Distributer = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;
+TEST(HierarchicalLockFreeRMA, GatherOnce) {
+  using Distributer = dynampi::HierarchicalLockFreeRMAWorkDistributor<int, int>;
   auto worker_task = [](int task) -> int { return task * task; };
 
   Distributer::Config config;
@@ -1024,7 +1021,7 @@ TEST(LockFreeFinalization, FlatDrainsOutstandingWork) {
   };
 
   {
-    using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<int, int>;
+    using Distributor = dynampi::LockFreeRMAWorkDistributor<int, int>;
     Distributor dist(slow_worker);
     if (dist.is_root_manager()) dist.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8});
     dist.finalize();
@@ -1042,7 +1039,7 @@ TEST(LockFreeFinalization, HierarchicalDrainsOutstandingWork) {
   };
 
   {
-    using Distributor = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<int, int>;
+    using Distributor = dynampi::HierarchicalLockFreeRMAWorkDistributor<int, int>;
     Distributor dist(slow_worker);
     if (dist.is_root_manager()) dist.insert_tasks({1, 2, 3, 4, 5, 6, 7, 8});
     dist.finalize();

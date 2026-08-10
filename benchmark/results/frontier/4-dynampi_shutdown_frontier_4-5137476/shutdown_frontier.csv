@@ -1,9 +1,9 @@
 system,distributor,nodes,max_upper_fanout,world_size,workers,time_per_shutdown_us,iterations
 frontier,naive,4,-1,36,35,110.658,61603
 frontier,hierarchical,4,-1,36,35,14.6121,32666
-frontier,async_put_lockfree,4,-1,36,35,989.545,5629
-frontier,hierarchical_async_put_lockfree,4,-1,36,35,1621.3,3091
+frontier,lockfree_rma,4,-1,36,35,989.545,5629
+frontier,hierarchical_lockfree_rma,4,-1,36,35,1621.3,3091
 frontier,naive,4,-1,224,223,753.342,12257
 frontier,hierarchical,4,-1,224,223,16.5198,23080
-frontier,async_put_lockfree,4,-1,224,223,1746.77,2812
-frontier,hierarchical_async_put_lockfree,4,-1,224,223,2195.99,2092
+frontier,lockfree_rma,4,-1,224,223,1746.77,2812
+frontier,hierarchical_lockfree_rma,4,-1,224,223,2195.99,2092

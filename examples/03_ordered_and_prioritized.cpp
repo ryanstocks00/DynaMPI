@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Ryan Stocks
  * SPDX-License-Identifier: Apache-2.0
  *
- * NaiveMPIWorkDistributor is the one distributor that returns results in task
+ * NaiveWorkDistributor is the one distributor that returns results in task
  * order, and the one where task priorities work. Both are shown here.
  *
  *   mpirun -n 4 ./03_ordered_and_prioritized
@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     // length payloads (std::vector, std::string) work here too -- the
     // hierarchical distributors accept fixed-size types only.
     {
-      using Distributor = dynampi::NaiveMPIWorkDistributor<int, std::string>;
+      using Distributor = dynampi::NaiveWorkDistributor<int, std::string>;
       static_assert(Distributor::ordered);
 
       Distributor dist([](int n) { return std::string(static_cast<size_t>(n), '*'); });
@@ -40,8 +40,7 @@ int main(int argc, char** argv) {
     // first, so results arrive in descending priority order. Note that
     // insert_tasks() is disabled in this mode.
     {
-      using Distributor =
-          dynampi::NaiveMPIWorkDistributor<int, int, dynampi::enable_prioritization>;
+      using Distributor = dynampi::NaiveWorkDistributor<int, int, dynampi::enable_prioritization>;
 
       Distributor dist([](int n) { return n; });
       if (dist.is_root_manager()) {

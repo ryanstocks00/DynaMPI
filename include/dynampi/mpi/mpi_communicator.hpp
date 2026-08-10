@@ -99,7 +99,7 @@ class MPICommunicator {
   // Compiles to a bare call to `op` in every other mode, so Aggregated pays no
   // clock reads at all.
   template <typename F>
-  inline void timed(double CommStatistics::* accumulator, F&& op) {
+  inline void timed(double CommStatistics::*accumulator, F&& op) {
     if constexpr (track_time) {
       const double start = MPI_Wtime();
       op();

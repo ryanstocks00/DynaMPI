@@ -3,7 +3,7 @@ aurora,naive,fixed,100,5,8,816,815,0,2152394,5.01953,428804
 aurora,naive,fixed,1000,5,8,816,815,0,2009305,5.2971,379322
 aurora,minimal_lockfree,fixed,100,5,8,816,815,0,269287,5.00191,53836.9
 aurora,minimal_lockfree,fixed,1000,5,8,816,815,0,36255,5.0829,7132.73
-aurora,async_put_lockfree,fixed,100,5,8,816,815,0,7401808,5.13494,1.44146e+06
-aurora,async_put_lockfree,fixed,1000,5,8,816,815,0,3973608,5.05102,786694
-aurora,hierarchical_async_put_lockfree,fixed,100,5,8,816,815,0,4077522,5.06527,804996
-aurora,hierarchical_async_put_lockfree,fixed,1000,5,8,816,815,0,2576676,5.04409,510830
+aurora,lockfree_rma,fixed,100,5,8,816,815,0,7401808,5.13494,1.44146e+06
+aurora,lockfree_rma,fixed,1000,5,8,816,815,0,3973608,5.05102,786694
+aurora,hierarchical_lockfree_rma,fixed,100,5,8,816,815,0,4077522,5.06527,804996
+aurora,hierarchical_lockfree_rma,fixed,1000,5,8,816,815,0,2576676,5.04409,510830

@@ -26,7 +26,7 @@
 namespace dynampi {
 
 template <typename TaskT, typename ResultT, typename... Options>
-class NaiveMPIWorkDistributor {
+class NaiveWorkDistributor {
  public:
   struct Config {
     MPI_Comm comm = MPI_COMM_WORLD;
@@ -108,8 +108,8 @@ class NaiveMPIWorkDistributor {
   StatisticsT m_statistics;
 
  public:
-  explicit NaiveMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
-                                   Config runtime_config = Config{})
+  explicit NaiveWorkDistributor(std::function<ResultT(TaskT)> worker_function,
+                                Config runtime_config = Config{})
       : m_config(runtime_config),
         m_communicator(runtime_config.comm, MPICommunicator::Duplicate),
         m_worker_function(worker_function),
@@ -127,7 +127,7 @@ class NaiveMPIWorkDistributor {
     }
   }
 
-  ~NaiveMPIWorkDistributor() {
+  ~NaiveWorkDistributor() {
     if (!m_finalized) finalize();
   }
 

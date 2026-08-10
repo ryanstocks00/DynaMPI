@@ -2,6 +2,6 @@ system,distributor,nodes,max_upper_fanout,world_size,workers,time_per_shutdown_u
 aurora,naive,256,-1,26112,26111,164062,57
 aurora,hierarchical,256,0,26112,26111,566.963,340
 aurora,hierarchical,256,-1,26112,26111,74.0292,282
-aurora,async_put_lockfree,256,-1,26112,26111,171120,51
-aurora,hierarchical_async_put_lockfree,256,0,26112,26111,19101.1,173
-aurora,hierarchical_async_put_lockfree,256,-1,26112,26111,20315.4,164
+aurora,lockfree_rma,256,-1,26112,26111,171120,51
+aurora,hierarchical_lockfree_rma,256,0,26112,26111,19101.1,173
+aurora,hierarchical_lockfree_rma,256,-1,26112,26111,20315.4,164

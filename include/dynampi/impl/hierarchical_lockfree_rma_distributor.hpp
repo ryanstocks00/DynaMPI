@@ -20,7 +20,7 @@
 #include "../mpi/mpi_communicator.hpp"
 #include "../mpi/mpi_group.hpp"
 #include "../mpi/mpi_types.hpp"
-#include "dynampi/impl/lockfree_distributor.hpp"  // reuses dynampi::detail byte-packing helpers
+#include "dynampi/impl/minimal_lockfree_distributor.hpp"  // reuses dynampi::detail byte-packing helpers
 #include "dynampi/mpi/mpi_error.hpp"
 #include "dynampi/utilities/timer.hpp"
 
@@ -29,21 +29,21 @@ namespace dynampi {
 namespace detail {
 
 // ---------------------------------------------------------------------------
-// AsyncPutLevel
+// LockFreeRMALevel
 //
-// One level of AsyncPutLockFreeMPIWorkDistributor's protocol (fetch-and-add
+// One level of LockFreeRMAWorkDistributor's protocol (fetch-and-add
 // task claiming, one-sided Put of results plus a completion log, no
 // collective calls anywhere in the hot path), scoped to an arbitrary
 // communicator and factored out here so it can be composed at multiple
-// levels of a tree topology -- see HierarchicalAsyncPutLockFreeMPIWorkDistributor
-// below, which instantiates one AsyncPutLevel per tree level: manager<->node
+// levels of a tree topology -- see HierarchicalLockFreeRMAWorkDistributor
+// below, which instantiates one LockFreeRMALevel per tree level: manager<->node
 // coordinators, and, independently, node coordinator<->its local workers.
 //
 // Unlike a gather/barrier/broadcast round protocol, there is no collective
 // lockstep here at all: publishing, claiming, writing results, and harvesting
 // are each purely one-sided, independent operations with no requirement that
 // every claimant participate together. This is exactly why the flat
-// AsyncPutLockFreeMPIWorkDistributor reaches such a high throughput ceiling
+// LockFreeRMAWorkDistributor reaches such a high throughput ceiling
 // in the first place (see that file's class comment) -- composing it
 // hierarchically doesn't need to reintroduce any of that.
 //
@@ -51,7 +51,7 @@ namespace detail {
 // (try_claim() / write_result_range()) rather than a single "claim, compute,
 // write" loop like the flat distributor's run_worker(): a coordinator using
 // this level as a claimant doesn't compute results itself, it republishes
-// claimed tasks into a *different* AsyncPutLevel (the local level) and only
+// claimed tasks into a *different* LockFreeRMALevel (the local level) and only
 // later, once those results come back, writes them here -- so the caller
 // needs to be able to interleave claim and write independently. A plain leaf
 // worker (see run_local_worker()/run_leaf_leader_worker() below) just calls
@@ -59,7 +59,7 @@ namespace detail {
 // pattern reassembled from the same two primitives.
 // ---------------------------------------------------------------------------
 template <typename TaskT, typename ResultT>
-class AsyncPutLevel {
+class LockFreeRMALevel {
  public:
   struct Config {
     MPI_Comm comm = MPI_COMM_NULL;
@@ -75,17 +75,17 @@ class AsyncPutLevel {
     std::vector<TaskT> tasks;
   };
 
-  explicit AsyncPutLevel(Config config, int claim_width = 1)
+  explicit LockFreeRMALevel(Config config, int claim_width = 1)
       : m_config(config),
         m_claim_width(std::max(1, claim_width)),
         m_comm(m_config.comm, MPICommunicator<>::Reference) {
     initialize_window();
   }
 
-  AsyncPutLevel(const AsyncPutLevel&) = delete;
-  AsyncPutLevel& operator=(const AsyncPutLevel&) = delete;
+  LockFreeRMALevel(const LockFreeRMALevel&) = delete;
+  LockFreeRMALevel& operator=(const LockFreeRMALevel&) = delete;
 
-  ~AsyncPutLevel() {
+  ~LockFreeRMALevel() {
     if (m_window != MPI_WIN_NULL) {
       DYNAMPI_MPI_CHECK(MPI_Win_unlock_all, (m_window));
       MPI_Barrier(m_config.comm);
@@ -114,19 +114,19 @@ class AsyncPutLevel {
 
   // Publishes tasks.size() tasks in two round trips total regardless of how
   // many: one bulk Put, then one atomic_set(TOTAL_OFF) -- see
-  // AsyncPutLockFreeMPIWorkDistributor::publish_tasks() for the full
+  // LockFreeRMAWorkDistributor::publish_tasks() for the full
   // rationale (this is the same fix applied there).
   void publish_tasks(const std::vector<TaskT>& tasks) {
     assert(is_owner());
     if (tasks.empty()) return;
     const int64_t start = m_total_tasks;
-    detail::check_task_capacity(start, tasks.size(), m_config.max_tasks, "AsyncPutLevel");
+    detail::check_task_capacity(start, tasks.size(), m_config.max_tasks, "LockFreeRMALevel");
     std::vector<std::byte> buffer(tasks.size() * m_task_slot_stride);
     for (size_t i = 0; i < tasks.size(); ++i) {
       const TaskT& task = tasks[i];
       const int count = MPI_Type<TaskT>::count(task);
       assert(static_cast<size_t>(count) <= m_max_task_count &&
-             "AsyncPutLevel: task exceeds max_task_count");
+             "LockFreeRMALevel: task exceeds max_task_count");
       const size_t data_bytes = static_cast<size_t>(count) * m_task_elem;
       const size_t off = i * m_task_slot_stride;
       detail::write_i64(buffer.data(), buffer.size(), off + T_COUNT, count);
@@ -180,7 +180,7 @@ class AsyncPutLevel {
   // right now (possibly empty) in at most three round trips: one to see how
   // far claiming has progressed, one bulk read of the unscanned completion
   // log, one bulk read of the result table over the confirmed prefix. See
-  // AsyncPutLockFreeMPIWorkDistributor::harvest_ready_results() for the full
+  // LockFreeRMAWorkDistributor::harvest_ready_results() for the full
   // derivation (this is the same logic, factored out so it isn't tied to a
   // single top-level result vector -- see this level's callers, which each
   // route the returned batch somewhere different: the top-level manager
@@ -241,7 +241,7 @@ class AsyncPutLevel {
   //
   // NOTE: unlike the owner-side API above, these methods do NOT assert
   // !is_owner(). A rank promoted to lead a group in
-  // HierarchicalAsyncPutLockFreeMPIWorkDistributor's N-level mode owns this
+  // HierarchicalLockFreeRMAWorkDistributor's N-level mode owns this
   // level (hosts its window) AND must also claim from it (its own subtree
   // still needs feeding, and there's no other mechanism to get tasks down to
   // it) -- i.e. the owner can validly be one of its own claimants too, via
@@ -253,7 +253,7 @@ class AsyncPutLevel {
   // harvest_ready_results() instead of a plain memory load (MPI_WIN_SEPARATE).
 
   // Attempts one non-blocking claim step (same state machine as
-  // AsyncPutLockFreeMPIWorkDistributor::run_worker(), exposed here as a
+  // LockFreeRMAWorkDistributor::run_worker(), exposed here as a
   // discrete callable rather than an internal loop -- see the class
   // comment). Returns start=-1 if nothing is claimable right this instant
   // (could be a genuine claim miss, a wait for TOTAL_OFF to catch up to an
@@ -276,7 +276,7 @@ class AsyncPutLevel {
 
     // Deliberately NOT gated on !m_seen_finished when re-checking
     // cached_total below the threshold -- see drained()'s exit-check
-    // symmetric handling and AsyncPutLockFreeMPIWorkDistributor::run_worker()'s
+    // symmetric handling and LockFreeRMAWorkDistributor::run_worker()'s
     // identical comment: once finished_seen is true, a stale cached_total
     // must still be correctable by drained()'s own fresh read, not frozen.
     if (m_cached_head >= m_cached_total && !m_seen_finished)
@@ -291,7 +291,7 @@ class AsyncPutLevel {
       const int64_t total = (end <= m_cached_total) ? m_cached_total : atomic_read(TOTAL_OFF);
       // Clamped into [start, end]: total can land below start (this whole
       // claim landed beyond what's published yet), not just below end. See
-      // AsyncPutLockFreeMPIWorkDistributor::run_worker()'s comment on the
+      // LockFreeRMAWorkDistributor::run_worker()'s comment on the
       // exact bug this guards -- an unclamped `min(end, total)` here could
       // produce a pending_start below this claim's own start, an index this
       // rank never actually owns, corrupting another claimant's range.
@@ -320,7 +320,7 @@ class AsyncPutLevel {
   // remainder outstanding, FINISHED_OFF observed, and this rank's own
   // cached_head has caught up to the true final TOTAL_OFF (a fresh read,
   // not the possibly-stale cached_total -- mirrors
-  // AsyncPutLockFreeMPIWorkDistributor::run_worker()'s exit check exactly,
+  // LockFreeRMAWorkDistributor::run_worker()'s exit check exactly,
   // including the same reason: cached_total can be stale relative to when
   // TOTAL_OFF actually stopped growing, since publishing finishes well
   // before FINISHED_OFF becomes visible to this claimant).
@@ -382,7 +382,7 @@ class AsyncPutLevel {
  private:
   // Window layout: [head][total][finished] then the task table, the result
   // table, and the completion log, each sized for max_tasks entries -- same
-  // layout as AsyncPutLockFreeMPIWorkDistributor.
+  // layout as LockFreeRMAWorkDistributor.
   static constexpr MPI_Aint HEAD_OFF = 0;
   static constexpr MPI_Aint TOTAL_OFF = 8;
   static constexpr MPI_Aint FINISHED_OFF = 16;
@@ -424,8 +424,8 @@ class AsyncPutLevel {
 
   void initialize_window() {
     // Same fixed-width slot requirement as the flat distributor's window.
-    check_fixed_size_mpi_type<TaskT>("task", "AsyncPutLevel");
-    check_fixed_size_mpi_type<ResultT>("result", "AsyncPutLevel");
+    check_fixed_size_mpi_type<TaskT>("task", "LockFreeRMALevel");
+    check_fixed_size_mpi_type<ResultT>("result", "LockFreeRMALevel");
 
     m_task_elem = static_cast<size_t>(detail::mpi_type_size_bytes<TaskT>());
     m_result_elem = static_cast<size_t>(detail::mpi_type_size_bytes<ResultT>());
@@ -449,7 +449,7 @@ class AsyncPutLevel {
     // Owner always hosts the slot layout in m_window_buffer. Size-1
     // communicators deliberately skip MPI_Win_create: Open MPI (and some
     // other stacks) fail Win_create on singleton communicators with
-    // MPI_ERR_WIN, which broke HierarchicalAsyncPut BasicFlow whenever the
+    // MPI_ERR_WIN, which broke HierarchicalLockFreeRMA BasicFlow whenever the
     // only non-manager on a node got a size-1 local_comm. Under
     // max_upper_fanout grouping, a solo group leader still self-claims from
     // its size-1 level -- that path uses the local helpers below (same
@@ -560,26 +560,26 @@ class AsyncPutLevel {
 }  // namespace detail
 
 // ---------------------------------------------------------------------------
-// HierarchicalAsyncPutLockFreeMPIWorkDistributor
+// HierarchicalLockFreeRMAWorkDistributor
 //
-// Combines HierarchicalMPIWorkDistributor's node-aware tree topology
+// Combines HierarchicalWorkDistributor's node-aware tree topology
 // (manager <-> per-node coordinators <-> per-node local workers) with
-// AsyncPutLockFreeMPIWorkDistributor's one-sided, collective-free RMA
+// LockFreeRMAWorkDistributor's one-sided, collective-free RMA
 // protocol (fetch-and-add claiming, batched Put-based result return via a
 // completion log), applied independently at each level of the tree.
 //
-// Motivation: the flat AsyncPutLockFreeMPIWorkDistributor reaches ~600K-2M+
+// Motivation: the flat LockFreeRMAWorkDistributor reaches ~600K-2M+
 // tasks/s (see that file, and strong_scaling_distribution_rate.cpp's
-// async_put_lockfree path) by removing all collective calls from its hot
+// lockfree_rma path) by removing all collective calls from its hot
 // path -- but every claim, publish, and harvest still targets the *same one*
 // manager-owned window, so at large node counts the manager rank's own
 // capacity to service that RMA traffic becomes the ceiling (measured
 // plateauing around 2.1-2.26M tasks/s from 32 nodes onward, while
-// HierarchicalMPIWorkDistributor's tree topology kept climbing to 5.2M/s at
+// HierarchicalWorkDistributor's tree topology kept climbing to 5.2M/s at
 // 128 nodes by spreading coordination load across many coordinators). This
-// class applies that same fix -- one independent AsyncPutLevel window per
+// class applies that same fix -- one independent LockFreeRMALevel window per
 // node coordinator (the local level) plus one at the leader level -- to the
-// async-put protocol specifically, aiming to combine both distributors'
+// lock-free RMA protocol specifically, aiming to combine both distributors'
 // advantages: no collective-call overhead *and* no single-window ceiling.
 //
 // A node coordinator plays two roles at once: owner of its local level, and
@@ -594,12 +594,12 @@ class AsyncPutLevel {
 // against that queue's boundaries to know when and where to write each
 // completed leader-level range back. See run_node_coordinator().
 //
-// Results are unordered (see AsyncPutLevel); use a different distributor if
+// Results are unordered (see LockFreeRMALevel); use a different distributor if
 // task-index-ordered output is required. Task prioritization and detailed
 // statistics are not supported.
 // ---------------------------------------------------------------------------
 template <typename TaskT, typename ResultT, typename... Options>
-class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
+class HierarchicalLockFreeRMAWorkDistributor {
  public:
   struct Config {
     MPI_Comm comm = MPI_COMM_WORLD;
@@ -636,8 +636,8 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
 
   static const bool ordered = false;
 
-  explicit HierarchicalAsyncPutLockFreeMPIWorkDistributor(
-      std::function<ResultT(TaskT)> worker_function, Config config = {})
+  explicit HierarchicalLockFreeRMAWorkDistributor(std::function<ResultT(TaskT)> worker_function,
+                                                  Config config = {})
       : m_config(config),
         m_world_comm(config.comm, MPICommunicator<>::Duplicate),
         m_worker_function(std::move(worker_function)) {
@@ -664,10 +664,10 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     if (m_config.auto_run_workers && !is_root_manager()) run_worker();
   }
 
-  ~HierarchicalAsyncPutLockFreeMPIWorkDistributor() {
+  ~HierarchicalLockFreeRMAWorkDistributor() {
     if (!m_finalized) finalize();
     if (!m_solo) {
-      // AsyncPutLevel teardown is collective only over that level's
+      // LockFreeRMALevel teardown is collective only over that level's
       // communicator.  Without a final world-wide rendezvous, ranks that
       // participate in fewer levels can start constructing the next
       // distributor while coordinators are still freeing subgroup windows.
@@ -740,7 +740,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() { return run_tasks({}); }
 
   // One non-looping harvest snapshot -- see
-  // AsyncPutLockFreeMPIWorkDistributor::gather_once() for the full
+  // LockFreeRMAWorkDistributor::gather_once() for the full
   // rationale (this mirrors it exactly, against the leader level instead
   // of a single flat window).
   [[nodiscard]] std::vector<ResultT> gather_once() {
@@ -805,13 +805,13 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   const bool m_solo = (m_world_comm.size() == 1);
 
   std::optional<MPICommunicator<>> m_local_comm;
-  std::optional<detail::AsyncPutLevel<TaskT, ResultT>> m_local_level;
+  std::optional<detail::LockFreeRMALevel<TaskT, ResultT>> m_local_level;
 
   // Upper hierarchy (everything above the node-local level) -- see
   // setup_upper_chain() for how this is built.
   //
   // m_upper_comms keeps every comm this rank uses up there alive for the
-  // distributor's lifetime (AsyncPutLevel only stores a raw MPI_Comm
+  // distributor's lifetime (LockFreeRMALevel only stores a raw MPI_Comm
   // handle, it doesn't own one).
   std::vector<MPICommunicator<>> m_upper_comms;
 
@@ -819,21 +819,21 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   // manager) to bottom (closest to m_local_level). The manager always has
   // exactly one entry (see manager_level()). A node coordinator promoted to
   // lead one or more groups (max_upper_fanout mode) has one entry per level
-  // it was promoted at, each one also self-claimed (see AsyncPutLevel's
+  // it was promoted at, each one also self-claimed (see LockFreeRMALevel's
   // claimant-side API comment). A plain (non-promoted) coordinator or leaf
   // leader-worker has none.
   //
-  // std::deque, not std::vector: AsyncPutLevel manages an MPI_Win exposing
+  // std::deque, not std::vector: LockFreeRMALevel manages an MPI_Win exposing
   // its own member's address, and is neither copyable nor movable (see its
   // deleted copy constructor) -- growing this container must never relocate
   // existing elements the way a vector reallocation could.
-  std::deque<detail::AsyncPutLevel<TaskT, ResultT>> m_owned_upper_levels;
+  std::deque<detail::LockFreeRMALevel<TaskT, ResultT>> m_owned_upper_levels;
 
   // The one level this rank is a pure claimant of (never owns) -- its
   // immediate parent in the tree. Unset only for the manager (which owns
   // the top of the chain instead, in m_owned_upper_levels) and for a rank
   // with no upper-chain participation at all (a plain local worker).
-  std::optional<detail::AsyncPutLevel<TaskT, ResultT>> m_parent_level;
+  std::optional<detail::LockFreeRMALevel<TaskT, ResultT>> m_parent_level;
 
   bool m_finalized = false;
   std::vector<ResultT> m_results;
@@ -870,12 +870,12 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     setup_upper_chain(std::move(*leader_opt), is_manager);
   }
 
-  // Appends one AsyncPutLevel this rank OWNS (and, per the class comment on
-  // AsyncPutLevel's claimant-side API, will also claim from -- its own
+  // Appends one LockFreeRMALevel this rank OWNS (and, per the class comment on
+  // LockFreeRMALevel's claimant-side API, will also claim from -- its own
   // subtree still needs feeding) to m_owned_upper_levels.
   void emplace_owned_upper_level(MPICommunicator<> comm, int owner_rank, int claim_width) {
     m_upper_comms.push_back(std::move(comm));
-    typename detail::AsyncPutLevel<TaskT, ResultT>::Config cfg;
+    typename detail::LockFreeRMALevel<TaskT, ResultT>::Config cfg;
     cfg.comm = m_upper_comms.back().get();
     cfg.owner_rank = owner_rank;
     cfg.max_tasks = m_config.max_tasks;
@@ -888,7 +888,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   // (never owns) -- its immediate parent in the tree.
   void emplace_parent_level(MPICommunicator<> comm, int owner_rank, int claim_width) {
     m_upper_comms.push_back(std::move(comm));
-    typename detail::AsyncPutLevel<TaskT, ResultT>::Config cfg;
+    typename detail::LockFreeRMALevel<TaskT, ResultT>::Config cfg;
     cfg.comm = m_upper_comms.back().get();
     cfg.owner_rank = owner_rank;
     cfg.max_tasks = m_config.max_tasks;
@@ -898,9 +898,9 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   }
 
   // Builds this rank's view of the upper hierarchy (everything above the
-  // node-local level): a chain of AsyncPutLevel windows from the manager
+  // node-local level): a chain of LockFreeRMALevel windows from the manager
   // down to this rank's immediate parent, filling in m_upper_comms (kept
-  // alive for the AsyncPutLevel objects' lifetime, since AsyncPutLevel only
+  // alive for the LockFreeRMALevel objects' lifetime, since LockFreeRMALevel only
   // stores a raw MPI_Comm handle) / m_owned_upper_levels / m_parent_level.
   //
   // `flat_comm` is manager + every node coordinator -- exactly the single
@@ -919,7 +919,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   // promoted at round r ends up BOTH owning round r's group level AND being
   // one of its own claimants (its own node/subtree still needs feeding, and
   // there's no other mechanism to get tasks down to it) -- see
-  // AsyncPutLevel's claimant-side API comment for why that's safe
+  // LockFreeRMALevel's claimant-side API comment for why that's safe
   // (self-targeted RMA, mechanically no different from any other claimant).
   // A rank never promoted just ends up with a single entry in m_parent_level
   // (the one group it's a member of) and nothing in m_owned_upper_levels --
@@ -1036,10 +1036,10 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     // Size-1 local_comm means this rank is alone on its node (manager excluded
     // from the local split). Leaf leader-workers claim/compute against the
     // upper chain directly and never use a local_level, so skip constructing
-    // one -- including avoiding a size-1 AsyncPutLevel that some MPIs cannot
+    // one -- including avoiding a size-1 LockFreeRMALevel that some MPIs cannot
     // Win_create for.
     if (m_local_comm.has_value() && m_local_comm->size() > 1) {
-      typename detail::AsyncPutLevel<TaskT, ResultT>::Config local_cfg;
+      typename detail::LockFreeRMALevel<TaskT, ResultT>::Config local_cfg;
       local_cfg.comm = m_local_comm->get();
       local_cfg.owner_rank = 0;
       local_cfg.max_tasks = m_config.max_local_tasks;
@@ -1050,7 +1050,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   }
 
   // One (parent, child) bridge relationship: claim tasks from
-  // `parent` and republish them into `child` (a *different* AsyncPutLevel
+  // `parent` and republish them into `child` (a *different* LockFreeRMALevel
   // this rank owns), relaying completed results back to `parent` once
   // they're confirmed. This is the single-hop unit run_node_coordinator()
   // used to run exactly once, inline, before max_upper_fanout existed --
@@ -1072,10 +1072,11 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     int64_t child_len;
   };
   struct BridgeHop {
-    BridgeHop(detail::AsyncPutLevel<TaskT, ResultT>* p, detail::AsyncPutLevel<TaskT, ResultT>* c)
+    BridgeHop(detail::LockFreeRMALevel<TaskT, ResultT>* p,
+              detail::LockFreeRMALevel<TaskT, ResultT>* c)
         : parent(p), child(c) {}
-    detail::AsyncPutLevel<TaskT, ResultT>* parent;
-    detail::AsyncPutLevel<TaskT, ResultT>* child;
+    detail::LockFreeRMALevel<TaskT, ResultT>* parent;
+    detail::LockFreeRMALevel<TaskT, ResultT>* child;
     std::deque<PendingRelay> pending_relays;
     std::vector<ResultT> relay_buffer;  // child results collected but not yet fully relayed upward
     int64_t pending_task_count =
@@ -1098,7 +1099,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     bool made_parent_progress = false;
 
     // Read once per call and reuse for both the claim-guard and (via the
-    // caller's bridge_hop_done()) the exit check -- AsyncPutLevel::drained()
+    // caller's bridge_hop_done()) the exit check -- LockFreeRMALevel::drained()
     // is not a pure query (it does fresh RMA reads and can flip from false
     // to true between two calls made moments apart), so calling it
     // separately for those two decisions was a real, confirmed bug: if it
@@ -1172,7 +1173,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     // 3. Flush whatever contiguous prefix of the front pending relay's
     // results is available now, writing it as its own partial
     // write_result_range() rather than waiting for that whole claimed batch
-    // to finish -- mirrors HierarchicalMPIWorkDistributor::
+    // to finish -- mirrors HierarchicalWorkDistributor::
     // send_results_to_parent(), which forwards whatever has accumulated so
     // far instead of gating on a full round (see its comment: waiting for a
     // round's slowest straggler used to block sending entirely, even
@@ -1182,7 +1183,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
     // e.g. 100 at nodes=1), the old all-or-nothing flush meant NOTHING
     // relayed upward until every one of those ~100 tasks finished, an
     // artificial barrier whose wall-clock cost scales with task duration --
-    // measured throughput for hierarchical_async_put_lockfree collapsing
+    // measured throughput for hierarchical_lockfree_rma collapsing
     // to roughly 1/5-1/10 of the flat class's at the same settings once
     // expected_us grew past ~1ms, despite the flat class (no such barrier)
     // staying flat across the same range.
@@ -1237,7 +1238,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   // (never promoted -- see setup_upper_chain()) get exactly one hop here,
   // identical in shape to this class's original single-level design.
   std::vector<BridgeHop> build_upper_hops() {
-    std::vector<detail::AsyncPutLevel<TaskT, ResultT>*> chain;
+    std::vector<detail::LockFreeRMALevel<TaskT, ResultT>*> chain;
     chain.push_back(&*m_parent_level);
     for (auto& level : m_owned_upper_levels) chain.push_back(&level);
     std::vector<BridgeHop> hops;
@@ -1250,7 +1251,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   // parent. This is what a terminal action (feeding a real local_level in
   // run_node_coordinator(), or claiming+computing directly in
   // run_leaf_leader_worker()) attaches to.
-  detail::AsyncPutLevel<TaskT, ResultT>& last_upper_level() {
+  detail::LockFreeRMALevel<TaskT, ResultT>& last_upper_level() {
     return m_owned_upper_levels.empty() ? *m_parent_level : m_owned_upper_levels.back();
   }
 
@@ -1285,12 +1286,12 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
 
   // A plain local worker: claims tasks from its node coordinator, computes
   // them inline, writes results back -- the same claim/write pattern
-  // AsyncPutLockFreeMPIWorkDistributor::run_worker() uses against its one
+  // LockFreeRMAWorkDistributor::run_worker() uses against its one
   // flat window, here against the local level instead.
   void run_local_worker() {
     while (true) {
       // Cache once per iteration -- see step_bridge_hop()'s comment on why
-      // calling AsyncPutLevel::drained() separately for the claim guard and
+      // calling LockFreeRMALevel::drained() separately for the claim guard and
       // the exit check is a real bug class (it does fresh RMA reads and is
       // not guaranteed to agree with itself moments apart), not just a
       // style preference.
@@ -1317,7 +1318,7 @@ class HierarchicalAsyncPutLockFreeMPIWorkDistributor {
   // instead of publishing further down to a local_level it doesn't have.
   void run_leaf_leader_worker() {
     std::vector<BridgeHop> hops = build_upper_hops();
-    detail::AsyncPutLevel<TaskT, ResultT>& terminal = last_upper_level();
+    detail::LockFreeRMALevel<TaskT, ResultT>& terminal = last_upper_level();
 
     while (true) {
       bool any_progress = false;

@@ -17,14 +17,14 @@
 
 #include "../mpi/mpi_communicator.hpp"
 #include "../mpi/mpi_types.hpp"
-#include "dynampi/impl/lockfree_distributor.hpp"  // reuses dynampi::detail byte-packing helpers
+#include "dynampi/impl/minimal_lockfree_distributor.hpp"  // reuses dynampi::detail byte-packing helpers
 #include "dynampi/mpi/mpi_error.hpp"
 #include "dynampi/utilities/timer.hpp"
 
 namespace dynampi {
 
 // ---------------------------------------------------------------------------
-// AsyncPutLockFreeMPIWorkDistributor
+// LockFreeRMAWorkDistributor
 //
 // Lock-free task claiming via fetch-and-add against HEAD_OFF, bounded by a
 // cached read of TOTAL_OFF, one task per claim -- this is a flat distributor.
@@ -47,7 +47,7 @@ namespace dynampi {
 // Options currently only recognizes track_statistics<...> (no prioritization support in this
 // class).
 template <typename TaskT, typename ResultT, typename... Options>
-class AsyncPutLockFreeMPIWorkDistributor {
+class LockFreeRMAWorkDistributor {
  private:
   static constexpr StatisticsMode statistics_mode =
       get_option_value<track_statistics_t, Options...>();
@@ -85,8 +85,8 @@ class AsyncPutLockFreeMPIWorkDistributor {
     return m_statistics;
   }
 
-  explicit AsyncPutLockFreeMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
-                                              Config config = {})
+  explicit LockFreeRMAWorkDistributor(std::function<ResultT(TaskT)> worker_function,
+                                      Config config = {})
       : m_config(config),
         m_comm(config.comm, Comm::Duplicate),
         m_worker_function(std::move(worker_function)),
@@ -95,7 +95,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
     if (m_config.auto_run_workers && !is_root_manager()) run_worker();
   }
 
-  ~AsyncPutLockFreeMPIWorkDistributor() {
+  ~LockFreeRMAWorkDistributor() {
     if (!m_finalized) finalize();
     if (m_window != MPI_WIN_NULL) {
       DYNAMPI_MPI_CHECK(MPI_Win_unlock_all, (m_window));
@@ -168,7 +168,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
   // control" callers -- e.g. a benchmark driver measuring throughput of an
   // uninterrupted worker-side spin, which wants to publish a batch, let
   // workers run completely undisturbed for a fixed window, then harvest
-  // once at the end (see AsyncPutLockFree's benchmark path in
+  // once at the end (see LockFreeRMA's benchmark path in
   // strong_scaling_distribution_rate.cpp).
   [[nodiscard]] std::vector<ResultT> gather_once() {
     assert(is_root_manager());
@@ -381,8 +381,8 @@ class AsyncPutLockFreeMPIWorkDistributor {
     // Window slots are fixed-width, so a non-resizable payload spanning more
     // than one datatype element would overrun them -- see
     // check_fixed_size_mpi_type().
-    check_fixed_size_mpi_type<TaskT>("task", "AsyncPutLockFree");
-    check_fixed_size_mpi_type<ResultT>("result", "AsyncPutLockFree");
+    check_fixed_size_mpi_type<TaskT>("task", "LockFreeRMA");
+    check_fixed_size_mpi_type<ResultT>("result", "LockFreeRMA");
 
     m_task_elem = static_cast<size_t>(detail::mpi_type_size_bytes<TaskT>());
     m_result_elem = static_cast<size_t>(detail::mpi_type_size_bytes<ResultT>());
@@ -502,7 +502,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
   void publish_tasks(std::span<const TaskT> tasks) {
     if (tasks.empty()) return;
     const int64_t start = m_total_tasks;
-    detail::check_task_capacity(start, tasks.size(), m_config.max_tasks, "AsyncPutLockFree");
+    detail::check_task_capacity(start, tasks.size(), m_config.max_tasks, "LockFreeRMA");
     if (num_workers() == 0) {
       m_task_store.insert(m_task_store.end(), tasks.begin(), tasks.end());
       m_total_tasks += static_cast<int64_t>(tasks.size());
@@ -513,7 +513,7 @@ class AsyncPutLockFreeMPIWorkDistributor {
       const TaskT& task = tasks[i];
       const int count = MPI_Type<TaskT>::count(task);
       assert(static_cast<size_t>(count) <= m_max_task_count &&
-             "AsyncPutLockFree: task exceeds max_task_count");
+             "LockFreeRMA: task exceeds max_task_count");
       const size_t data_bytes = static_cast<size_t>(count) * m_task_elem;
       const size_t off = i * m_task_slot_stride;
       detail::write_i64(buffer.data(), buffer.size(), off + T_COUNT, count);

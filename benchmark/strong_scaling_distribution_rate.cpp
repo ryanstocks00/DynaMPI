@@ -9,9 +9,9 @@
 #include <chrono>
 #include <cstdint>
 #include <cxxopts.hpp>
-#include <dynampi/impl/async_put_lockfree_distributor.hpp>
-#include <dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp>
 #include <dynampi/impl/hierarchical_distributor.hpp>
+#include <dynampi/impl/hierarchical_lockfree_rma_distributor.hpp>
+#include <dynampi/impl/lockfree_rma_distributor.hpp>
 #include <dynampi/impl/naive_distributor.hpp>
 #include <dynampi/mpi/mpi_communicator.hpp>
 #include <dynampi/utilities/timer.hpp>
@@ -23,26 +23,35 @@
 
 using Task = uint32_t;
 
-// Lockfree pre-allocates a fixed-capacity task/result table sized for the
-// entire lifetime of the distributor (not a ring buffer). publish_task()
-// only guards overflow with an assert(), which is compiled out under
-// NDEBUG (our Release build), so undersizing this corrupts memory instead
-// of erroring cleanly. Per-slot cost is tiny for our scalar uint32_t
-// Task/ResultT (task slot + result slot + log entry <= ~40 bytes, since
-// MPI_Type<uint32_t>::resize_required is false so the variable-length
-// max_task_count/max_result_count machinery collapses to a single
-// element) -- 500M tasks is ~20GB, trivial on a manager rank, and
-// comfortably covers even our empirically-observed ~2.4-5M tasks/s
+// Default lifetime task capacity for the RMA distributors, overridable with
+// --max_tasks.
+//
+// The RMA distributors pre-allocate a fixed-capacity task/result table sized
+// for the entire lifetime of the distributor (not a ring buffer), so this is a
+// hard ceiling on how many tasks a single run may publish, not a hint. Per-slot
+// cost is tiny for our scalar uint32_t Task/ResultT (task slot + result slot +
+// log entry <= ~40 bytes, since MPI_Type<uint32_t>::resize_required is false so
+// the variable-length max_task_count/max_result_count machinery collapses to a
+// single element) -- 500M tasks is ~19GiB, trivial on a compute-node manager
+// rank, and comfortably covers even our empirically-observed ~2.4-5M tasks/s
 // aggregate ceiling (which doesn't grow with node count -- it's a
 // manager-window bottleneck, not a per-worker one) sustained for a full
 // duration_s with room for repeated top-up chunks on top.
-constexpr int kLockFreeMaxTasks = 500'000'000;
+//
+// Lower it with --max_tasks to run this benchmark on a machine that cannot
+// spare that much memory on the manager rank: the window is allocated eagerly
+// in the distributor's constructor, so an over-large value is an outright OOM
+// rather than a gradual slowdown. Sizing it below expected throughput x
+// duration_s ends the run early (see the capacity check in
+// run_benchmark_lockfree_rma_style), which still reports a valid rate over
+// however long it did run, but measures less of the window than asked for.
+constexpr int kDefaultLockFreeMaxTasks = 500'000'000;
 
 enum class DistributorKind {
   Naive,
   Hierarchical,
-  AsyncPutLockFree,
-  HierarchicalAsyncPutLockFree,
+  LockFreeRMA,
+  HierarchicalLockFreeRMA,
 };
 enum class DurationMode { Fixed, Poisson };
 
@@ -52,6 +61,7 @@ struct BenchmarkOptions {
   DistributorKind distributor = DistributorKind::Hierarchical;
   DurationMode duration_mode = DurationMode::Fixed;
   int max_upper_fanout = -1;
+  int max_tasks = kDefaultLockFreeMaxTasks;
   uint64_t nodes = 0;
   std::string system;
   std::string output_path;
@@ -67,9 +77,8 @@ struct BenchmarkResult {
 static DistributorKind parse_distributor(const std::string& value) {
   if (value == "naive") return DistributorKind::Naive;
   if (value == "hierarchical") return DistributorKind::Hierarchical;
-  if (value == "async_put_lockfree") return DistributorKind::AsyncPutLockFree;
-  if (value == "hierarchical_async_put_lockfree")
-    return DistributorKind::HierarchicalAsyncPutLockFree;
+  if (value == "lockfree_rma") return DistributorKind::LockFreeRMA;
+  if (value == "hierarchical_lockfree_rma") return DistributorKind::HierarchicalLockFreeRMA;
   throw std::runtime_error("Unknown distributor: " + value);
 }
 
@@ -85,10 +94,10 @@ static std::string to_string(DistributorKind kind) {
       return "naive";
     case DistributorKind::Hierarchical:
       return "hierarchical";
-    case DistributorKind::AsyncPutLockFree:
-      return "async_put_lockfree";
-    case DistributorKind::HierarchicalAsyncPutLockFree:
-      return "hierarchical_async_put_lockfree";
+    case DistributorKind::LockFreeRMA:
+      return "lockfree_rma";
+    case DistributorKind::HierarchicalLockFreeRMA:
+      return "hierarchical_lockfree_rma";
   }
   return "unknown";
 }
@@ -123,7 +132,7 @@ static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts,
 // instead of returning normally and letting the distributor finalize/
 // destruct cooperatively. finalize() (called explicitly or from the
 // destructor if not already finalized) unconditionally drains every
-// published-but-unclaimed task before returning; for the async-put classes
+// published-but-unclaimed task before returning; for the lock-free RMA classes
 // that drain has no time bound at all, and at compute-bound or
 // contention-collapsed configs it can take orders of magnitude longer than
 // duration_s -- burning node-hours for a drain nobody needs once the
@@ -141,7 +150,7 @@ static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts,
             << " distributor=" << to_string(opts.distributor)
             << " mode=" << to_string(opts.duration_mode) << " expected_us=" << opts.expected_us
             << " nodes=" << opts.nodes << " world_size=" << result.world_size
-            << " max_upper_fanout=" << opts.max_upper_fanout
+            << " max_upper_fanout=" << opts.max_upper_fanout << " max_tasks=" << opts.max_tasks
             << " total_tasks=" << result.total_tasks << " elapsed_s=" << result.elapsed_s
             << " throughput_tasks_per_s=" << throughput << std::endl;
   if (!opts.output_path.empty()) {
@@ -205,7 +214,7 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
 
   typename Distributor::Config config{.comm = comm, .manager_rank = 0};
   if constexpr (requires { config.max_tasks; }) {
-    config.max_tasks = kLockFreeMaxTasks;
+    config.max_tasks = opts.max_tasks;
   }
   if constexpr (requires { config.max_upper_fanout; }) {
     config.max_upper_fanout = opts.max_upper_fanout;
@@ -226,7 +235,7 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
     // expected_us=1000: 5.1M tasks/s at 128 nodes, 600-700K at 256 nodes,
     // 2.3M at 512 nodes, all nominally the same configuration). That
     // throttle was guarding against a risk this driver doesn't actually
-    // have: unlike the async-put classes' one-shot giant-batch drivers,
+    // have: unlike the lock-free RMA classes' one-shot giant-batch drivers,
     // where overpublishing means an unbounded final drain, this queue is
     // continuously topped up in small increments (target_queue_size), so
     // the outstanding backlog at any moment -- including at
@@ -264,8 +273,8 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
                          timer.elapsed().count()};
 }
 
-// Shared by AsyncPutLockFreeMPIWorkDistributor and
-// HierarchicalAsyncPutLockFreeMPIWorkDistributor -- they already implement
+// Shared by LockFreeRMAWorkDistributor and
+// HierarchicalLockFreeRMAWorkDistributor -- they already implement
 // the exact same insert_tasks()/run_tasks()/finalize() API, so the two
 // drivers used to be byte-identical copy-pasted functions apart from Config
 // setup. Shape: publish a bounded chunk of tasks, then just ask the
@@ -294,7 +303,8 @@ static BenchmarkResult run_benchmark(const BenchmarkOptions& opts, MPI_Comm comm
 // outstanding when duration_s hits, not however large a rate-based guess
 // happened to compute.
 template <typename Distributor>
-static BenchmarkResult run_benchmark_async_put_style(const BenchmarkOptions& opts, MPI_Comm comm) {
+static BenchmarkResult run_benchmark_lockfree_rma_style(const BenchmarkOptions& opts,
+                                                        MPI_Comm comm) {
   dynampi::MPICommunicator<> comm_wrapper(comm, dynampi::MPICommunicator<>::Ownership::Reference);
   int rank = 0;
   int size = 0;
@@ -311,8 +321,8 @@ static BenchmarkResult run_benchmark_async_put_style(const BenchmarkOptions& opt
   typename Distributor::Config config{};
   config.comm = comm;
   config.manager_rank = 0;
-  if constexpr (requires { config.max_tasks; }) config.max_tasks = kLockFreeMaxTasks;
-  if constexpr (requires { config.max_local_tasks; }) config.max_local_tasks = kLockFreeMaxTasks;
+  if constexpr (requires { config.max_tasks; }) config.max_tasks = opts.max_tasks;
+  if constexpr (requires { config.max_local_tasks; }) config.max_local_tasks = opts.max_tasks;
   if constexpr (requires { config.max_upper_fanout; }) {
     config.max_upper_fanout = opts.max_upper_fanout;
   }
@@ -339,7 +349,7 @@ static BenchmarkResult run_benchmark_async_put_style(const BenchmarkOptions& opt
     // version of this floor was num_workers*10, which is smaller than the
     // 2,000,000 cap for any node count below ~2000 -- so min(cap, floor)
     // always evaluated to the (too-small) floor, the cap never actually
-    // engaged, and flat async_put_lockfree at 128 nodes measured
+    // engaged, and flat lockfree_rma at 128 nodes measured
     // 27,404 tasks/s versus a historical (old, calibration-based driver)
     // 241,596 tasks/s at the same config -- a ~9x self-inflicted
     // regression, not a real architectural ceiling. num_workers*1000
@@ -350,9 +360,18 @@ static BenchmarkResult run_benchmark_async_put_style(const BenchmarkOptions& opt
 
     uint64_t published = 0;
     while (timer.elapsed().count() < opts.duration_s) {
-      const uint64_t capacity_left = static_cast<uint64_t>(kLockFreeMaxTasks) - 1 - published;
+      const uint64_t capacity_left = static_cast<uint64_t>(opts.max_tasks) - 1 - published;
       const uint64_t to_insert = std::min(chunk_size, capacity_left);
-      if (to_insert == 0) break;  // table full: end the run rather than corrupt memory
+      if (to_insert == 0) {
+        // Table full: end the run rather than overrun the preallocated window.
+        // Only reachable with a --max_tasks well below throughput x duration_s,
+        // so say so -- the reported rate is still valid, but it covers a
+        // shorter window than requested and that is easy to miss in a log.
+        std::cerr << "WARNING: --max_tasks (" << opts.max_tasks << ") exhausted after "
+                  << timer.elapsed().count() << "s of a " << opts.duration_s
+                  << "s window; raise it for a full-length measurement." << std::endl;
+        break;
+      }
       {
         std::vector<Task> tasks;
         tasks.reserve(to_insert);
@@ -387,19 +406,26 @@ int main(int argc, char** argv) {
                         cxxopts::value<uint64_t>()->default_value("1"))(
       "d,duration_s", "Target duration in seconds", cxxopts::value<double>()->default_value("10"))(
       "D,distribution",
-      "Distribution strategy: naive, hierarchical, async_put_lockfree, "
-      "or hierarchical_async_put_lockfree",
+      "Distribution strategy: naive, hierarchical, lockfree_rma, "
+      "or hierarchical_lockfree_rma",
       cxxopts::value<std::string>()->default_value("hierarchical"))(
       "m,mode", "Duration mode: fixed or random (uniform 0-2x expected)",
       cxxopts::value<std::string>()->default_value("fixed"))(
       "max_upper_fanout",
-      "hierarchical_async_put_lockfree only: max direct children per coordinator "
+      "hierarchical_lockfree_rma only: max direct children per coordinator "
       "above the node-local level. Negative (default) = auto, picking a fanout "
-      "from coordinator count (see HierarchicalAsyncPutLockFreeMPIWorkDistributor's "
+      "from coordinator count (see HierarchicalLockFreeRMAWorkDistributor's "
       "setup_upper_chain() for the formula); 0 = single unbounded coordinator level "
       "(matches pre-N-level behavior); >0 activates iterative k-ary grouping into "
       "multiple upper levels once the coordinator count exceeds this fanout.",
       cxxopts::value<int>()->default_value("-1"))(
+      "max_tasks",
+      "lockfree_rma and hierarchical_lockfree_rma only: lifetime task capacity "
+      "of each preallocated RMA window, in tasks. The window is allocated up "
+      "front on the owning rank (~40 bytes per task here), so lower this to run "
+      "on a machine with less memory than a compute node; too low and the run "
+      "ends before duration_s elapses.",
+      cxxopts::value<int>()->default_value(std::to_string(kDefaultLockFreeMaxTasks)))(
       "n,nodes", "Number of nodes for labeling output (defaults to world size)",
       cxxopts::value<uint64_t>()->default_value("0"))(
       "S,system", "System label for plotting (frontier, aurora, ...)",
@@ -433,6 +459,7 @@ int main(int argc, char** argv) {
     opts.distributor = parse_distributor(args["distribution"].as<std::string>());
     opts.duration_mode = parse_duration_mode(args["mode"].as<std::string>());
     opts.max_upper_fanout = args["max_upper_fanout"].as<int>();
+    opts.max_tasks = args["max_tasks"].as<int>();
     opts.nodes = args["nodes"].as<uint64_t>();
     opts.system = args["system"].as<std::string>();
     opts.output_path = args["output"].as<std::string>();
@@ -447,6 +474,14 @@ int main(int argc, char** argv) {
   if (opts.expected_us == 0) {
     if (world_rank == 0) {
       std::cerr << "Expected task duration must be >= 1 microsecond." << std::endl;
+    }
+    MPI_Finalize();
+    return 1;
+  }
+
+  if (opts.max_tasks <= 0) {
+    if (world_rank == 0) {
+      std::cerr << "--max_tasks must be positive." << std::endl;
     }
     MPI_Finalize();
     return 1;
@@ -471,18 +506,18 @@ int main(int argc, char** argv) {
     // for build-configuration correctness.
     switch (opts.distributor) {
       case DistributorKind::Naive:
-        run_benchmark<dynampi::NaiveMPIWorkDistributor<Task, uint32_t>>(opts, comm);
+        run_benchmark<dynampi::NaiveWorkDistributor<Task, uint32_t>>(opts, comm);
         break;
       case DistributorKind::Hierarchical:
-        run_benchmark<dynampi::HierarchicalMPIWorkDistributor<Task, uint32_t>>(opts, comm);
+        run_benchmark<dynampi::HierarchicalWorkDistributor<Task, uint32_t>>(opts, comm);
         break;
-      case DistributorKind::AsyncPutLockFree:
-        run_benchmark_async_put_style<dynampi::AsyncPutLockFreeMPIWorkDistributor<Task, uint32_t>>(
-            opts, comm);
+      case DistributorKind::LockFreeRMA:
+        run_benchmark_lockfree_rma_style<dynampi::LockFreeRMAWorkDistributor<Task, uint32_t>>(opts,
+                                                                                              comm);
         break;
-      case DistributorKind::HierarchicalAsyncPutLockFree:
-        run_benchmark_async_put_style<
-            dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, uint32_t>>(opts, comm);
+      case DistributorKind::HierarchicalLockFreeRMA:
+        run_benchmark_lockfree_rma_style<
+            dynampi::HierarchicalLockFreeRMAWorkDistributor<Task, uint32_t>>(opts, comm);
         break;
     }
   }

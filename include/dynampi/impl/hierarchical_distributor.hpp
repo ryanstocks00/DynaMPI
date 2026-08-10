@@ -29,8 +29,8 @@
 namespace dynampi {
 
 template <typename TaskT, typename ResultT, typename... Options>
-class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, ResultT, Options...> {
-  using Base = BaseMPIWorkDistributor<TaskT, ResultT, Options...>;
+class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, Options...> {
+  using Base = BaseWorkDistributor<TaskT, ResultT, Options...>;
 
  public:
   struct Config {
@@ -62,7 +62,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     // Only meaningful when coordinator_per_node is true. 0 (default) keeps one
     // local group per shared-memory node. A positive value partitions large
     // nodes into smaller contiguous groups -- same knob as
-    // HierarchicalAsyncPutLockFreeMPIWorkDistributor::Config::max_local_group_size
+    // HierarchicalLockFreeRMAWorkDistributor::Config::max_local_group_size
     // -- so a single-node CI job can still synthesize multiple coordinators
     // and exercise max_upper_fanout grouping.
     int max_local_group_size = 0;
@@ -70,7 +70,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     // Only meaningful when coordinator_per_node is true. <0 (default,
     // "auto"): pick a fanout from node coordinator count -- see
     // setup_leader_hierarchy()'s comment for the formula (mirrors
-    // HierarchicalAsyncPutLockFreeMPIWorkDistributor::Config::max_upper_fanout,
+    // HierarchicalLockFreeRMAWorkDistributor::Config::max_upper_fanout,
     // same measured sweet spot). 0: disabled, exactly today's flat two-level
     // tree -- manager talks directly to every node coordinator. >0: caps how
     // many direct claimants any single leader-layer rank may have; if the
@@ -146,7 +146,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   // Leader-layer topology (manager + node coordinators), built by
   // setup_leader_hierarchy(). Mirrors
-  // HierarchicalAsyncPutLockFreeMPIWorkDistributor's m_owned_upper_levels /
+  // HierarchicalLockFreeRMAWorkDistributor's m_owned_upper_levels /
   // m_parent_level split: a rank promoted through zero or more grouping
   // rounds owns one group per round it leads (m_owned_leader_levels, its
   // direct leader-layer children at that round -- the manager always owns
@@ -177,7 +177,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
 
   // Resolves Config::max_upper_fanout to an actual branching factor.
   // coordinator_count excludes the manager. Auto mode mirrors
-  // HierarchicalAsyncPutLockFreeMPIWorkDistributor's identically-named
+  // HierarchicalLockFreeRMAWorkDistributor's identically-named
   // formula (see its setup_upper_chain() comment for the measurements
   // behind it): below ~32 coordinators, a fanout sweep showed grouped and
   // flat topologies are statistically indistinguishable, so stay flat.
@@ -201,7 +201,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   // Builds the leader layer (manager + node coordinators), optionally
   // grouped into a k-ary tree with branching factor resolve_leader_fanout()
   // when the coordinator count exceeds it. Mirrors
-  // HierarchicalAsyncPutLockFreeMPIWorkDistributor::setup_upper_chain() --
+  // HierarchicalLockFreeRMAWorkDistributor::setup_upper_chain() --
   // see its comment for the general shape; this builds the same tree over
   // send/recv instead of RMA windows, so there's no per-level window to
   // create, just group membership to record (m_owned_leader_levels /
@@ -314,7 +314,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
         //
         // Flat/top groups include the manager but are keyed by world rank,
         // so the manager is not necessarily group rank 0 when
-        // manager_rank != 0 (mirrors AsyncPut's owner_rank lookup).
+        // manager_rank != 0 (mirrors LockFreeRMA's owner_rank lookup).
         // Intermediate grouping levels never include the manager; their
         // owner is group rank 0 by construction of the color/key split.
         DYNAMPI_ASSERT(m_leader_parent_group.has_value(),
@@ -445,8 +445,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
   }
 
  public:
-  explicit HierarchicalMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
-                                          Config runtime_config = Config{})
+  explicit HierarchicalWorkDistributor(std::function<ResultT(TaskT)> worker_function,
+                                       Config runtime_config = Config{})
       : m_communicator(runtime_config.comm, MPICommunicator::Duplicate),
         m_world_group(m_communicator),
         m_worker_function(worker_function),
@@ -456,8 +456,8 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     // element count is the number of values -- so a non-resizable payload
     // spanning more than one datatype element would send a fraction of each.
     // See check_fixed_size_mpi_type().
-    check_fixed_size_mpi_type<TaskT>("task", "HierarchicalMPIWorkDistributor");
-    check_fixed_size_mpi_type<ResultT>("result", "HierarchicalMPIWorkDistributor");
+    check_fixed_size_mpi_type<TaskT>("task", "HierarchicalWorkDistributor");
+    check_fixed_size_mpi_type<ResultT>("result", "HierarchicalWorkDistributor");
 
     // --- Initialize Topology Groups ---
     if (m_config.coordinator_per_node) {
@@ -855,7 +855,7 @@ class HierarchicalMPIWorkDistributor : public BaseMPIWorkDistributor<TaskT, Resu
     }
   }
 
-  ~HierarchicalMPIWorkDistributor() {
+  ~HierarchicalWorkDistributor() {
     if (!m_finalized) {
       finalize();
     }

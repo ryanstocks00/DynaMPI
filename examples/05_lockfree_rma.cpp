@@ -9,8 +9,8 @@
  */
 
 #include <cstddef>
-#include <dynampi/impl/async_put_lockfree_distributor.hpp>
-#include <dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp>
+#include <dynampi/impl/hierarchical_lockfree_rma_distributor.hpp>
+#include <dynampi/impl/lockfree_rma_distributor.hpp>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 
     // --- Flat: one manager-owned window ----------------------------------
     {
-      using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<Task, Result>;
+      using Distributor = dynampi::LockFreeRMAWorkDistributor<Task, Result>;
 
       Distributor::Config config;
       // max_tasks is a LIFETIME total, not a concurrent depth: the task table,
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
         dist.insert_tasks(tasks);
 
         auto results = dist.finish_remaining_tasks();
-        std::cout << "flat async-put: " << results.size() << " results\n";
+        std::cout << "flat lock-free RMA: " << results.size() << " results\n";
 
         try {
           std::vector<Task> overflow(64, 1);  // 100 + 64 > max_tasks
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     // single window has to service every rank. Worth it once a single
     // manager-owned window becomes the ceiling; measure before switching.
     {
-      using Distributor = dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, Result>;
+      using Distributor = dynampi::HierarchicalLockFreeRMAWorkDistributor<Task, Result>;
 
       Distributor::Config config;
       config.max_tasks = 256;        // per upper-level window
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
         // is ready, instead of looping until everything is collected.
         size_t snapshot = dist.gather_once().size();
         size_t rest = dist.finish_remaining_tasks().size();
-        std::cout << "hierarchical async-put: " << snapshot << " ready immediately, " << rest
+        std::cout << "hierarchical lock-free RMA: " << snapshot << " ready immediately, " << rest
                   << " collected after\n";
       }
     }

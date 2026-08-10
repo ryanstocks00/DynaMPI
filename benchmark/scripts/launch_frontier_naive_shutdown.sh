@@ -13,7 +13,7 @@ SYSTEM="frontier"
 
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512 1024 2048 4096 8192}"
 IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
-# hierarchical and hierarchical_async_put_lockfree only: see the matching
+# hierarchical and hierarchical_lockfree_rma only: see the matching
 # comment in launch_frontier_strong_scaling.sh / launch_aurora_strong_scaling.sh.
 IFS=' ' read -r -a MAX_UPPER_FANOUT_LIST <<< "${MAX_UPPER_FANOUT_LIST:-${MAX_UPPER_FANOUT:--1}}"
 IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-core}"
@@ -51,7 +51,7 @@ for nodes in "${NODE_LIST[@]}"; do
     fi
     total_ranks=$((nodes * ranks_per_node))
     for dist in "${DISTRIBUTIONS[@]}"; do
-      if [[ "${dist}" == "hierarchical_async_put_lockfree" || "${dist}" == "hierarchical" ]]; then
+      if [[ "${dist}" == "hierarchical_lockfree_rma" || "${dist}" == "hierarchical" ]]; then
         fanouts=("${MAX_UPPER_FANOUT_LIST[@]}")
       else
         fanouts=("${MAX_UPPER_FANOUT_LIST[0]}")

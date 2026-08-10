@@ -29,6 +29,7 @@ TASK_US_LIST="${TASK_US_LIST:-}"
 MODES="${MODES:-}"
 MAX_UPPER_FANOUT="${MAX_UPPER_FANOUT:-}"
 MAX_UPPER_FANOUT_LIST="${MAX_UPPER_FANOUT_LIST:-}"
+MAX_TASKS="${MAX_TASKS:-}"
 OUTPUT_BASE="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 
 for nodes in "${NODE_LIST[@]}"; do
@@ -57,6 +58,7 @@ export MODES=\"${MODES}\"
 export DURATION_S=\"${DURATION_S}\"
 export MAX_UPPER_FANOUT=\"${MAX_UPPER_FANOUT}\"
 export MAX_UPPER_FANOUT_LIST=\"${MAX_UPPER_FANOUT_LIST}\"
+export MAX_TASKS=\"${MAX_TASKS}\"
 export OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${PBS_JOBID_SHORT:-manual}\"
 ${SCRIPT}
 "

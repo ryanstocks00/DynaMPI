@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Ryan Stocks
  * SPDX-License-Identifier: Apache-2.0
  *
- * MinimalLockFreeMPIWorkDistributor: a dynamically balanced parallel-for over
+ * MinimalLockFreeWorkDistributor: a dynamically balanced parallel-for over
  * 0 .. n-1, where the task payload is just the loop index.
  *
  *   mpirun -n 4 ./07_parallel_for
@@ -10,7 +10,7 @@
 
 #include <cmath>
 #include <cstddef>
-#include <dynampi/impl/lockfree_distributor.hpp>
+#include <dynampi/impl/minimal_lockfree_distributor.hpp>
 #include <iostream>
 #include <vector>
 
@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     // there is no manager bottleneck -- but results are collected with a
     // single MPI_Gatherv at the end, which bounds this to roughly the low
     // hundreds of ranks. Config carries comm and manager_rank only.
-    dynampi::MinimalLockFreeMPIWorkDistributor<double> dist([](size_t i) {
+    dynampi::MinimalLockFreeWorkDistributor<double> dist([](size_t i) {
       double sum = 0.0;
       for (size_t k = 0; k < i; ++k) sum += std::sqrt(static_cast<double>(k));
       return sum;

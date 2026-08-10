@@ -11,15 +11,15 @@ deliberately minimal parallel-for helper with its own small API.
 
 | Class | Header | Communication | Topology | Ordered |
 |-------|--------|---------------|----------|---------|
-| [`NaiveMPIWorkDistributor`](#naivempiworkdistributor) | `impl/naive_distributor.hpp` | Two-sided `Send`/`Recv` | Flat | **Yes** |
-| [`HierarchicalMPIWorkDistributor`](#hierarchicalmpiworkdistributor-mpidynamicworkdistributor) | `impl/hierarchical_distributor.hpp` | Two-sided, batched | Tree | No |
-| [`HierarchicalNonBlockingMPIWorkDistributor`](#hierarchicalnonblockingmpiworkdistributor) | `impl/hierarchical_nonblocking_distributor.hpp` | Two-sided, batched, `Isend` | Tree | No |
-| [`AsyncPutLockFreeMPIWorkDistributor`](#asyncputlockfreempiworkdistributor) | `impl/async_put_lockfree_distributor.hpp` | Passive-target RMA | Flat | No |
-| [`HierarchicalAsyncPutLockFreeMPIWorkDistributor`](#hierarchicalasyncputlockfreempiworkdistributor) | `impl/hierarchical_async_put_lockfree_distributor.hpp` | Passive-target RMA | Tree | No |
-| [`MinimalLockFreeMPIWorkDistributor`](#minimallockfreempiworkdistributor) | `impl/lockfree_distributor.hpp` | RMA counter + one `Gatherv` | Flat | **Yes** |
+| [`NaiveWorkDistributor`](#naiveworkdistributor) | `impl/naive_distributor.hpp` | Two-sided `Send`/`Recv` | Flat | **Yes** |
+| [`HierarchicalWorkDistributor`](#hierarchicalworkdistributor-dynamicworkdistributor) | `impl/hierarchical_distributor.hpp` | Two-sided, batched | Tree | No |
+| [`HierarchicalNonBlockingWorkDistributor`](#hierarchicalnonblockingworkdistributor) | `impl/hierarchical_nonblocking_distributor.hpp` | Two-sided, batched, `Isend` | Tree | No |
+| [`LockFreeRMAWorkDistributor`](#lockfreermaworkdistributor) | `impl/lockfree_rma_distributor.hpp` | Passive-target RMA | Flat | No |
+| [`HierarchicalLockFreeRMAWorkDistributor`](#hierarchicallockfreermaworkdistributor) | `impl/hierarchical_lockfree_rma_distributor.hpp` | Passive-target RMA | Tree | No |
+| [`MinimalLockFreeWorkDistributor`](#minimallockfreeworkdistributor) | `impl/minimal_lockfree_distributor.hpp` | RMA counter + one `Gatherv` | Flat | **Yes** |
 
-Only `NaiveMPIWorkDistributor`, `HierarchicalMPIWorkDistributor` and
-`MinimalLockFreeMPIWorkDistributor` are pulled in by `<dynampi/dynampi.hpp>`.
+Only `NaiveWorkDistributor`, `HierarchicalWorkDistributor` and
+`MinimalLockFreeWorkDistributor` are pulled in by `<dynampi/dynampi.hpp>`.
 The other three need their own `#include` — see [Headers](api.md#headers).
 
 ---
@@ -30,11 +30,11 @@ The other three need their own `#include` — see [Headers](api.md#headers).
 
 Ordering is exposed as a compile-time constant, `Distributor::ordered`:
 
-- **`NaiveMPIWorkDistributor` (`ordered == true`)** — the manager buffers
+- **`NaiveWorkDistributor` (`ordered == true`)** — the manager buffers
   results by task ID and only releases a contiguous prefix, so returned results
   are always in insertion order.  A slow task therefore holds back every result
   behind it.
-- **`MinimalLockFreeMPIWorkDistributor`** — sorts by task index during the final
+- **`MinimalLockFreeWorkDistributor`** — sorts by task index during the final
   gather.  (It has no `ordered` member; the whole API is a single `run()` call.)
 - **Everything else (`ordered == false`)** — results are returned as they are
   confirmed complete.  For the hierarchical distributors this is roughly
@@ -65,7 +65,7 @@ therefore work unchanged.
 
 ---
 
-## NaiveMPIWorkDistributor
+## NaiveWorkDistributor
 
 **Best for:** small communicators, ordered results, task priorities, and as a
 reference implementation when debugging a workload.
@@ -113,10 +113,10 @@ currently unused by the implementation.
 
 ---
 
-## HierarchicalMPIWorkDistributor (`MPIDynamicWorkDistributor`)
+## HierarchicalWorkDistributor (`DynamicWorkDistributor`)
 
 **Best for:** the general multi-node case.  This is the default used by
-`mpi_manager_worker_distribution`, and `dynampi::MPIDynamicWorkDistributor` is an
+`mpi_manager_worker_distribution`, and `dynampi::DynamicWorkDistributor` is an
 alias for it.
 
 Ranks are arranged in a tree.  Leaf workers only ever talk to their coordinator;
@@ -201,7 +201,7 @@ Batch size is `num_direct_children × batch_size_multiplier`.
     or `std::string`.  A variable-length `ResultT` raises
     `DYNAMPI_UNIMPLEMENTED` as soon as a coordinator receives a result, and the
     batch path does not pack variable-length tasks correctly.
-    Use `NaiveMPIWorkDistributor` or one of the async-put distributors for
+    Use `NaiveWorkDistributor` or one of the lock-free RMA distributors for
     variable-length payloads.
 
 !!! warning "Prioritization is not supported here"
@@ -229,13 +229,13 @@ inside `finalize()`, so it is `std::nullopt` until then.
 
 ---
 
-## HierarchicalNonBlockingMPIWorkDistributor
+## HierarchicalNonBlockingWorkDistributor
 
 **Best for:** workloads where coordinators are send-bound — many children, large
 batches, or an MPI stack with expensive blocking sends.
 
 Byte-for-byte the same topology, protocol and pipelining as
-`HierarchicalMPIWorkDistributor`, with one change: every payload-carrying send
+`HierarchicalWorkDistributor`, with one change: every payload-carrying send
 (`TASK`, `TASK_BATCH`, `RESULT`, `RESULT_BATCH`, `REQUEST_BATCH`) is posted with
 `MPI_Isend` rather than `MPI_Send`, so a coordinator replying to one child never
 stalls before serving the next.  Each in-flight buffer is held in a small
@@ -253,12 +253,12 @@ working prioritization.  `Config` is identical to the blocking variant **minus**
 single flat group.
 
 Treat this as an A/B variant of the default rather than a separate design: if
-you are unsure, benchmark it against `HierarchicalMPIWorkDistributor` on your
+you are unsure, benchmark it against `HierarchicalWorkDistributor` on your
 workload.
 
 ---
 
-## AsyncPutLockFreeMPIWorkDistributor
+## LockFreeRMAWorkDistributor
 
 **Best for:** fine-grained tasks where two-sided hand-off latency dominates.  No
 collective calls anywhere in the hot path.
@@ -340,15 +340,15 @@ bottleneck otherwise.
 
 ---
 
-## HierarchicalAsyncPutLockFreeMPIWorkDistributor
+## HierarchicalLockFreeRMAWorkDistributor
 
 **Best for:** large node counts where a single manager-owned window becomes the
 ceiling.
 
-Takes the async-put protocol above and instantiates it once *per level* of the
+Takes the lock-free RMA protocol above and instantiates it once *per level* of the
 node-aware tree: one window at the leader level (manager ↔ coordinators), plus an
 independent window per node (coordinator ↔ its local workers).  Each level is an
-independent `detail::AsyncPutLevel`, so claiming, publishing and harvesting stay
+independent `detail::LockFreeRMALevel`, so claiming, publishing and harvesting stay
 purely one-sided — composing hierarchically reintroduces no collectives.
 
 A node coordinator plays two roles simultaneously: **owner** of its local level
@@ -404,15 +404,15 @@ local window *and* its share of the upper ones.
 
 ---
 
-## MinimalLockFreeMPIWorkDistributor
+## MinimalLockFreeWorkDistributor
 
 **Best for:** an embarrassingly parallel loop over `0 .. n-1` where the task
 payload *is* the loop index.
 
 ```cpp
-#include <dynampi/impl/lockfree_distributor.hpp>
+#include <dynampi/impl/minimal_lockfree_distributor.hpp>
 
-dynampi::MinimalLockFreeMPIWorkDistributor<double> dist(
+dynampi::MinimalLockFreeWorkDistributor<double> dist(
     [](size_t i) { return std::sqrt(static_cast<double>(i)); });
 
 std::vector<double> results = dist.run(1'000'000);  // populated on the manager
@@ -440,7 +440,7 @@ gather_sorted(local) on the manager
   no `insert_task`, no `finalize`, and no statistics.
 - **Scaling limit:** the single terminal `MPI_Gatherv` bounds it to roughly the
   low hundreds of ranks.  Beyond that, or for arbitrary task payloads and
-  incremental result collection, use an async-put distributor.
+  incremental result collection, use a lock-free RMA distributor.
 
 Design background is in [Lock-free RMA design](lockfree_rma_design.md).
 
@@ -448,7 +448,7 @@ Design background is in [Lock-free RMA design](lockfree_rma_design.md).
 
 ## Feature matrix
 
-| | Naive | Hierarchical | Hier. NonBlocking | AsyncPut | Hier. AsyncPut | MinimalLockFree |
+| | Naive | Hierarchical | Hier. NonBlocking | LockFreeRMA | Hier. LockFreeRMA | MinimalLockFree |
 |---|---|---|---|---|---|---|
 | Communication | Two-sided | Two-sided, batched | Two-sided, batched, `Isend` | Passive RMA | Passive RMA, per level | RMA counter + `Gatherv` |
 | Collectives on the hot path | No | No | No | No | No | One `Gatherv` at the end |
@@ -481,16 +481,21 @@ repository ships drivers for exactly that (build with
 | `pingpong`, `timer_resolution` | Baseline latency and clock granularity |
 
 ```bash
-mpirun -n 64 ./build/benchmark/strong_scaling_distribution_rate -D async_put_lockfree -t 100 -d 10
+mpirun -n 64 ./build/benchmark/strong_scaling_distribution_rate -D lockfree_rma -t 100 -d 10
 ```
 
-`-D` selects `naive`, `hierarchical`, `async_put_lockfree` or
-`hierarchical_async_put_lockfree`; `-t` is the expected task duration in
-microseconds and `-d` the measurement window in seconds.  Launch scripts for
-Frontier and Aurora, plus plotting helpers, live under `benchmark/scripts/`.
+`-D` selects `naive`, `hierarchical`, `lockfree_rma` or
+`hierarchical_lockfree_rma`; `-t` is the expected task duration in
+microseconds and `-d` the measurement window in seconds.  The two RMA
+distributors preallocate their windows for `--max_tasks` tasks (default 500M,
+roughly 19 GiB on the owning rank), so lower it to run them anywhere with less
+memory than a compute node — the run warns and stops early if it exhausts the
+table before `-d` elapses.  Launch scripts for Frontier and Aurora (which take
+the same value as `MAX_TASKS`), plus plotting helpers, live under
+`benchmark/scripts/`.
 
-For orientation, the design work behind these classes found the flat async-put
+For orientation, the design work behind these classes found the flat lock-free RMA
 distributor plateauing once a single manager window saturated, while the
 hierarchical topologies kept climbing with node count — which is the entire
-motivation for `HierarchicalAsyncPutLockFreeMPIWorkDistributor`.  Reproduce on
+motivation for `HierarchicalLockFreeRMAWorkDistributor`.  Reproduce on
 your own target before committing to a choice.

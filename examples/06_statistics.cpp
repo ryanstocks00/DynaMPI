@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     // Message and byte counts plus per-rank task counts, with no clock reads
     // in the hot path. This is the mode to use while measuring throughput.
     {
-      using Distributor = dynampi::MPIDynamicWorkDistributor<
+      using Distributor = dynampi::DynamicWorkDistributor<
           Task, Result, dynampi::track_statistics<dynampi::StatisticsMode::Aggregated>>;
 
       Distributor dist(work, {});
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     // inside the calls that increment those counters. The extra clock reads
     // sit in the hot path, so prefer Aggregated when you are benchmarking.
     {
-      using Distributor = dynampi::NaiveMPIWorkDistributor<
+      using Distributor = dynampi::NaiveWorkDistributor<
           Task, Result, dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>;
 
       Distributor dist(work, {});

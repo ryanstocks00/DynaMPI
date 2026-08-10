@@ -11,7 +11,7 @@
 
 #include <cmath>
 #include <cstddef>
-#include <dynampi/impl/async_put_lockfree_distributor.hpp>
+#include <dynampi/impl/lockfree_rma_distributor.hpp>
 #include <iostream>
 #include <vector>
 
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
   {
     // Custom structs work with every distributor; this one happens to use the
     // flat lock-free RMA distributor.
-    using Distributor = dynampi::AsyncPutLockFreeMPIWorkDistributor<Ray, Hit>;
+    using Distributor = dynampi::LockFreeRMAWorkDistributor<Ray, Hit>;
 
     // The index rides along in the task so the worker can stamp it on the
     // result; this distributor is unordered, so nothing else recovers it.

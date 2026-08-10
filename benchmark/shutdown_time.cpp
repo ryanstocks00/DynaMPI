@@ -7,9 +7,9 @@
 
 #include <cstdint>
 #include <cxxopts.hpp>
-#include <dynampi/impl/async_put_lockfree_distributor.hpp>
-#include <dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp>
 #include <dynampi/impl/hierarchical_distributor.hpp>
+#include <dynampi/impl/hierarchical_lockfree_rma_distributor.hpp>
+#include <dynampi/impl/lockfree_rma_distributor.hpp>
 #include <dynampi/impl/naive_distributor.hpp>
 #include <dynampi/mpi/mpi_communicator.hpp>
 #include <dynampi/utilities/timer.hpp>
@@ -23,8 +23,8 @@ using Result = uint32_t;
 enum class DistributorKind {
   Naive,
   Hierarchical,
-  AsyncPutLockFree,
-  HierarchicalAsyncPutLockFree,
+  LockFreeRMA,
+  HierarchicalLockFreeRMA,
 };
 
 struct BenchmarkOptions {
@@ -45,9 +45,8 @@ struct BenchmarkResult {
 static DistributorKind parse_distributor(const std::string& value) {
   if (value == "naive") return DistributorKind::Naive;
   if (value == "hierarchical") return DistributorKind::Hierarchical;
-  if (value == "async_put_lockfree") return DistributorKind::AsyncPutLockFree;
-  if (value == "hierarchical_async_put_lockfree")
-    return DistributorKind::HierarchicalAsyncPutLockFree;
+  if (value == "lockfree_rma") return DistributorKind::LockFreeRMA;
+  if (value == "hierarchical_lockfree_rma") return DistributorKind::HierarchicalLockFreeRMA;
   throw std::runtime_error("Unknown distributor: " + value);
 }
 
@@ -57,10 +56,10 @@ static std::string to_string(DistributorKind kind) {
       return "naive";
     case DistributorKind::Hierarchical:
       return "hierarchical";
-    case DistributorKind::AsyncPutLockFree:
-      return "async_put_lockfree";
-    case DistributorKind::HierarchicalAsyncPutLockFree:
-      return "hierarchical_async_put_lockfree";
+    case DistributorKind::LockFreeRMA:
+      return "lockfree_rma";
+    case DistributorKind::HierarchicalLockFreeRMA:
+      return "hierarchical_lockfree_rma";
   }
   return "unknown";
 }
@@ -132,7 +131,7 @@ static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& op
         // Explicitly finalize here, inside the timed region, rather than
         // leaving it to distributor's destructor at the closing brace
         // below. finalize() is what actually does the real shutdown
-        // signaling (e.g. HierarchicalMPIWorkDistributor's
+        // signaling (e.g. HierarchicalWorkDistributor's
         // send_done_to_children_when_free(), which tells the whole
         // coordinator tree to stop) -- finish_remaining_tasks() alone has
         // nothing to do here since this benchmark never publishes any
@@ -182,13 +181,13 @@ int main(int argc, char** argv) {
   cxxopts::Options options("shutdown_time",
                            "Benchmark distributor construct/shutdown time with no tasks");
   options.add_options()("D,distribution",
-                        "Distribution strategy: naive, hierarchical, async_put_lockfree, "
-                        "or hierarchical_async_put_lockfree",
+                        "Distribution strategy: naive, hierarchical, lockfree_rma, "
+                        "or hierarchical_lockfree_rma",
                         cxxopts::value<std::string>()->default_value("naive"))(
       "n,nodes", "Number of nodes for labeling output (defaults to world size)",
       cxxopts::value<uint64_t>()->default_value("0"))(
       "max_upper_fanout",
-      "hierarchical and hierarchical_async_put_lockfree only: max direct children per "
+      "hierarchical and hierarchical_lockfree_rma only: max direct children per "
       "coordinator above the node-local level. Negative (default) = auto; 0 = single "
       "unbounded coordinator level (1-layer); >0 activates k-ary grouping into multiple "
       "upper levels once coordinator count exceeds this fanout.",
@@ -245,19 +244,17 @@ int main(int argc, char** argv) {
     BenchmarkResult result;
     switch (opts.distributor) {
       case DistributorKind::Naive:
-        result = run_benchmark<dynampi::NaiveMPIWorkDistributor<Task, Result>>(opts, comm);
+        result = run_benchmark<dynampi::NaiveWorkDistributor<Task, Result>>(opts, comm);
         break;
       case DistributorKind::Hierarchical:
-        result = run_benchmark<dynampi::HierarchicalMPIWorkDistributor<Task, Result>>(opts, comm);
+        result = run_benchmark<dynampi::HierarchicalWorkDistributor<Task, Result>>(opts, comm);
         break;
-      case DistributorKind::AsyncPutLockFree:
-        result =
-            run_benchmark<dynampi::AsyncPutLockFreeMPIWorkDistributor<Task, Result>>(opts, comm);
+      case DistributorKind::LockFreeRMA:
+        result = run_benchmark<dynampi::LockFreeRMAWorkDistributor<Task, Result>>(opts, comm);
         break;
-      case DistributorKind::HierarchicalAsyncPutLockFree:
-        result =
-            run_benchmark<dynampi::HierarchicalAsyncPutLockFreeMPIWorkDistributor<Task, Result>>(
-                opts, comm);
+      case DistributorKind::HierarchicalLockFreeRMA:
+        result = run_benchmark<dynampi::HierarchicalLockFreeRMAWorkDistributor<Task, Result>>(opts,
+                                                                                              comm);
         break;
     }
 

@@ -13,14 +13,14 @@
 #include <vector>
 
 #include "dynampi/impl/hierarchical_distributor.hpp"
-#include "dynampi/impl/lockfree_distributor.hpp"
+#include "dynampi/impl/minimal_lockfree_distributor.hpp"
 #include "dynampi/impl/naive_distributor.hpp"
 #include "dynampi/version.hpp"
 
 namespace dynampi {
 
 template <typename ResultT,
-          template <typename, typename, typename...> typename T = HierarchicalMPIWorkDistributor>
+          template <typename, typename, typename...> typename T = HierarchicalWorkDistributor>
 std::optional<std::vector<ResultT>> mpi_manager_worker_distribution(
     size_t n_tasks, std::function<ResultT(size_t)> worker_function, MPI_Comm comm = MPI_COMM_WORLD,
     int manager_rank = 0) {
@@ -35,6 +35,6 @@ std::optional<std::vector<ResultT>> mpi_manager_worker_distribution(
 }
 
 template <typename TaskT, typename ResultT, typename... Options>
-using MPIDynamicWorkDistributor = HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>;
+using DynamicWorkDistributor = HierarchicalWorkDistributor<TaskT, ResultT, Options...>;
 
 }  // namespace dynampi

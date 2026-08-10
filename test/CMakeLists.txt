@@ -109,7 +109,7 @@ function(add_mpi_test test_name num_procs)
     list(
       APPEND
       gtest_args
-      "--gtest_filter=-HierarchicalAsyncPutLockFree.GroupedUpperHierarchy:HierarchicalAsyncPutLockFree.AutoFanoutUpperHierarchy"
+      "--gtest_filter=-HierarchicalLockFreeRMA.GroupedUpperHierarchy:HierarchicalLockFreeRMA.AutoFanoutUpperHierarchy"
     )
   endif()
   set(command
@@ -147,7 +147,7 @@ if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND AND DYNAMPI_MAX_MPI_RANK GREATER_EQUAL 8)
       ${MPI_OVERSUBSCRIBE_FLAG}
       ${MPIEXEC_PREFLAGS}
       $<TARGET_FILE:mpi_test>
-      "--gtest_filter=HierarchicalAsyncPutLockFree.GroupedUpperHierarchy"
+      "--gtest_filter=HierarchicalLockFreeRMA.GroupedUpperHierarchy"
       ${MPIEXEC_POSTFLAGS})
   set_tests_properties(mpi_test_8_rank_grouped
                        PROPERTIES ENVIRONMENT "OMPI_MCA_osc=pt2pt")
@@ -162,7 +162,7 @@ if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND AND DYNAMPI_MAX_MPI_RANK GREATER_EQUAL 64)
       ${MPI_OVERSUBSCRIBE_FLAG}
       ${MPIEXEC_PREFLAGS}
       $<TARGET_FILE:mpi_test>
-      "--gtest_filter=HierarchicalAsyncPutLockFree.AutoFanoutUpperHierarchy"
+      "--gtest_filter=HierarchicalLockFreeRMA.AutoFanoutUpperHierarchy"
       ${MPIEXEC_POSTFLAGS})
   set_tests_properties(mpi_test_64_rank_auto_fanout
                        PROPERTIES ENVIRONMENT "OMPI_MCA_osc=pt2pt")

@@ -16,12 +16,22 @@ IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-1 10 100 1000 10000 100000 
 IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
 IFS=' ' read -r -a MODES <<< "${MODES:-fixed random}"
 DURATION_S="${DURATION_S:-10}"
-# hierarchical_async_put_lockfree and hierarchical only: forwarded as
+# hierarchical_lockfree_rma and hierarchical only: forwarded as
 # --max_upper_fanout (ignored by every other distributor, which is run
 # exactly once regardless of how many values are listed here). Negative
 # (default) = auto. 0 = single unbounded coordinator level. See
 # launch_aurora_strong_scaling.sh for the matching Aurora behavior.
 IFS=' ' read -r -a MAX_UPPER_FANOUT_LIST <<< "${MAX_UPPER_FANOUT_LIST:-${MAX_UPPER_FANOUT:--1}}"
+# Lifetime task capacity of each preallocated RMA window (lockfree_rma and
+# hierarchical_lockfree_rma only). Empty keeps the binary's default, which is
+# sized for a compute node (~19GiB on the manager rank) -- lower it to run the
+# RMA distributors where that much memory is not available, at the cost of a
+# shorter measured window if the run exhausts the table before duration_s.
+MAX_TASKS="${MAX_TASKS:-}"
+MAX_TASKS_ARGS=()
+if [[ -n "${MAX_TASKS}" ]]; then
+  MAX_TASKS_ARGS=(--max_tasks "${MAX_TASKS}")
+fi
 IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-core}"
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
@@ -57,11 +67,11 @@ for nodes in "${NODE_LIST[@]}"; do
     fi
     total_ranks=$((nodes * ranks_per_node))
     for dist in "${DISTRIBUTIONS[@]}"; do
-      # Only hierarchical and hierarchical_async_put_lockfree's behavior
+      # Only hierarchical and hierarchical_lockfree_rma's behavior
       # depends on max_upper_fanout; every other distributor would just
       # repeat identical runs, so collapse its fanout list down to one (the
       # first) value.
-      if [[ "${dist}" == "hierarchical_async_put_lockfree" || "${dist}" == "hierarchical" ]]; then
+      if [[ "${dist}" == "hierarchical_lockfree_rma" || "${dist}" == "hierarchical" ]]; then
         fanouts=("${MAX_UPPER_FANOUT_LIST[@]}")
       else
         fanouts=("${MAX_UPPER_FANOUT_LIST[0]}")
@@ -87,6 +97,7 @@ for nodes in "${NODE_LIST[@]}"; do
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
             --max_upper_fanout "${fanout}" \
+            ${MAX_TASKS_ARGS[@]+"${MAX_TASKS_ARGS[@]}"} \
             --output "${CSV}" || true
         else
           "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -N "${nodes}" -n "${total_ranks}" \
@@ -99,6 +110,7 @@ for nodes in "${NODE_LIST[@]}"; do
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
             --max_upper_fanout "${fanout}" \
+            ${MAX_TASKS_ARGS[@]+"${MAX_TASKS_ARGS[@]}"} \
             --output "${CSV}" || true
         fi
         done

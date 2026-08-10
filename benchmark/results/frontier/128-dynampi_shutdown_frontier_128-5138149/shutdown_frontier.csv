@@ -1,5 +1,5 @@
 system,distributor,nodes,max_upper_fanout,world_size,workers,time_per_shutdown_us,iterations
 frontier,hierarchical,128,0,1152,1151,541.009,7033
-frontier,hierarchical_async_put_lockfree,128,0,1152,1151,3389.26,1374
+frontier,hierarchical_lockfree_rma,128,0,1152,1151,3389.26,1374
 frontier,hierarchical,128,0,7168,7167,580.937,2925
-frontier,hierarchical_async_put_lockfree,128,0,7168,7167,2811.02,1133
+frontier,hierarchical_lockfree_rma,128,0,7168,7167,2811.02,1133

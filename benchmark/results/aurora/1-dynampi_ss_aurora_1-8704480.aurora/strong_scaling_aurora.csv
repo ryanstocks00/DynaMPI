@@ -7,10 +7,10 @@ aurora,minimal_lockfree,fixed,10,10,1,102,101,0,1533283,10.0008,153316
 aurora,minimal_lockfree,fixed,100,10,1,102,101,0,189385,10.0003,18938
 aurora,minimal_lockfree,fixed,1000,10,1,102,101,0,18491,10.0001,1849.08
 aurora,minimal_lockfree,fixed,10000,10,1,102,101,0,1969,10.2713,191.699
-aurora,async_put_lockfree,fixed,10,10,1,102,101,0,7482576,10.1062,740396
-aurora,async_put_lockfree,fixed,100,10,1,102,101,0,7610280,10.1019,753352
-aurora,async_put_lockfree,fixed,1000,10,1,102,101,0,967936,10.0148,96650.1
-aurora,async_put_lockfree,fixed,10000,10,1,102,101,0,97740,10.0015,9772.53
+aurora,lockfree_rma,fixed,10,10,1,102,101,0,7482576,10.1062,740396
+aurora,lockfree_rma,fixed,100,10,1,102,101,0,7610280,10.1019,753352
+aurora,lockfree_rma,fixed,1000,10,1,102,101,0,967936,10.0148,96650.1
+aurora,lockfree_rma,fixed,10000,10,1,102,101,0,97740,10.0015,9772.53
 aurora,hierarchical,fixed,10,10,1,102,101,0,6474943,10.0002,647482
 aurora,hierarchical,fixed,100,10,1,102,101,0,4901523,10.0003,490136
 aurora,hierarchical,fixed,1000,10,1,102,101,0,760638,10.0022,76047

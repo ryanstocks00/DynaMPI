@@ -12,11 +12,11 @@ beyond MPI and the DynaMPI headers.
 |---------|-------|
 | [01_index_tasks.cpp](01_index_tasks.cpp) | `mpi_manager_worker_distribution` — the one-call entry point |
 | [02_incremental_tasks.cpp](02_incremental_tasks.cpp) | Inserting tasks as you discover them, chunked collection with `RunConfig`, driving `run_worker()` yourself |
-| [03_ordered_and_prioritized.cpp](03_ordered_and_prioritized.cpp) | Task-ordered results and task priorities, both `NaiveMPIWorkDistributor` |
+| [03_ordered_and_prioritized.cpp](03_ordered_and_prioritized.cpp) | Task-ordered results and task priorities, both `NaiveWorkDistributor` |
 | [04_custom_task_type.cpp](04_custom_task_type.cpp) | Specialising `dynampi::MPI_Type` for your own struct, and tagging results with their task index |
 | [05_lockfree_rma.cpp](05_lockfree_rma.cpp) | The one-sided RMA distributors, window capacity, and `gather_once()` |
 | [06_statistics.cpp](06_statistics.cpp) | `track_statistics`, and what `Aggregated` gives you that `Detailed` does not |
-| [07_parallel_for.cpp](07_parallel_for.cpp) | `MinimalLockFreeMPIWorkDistributor` for an index-only parallel-for |
+| [07_parallel_for.cpp](07_parallel_for.cpp) | `MinimalLockFreeWorkDistributor` for an index-only parallel-for |
 
 ## Building
 

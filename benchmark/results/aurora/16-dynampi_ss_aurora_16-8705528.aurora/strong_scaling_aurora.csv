@@ -1,3 +1,3 @@
 system,distributor,mode,expected_us,duration_s,nodes,world_size,workers,max_upper_fanout,total_tasks,elapsed_s,throughput_tasks_per_s
-aurora,hierarchical_async_put_lockfree,fixed,10,10,16,1632,1631,0,14695640,10.2226,1.43756e+06
-aurora,hierarchical_async_put_lockfree,random,10,10,16,1632,1631,0,14506452,10.2198,1.41945e+06
+aurora,hierarchical_lockfree_rma,fixed,10,10,16,1632,1631,0,14695640,10.2226,1.43756e+06
+aurora,hierarchical_lockfree_rma,random,10,10,16,1632,1631,0,14506452,10.2198,1.41945e+06

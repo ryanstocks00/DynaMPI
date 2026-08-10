@@ -23,10 +23,10 @@ int main(int argc, char** argv) {
     // which the manager feeds back into the queue.
     auto work = [](Task n) -> Result { return n * n; };
 
-    dynampi::MPIDynamicWorkDistributor<Task, Result>::Config config;
+    dynampi::DynamicWorkDistributor<Task, Result>::Config config;
     config.auto_run_workers = false;  // we call run_worker() ourselves below
 
-    dynampi::MPIDynamicWorkDistributor<Task, Result> dist(work, config);
+    dynampi::DynamicWorkDistributor<Task, Result> dist(work, config);
 
     if (dist.is_root_manager()) {
       // --- Round 1: a seed batch, collected in full. ---

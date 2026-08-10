@@ -5,9 +5,9 @@ aurora,hierarchical,random,10,20,1,102,101,0,13832408,20.0006,691601
 aurora,hierarchical,random,1000,20,1,102,101,0,1647008,20.2232,81441.6
 aurora,hierarchical,random,10,20,1,102,101,-1,13459808,20.2102,665992
 aurora,hierarchical,random,1000,20,1,102,101,-1,1604408,20.131,79698.3
-aurora,async_put_lockfree,random,10,20,1,102,101,0,110354,20.0001,5517.67
-aurora,async_put_lockfree,random,1000,20,1,102,101,0,89811,20.0897,4470.51
-aurora,hierarchical_async_put_lockfree,random,10,20,1,102,101,0,1832700,20.0001,91634.6
-aurora,hierarchical_async_put_lockfree,random,1000,20,1,102,101,0,1414000,20.083,70407.9
-aurora,hierarchical_async_put_lockfree,random,10,20,1,102,101,-1,1843600,20.0001,92179.5
-aurora,hierarchical_async_put_lockfree,random,1000,20,1,102,101,-1,1464944,20,73247
+aurora,lockfree_rma,random,10,20,1,102,101,0,110354,20.0001,5517.67
+aurora,lockfree_rma,random,1000,20,1,102,101,0,89811,20.0897,4470.51
+aurora,hierarchical_lockfree_rma,random,10,20,1,102,101,0,1832700,20.0001,91634.6
+aurora,hierarchical_lockfree_rma,random,1000,20,1,102,101,0,1414000,20.083,70407.9
+aurora,hierarchical_lockfree_rma,random,10,20,1,102,101,-1,1843600,20.0001,92179.5
+aurora,hierarchical_lockfree_rma,random,1000,20,1,102,101,-1,1464944,20,73247

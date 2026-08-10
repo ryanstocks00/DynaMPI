@@ -11,13 +11,13 @@ Everything lives in namespace `dynampi`.
 
 | Header | Provides |
 |--------|----------|
-| `<dynampi/dynampi.hpp>` | `mpi_manager_worker_distribution`, `MPIDynamicWorkDistributor`, and (transitively) `NaiveMPIWorkDistributor`, `HierarchicalMPIWorkDistributor`, `MinimalLockFreeMPIWorkDistributor`, `version` |
-| `<dynampi/impl/naive_distributor.hpp>` | `NaiveMPIWorkDistributor` |
-| `<dynampi/impl/hierarchical_distributor.hpp>` | `HierarchicalMPIWorkDistributor` |
-| `<dynampi/impl/hierarchical_nonblocking_distributor.hpp>` | `HierarchicalNonBlockingMPIWorkDistributor` |
-| `<dynampi/impl/async_put_lockfree_distributor.hpp>` | `AsyncPutLockFreeMPIWorkDistributor` |
-| `<dynampi/impl/hierarchical_async_put_lockfree_distributor.hpp>` | `HierarchicalAsyncPutLockFreeMPIWorkDistributor` |
-| `<dynampi/impl/lockfree_distributor.hpp>` | `MinimalLockFreeMPIWorkDistributor` |
+| `<dynampi/dynampi.hpp>` | `mpi_manager_worker_distribution`, `DynamicWorkDistributor`, and (transitively) `NaiveWorkDistributor`, `HierarchicalWorkDistributor`, `MinimalLockFreeWorkDistributor`, `version` |
+| `<dynampi/impl/naive_distributor.hpp>` | `NaiveWorkDistributor` |
+| `<dynampi/impl/hierarchical_distributor.hpp>` | `HierarchicalWorkDistributor` |
+| `<dynampi/impl/hierarchical_nonblocking_distributor.hpp>` | `HierarchicalNonBlockingWorkDistributor` |
+| `<dynampi/impl/lockfree_rma_distributor.hpp>` | `LockFreeRMAWorkDistributor` |
+| `<dynampi/impl/hierarchical_lockfree_rma_distributor.hpp>` | `HierarchicalLockFreeRMAWorkDistributor` |
+| `<dynampi/impl/minimal_lockfree_distributor.hpp>` | `MinimalLockFreeWorkDistributor` |
 | `<dynampi/version.hpp>` | `dynampi::version` |
 | `<dynampi/mpi/mpi_types.hpp>` | `MPI_Type<T>` — the trait you specialise for custom payloads |
 | `<dynampi/mpi/mpi_communicator.hpp>` | `MPICommunicator`, `CommStatistics`, `StatisticsMode`, `track_statistics` |
@@ -34,7 +34,7 @@ predefined macros.
 ```cpp
 template <typename ResultT,
           template <typename, typename, typename...> typename Distributor =
-              HierarchicalMPIWorkDistributor>
+              HierarchicalWorkDistributor>
 std::optional<std::vector<ResultT>> mpi_manager_worker_distribution(
     size_t n_tasks,
     std::function<ResultT(size_t)> worker_function,
@@ -54,23 +54,23 @@ and return `std::nullopt`; the manager returns the results.
 | `manager_rank` | `0` | Rank that distributes and collects |
 
 `Distributor` may be any of the five full distributors.  The default is
-`HierarchicalMPIWorkDistributor`, so **results are unordered** — pass
-`NaiveMPIWorkDistributor` if you need `(*result)[i]` to be task `i`.
+`HierarchicalWorkDistributor`, so **results are unordered** — pass
+`NaiveWorkDistributor` if you need `(*result)[i]` to be task `i`.
 
 ```cpp
 auto ordered = dynampi::mpi_manager_worker_distribution<
-    double, dynampi::NaiveMPIWorkDistributor>(100, work);
+    double, dynampi::NaiveWorkDistributor>(100, work);
 ```
 
-`MinimalLockFreeMPIWorkDistributor` does not fit this template shape; call
+`MinimalLockFreeWorkDistributor` does not fit this template shape; call
 `run()` on it directly.
 
-## `MPIDynamicWorkDistributor`
+## `DynamicWorkDistributor`
 
 ```cpp
 template <typename TaskT, typename ResultT, typename... Options>
-using MPIDynamicWorkDistributor =
-    HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>;
+using DynamicWorkDistributor =
+    HierarchicalWorkDistributor<TaskT, ResultT, Options...>;
 ```
 
 An alias, not a distinct type.  Use it when you want "the recommended default"
@@ -94,8 +94,8 @@ class Distributor {
 };
 ```
 
-`MinimalLockFreeMPIWorkDistributor<ResultT>` is separate and smaller — see
-[Implementations](implementations.md#minimallockfreempiworkdistributor).
+`MinimalLockFreeWorkDistributor<ResultT>` is separate and smaller — see
+[Implementations](implementations.md#minimallockfreeworkdistributor).
 
 ### Construction and lifecycle
 
@@ -144,7 +144,7 @@ are documented per class in [Implementations](implementations.md).
 
 Two semantics worth knowing:
 
-- On `NaiveMPIWorkDistributor`, `target_num_tasks` counts *contiguous* results
+- On `NaiveWorkDistributor`, `target_num_tasks` counts *contiguous* results
   from the front of the ordered stream.  Elsewhere it counts buffered results.
 - `max_seconds` is checked between messages, not asynchronously.  A call already
   blocked in a probe or an RMA wait will overshoot the deadline until the next
@@ -161,7 +161,7 @@ Two semantics worth knowing:
 | `insert_tasks(Range&&)` | `void` | Hierarchical variants only; any `std::ranges::input_range` |
 | `run_tasks(RunConfig)` | `std::vector<ResultT>` | Manager only. Drives distribution and returns completed results |
 | `finish_remaining_tasks()` | `std::vector<ResultT>` | Manager only. `run_tasks({})` — runs until everything outstanding is collected |
-| `gather_once()` | `std::vector<ResultT>` | Manager only, async-put distributors. One harvest pass, no retry loop |
+| `gather_once()` | `std::vector<ResultT>` | Manager only, lock-free RMA distributors. One harvest pass, no retry loop |
 | `run_worker()` | `void` | Non-manager ranks. Returns when shutdown is signalled |
 | `remaining_tasks_count()` | `size_t` | Manager only. See the note below |
 | `finalize()` | `void` | Signals shutdown. Called by the destructor if you do not |
@@ -170,14 +170,14 @@ Two semantics worth knowing:
 !!! note "`remaining_tasks_count()` is not uniform"
     On the two-sided distributors it is the number of *unallocated* tasks still
     in the manager's queue, excluding tasks already dispatched.  On
-    `AsyncPutLockFreeMPIWorkDistributor` it is published-minus-returned, and on
-    `HierarchicalAsyncPutLockFreeMPIWorkDistributor` it is the number still
+    `LockFreeRMAWorkDistributor` it is published-minus-returned, and on
+    `HierarchicalLockFreeRMAWorkDistributor` it is the number still
     outstanding in the tree.  Use it as a progress indicator, not as an exact
     cross-distributor quantity.
 
 ### Availability
 
-| | Naive | Hierarchical | Hier. NonBlocking | AsyncPut | Hier. AsyncPut |
+| | Naive | Hierarchical | Hier. NonBlocking | LockFreeRMA | Hier. LockFreeRMA |
 |---|---|---|---|---|---|
 | `insert_task(TaskT)` | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `insert_task(task, priority)` | ✓ | ✓ ¹ | ✓ ¹ | ✓ ² | — |
@@ -202,16 +202,16 @@ options are ignored, so a generic wrapper can pass the same pack to every
 distributor.
 
 ```cpp
-using Prioritised = dynampi::NaiveMPIWorkDistributor<
+using Prioritised = dynampi::NaiveWorkDistributor<
     int, double, dynampi::enable_prioritization>;
 
-using Instrumented = dynampi::MPIDynamicWorkDistributor<
+using Instrumented = dynampi::DynamicWorkDistributor<
     int, double, dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>;
 ```
 
 | Option | Effect |
 |--------|--------|
-| `enable_prioritization` | Swaps the FIFO queue for a `std::priority_queue` and enables `insert_task(task, priority)` (descending priority). Functional on `NaiveMPIWorkDistributor` only. |
+| `enable_prioritization` | Swaps the FIFO queue for a `std::priority_queue` and enables `insert_task(task, priority)` (descending priority). Functional on `NaiveWorkDistributor` only. |
 | `track_statistics<Mode>` | `Mode` is `StatisticsMode::None` (default), `Aggregated`, or `Detailed`. Defaults to `Detailed` if written as `track_statistics<>`. |
 
 ### Choosing a statistics mode
@@ -258,19 +258,19 @@ work to arrive, and time inside `MPI_Fetch_and_op`, are not included.
 Each distributor defines its own nested `Statistics`:
 
 ```cpp
-// NaiveMPIWorkDistributor
+// NaiveWorkDistributor
 struct Statistics {
   const CommStatistics& comm_statistics;
   std::vector<size_t>   worker_task_counts;  // indexed by worker index
 };
 
-// HierarchicalMPIWorkDistributor / HierarchicalNonBlockingMPIWorkDistributor
+// HierarchicalWorkDistributor / HierarchicalNonBlockingWorkDistributor
 struct Statistics {
   const CommStatistics&                     comm_statistics;
   std::optional<std::vector<size_t>>        worker_task_counts;  // by world rank
 };
 
-// AsyncPutLockFreeMPIWorkDistributor
+// LockFreeRMAWorkDistributor
 struct Statistics {
   const CommStatistics& comm_statistics;
 };
@@ -287,12 +287,12 @@ Support and caveats:
 
 | Distributor | `Aggregated` | `Detailed` | Notes |
 |-------------|--------------|------------|-------|
-| `NaiveMPIWorkDistributor` | ✓ | ✓ | `worker_task_counts` is indexed by worker index (this rank's communicator rank with the manager removed) |
-| `HierarchicalMPIWorkDistributor` | ✓ | ✓ | `worker_task_counts` is filled by an `MPI_Gather` inside `finalize()`, so it is `nullopt` before then, and holds locally-executed task counts by world rank |
-| `HierarchicalNonBlockingMPIWorkDistributor` | ✓ | ✓ | As above |
-| `AsyncPutLockFreeMPIWorkDistributor` | ✓ | ✓ | Communication counters only |
-| `HierarchicalAsyncPutLockFreeMPIWorkDistributor` | — | — | Options accepted and ignored; no `get_statistics()` |
-| `MinimalLockFreeMPIWorkDistributor` | — | — | No options parameter |
+| `NaiveWorkDistributor` | ✓ | ✓ | `worker_task_counts` is indexed by worker index (this rank's communicator rank with the manager removed) |
+| `HierarchicalWorkDistributor` | ✓ | ✓ | `worker_task_counts` is filled by an `MPI_Gather` inside `finalize()`, so it is `nullopt` before then, and holds locally-executed task counts by world rank |
+| `HierarchicalNonBlockingWorkDistributor` | ✓ | ✓ | As above |
+| `LockFreeRMAWorkDistributor` | ✓ | ✓ | Communication counters only |
+| `HierarchicalLockFreeRMAWorkDistributor` | — | — | Options accepted and ignored; no `get_statistics()` |
+| `MinimalLockFreeWorkDistributor` | — | — | No options parameter |
 
 !!! warning "Statistics enable a collective in `finalize()`"
     On the hierarchical two-sided distributors, `finalize()` performs an
@@ -313,7 +313,7 @@ out of the box:
 `MPI_Type<T>::resize_required` is `false` for fixed-size types and `true` for the
 variable-length ones.  That flag decides where a type may be used:
 
-| Payload | Naive | Hierarchical / NonBlocking | AsyncPut / Hier. AsyncPut | MinimalLockFree |
+| Payload | Naive | Hierarchical / NonBlocking | LockFreeRMA / Hier. LockFreeRMA | MinimalLockFree |
 |---------|-------|----------------------------|---------------------------|-----------------|
 | Fixed-size scalar | ✓ | ✓ | ✓ | ✓ (results) |
 | Fixed-size struct | ✓ | ✓ | ✓ | ✓ (results) |

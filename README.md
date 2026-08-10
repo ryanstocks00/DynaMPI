@@ -49,7 +49,7 @@ auto worker_task = [](size_t task) -> size_t { return task * task; };
 auto result = dynampi::mpi_manager_worker_distribution<size_t>(4, worker_task);
 if (result.has_value()) {
   // Manager: one result per task. The default distributor is hierarchical and
-  // unordered — result[i] is *not* task i. Pass NaiveMPIWorkDistributor as the
+  // unordered — result[i] is *not* task i. Pass NaiveWorkDistributor as the
   // second template argument if you need task-index order.
   assert(result->size() == 4);
 }
@@ -71,7 +71,7 @@ auto worker_task = [](Task task) -> Result {
   return std::sqrt(static_cast<double>(task));
 };
 
-dynampi::MPIDynamicWorkDistributor<Task, Result> distributor(worker_task);
+dynampi::DynamicWorkDistributor<Task, Result> distributor(worker_task);
 if (distributor.is_root_manager()) {
   distributor.insert_tasks({1, 2, 3, 4, 5});
   auto results = distributor.finish_remaining_tasks();
@@ -90,12 +90,12 @@ loop in the constructor. Construction and destruction are collective.
 
 | Class | Communication | Ordered | Notes |
 |-------|---------------|---------|-------|
-| `NaiveMPIWorkDistributor` | Two-sided | Yes | Task priorities, variable-length payloads; manager-bound at scale |
-| `MPIDynamicWorkDistributor` (hierarchical) | Two-sided, batched | No | Default. Node-aware tree; fixed-size payloads only |
-| `HierarchicalNonBlockingMPIWorkDistributor` | Two-sided, batched, `Isend` | No | A/B variant of the above |
-| `AsyncPutLockFreeMPIWorkDistributor` | Passive-target RMA | No | No collectives on the hot path; preallocated window |
-| `HierarchicalAsyncPutLockFreeMPIWorkDistributor` | Passive-target RMA, per level | No | RMA protocol applied per tree level, for large node counts |
-| `MinimalLockFreeMPIWorkDistributor` | RMA counter + `Gatherv` | Yes | Parallel-for over `0 .. n-1` |
+| `NaiveWorkDistributor` | Two-sided | Yes | Task priorities, variable-length payloads; manager-bound at scale |
+| `DynamicWorkDistributor` (hierarchical) | Two-sided, batched | No | Default. Node-aware tree; fixed-size payloads only |
+| `HierarchicalNonBlockingWorkDistributor` | Two-sided, batched, `Isend` | No | A/B variant of the above |
+| `LockFreeRMAWorkDistributor` | Passive-target RMA | No | No collectives on the hot path; preallocated window |
+| `HierarchicalLockFreeRMAWorkDistributor` | Passive-target RMA, per level | No | RMA protocol applied per tree level, for large node counts |
+| `MinimalLockFreeWorkDistributor` | RMA counter + `Gatherv` | Yes | Parallel-for over `0 .. n-1` |
 
 Optional compile-time features: task prioritization
 (`dynampi::enable_prioritization`), statistics tracking

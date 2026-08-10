@@ -30,10 +30,10 @@
 namespace dynampi {
 
 // ---------------------------------------------------------------------------
-// HierarchicalNonBlockingMPIWorkDistributor
+// HierarchicalNonBlockingWorkDistributor
 //
 // Identical topology, protocol, and pipelining logic to
-// HierarchicalMPIWorkDistributor (see that file) -- this is a copy with one
+// HierarchicalWorkDistributor (see that file) -- this is a copy with one
 // change: every outgoing message (TASK, TASK_BATCH, RESULT, RESULT_BATCH,
 // REQUEST_BATCH) is sent via MPI_Isend instead of a blocking MPI_Send, so a
 // coordinator posting a reply to one child never stalls before it can move
@@ -55,9 +55,9 @@ namespace dynampi {
 // safe, genuine fire-and-forget.
 // ---------------------------------------------------------------------------
 template <typename TaskT, typename ResultT, typename... Options>
-class HierarchicalNonBlockingMPIWorkDistributor
-    : public BaseMPIWorkDistributor<TaskT, ResultT, Options...> {
-  using Base = BaseMPIWorkDistributor<TaskT, ResultT, Options...>;
+class HierarchicalNonBlockingWorkDistributor
+    : public BaseWorkDistributor<TaskT, ResultT, Options...> {
+  using Base = BaseWorkDistributor<TaskT, ResultT, Options...>;
 
  public:
   struct Config {
@@ -366,8 +366,8 @@ class HierarchicalNonBlockingMPIWorkDistributor
   }
 
  public:
-  explicit HierarchicalNonBlockingMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
-                                                     Config runtime_config = Config{})
+  explicit HierarchicalNonBlockingWorkDistributor(std::function<ResultT(TaskT)> worker_function,
+                                                  Config runtime_config = Config{})
       : m_communicator(runtime_config.comm, MPICommunicator::Duplicate),
         m_world_group(m_communicator),
         m_worker_function(worker_function),
@@ -375,8 +375,8 @@ class HierarchicalNonBlockingMPIWorkDistributor
         _statistics{create_statistics(m_communicator)} {
     // Same batched-message requirement as the blocking variant -- see
     // check_fixed_size_mpi_type().
-    check_fixed_size_mpi_type<TaskT>("task", "HierarchicalNonBlockingMPIWorkDistributor");
-    check_fixed_size_mpi_type<ResultT>("result", "HierarchicalNonBlockingMPIWorkDistributor");
+    check_fixed_size_mpi_type<TaskT>("task", "HierarchicalNonBlockingWorkDistributor");
+    check_fixed_size_mpi_type<ResultT>("result", "HierarchicalNonBlockingWorkDistributor");
 
     // --- Initialize Topology Groups ---
     if (m_config.coordinator_per_node) {
@@ -757,7 +757,7 @@ class HierarchicalNonBlockingMPIWorkDistributor
     }
   }
 
-  ~HierarchicalNonBlockingMPIWorkDistributor() {
+  ~HierarchicalNonBlockingWorkDistributor() {
     if (!m_finalized) {
       finalize();
     }

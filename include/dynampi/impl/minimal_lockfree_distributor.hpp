@@ -111,7 +111,7 @@ inline void read_result_bytes(const std::byte* buffer, size_t buffer_size, size_
 //
 // Under MPI_WIN_SEPARATE (MS-MPI always; some other stacks too), the
 // two-sided progress engine must run while ranks wait on remote RMA state.
-// Every AsyncPut RMA primitive already flushes its target before returning,
+// Every LockFreeRMA primitive already flushes its target before returning,
 // so another MPI_Win_flush_all here only makes idle ranks contend with useful
 // traffic. MPI_Iprobe drives progress without adding that RMA contention.
 inline void rma_wait_idle(MPI_Win /*window*/, MPI_Comm comm) {
@@ -133,7 +133,7 @@ inline void rma_wait_idle(MPI_Win /*window*/, MPI_Comm comm) {
 }  // namespace detail
 
 // ---------------------------------------------------------------------------
-// MinimalLockFreeMPIWorkDistributor
+// MinimalLockFreeWorkDistributor
 //
 // The simplest possible lock-free distributor: a parallel-for over the index
 // range [0, n_tasks). The task *is* its global index, and every rank pulls the
@@ -144,23 +144,23 @@ inline void rma_wait_idle(MPI_Win /*window*/, MPI_Comm comm) {
 // deliberately tiny. Use it when the work is an embarrassingly parallel loop
 // and the task payload is just the loop index. For arbitrary task payloads,
 // priorities, incremental result collection or statistics, use
-// AsyncPutLockFreeMPIWorkDistributor, one of the Hierarchical* distributors,
+// LockFreeRMAWorkDistributor, one of the Hierarchical* distributors,
 // or one of the message-based distributors.
 //
 // Usage (collective: every rank must call run() with the same n_tasks):
-//   MinimalLockFreeMPIWorkDistributor<double> dist([](size_t i){ return f(i); });
+//   MinimalLockFreeWorkDistributor<double> dist([](size_t i){ return f(i); });
 //   std::vector<double> results = dist.run(n);  // populated on the manager only
 // ---------------------------------------------------------------------------
 template <typename ResultT>
-class MinimalLockFreeMPIWorkDistributor {
+class MinimalLockFreeWorkDistributor {
  public:
   struct Config {
     MPI_Comm comm = MPI_COMM_WORLD;
     int manager_rank = 0;
   };
 
-  explicit MinimalLockFreeMPIWorkDistributor(std::function<ResultT(size_t)> worker_function,
-                                             Config config = {})
+  explicit MinimalLockFreeWorkDistributor(std::function<ResultT(size_t)> worker_function,
+                                          Config config = {})
       : m_config(config),
         m_comm(config.comm, MPICommunicator<>::Duplicate),
         m_worker_function(std::move(worker_function)) {
@@ -175,7 +175,7 @@ class MinimalLockFreeMPIWorkDistributor {
     DYNAMPI_MPI_CHECK(MPI_Win_lock_all, (MPI_MODE_NOCHECK, m_window));
   }  // LCOV_EXCL_LINE -- GCC attributes this closing brace inconsistently for MPI constructors
 
-  ~MinimalLockFreeMPIWorkDistributor() {
+  ~MinimalLockFreeWorkDistributor() {
     if (m_window != MPI_WIN_NULL) {
       DYNAMPI_MPI_CHECK(MPI_Win_unlock_all, (m_window));
       DYNAMPI_MPI_CHECK(MPI_Win_free, (&m_window));

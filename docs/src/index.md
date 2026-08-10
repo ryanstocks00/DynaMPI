@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     The default distributor is hierarchical, and hierarchical results come back
     in completion order — `(*results)[i]` is **not** the result of task `i`.
     Either carry the index inside your result type, or use
-    `NaiveMPIWorkDistributor` (see
+    `NaiveWorkDistributor` (see
     [Result ordering](implementations.md#result-ordering)).
 
 ### Tasks discovered as you go
@@ -65,7 +65,7 @@ alternate insertion with collection:
 using Task = int;
 using Result = double;
 
-dynampi::MPIDynamicWorkDistributor<Task, Result> dist(
+dynampi::DynamicWorkDistributor<Task, Result> dist(
     [](Task t) -> Result { return std::sqrt(static_cast<double>(t)); });
 
 if (dist.is_root_manager()) {
@@ -97,11 +97,11 @@ rank must construct and destroy the distributor.
 
 | Situation | Use |
 |-----------|-----|
-| Small communicator, need results in task order or task priorities | [`NaiveMPIWorkDistributor`](implementations.md#naivempiworkdistributor) |
-| General purpose, multi-node, fixed-size task/result types | [`MPIDynamicWorkDistributor`](implementations.md#hierarchicalmpiworkdistributor-mpidynamicworkdistributor) (default) |
-| Fine-grained tasks, want the highest hand-off rate at moderate scale | [`AsyncPutLockFreeMPIWorkDistributor`](implementations.md#asyncputlockfreempiworkdistributor) |
-| Same, but at large node counts where one manager window saturates | [`HierarchicalAsyncPutLockFreeMPIWorkDistributor`](implementations.md#hierarchicalasyncputlockfreempiworkdistributor) |
-| A plain parallel-for over `0 .. n-1` | [`MinimalLockFreeMPIWorkDistributor`](implementations.md#minimallockfreempiworkdistributor) |
+| Small communicator, need results in task order or task priorities | [`NaiveWorkDistributor`](implementations.md#naiveworkdistributor) |
+| General purpose, multi-node, fixed-size task/result types | [`DynamicWorkDistributor`](implementations.md#hierarchicalworkdistributor-dynamicworkdistributor) (default) |
+| Fine-grained tasks, want the highest hand-off rate at moderate scale | [`LockFreeRMAWorkDistributor`](implementations.md#lockfreermaworkdistributor) |
+| Same, but at large node counts where one manager window saturates | [`HierarchicalLockFreeRMAWorkDistributor`](implementations.md#hierarchicallockfreermaworkdistributor) |
+| A plain parallel-for over `0 .. n-1` | [`MinimalLockFreeWorkDistributor`](implementations.md#minimallockfreeworkdistributor) |
 
 The full comparison, including protocol descriptions and the constraints each
 distributor imposes, is in [Implementations](implementations.md).

@@ -3,7 +3,7 @@ aurora,naive,random,10,30,16,1632,1631,0,11904961,30.0314,396417
 aurora,naive,random,1000,30,16,1632,1631,0,10405726,30.131,345350
 aurora,hierarchical,random,10,30,16,1632,1631,0,44937589,30.2437,1.48585e+06
 aurora,hierarchical,random,1000,30,16,1632,1631,0,28457101,30.4273,935248
-aurora,async_put_lockfree,random,10,30,16,1632,1631,0,4845724,30.0991,160993
-aurora,async_put_lockfree,random,1000,30,16,1632,1631,0,4872721,30.1178,161789
-aurora,hierarchical_async_put_lockfree,random,10,30,16,1632,1631,0,13865891,30.2272,458722
-aurora,hierarchical_async_put_lockfree,random,1000,30,16,1632,1631,0,11734593,30.1834,388776
+aurora,lockfree_rma,random,10,30,16,1632,1631,0,4845724,30.0991,160993
+aurora,lockfree_rma,random,1000,30,16,1632,1631,0,4872721,30.1178,161789
+aurora,hierarchical_lockfree_rma,random,10,30,16,1632,1631,0,13865891,30.2272,458722
+aurora,hierarchical_lockfree_rma,random,1000,30,16,1632,1631,0,11734593,30.1834,388776
