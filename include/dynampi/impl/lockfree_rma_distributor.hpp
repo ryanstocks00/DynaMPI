@@ -98,6 +98,7 @@ class LockFreeRMAWorkDistributor {
       : m_config(config),
         m_comm(config.comm, Comm::Duplicate),
         m_worker_function(std::move(worker_function)),
+        m_errors_seen(static_cast<size_t>(kMaxRecordedErrors)),
         m_statistics{make_statistics(m_comm)} {
     initialize_window();
     if (m_config.auto_run_workers && !is_root_manager()) run_worker();
@@ -644,7 +645,6 @@ class LockFreeRMAWorkDistributor {
     // given failure, that failure's own slot is readable.
     std::vector<std::byte> buf(static_cast<size_t>(claimed) * ERROR_SLOT_BYTES);
     get_bytes_local(buf.data(), buf.size(), error_slot(0));
-    m_errors_seen.resize(static_cast<size_t>(kMaxRecordedErrors), false);
     for (int64_t i = 0; i < claimed; ++i) {
       if (m_errors_seen[static_cast<size_t>(i)]) continue;
       const size_t off = static_cast<size_t>(i) * ERROR_SLOT_BYTES;
