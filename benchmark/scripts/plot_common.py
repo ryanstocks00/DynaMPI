@@ -197,7 +197,9 @@ def _legend_ink_boxes(legend: Legend, renderer: Any, pad: float) -> list[Bbox]:
             extent = artist.get_window_extent(renderer)
         except TypeError:
             extent = artist.get_window_extent()
-        except Exception:  # a handle type that cannot report an extent
+        except (AttributeError, NotImplementedError, ValueError, RuntimeError):
+            # A handle type that cannot report an extent -- skip it from the
+            # ink-box calculation rather than fail the whole legend placement.
             continue
         if extent.width <= 0 or extent.height <= 0:
             continue
@@ -286,7 +288,9 @@ def legend_avoiding_data(
             legend.remove()
             legend = ax.legend(handles, labels, loc=cast(Any, location), **legend_kwargs)
             if not _legend_hits_data(ax, legend, pad_points):
-                if best is None or steps < best[0]:
+                if best is None:
+                    best = (steps, location, (bottom, top))
+                elif steps < best[0]:
                     best = (steps, location, (bottom, top))
                 break
         ax.set_ylim(original)

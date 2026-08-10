@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <stdexcept>
 #include <vector>
 
 #include "dynampi/mpi/mpi_types.hpp"
@@ -69,16 +70,43 @@ std::vector<std::byte> pack_variable_batch(const std::vector<T>& items) {
   return buf;
 }
 
+// Bounds-checks a read of `nbytes` at `offset` against `buf_size` before the
+// caller's memcpy touches it. `buf` is wire data from another rank (a
+// version-skewed peer, a TaskT/ResultT mismatch between the two sides, or
+// plain corruption could all hand this function a header that overstates
+// what's actually there), so unlike pack_variable_batch's writes -- into a
+// buffer this function sizes itself, right above each memcpy, and so is
+// provably big enough -- every read length here has to be checked against
+// what was actually received before touching it.
+inline void check_variable_batch_read(size_t offset, uint64_t nbytes, size_t buf_size,
+                                      const char* what) {
+  if (offset > buf_size || nbytes > static_cast<uint64_t>(buf_size - offset)) {
+    throw std::runtime_error(std::string("dynampi: truncated variable-batch buffer reading ") +
+                             what);
+  }
+}
+
 template <typename T>
 std::vector<T> unpack_variable_batch(const std::vector<std::byte>& buf) {
   using ItemType = MPI_Type<T>;
   int elem_bytes = 0;
   MPI_Type_size(ItemType::value, &elem_bytes);
 
+  const size_t buf_size = buf.size();
   size_t offset = 0;
   uint64_t n_items = 0;
+  check_variable_batch_read(offset, sizeof(uint64_t), buf_size, "item count");
   std::memcpy(&n_items, buf.data() + offset, sizeof(uint64_t));
   offset += sizeof(uint64_t);
+
+  // Bound n_items against the remaining buffer (each item needs at least one
+  // 8-byte length-table slot) via division, not multiplication, and before
+  // allocating anything sized by it: a corrupted or truncated header could
+  // otherwise claim an enormous count, overflowing sizeof(uint64_t) * n_items
+  // itself or driving an allocation far larger than the actual message.
+  if (n_items > static_cast<uint64_t>(buf_size - offset) / sizeof(uint64_t)) {
+    throw std::runtime_error("dynampi: truncated variable-batch buffer reading length table");
+  }
 
   std::vector<uint64_t> byte_lens(n_items);
   if (n_items > 0) {
@@ -93,6 +121,7 @@ std::vector<T> unpack_variable_batch(const std::vector<std::byte>& buf) {
         elem_bytes > 0 ? static_cast<int>(len / static_cast<uint64_t>(elem_bytes)) : 0;
     ItemType::resize(items[i], count_in_elements);
     if (len > 0) {
+      check_variable_batch_read(offset, len, buf_size, "item payload");
       std::memcpy(ItemType::ptr(items[i]), buf.data() + offset, len);
     }
     offset += len;

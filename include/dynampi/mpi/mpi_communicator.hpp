@@ -110,7 +110,7 @@ class MPICommunicator {
   }
 
  public:
-  MPICommunicator(MPI_Comm comm, Ownership ownership = Duplicate)
+  explicit MPICommunicator(MPI_Comm comm, Ownership ownership = Duplicate)
       : m_comm(comm), m_ownership(ownership) {
     if (m_ownership == Duplicate) {
       DYNAMPI_MPI_CHECK(MPI_Comm_dup, (comm, &m_comm));
