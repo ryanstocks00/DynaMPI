@@ -80,7 +80,8 @@ class LockFreeRMALevel {
   explicit LockFreeRMALevel(Config config, int claim_width = 1)
       : m_config(config),
         m_claim_width(std::max(1, claim_width)),
-        m_comm(m_config.comm, MPICommunicator<>::Reference) {
+        m_comm(m_config.comm, MPICommunicator<>::Reference),
+        m_errors_seen(static_cast<size_t>(kMaxRecordedErrors)) {
     initialize_window();
   }
 
@@ -620,7 +621,6 @@ class LockFreeRMALevel {
     // given failure, that failure's own slot is readable.
     std::vector<std::byte> buf(static_cast<size_t>(claimed) * ERROR_SLOT_BYTES);
     get_bytes_local(buf.data(), buf.size(), error_slot(0));
-    m_errors_seen.resize(static_cast<size_t>(kMaxRecordedErrors), false);
     for (int64_t i = 0; i < claimed; ++i) {
       if (m_errors_seen[static_cast<size_t>(i)]) continue;
       const size_t off = static_cast<size_t>(i) * ERROR_SLOT_BYTES;
