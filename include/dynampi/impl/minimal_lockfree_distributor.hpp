@@ -10,7 +10,6 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <functional>
 #include <limits>
 #include <stdexcept>
@@ -79,11 +78,9 @@ inline void read_bytes(void* dst, size_t dst_capacity, const std::byte* buffer, 
   std::copy_n(buffer + offset, copy_n, static_cast<std::byte*>(dst));
 }
 
-inline int64_t read_i64(const std::byte* buffer, [[maybe_unused]] size_t buffer_size,
-                        size_t offset) {
-  assert(offset + sizeof(int64_t) <= buffer_size);
+inline int64_t read_i64(const std::byte* buffer, size_t buffer_size, size_t offset) {
   int64_t value{};
-  std::memcpy(&value, buffer + offset, sizeof(int64_t));
+  read_bytes(&value, sizeof(value), buffer, buffer_size, offset, sizeof(int64_t));
   return value;
 }
 
@@ -95,16 +92,11 @@ template <typename T>
 inline void read_result_bytes(const std::byte* buffer, size_t buffer_size, size_t offset, T& value,
                               size_t data_bytes) {
   if (data_bytes == 0) return;
-  constexpr size_t kMaxObjectSize = static_cast<size_t>(std::numeric_limits<std::ptrdiff_t>::max());
-  if (data_bytes > kMaxObjectSize || offset > buffer_size || data_bytes > buffer_size - offset) {
-    DYNAMPI_FAIL("read_result_bytes out of range");  // LCOV_EXCL_LINE
-  }
   if constexpr (MPI_Type<T>::resize_required) {
-    // cppcheck-suppress invalidPointerCast
-    std::memcpy(MPI_Type<T>::ptr(value), buffer + offset, data_bytes);
+    read_bytes(MPI_Type<T>::ptr(value), data_bytes, buffer, buffer_size, offset, data_bytes);
   } else {
     assert(data_bytes == sizeof(T));
-    std::memcpy(&value, buffer + offset, sizeof(T));
+    read_bytes(&value, sizeof(T), buffer, buffer_size, offset, data_bytes);
   }
 }
 

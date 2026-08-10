@@ -19,7 +19,7 @@ class Timer {
  public:
   enum class AutoStart { Yes, No };
 
-  Timer(AutoStart auto_start = AutoStart::Yes) {
+  explicit Timer(AutoStart auto_start = AutoStart::Yes) {
     if (auto_start == AutoStart::Yes) {
       start();
     }
