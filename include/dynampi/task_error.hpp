@@ -128,10 +128,9 @@ inline std::string truncate_task_error_message(const char* what) {
 // to the manager out of band.
 inline void TaskErrorLog::warn_if_unreported(const char* distributor) const noexcept {
   if (m_errors.empty()) return;
-  std::fprintf(stderr,
-               "dynampi: %s destroyed with %zu unreported task error(s); first was on rank %d: %s\n",
-               distributor, m_errors.size(), m_errors.front().worker_rank,
-               m_errors.front().message.c_str());
+  std::fprintf(
+      stderr, "dynampi: %s destroyed with %zu unreported task error(s); first was on rank %d: %s\n",
+      distributor, m_errors.size(), m_errors.front().worker_rank, m_errors.front().message.c_str());
 }
 
 template <typename ResultT, typename F, typename TaskT>

@@ -1007,7 +1007,9 @@ class HierarchicalNonBlockingWorkDistributor
           detail::encode_task_error(TaskError{m_communicator.rank(), std::move(*failure)}),
           world_source, Tag::ERROR);
     }
-    { send_async(result, world_source, Tag::RESULT); }
+    {
+      send_async(result, world_source, Tag::RESULT);
+    }
     m_results_sent_to_parent++;
   }
 

@@ -1084,7 +1084,9 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
           detail::encode_task_error(TaskError{m_communicator.rank(), std::move(*failure)}),
           world_source, Tag::ERROR);
     }
-    { m_communicator.send(result, world_source, Tag::RESULT); }
+    {
+      m_communicator.send(result, world_source, Tag::RESULT);
+    }
     m_results_sent_to_parent++;
   }
 
