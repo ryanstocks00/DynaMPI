@@ -263,10 +263,10 @@ def legend_avoiding_data(
     saved figure.
     """
     cast(Figure, ax.figure).tight_layout()
-    legend = ax.legend(handles, labels, loc=locations[0], **legend_kwargs)
+    legend = ax.legend(handles, labels, loc=cast(Any, locations[0]), **legend_kwargs)
     for location in locations:
         legend.remove()
-        legend = ax.legend(handles, labels, loc=location, **legend_kwargs)
+        legend = ax.legend(handles, labels, loc=cast(Any, location), **legend_kwargs)
         if not _legend_hits_data(ax, legend, pad_points):
             return legend
 
@@ -284,7 +284,7 @@ def legend_avoiding_data(
                 top *= factor
             ax.set_ylim(bottom, top)
             legend.remove()
-            legend = ax.legend(handles, labels, loc=location, **legend_kwargs)
+            legend = ax.legend(handles, labels, loc=cast(Any, location), **legend_kwargs)
             if not _legend_hits_data(ax, legend, pad_points):
                 if best is None or steps < best[0]:
                     best = (steps, location, (bottom, top))
@@ -296,7 +296,7 @@ def legend_avoiding_data(
     _, location, ylim = best
     ax.set_ylim(ylim)
     legend.remove()
-    return ax.legend(handles, labels, loc=location, **legend_kwargs)
+    return ax.legend(handles, labels, loc=cast(Any, location), **legend_kwargs)
 
 
 def series_marker(index: int) -> str:
