@@ -13,10 +13,17 @@ import matplotlib.pyplot as plt
 from plot_common import (
     IEEE_FIG_HEIGHT,
     IEEE_FIG_WIDTH,
+    Recency,
     add_light_grid,
     add_plot_cli_args,
+    COMPACT_LEGEND_STYLE,
     collect_csv_paths,
     dedupe_newest,
+    filter_ranks_per_node,
+    filter_systems,
+    format_distributor_label,
+    legend_avoiding_data,
+    path_recency,
     save_figure,
     series_color,
     series_marker,
@@ -27,25 +34,22 @@ from plot_common import (
 class ShutdownRow(TypedDict):
     system: str
     distributor: str
+    fanout: int
+    ranks_per_node: int
     nodes: int
-    max_upper_fanout: int
     world_size: int
     workers: int
     time_per_shutdown_us: float
     file_mtime: float
-
-
-def series_label(distributor: str, max_upper_fanout: int) -> str:
-    label = distributor.replace("_", " ").capitalize()
-    if max_upper_fanout != -1:
-        label += f" (fanout={max_upper_fanout})"
-    return label
+    path: str
+    recency: Recency
 
 
 def parse_rows(paths: Sequence[str]) -> list[ShutdownRow]:
     rows: list[ShutdownRow] = []
     for path in paths:
         file_mtime = os.path.getmtime(path)
+        recency = path_recency(path, file_mtime)
         with open(path, "r", encoding="utf-8") as handle:
             reader = csv.DictReader(handle)
             for row in reader:
@@ -54,16 +58,32 @@ def parse_rows(paths: Sequence[str]) -> list[ShutdownRow]:
                 time_per_shutdown_us = float(row.get("time_per_shutdown_us", 0.0))
                 if time_per_shutdown_us <= 0.0:
                     continue
+                nodes = int(float(row.get("nodes", 0)))
+                if nodes > 2048:
+                    continue
+                world_size = int(float(row.get("world_size", 0)))
+                ranks_per_node = int(round(world_size / nodes)) if nodes else 0
+                distributor = row.get("distributor", "").strip() or "naive"
+                fanout = int(float(row.get("max_upper_fanout", -1) or -1))
+                # Fanout only distinguishes hierarchical topologies.
+                if "hierarchical" not in distributor:
+                    fanout = -1
+                # Sanity-drop any leftover sub-microsecond hierarchical no-ops.
+                if "hierarchical" in distributor and time_per_shutdown_us < 1.0:
+                    continue
                 rows.append(
                     {
                         "system": row.get("system", "").strip() or "unknown",
-                        "distributor": row.get("distributor", "").strip() or "naive",
-                        "nodes": int(float(row.get("nodes", 0))),
-                        "max_upper_fanout": int(float(row.get("max_upper_fanout", -1) or -1)),
-                        "world_size": int(float(row.get("world_size", 0))),
+                        "distributor": distributor,
+                        "fanout": fanout,
+                        "ranks_per_node": ranks_per_node,
+                        "nodes": nodes,
+                        "world_size": world_size,
                         "workers": int(float(row.get("workers", 0))),
                         "time_per_shutdown_us": time_per_shutdown_us,
                         "file_mtime": file_mtime,
+                        "path": path,
+                        "recency": recency,
                     }
                 )
     return rows
@@ -71,49 +91,80 @@ def parse_rows(paths: Sequence[str]) -> list[ShutdownRow]:
 
 def group_rows(
     rows: Sequence[ShutdownRow],
-) -> dict[tuple[str, str, int], list[tuple[int, float]]]:
+) -> dict[tuple[str, str, int, int], list[tuple[int, float]]]:
     newest = dedupe_newest(
         rows,
-        lambda row: (row["system"], row["distributor"], row["max_upper_fanout"], row["nodes"]),
+        lambda row: (
+            row["system"],
+            row["distributor"],
+            row["fanout"],
+            row["ranks_per_node"],
+            row["nodes"],
+        ),
         "time_per_shutdown_us",
     )
-    grouped: dict[tuple[str, str, int], list[tuple[int, float]]] = defaultdict(list)
-    for (system, distributor, max_upper_fanout, nodes), (
+    grouped: dict[tuple[str, str, int, int], list[tuple[int, float]]] = defaultdict(list)
+    for (system, distributor, fanout, ranks_per_node, nodes), (
         time_per_shutdown_us,
         _,
     ) in newest.items():
-        grouped[(system, distributor, max_upper_fanout)].append((nodes, time_per_shutdown_us))
+        grouped[(system, distributor, fanout, ranks_per_node)].append(
+            (nodes, time_per_shutdown_us)
+        )
     return grouped
 
 
-def plot_system(
+def plot_system_rpn(
     system: str,
-    grouped: dict[tuple[str, str, int], list[tuple[int, float]]],
+    ranks_per_node: int,
+    grouped: dict[tuple[str, str, int, int], list[tuple[int, float]]],
     output_dir: str,
     image_format: str,
 ) -> None:
+    # Legend order matches the ranking a reader wants: quickest teardown
+    # first at the largest node count the series reach.
+    def final_shutdown(key: tuple[str, str, int, int]) -> tuple[int, float]:
+        points = sorted(grouped[key], key=lambda point: point[0])
+        return (-points[-1][0], points[-1][1])
+
     series = sorted(
-        (key for key in grouped if key[0] == system),
-        key=lambda key: (key[1], key[2]),
+        (
+            key
+            for key in grouped
+            if key[0] == system
+            and key[3] == ranks_per_node
+            # Keep three-layer (-1) and two-layer (0); skip explicit fanout sweeps.
+            and (key[2] in (-1, 0) or "hierarchical" not in key[1])
+        ),
+        key=final_shutdown,
     )
     if not series:
         return
 
     with plt.style.context(['science', 'ieee']):
-        fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT))
+        plt.rcParams.update(
+            {
+                "font.size": 10,
+                "axes.labelsize": 10,
+                "xtick.labelsize": 9,
+                "ytick.labelsize": 9,
+                "legend.fontsize": 8,
+            }
+        )
+        fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT * 0.7))
 
         all_nodes: set[int] = set()
         handles = []
         labels = []
 
         for idx, key in enumerate(series):
-            _, distributor, max_upper_fanout = key
+            _, distributor, fanout, _rpn = key
             points_sorted = sorted(grouped[key], key=lambda point: point[0])
             nodes = [point[0] for point in points_sorted]
             time_per_shutdown_s = [point[1] / 1_000_000.0 for point in points_sorted]
             all_nodes.update(nodes)
 
-            label = series_label(distributor, max_upper_fanout)
+            label = format_distributor_label(distributor, fanout)
             line, = ax.plot(
                 nodes,
                 time_per_shutdown_s,
@@ -129,12 +180,100 @@ def plot_system(
 
         ax.set_xlabel("Nodes")
         ax.set_ylabel("Shutdown time (s)")
-        ax.set_yscale("log")
         set_log_node_axes(ax, all_nodes)
         add_light_grid(ax)
-        ax.legend(handles, labels, frameon=False, loc='best')
+        legend_avoiding_data(
+            ax, handles, labels, locations=("upper left",), **COMPACT_LEGEND_STYLE
+        )
 
-        save_figure(fig, output_dir, f"shutdown_time_{system}.{image_format}")
+        save_figure(
+            fig,
+            output_dir,
+            f"shutdown_time_{system}_{ranks_per_node}rpn.{image_format}",
+        )
+
+
+# Comparable Aurora/Frontier ranks-per-node pairings (gpu-sparse and denser).
+SYSTEM_RPN_PAIRS: list[tuple[tuple[str, int], tuple[str, int]]] = [
+    (("aurora", 7), ("frontier", 9)),
+    (("aurora", 102), ("frontier", 56)),
+]
+
+
+def plot_cross_system_by_distributor(
+    grouped: dict[tuple[str, str, int, int], list[tuple[int, float]]],
+    output_dir: str,
+    image_format: str,
+) -> None:
+    """One Aurora-vs-Frontier plot per distributor (and hierarchical fanout)."""
+    configs = sorted(
+        {
+            (distributor, fanout)
+            for (_system, distributor, fanout, _rpn) in grouped
+            if fanout in (-1, 0) or "hierarchical" not in distributor
+        }
+    )
+    for distributor, fanout in configs:
+        for (sys_a, rpn_a), (sys_b, rpn_b) in SYSTEM_RPN_PAIRS:
+            key_a = (sys_a, distributor, fanout, rpn_a)
+            key_b = (sys_b, distributor, fanout, rpn_b)
+            if key_a not in grouped or key_b not in grouped:
+                continue
+
+            with plt.style.context(['science', 'ieee']):
+                plt.rcParams.update(
+                    {
+                        "font.size": 10,
+                        "axes.labelsize": 10,
+                        "xtick.labelsize": 9,
+                        "ytick.labelsize": 9,
+                        "legend.fontsize": 8,
+                    }
+                )
+                fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT * 0.7))
+
+                all_nodes: set[int] = set()
+                handles = []
+                labels = []
+                for idx, (system, rpn, key) in enumerate(
+                    ((sys_a, rpn_a, key_a), (sys_b, rpn_b, key_b))
+                ):
+                    points_sorted = sorted(grouped[key], key=lambda point: point[0])
+                    nodes = [point[0] for point in points_sorted]
+                    time_per_shutdown_s = [
+                        point[1] / 1_000_000.0 for point in points_sorted
+                    ]
+                    all_nodes.update(nodes)
+                    label = f"{system.capitalize()} ({rpn} rpn)"
+                    line, = ax.plot(
+                        nodes,
+                        time_per_shutdown_s,
+                        marker=series_marker(idx),
+                        fillstyle='none',
+                        markeredgewidth=1.0,
+                        linewidth=1.0,
+                        color=series_color(idx),
+                        label=label,
+                    )
+                    handles.append(line)
+                    labels.append(label)
+
+                ax.set_xlabel("Nodes")
+                ax.set_ylabel("Shutdown time (s)")
+                set_log_node_axes(ax, all_nodes)
+                add_light_grid(ax)
+                legend_avoiding_data(
+            ax, handles, labels, locations=("upper left",), **COMPACT_LEGEND_STYLE
+        )
+
+                fanout_str = ""
+                if "hierarchical" in distributor:
+                    fanout_str = f"_fanout{fanout}"
+                filename = (
+                    f"shutdown_compare_{distributor}{fanout_str}"
+                    f"_{rpn_a}v{rpn_b}rpn.{image_format}"
+                )
+                save_figure(fig, output_dir, filename)
 
 
 def main() -> None:
@@ -143,13 +282,15 @@ def main() -> None:
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
-    input_paths = collect_csv_paths(args.input, "shutdown")
-    rows = parse_rows(input_paths)
+    rows = parse_rows(collect_csv_paths(args.input, "shutdown"))
+    rows = filter_systems(rows, args.exclude_system)
+    rows = filter_ranks_per_node(rows, args.ranks_per_node)
     grouped = group_rows(rows)
 
-    systems = sorted({row["system"] for row in rows})
-    for system in systems:
-        plot_system(system, grouped, args.output_dir, args.format)
+    configs = sorted({(row["system"], row["ranks_per_node"]) for row in rows})
+    for system, ranks_per_node in configs:
+        plot_system_rpn(system, ranks_per_node, grouped, args.output_dir, args.format)
+    plot_cross_system_by_distributor(grouped, args.output_dir, args.format)
 
 
 if __name__ == "__main__":
