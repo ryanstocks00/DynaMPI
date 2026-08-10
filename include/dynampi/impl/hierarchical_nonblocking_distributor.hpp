@@ -24,6 +24,7 @@
 #include "../mpi/mpi_communicator.hpp"
 #include "../mpi/mpi_types.hpp"
 #include "dynampi/impl/base_distributor.hpp"
+#include "dynampi/task_error.hpp"
 #include "dynampi/utilities/assert.hpp"
 #include "dynampi/utilities/timer.hpp"
 
@@ -85,6 +86,12 @@ class HierarchicalNonBlockingWorkDistributor
     // Manager <-> Node Coordinators <-> Local Workers
     // Note: Manager is excluded from its node's Local Comm to separate duties.
     bool coordinator_per_node = true;
+
+    // If true (default), run_tasks()/finish_remaining_tasks() throw
+    // dynampi::TaskFailure on the root manager once a task has thrown. Set
+    // false to recover instead: distribution runs to completion and the
+    // failures are available from take_task_errors().
+    bool rethrow_task_errors = true;
   };
 
   struct RunConfig {
@@ -125,6 +132,8 @@ class HierarchicalNonBlockingWorkDistributor
 
   bool m_finalized = false;
   bool m_done = false;
+
+  detail::TaskErrorLog m_task_errors;  // root manager only
 
   // Pipelining (see run_worker()'s intermediate-coordinator branch):
   // tasks that arrive as a reply to a proactive next-batch request sent
@@ -344,7 +353,8 @@ class HierarchicalNonBlockingWorkDistributor
     REQUEST = 3,
     TASK_BATCH = 4,
     RESULT_BATCH = 5,
-    REQUEST_BATCH = 6
+    REQUEST_BATCH = 6,
+    ERROR = 7
   };
 
   struct Statistics {
@@ -675,7 +685,11 @@ class HierarchicalNonBlockingWorkDistributor
       }
     } else {
       const TaskT task = get_next_task_to_send();
-      m_results.emplace_back(m_worker_function(task));
+      ResultT local_result;
+      auto local_failure = detail::run_task_guarded(m_worker_function, task, local_result);
+      if (local_failure)
+        m_task_errors.record(TaskError{m_communicator.rank(), std::move(*local_failure)});
+      m_results.emplace_back(std::move(local_result));
       m_tasks_executed++;
     }
   }
@@ -714,6 +728,10 @@ class HierarchicalNonBlockingWorkDistributor
     }
 
     // --- Return Logic ---
+    // Thrown before draining, so results collected so far stay buffered for
+    // whoever catches this and calls again.
+    m_task_errors.rethrow_first_if(m_config.rethrow_task_errors);
+
     std::vector<ResultT> batch;
 
     size_t available = m_results.size();
@@ -757,7 +775,18 @@ class HierarchicalNonBlockingWorkDistributor
     }
   }
 
+  [[nodiscard]] std::vector<TaskError> take_task_errors() {
+    DYNAMPI_ASSERT(is_root_manager(), "Only the manager collects task errors");
+    return m_task_errors.take();
+  }
+
+  bool has_task_errors() const {
+    DYNAMPI_ASSERT(is_root_manager(), "Only the manager collects task errors");
+    return !m_task_errors.empty();
+  }
+
   ~HierarchicalNonBlockingWorkDistributor() {
+    m_task_errors.warn_if_unreported("HierarchicalNonBlockingWorkDistributor");
     if (!m_finalized) {
       finalize();
     }
@@ -936,11 +965,46 @@ class HierarchicalNonBlockingWorkDistributor
     int world_source = status.MPI_SOURCE;
     m_communicator.recv(message, world_source, Tag::TASK);
     m_tasks_received_from_parent++;
-    ResultT result = m_worker_function(message);
+    ResultT result;
+    auto failure = detail::run_task_guarded(m_worker_function, message, result);
     m_tasks_executed++;
-    // Reply on the global communicator
-    send_async(result, world_source, Tag::RESULT);
+    // ERROR replaces this task's RESULT rather than accompanying it, so the
+    // parent still counts one reply per dispatch. Sent blocking rather than
+    // through send_async(): failures are rare, and the buffer pool exists to
+    // keep the hot path from stalling, which this is not on.
+    // ERROR is a pure notification: it travels alongside the result, never
+    // instead of it. Every hop can then forward it upward without deciding
+    // whether it also stands in for a completion -- a distinction that is not
+    // even locally decidable at an intermediate coordinator, which forwards a
+    // subtree's failure but has already accounted for the placeholder itself.
+    if (failure) {
+      m_communicator.send(
+          detail::encode_task_error(TaskError{m_communicator.rank(), std::move(*failure)}),
+          world_source, Tag::ERROR);
+    }
+    { send_async(result, world_source, Tag::RESULT); }
     m_results_sent_to_parent++;
+  }
+
+  // A failure reported from somewhere below us -- one of our own leaves, or a
+  // subtree forwarding one of its own. Carries no completion: the failing rank
+  // sent a placeholder result too, which travels the normal result path.
+  void receive_error_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
+                          [[maybe_unused]] CommLayer layer) {
+    int world_source = status.MPI_SOURCE;
+    int count;
+    DYNAMPI_MPI_CHECK(MPI_Get_count, (&status, MPI_CHAR, &count));
+    std::string payload;
+    MPI_Type<std::string>::resize(payload, count);
+    m_communicator.recv(payload, world_source, Tag::ERROR);
+
+    if (is_root_manager()) {
+      m_task_errors.record(detail::decode_task_error(payload));
+    } else {
+      auto [target, target_layer] = get_parent_target();
+      (void)target_layer;
+      m_communicator.send(payload, target, Tag::ERROR);
+    }
   }
 
   void receive_task_batch_from(MPI_Status status, [[maybe_unused]] MPICommunicator& source_comm,
@@ -1020,7 +1084,7 @@ class HierarchicalNonBlockingWorkDistributor
 
     // Assert that the tag is a valid Tag enum value before casting
     DYNAMPI_ASSERT(status.MPI_TAG >= static_cast<int>(Tag::TASK) &&
-                       status.MPI_TAG <= static_cast<int>(Tag::REQUEST_BATCH),
+                       status.MPI_TAG <= static_cast<int>(Tag::ERROR),
                    "Received invalid MPI tag: " + std::to_string(status.MPI_TAG));
     Tag tag = static_cast<Tag>(status.MPI_TAG);
     // Note: receive methods now use global communicator and determine layer from source rank
@@ -1039,6 +1103,8 @@ class HierarchicalNonBlockingWorkDistributor
         return receive_request_batch_from(status, m_communicator, layer);
       case Tag::DONE:
         return receive_done_from(status, m_communicator, layer);
+      case Tag::ERROR:
+        return receive_error_from(status, m_communicator, layer);
     }
   }
 };

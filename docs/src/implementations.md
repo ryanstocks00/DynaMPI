@@ -57,6 +57,44 @@ unordered, carry the identity in the result type (e.g. `std::pair<size_t, T>`).
 5. **Destruction is collective too** — the RMA distributors free windows and
    barrier inside their destructors.
 
+### Failing tasks
+
+A task that throws does not abort the job.  Every distributor catches whatever
+escapes the worker function, substitutes a default-constructed `ResultT` so the
+task still occupies its slot in the result set, and carries the message back to
+the manager out of band — a `TASK_ERROR` message alongside the result for the
+two-sided distributors, a small fixed-size table in the window for the RMA ones.
+
+What the manager then does is up to `Config::rethrow_task_errors`:
+
+- **`true` (default) — propagate.**  `run_tasks()` / `finish_remaining_tasks()`
+  throw `dynampi::TaskFailure`, carrying the failing rank and message.  It is
+  thrown *before* results are drained, so whoever catches it can call again and
+  still collect everything gathered so far.  Each failure is thrown once;
+  `finalize()` and the destructors never throw.
+- **`false` — recover.**  Distribution runs to completion and the failures come
+  back from `take_task_errors()` as a `std::vector<TaskError>`, oldest first.
+
+```cpp
+dynampi::DynamicWorkDistributor<int, double>::Config config;
+config.rethrow_task_errors = false;
+dynampi::DynamicWorkDistributor<int, double> distributor(work, config);
+
+if (distributor.is_root_manager()) {
+  distributor.insert_tasks({1, 2, 3});
+  auto results = distributor.finish_remaining_tasks();   // one entry per task
+  for (const auto& failure : distributor.take_task_errors()) {
+    std::cerr << "rank " << failure.worker_rank << ": " << failure.message << "\n";
+  }
+}
+```
+
+Messages are truncated to `dynampi::kMaxTaskErrorMessage` (240) characters, and
+the RMA distributors keep at most 16 records per window — beyond that the
+failures still happen and the run still completes, but the extra messages are
+dropped.  Anything not thrown or taken by the time the distributor is destroyed
+is reported to `stderr` rather than vanishing.
+
 ### Single-rank runs
 
 Every distributor handles a communicator of size 1 by executing tasks inline on

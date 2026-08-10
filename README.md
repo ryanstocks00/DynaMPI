@@ -97,6 +97,11 @@ loop in the constructor. Construction and destruction are collective.
 | `HierarchicalLockFreeRMAWorkDistributor` | Passive-target RMA, per level | No | RMA protocol applied per tree level, for large node counts |
 | `MinimalLockFreeWorkDistributor` | RMA counter + `Gatherv` | Yes | Parallel-for over `0 .. n-1` |
 
+A task that throws is reported to the manager rather than aborting the job:
+`run_tasks` rethrows it as `dynampi::TaskFailure`, or set
+`Config::rethrow_task_errors = false` and collect failures from
+`take_task_errors()`.
+
 Optional compile-time features: task prioritization
 (`dynampi::enable_prioritization`), statistics tracking
 (`dynampi::track_statistics<Mode>`), and custom payloads via

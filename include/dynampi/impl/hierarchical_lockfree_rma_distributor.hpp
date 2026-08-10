@@ -10,6 +10,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <deque>
 #include <functional>
 #include <limits>
@@ -22,6 +23,7 @@
 #include "../mpi/mpi_types.hpp"
 #include "dynampi/impl/minimal_lockfree_distributor.hpp"  // reuses dynampi::detail byte-packing helpers
 #include "dynampi/mpi/mpi_error.hpp"
+#include "dynampi/task_error.hpp"
 #include "dynampi/utilities/timer.hpp"
 
 namespace dynampi {
@@ -197,12 +199,17 @@ class LockFreeRMALevel {
     get_bytes_local(log_buf.data(), log_buf.size(), log_slot(frontier));
 
     int64_t confirmed_end = frontier;
+    bool saw_error = false;
     while (confirmed_end < head_now) {
       const size_t off = static_cast<size_t>(confirmed_end - frontier) * LOG_ENTRY_BYTES;
-      const int64_t count = detail::read_i64(log_buf.data(), log_buf.size(), off);
-      if (count == 0) break;  // gap: not yet written; stop the contiguous prefix here
-      confirmed_end += count;
+      const int64_t entry = detail::read_i64(log_buf.data(), log_buf.size(), off);
+      if (entry == 0) break;  // gap: not yet written; stop the contiguous prefix here
+      if (entry < 0) saw_error = true;
+      confirmed_end += entry < 0 ? -entry : entry;
     }
+    // A negated length means "this range produced at least one error". The scan
+    // reads every entry anyway, so the flag costs nothing until it fires.
+    if (saw_error) harvest_task_errors();
     if (confirmed_end <= frontier) return {};
 
     const int64_t n = confirmed_end - frontier;
@@ -347,10 +354,51 @@ class LockFreeRMALevel {
     return false;
   }
 
+  // Claimant-side. Publishes one failed task into the error table, preserving
+  // the rank that actually ran it -- a coordinator relaying a subtree's failure
+  // upward reports the original rank, not its own. Must complete before the log
+  // entry that advertises it; every RMA helper here flushes its target before
+  // returning, so calling this before write_result_range() is enough.
+  void report_task_error(const TaskError& error) {
+    const int64_t slot = fetch_add(ERROR_COUNT_OFF, 1);
+    if (slot >= kMaxRecordedErrors) return;  // LCOV_EXCL_LINE -- needs >16 concurrent failures
+    // Message first, then the ready word, each flushed separately: fetch_add
+    // hands out the slot before anything is in it, so the count alone never
+    // means a slot can be read. The ready word is rank+1 so that zero stays the
+    // untouched sentinel for rank 0.
+    std::vector<std::byte> message_bytes(kMaxTaskErrorMessage, std::byte{0});
+    const size_t bytes = std::min(error.message.size(), kMaxTaskErrorMessage - 1);
+    if (bytes > 0) {
+      detail::write_bytes(message_bytes.data(), message_bytes.size(), 0, error.message.data(),
+                          bytes);
+    }
+    const int64_t ready = static_cast<int64_t>(error.worker_rank) + 1;
+    if (local_only()) {
+      detail::write_bytes(m_window_buffer.data(), m_window_buffer.size(),
+                          static_cast<size_t>(error_slot(slot)) + E_DATA, message_bytes.data(),
+                          message_bytes.size());
+      local_store_i64(error_slot(slot) + static_cast<MPI_Aint>(E_RANK), ready);
+      return;
+    }
+    post_put_bytes(message_bytes.data(), message_bytes.size(),
+                   error_slot(slot) + static_cast<MPI_Aint>(E_DATA));
+    flush_remote();
+    post_put_bytes(&ready, sizeof(ready), error_slot(slot) + static_cast<MPI_Aint>(E_RANK));
+    flush_remote();
+  }
+
+  // Owner-side. Everything harvested since the last call, oldest first.
+  std::vector<TaskError> take_errors() {
+    std::vector<TaskError> taken;
+    taken.swap(m_owner_errors);
+    return taken;
+  }
+
   // Writes results.size() results starting at task index `start`:
   // Put data -> flush -> Put completion-log flag -> flush. The log write is a
   // plain Put (not an atomic): the claim index is exclusively owned.
-  void write_result_range(int64_t start, const std::vector<ResultT>& results) {
+  void write_result_range(int64_t start, const std::vector<ResultT>& results,
+                          bool contains_error = false) {
     const int64_t count = static_cast<int64_t>(results.size());
     assert(count > 0);
     std::vector<std::byte> buffer(static_cast<size_t>(count) * m_result_slot_stride);
@@ -367,15 +415,16 @@ class LockFreeRMALevel {
                             MPI_Type<ResultT>::ptr(result), data_bytes);
       }
     }
+    const int64_t entry = contains_error ? -count : count;
     if (local_only()) {
       detail::write_bytes(m_window_buffer.data(), m_window_buffer.size(),
                           static_cast<size_t>(result_slot(start)), buffer.data(), buffer.size());
-      local_store_i64(log_slot(start), count);
+      local_store_i64(log_slot(start), entry);
       return;
     }
     post_put_bytes(buffer.data(), buffer.size(), result_slot(start));
     flush_remote();
-    post_put_bytes(&count, sizeof(count), log_slot(start));
+    post_put_bytes(&entry, sizeof(entry), log_slot(start));
     flush_remote();
   }
 
@@ -386,7 +435,15 @@ class LockFreeRMALevel {
   static constexpr MPI_Aint HEAD_OFF = 0;
   static constexpr MPI_Aint TOTAL_OFF = 8;
   static constexpr MPI_Aint FINISHED_OFF = 16;
-  static constexpr size_t CONTROL_BYTES = 24;
+  static constexpr MPI_Aint ERROR_COUNT_OFF = 24;
+  static constexpr size_t CONTROL_BYTES = 32;
+
+  // Failed tasks report into a small fixed table -- same layout and rationale
+  // as LockFreeRMAWorkDistributor's.
+  static constexpr int64_t kMaxRecordedErrors = 16;
+  static constexpr size_t E_RANK = 0;
+  static constexpr size_t E_DATA = 8;
+  static constexpr size_t ERROR_SLOT_BYTES = E_DATA + kMaxTaskErrorMessage;
 
   static constexpr size_t T_COUNT = 0;
   static constexpr size_t T_DATA = 8;
@@ -410,6 +467,7 @@ class LockFreeRMALevel {
   size_t m_task_base = 0;
   size_t m_result_base = 0;
   size_t m_log_base = 0;
+  size_t m_error_base = 0;
 
   int64_t m_total_tasks = 0;
   bool m_owner_marked_finished = false;
@@ -421,6 +479,8 @@ class LockFreeRMALevel {
   int64_t m_pending_start = -1;
   int64_t m_pending_end = -1;
   bool m_seen_finished = false;
+  std::vector<bool> m_errors_seen;        // owner-side: error slots already consumed
+  std::vector<TaskError> m_owner_errors;  // owner-side, drained by take_errors()
 
   void initialize_window() {
     // Same fixed-width slot requirement as the flat distributor's window.
@@ -444,7 +504,9 @@ class LockFreeRMALevel {
     m_task_base = CONTROL_BYTES;
     m_result_base = m_task_base + capacity * m_task_slot_stride;
     m_log_base = m_result_base + capacity * m_result_slot_stride;
-    const size_t owner_window_bytes = m_log_base + capacity * LOG_ENTRY_BYTES;
+    m_error_base = m_log_base + capacity * LOG_ENTRY_BYTES;
+    const size_t owner_window_bytes =
+        m_error_base + static_cast<size_t>(kMaxRecordedErrors) * ERROR_SLOT_BYTES;
 
     // Owner always hosts the slot layout in m_window_buffer. Size-1
     // communicators deliberately skip MPI_Win_create: Open MPI (and some
@@ -480,6 +542,9 @@ class LockFreeRMALevel {
   }
   MPI_Aint log_slot(int64_t index) const {
     return static_cast<MPI_Aint>(m_log_base + static_cast<size_t>(index) * LOG_ENTRY_BYTES);
+  }
+  MPI_Aint error_slot(int64_t index) const {
+    return static_cast<MPI_Aint>(m_error_base + static_cast<size_t>(index) * ERROR_SLOT_BYTES);
   }
 
   void flush_remote() { DYNAMPI_MPI_CHECK(MPI_Win_flush, (m_config.owner_rank, m_window)); }
@@ -534,6 +599,34 @@ class LockFreeRMALevel {
     }
     post_get_bytes(dst, n, offset);
     flush_local();
+  }
+
+  // Owner-side. Reads whatever error records appeared since the last call.
+  void harvest_task_errors() {
+    const int64_t claimed = std::min(atomic_read(ERROR_COUNT_OFF), kMaxRecordedErrors);
+    if (claimed <= 0) return;  // LCOV_EXCL_LINE -- only reachable on a spurious flag
+    // Reads the whole (at most kMaxRecordedErrors) table and takes only the
+    // slots that are ready, rather than a contiguous frontier: slots are
+    // claimed in fetch_add order but completed out of order, so a slot still in
+    // flight must be skipped now and picked up later, not waited on. That is
+    // safe because a claimant flushes its record before writing the completion
+    // log entry that brings the manager here, so by the time this runs for a
+    // given failure, that failure's own slot is readable.
+    std::vector<std::byte> buf(static_cast<size_t>(claimed) * ERROR_SLOT_BYTES);
+    get_bytes_local(buf.data(), buf.size(), error_slot(0));
+    m_errors_seen.resize(static_cast<size_t>(kMaxRecordedErrors), false);
+    for (int64_t i = 0; i < claimed; ++i) {
+      if (m_errors_seen[static_cast<size_t>(i)]) continue;
+      const size_t off = static_cast<size_t>(i) * ERROR_SLOT_BYTES;
+      const int64_t ready = detail::read_i64(buf.data(), buf.size(), off + E_RANK);
+      if (ready == 0) continue;  // still in flight; its own flag will bring us back
+      TaskError error;
+      error.worker_rank = static_cast<int>(ready - 1);
+      const char* text = reinterpret_cast<const char*>(buf.data() + off + E_DATA);
+      error.message.assign(text, ::strnlen(text, kMaxTaskErrorMessage - 1));
+      m_owner_errors.push_back(std::move(error));
+      m_errors_seen[static_cast<size_t>(i)] = true;
+    }
   }
 
   std::vector<TaskT> read_task_batch(int64_t index, int64_t count) {
@@ -626,6 +719,12 @@ class HierarchicalLockFreeRMAWorkDistributor {
     // construction and the class comment for why this matters at large
     // scale.
     int max_upper_fanout = -1;
+
+    // If true (default), run_tasks()/finish_remaining_tasks() throw
+    // dynampi::TaskFailure on the root manager once a task has thrown. Set
+    // false to recover instead: distribution runs to completion and the
+    // failures are available from take_task_errors().
+    bool rethrow_task_errors = true;
   };
 
   struct RunConfig {
@@ -664,8 +763,21 @@ class HierarchicalLockFreeRMAWorkDistributor {
     if (m_config.auto_run_workers && !is_root_manager()) run_worker();
   }
 
+  // Tasks that threw, oldest first, removed as they are returned. See
+  // Config::rethrow_task_errors.
+  [[nodiscard]] std::vector<TaskError> take_task_errors() {
+    assert(is_root_manager());
+    return m_task_errors.take();
+  }
+
+  bool has_task_errors() const {
+    assert(is_root_manager());
+    return !m_task_errors.empty();
+  }
+
   ~HierarchicalLockFreeRMAWorkDistributor() {
     if (!m_finalized) finalize();
+    m_task_errors.warn_if_unreported("HierarchicalLockFreeRMAWorkDistributor");
     if (!m_solo) {
       // LockFreeRMALevel teardown is collective only over that level's
       // communicator.  Without a final world-wide rendezvous, ranks that
@@ -718,8 +830,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
       while (m_local_collected_count < m_local_task_store.size()) {
         if (m_results.size() >= config.target_num_tasks) break;
         if (config.max_seconds && timer.elapsed().count() >= *config.max_seconds) break;
-        m_results.push_back(m_worker_function(m_local_task_store[m_local_collected_count]));
-        m_local_collected_count++;
+        run_one_solo_task();
       }
     } else {
       auto& top = m_owned_upper_levels.front();  // manager's top-of-chain level
@@ -728,10 +839,15 @@ class HierarchicalLockFreeRMAWorkDistributor {
         if (config.max_seconds && timer.elapsed().count() >= *config.max_seconds) break;
         if (top.owner_collected_count() >= top.owner_published_count()) break;
         auto results = top.harvest_ready_results_throttled();
+        collect_level_errors(top);
         m_results.insert(m_results.end(), std::make_move_iterator(results.begin()),
                          std::make_move_iterator(results.end()));
       }
     }
+
+    // Thrown before draining, so results collected so far stay buffered for
+    // whoever catches this and calls again.
+    m_task_errors.rethrow_first_if(m_config.rethrow_task_errors);
 
     return drain_results(config.allow_more_than_target_tasks ? std::numeric_limits<size_t>::max()
                                                              : config.target_num_tasks);
@@ -747,12 +863,12 @@ class HierarchicalLockFreeRMAWorkDistributor {
     assert(is_root_manager());
     if (m_solo) {
       while (m_local_collected_count < m_local_task_store.size()) {
-        m_results.push_back(m_worker_function(m_local_task_store[m_local_collected_count]));
-        m_local_collected_count++;
+        run_one_solo_task();
       }
     } else {
-      auto results =
-          m_owned_upper_levels.front().harvest_ready_results();  // manager's top-of-chain level
+      auto& top = m_owned_upper_levels.front();  // manager's top-of-chain level
+      auto results = top.harvest_ready_results();
+      collect_level_errors(top);
       m_results.insert(m_results.end(), std::make_move_iterator(results.begin()),
                        std::make_move_iterator(results.end()));
     }
@@ -764,13 +880,13 @@ class HierarchicalLockFreeRMAWorkDistributor {
     if (is_root_manager()) {
       if (m_solo) {
         while (m_local_collected_count < m_local_task_store.size()) {
-          m_results.push_back(m_worker_function(m_local_task_store[m_local_collected_count]));
-          m_local_collected_count++;
+          run_one_solo_task();
         }
       } else {
         auto& top = m_owned_upper_levels.front();  // manager's top-of-chain level
         while (top.owner_collected_count() < top.owner_published_count()) {
           auto results = top.harvest_ready_results_throttled();
+          collect_level_errors(top);
           m_results.insert(m_results.end(), std::make_move_iterator(results.begin()),
                            std::make_move_iterator(results.end()));
         }
@@ -836,6 +952,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
   std::optional<detail::LockFreeRMALevel<TaskT, ResultT>> m_parent_level;
 
   bool m_finalized = false;
+  detail::TaskErrorLog m_task_errors;  // root manager only
   std::vector<ResultT> m_results;
   size_t m_returned_count = 0;
 
@@ -1079,6 +1196,11 @@ class HierarchicalLockFreeRMAWorkDistributor {
     detail::LockFreeRMALevel<TaskT, ResultT>* child;
     std::deque<PendingRelay> pending_relays;
     std::vector<ResultT> relay_buffer;  // child results collected but not yet fully relayed upward
+    // Set once a failure from below has been republished into `parent`'s error
+    // table, and cleared by the next write_result_range() that carries the flag
+    // up. The records are already in place by then; the flag only tells the
+    // level above to go and read them.
+    bool relay_error_pending = false;
     int64_t pending_task_count =
         0;  // sum of child_len across pending_relays -- see step_bridge_hop()
     bool finish_marked = false;
@@ -1164,6 +1286,14 @@ class HierarchicalLockFreeRMAWorkDistributor {
     // child's claimants are active -- counting it here is exactly what
     // previously masked parent-level polling from ever backing off.
     auto child_results = hop.child->harvest_ready_results();
+    // Failures travel with the results they belong to: harvest_ready_results()
+    // has already read the child's error table by the time it returns a range
+    // containing one, so republishing here keeps a failure exactly one hop
+    // behind its own placeholder result all the way up to the root.
+    for (auto& error : hop.child->take_errors()) {
+      hop.parent->report_task_error(error);
+      hop.relay_error_pending = true;
+    }
     if (!child_results.empty()) {
       hop.relay_buffer.insert(hop.relay_buffer.end(),
                               std::make_move_iterator(child_results.begin()),
@@ -1207,7 +1337,8 @@ class HierarchicalLockFreeRMAWorkDistributor {
           std::make_move_iterator(hop.relay_buffer.begin() + static_cast<ptrdiff_t>(consumed)),
           std::make_move_iterator(hop.relay_buffer.begin() +
                                   static_cast<ptrdiff_t>(consumed + chunk)));
-      hop.parent->write_result_range(front.parent_start, slice);
+      hop.parent->write_result_range(front.parent_start, slice, hop.relay_error_pending);
+      hop.relay_error_pending = false;
       consumed += chunk;
       hop.pending_task_count -= static_cast<int64_t>(chunk);
       front.parent_start += static_cast<int64_t>(chunk);
@@ -1301,8 +1432,17 @@ class HierarchicalLockFreeRMAWorkDistributor {
         if (claimed.start != -1) {
           std::vector<ResultT> results;
           results.reserve(claimed.tasks.size());
-          for (auto& task : claimed.tasks) results.push_back(m_worker_function(std::move(task)));
-          m_local_level->write_result_range(claimed.start, results);
+          bool failed = false;
+          for (auto& task : claimed.tasks) {
+            ResultT result;
+            auto failure = detail::run_task_guarded(m_worker_function, std::move(task), result);
+            if (failure) {
+              m_local_level->report_task_error(TaskError{m_world_comm.rank(), std::move(*failure)});
+              failed = true;
+            }
+            results.push_back(std::move(result));
+          }
+          m_local_level->write_result_range(claimed.start, results, failed);
           continue;
         }
       }
@@ -1332,8 +1472,17 @@ class HierarchicalLockFreeRMAWorkDistributor {
         if (claimed.start != -1) {
           std::vector<ResultT> results;
           results.reserve(claimed.tasks.size());
-          for (auto& task : claimed.tasks) results.push_back(m_worker_function(std::move(task)));
-          terminal.write_result_range(claimed.start, results);
+          bool failed = false;
+          for (auto& task : claimed.tasks) {
+            ResultT result;
+            auto failure = detail::run_task_guarded(m_worker_function, std::move(task), result);
+            if (failure) {
+              terminal.report_task_error(TaskError{m_world_comm.rank(), std::move(*failure)});
+              failed = true;
+            }
+            results.push_back(std::move(result));
+          }
+          terminal.write_result_range(claimed.start, results, failed);
           any_progress = true;
         }
       }
@@ -1349,6 +1498,21 @@ class HierarchicalLockFreeRMAWorkDistributor {
 
       if (!any_progress) terminal.idle_wait();
     }
+  }
+
+  // Solo (size-1 communicator) execution, guarded like every other path so a
+  // workload behaves the same when debugged without MPI.
+  void run_one_solo_task() {
+    ResultT result;
+    auto failure = detail::run_task_guarded(m_worker_function,
+                                            m_local_task_store[m_local_collected_count], result);
+    if (failure) m_task_errors.record(TaskError{m_world_comm.rank(), std::move(*failure)});
+    m_results.push_back(std::move(result));
+    m_local_collected_count++;
+  }
+
+  void collect_level_errors(detail::LockFreeRMALevel<TaskT, ResultT>& level) {
+    for (auto& error : level.take_errors()) m_task_errors.record(std::move(error));
   }
 
   std::vector<ResultT> drain_results(size_t limit) {

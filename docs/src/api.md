@@ -11,6 +11,7 @@ Everything lives in namespace `dynampi`.
 
 | Header | Provides |
 |--------|----------|
+| `<dynampi/task_error.hpp>` | `TaskError`, `TaskFailure`, `kMaxTaskErrorMessage` (pulled in by every distributor) |
 | `<dynampi/dynampi.hpp>` | `mpi_manager_worker_distribution`, `DynamicWorkDistributor`, and (transitively) `NaiveWorkDistributor`, `HierarchicalWorkDistributor`, `MinimalLockFreeWorkDistributor`, `version` |
 | `<dynampi/impl/naive_distributor.hpp>` | `NaiveWorkDistributor` |
 | `<dynampi/impl/hierarchical_distributor.hpp>` | `HierarchicalWorkDistributor` |

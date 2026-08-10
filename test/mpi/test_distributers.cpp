@@ -1045,3 +1045,180 @@ TEST(LockFreeFinalization, HierarchicalDrainsOutstandingWork) {
     dist.finalize();
   }
 }
+
+// --- Task error handling -----------------------------------------------
+//
+// A task that throws must not take the MPI job down with it. The manager
+// either rethrows it as dynampi::TaskFailure (Config::rethrow_task_errors,
+// the default) or hands it back from take_task_errors() so the caller can
+// recover. Either way distribution completes, every dispatched task still
+// yields exactly one result, and no rank is left waiting.
+
+namespace {
+constexpr int kFailingTask = 3;
+constexpr int kTaskCount = 8;
+
+int throwing_worker(int task) {
+  if (task == kFailingTask) throw std::runtime_error("task blew up");
+  return task * 2;
+}
+}  // namespace
+
+TYPED_TEST(DynamicDistribution, TaskErrorIsRecoverable) {
+  using Distributer = DistributerOf<TypeParam, int, int>;
+
+  auto config = get_distributer_config<TypeParam, int, int>();
+  config.comm = MPI_COMM_WORLD;
+  config.auto_run_workers = true;
+  config.rethrow_task_errors = false;
+  Distributer distributor(throwing_worker, config);
+
+  if (!distributor.is_root_manager()) return;
+
+  for (int i = 0; i < kTaskCount; ++i) distributor.insert_task(i);
+  auto results = distributor.finish_remaining_tasks();
+
+  // The failed task still occupies a slot, so nothing downstream has to
+  // reason about a short result set.
+  EXPECT_EQ(results.size(), static_cast<size_t>(kTaskCount));
+
+  auto errors = distributor.take_task_errors();
+  ASSERT_EQ(errors.size(), 1u);
+  EXPECT_NE(errors[0].message.find("task blew up"), std::string::npos);
+  EXPECT_GE(errors[0].worker_rank, 0);
+  EXPECT_LT(errors[0].worker_rank, MPIEnvironment::world_comm_size());
+  EXPECT_FALSE(distributor.has_task_errors()) << "take_task_errors should drain";
+
+  // Every task except the failing one produced its real result.
+  std::sort(results.begin(), results.end());
+  std::vector<int> expected;
+  for (int i = 0; i < kTaskCount; ++i) expected.push_back(i == kFailingTask ? 0 : i * 2);
+  std::sort(expected.begin(), expected.end());
+  EXPECT_EQ(results, expected);
+}
+
+TYPED_TEST(DynamicDistribution, TaskErrorPropagatesToManager) {
+  using Distributer = DistributerOf<TypeParam, int, int>;
+
+  auto config = get_distributer_config<TypeParam, int, int>();
+  config.comm = MPI_COMM_WORLD;
+  config.auto_run_workers = true;
+  Distributer distributor(throwing_worker, config);
+
+  if (!distributor.is_root_manager()) return;
+
+  for (int i = 0; i < kTaskCount; ++i) distributor.insert_task(i);
+
+  bool threw = false;
+  try {
+    auto ignored = distributor.finish_remaining_tasks();
+    (void)ignored;
+  } catch (const dynampi::TaskFailure& e) {
+    threw = true;
+    EXPECT_NE(std::string(e.what()).find("task blew up"), std::string::npos);
+    EXPECT_EQ(e.error().message.find("task blew up"), 0u);
+  }
+  EXPECT_TRUE(threw) << "expected TaskFailure on the manager";
+
+  // The throw consumed that error and left the results buffered, so a caller
+  // that recovers can still collect them.
+  EXPECT_FALSE(distributor.has_task_errors());
+  auto results = distributor.finish_remaining_tasks();
+  EXPECT_EQ(results.size(), static_cast<size_t>(kTaskCount));
+}
+
+TYPED_TEST(DynamicDistribution, SurvivesManyFailingTasks) {
+  using Distributer = DistributerOf<TypeParam, int, int>;
+
+  // Every task fails: the shutdown path has to stay balanced when no real
+  // result is ever produced.
+  auto always_throws = [](int task) -> int {
+    throw std::runtime_error("always fails on " + std::to_string(task));
+  };
+
+  auto config = get_distributer_config<TypeParam, int, int>();
+  config.comm = MPI_COMM_WORLD;
+  config.auto_run_workers = true;
+  config.rethrow_task_errors = false;
+  Distributer distributor(always_throws, config);
+
+  if (!distributor.is_root_manager()) return;
+
+  for (int i = 0; i < kTaskCount; ++i) distributor.insert_task(i);
+  auto results = distributor.finish_remaining_tasks();
+  EXPECT_EQ(results.size(), static_cast<size_t>(kTaskCount));
+
+  auto errors = distributor.take_task_errors();
+  // The RMA distributors keep a bounded error table, so the count is capped
+  // rather than exact; every distributor must report at least one.
+  EXPECT_GE(errors.size(), 1u);
+  EXPECT_LE(errors.size(), static_cast<size_t>(kTaskCount));
+  for (const auto& error : errors) {
+    EXPECT_NE(error.message.find("always fails"), std::string::npos);
+  }
+}
+
+TEST(HierarchicalLockFreeRMA, TaskErrorIsRecoverable) {
+  using Distributor = dynampi::HierarchicalLockFreeRMAWorkDistributor<int, int>;
+  Distributor::Config config;
+  config.rethrow_task_errors = false;
+  Distributor distributor(throwing_worker, config);
+
+  if (!distributor.is_root_manager()) return;
+
+  std::vector<int> tasks;
+  for (int i = 0; i < kTaskCount; ++i) tasks.push_back(i);
+  distributor.insert_tasks(tasks);
+  auto results = distributor.finish_remaining_tasks();
+  EXPECT_EQ(results.size(), static_cast<size_t>(kTaskCount));
+
+  auto errors = distributor.take_task_errors();
+  ASSERT_EQ(errors.size(), 1u);
+  EXPECT_NE(errors[0].message.find("task blew up"), std::string::npos);
+}
+
+TEST(HierarchicalLockFreeRMA, TaskErrorPropagatesToManager) {
+  using Distributor = dynampi::HierarchicalLockFreeRMAWorkDistributor<int, int>;
+  Distributor distributor(throwing_worker);
+
+  if (!distributor.is_root_manager()) return;
+
+  std::vector<int> tasks;
+  for (int i = 0; i < kTaskCount; ++i) tasks.push_back(i);
+  distributor.insert_tasks(tasks);
+
+  EXPECT_THROW(
+      {
+        auto ignored = distributor.finish_remaining_tasks();
+        (void)ignored;
+      },
+      dynampi::TaskFailure);
+  auto rest = distributor.finish_remaining_tasks();
+  EXPECT_EQ(rest.size(), static_cast<size_t>(kTaskCount));
+}
+
+TEST(MinimalLockFree, TaskErrorIsRecoverable) {
+  dynampi::MinimalLockFreeWorkDistributor<int>::Config config;
+  config.rethrow_task_errors = false;
+  dynampi::MinimalLockFreeWorkDistributor<int> distributor(
+      [](size_t i) -> int {
+        if (i == static_cast<size_t>(kFailingTask)) throw std::runtime_error("task blew up");
+        return static_cast<int>(i) * 2;
+      },
+      config);
+
+  // Collective: every rank calls run().
+  auto results = distributor.run(kTaskCount);
+  auto errors = distributor.take_task_errors();
+
+  if (!distributor.is_root_manager()) {
+    EXPECT_TRUE(results.empty());
+    return;
+  }
+  ASSERT_EQ(results.size(), static_cast<size_t>(kTaskCount));
+  for (int i = 0; i < kTaskCount; ++i) {
+    EXPECT_EQ(results[static_cast<size_t>(i)], i == kFailingTask ? 0 : i * 2);
+  }
+  ASSERT_EQ(errors.size(), 1u);
+  EXPECT_NE(errors[0].message.find("task blew up"), std::string::npos);
+}

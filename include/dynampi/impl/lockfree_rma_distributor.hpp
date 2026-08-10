@@ -9,6 +9,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <limits>
 #include <optional>
@@ -19,6 +20,7 @@
 #include "../mpi/mpi_types.hpp"
 #include "dynampi/impl/minimal_lockfree_distributor.hpp"  // reuses dynampi::detail byte-packing helpers
 #include "dynampi/mpi/mpi_error.hpp"
+#include "dynampi/task_error.hpp"
 #include "dynampi/utilities/timer.hpp"
 
 namespace dynampi {
@@ -61,6 +63,12 @@ class LockFreeRMAWorkDistributor {
     int max_tasks = 8192;
     int max_task_count = 256;
     int max_result_count = 256;
+
+    // If true (default), run_tasks()/finish_remaining_tasks() throw
+    // dynampi::TaskFailure on the manager once a task has thrown. Set false to
+    // recover instead: distribution runs to completion and the failures are
+    // available from take_task_errors().
+    bool rethrow_task_errors = true;
   };
 
   struct RunConfig {
@@ -95,8 +103,21 @@ class LockFreeRMAWorkDistributor {
     if (m_config.auto_run_workers && !is_root_manager()) run_worker();
   }
 
+  // Tasks that threw, oldest first, removed as they are returned. See
+  // Config::rethrow_task_errors.
+  [[nodiscard]] std::vector<TaskError> take_task_errors() {
+    assert(is_root_manager());
+    return m_task_errors.take();
+  }
+
+  bool has_task_errors() const {
+    assert(is_root_manager());
+    return !m_task_errors.empty();
+  }
+
   ~LockFreeRMAWorkDistributor() {
     if (!m_finalized) finalize();
+    m_task_errors.warn_if_unreported("LockFreeRMAWorkDistributor");
     if (m_window != MPI_WIN_NULL) {
       DYNAMPI_MPI_CHECK(MPI_Win_unlock_all, (m_window));
       MPI_Barrier(m_comm.get());
@@ -151,6 +172,10 @@ class LockFreeRMAWorkDistributor {
         if (m_collected_count == before) detail::rma_wait_idle(m_window, m_comm.get());
       }
     }
+
+    // Thrown before draining, so results collected so far stay buffered for
+    // whoever catches this and calls again.
+    m_task_errors.rethrow_first_if(m_config.rethrow_task_errors);
 
     const size_t limit = config.allow_more_than_target_tasks ? std::numeric_limits<size_t>::max()
                                                              : config.target_num_tasks;
@@ -243,10 +268,18 @@ class LockFreeRMAWorkDistributor {
       std::vector<TaskT> tasks = read_task_batch(start, count);
       std::vector<ResultT> results;
       results.reserve(static_cast<size_t>(count));
+      bool failed = false;
       for (int64_t i = 0; i < count; ++i) {
-        results.push_back(m_worker_function(std::move(tasks[static_cast<size_t>(i)])));
+        ResultT result;
+        auto failure = detail::run_task_guarded(m_worker_function,
+                                                std::move(tasks[static_cast<size_t>(i)]), result);
+        if (failure) {
+          report_task_error(*failure);
+          failed = true;
+        }
+        results.push_back(std::move(result));
       }
-      write_result_range(start, results);
+      write_result_range(start, results, failed);
     };
 
     while (true) {
@@ -326,7 +359,18 @@ class LockFreeRMAWorkDistributor {
   static constexpr MPI_Aint HEAD_OFF = 0;
   static constexpr MPI_Aint TOTAL_OFF = 8;
   static constexpr MPI_Aint FINISHED_OFF = 16;
-  static constexpr size_t CONTROL_BYTES = 24;
+  static constexpr MPI_Aint ERROR_COUNT_OFF = 24;
+  static constexpr size_t CONTROL_BYTES = 32;
+
+  // Failed tasks report into a small fixed table rather than through the result
+  // slots, which are sized for ResultT and are routinely far too small to hold
+  // a message. Claimants take a slot with fetch_and_add, so the table fills in
+  // report order; past kMaxRecordedErrors the count still rises (so nothing is
+  // silently lost) but the messages are dropped.
+  static constexpr int64_t kMaxRecordedErrors = 16;
+  static constexpr size_t E_RANK = 0;
+  static constexpr size_t E_DATA = 8;
+  static constexpr size_t ERROR_SLOT_BYTES = E_DATA + kMaxTaskErrorMessage;
 
   // Task slot: [count][data].
   static constexpr size_t T_COUNT = 0;
@@ -364,6 +408,7 @@ class LockFreeRMAWorkDistributor {
   size_t m_task_base = 0;
   size_t m_result_base = 0;
   size_t m_log_base = 0;
+  size_t m_error_base = 0;
 
   int64_t m_total_tasks = 0;
   // Doubles as the completion-log scan frontier: the manager only ever
@@ -373,8 +418,10 @@ class LockFreeRMAWorkDistributor {
   // construction -- no separate frontier variable needed.
   size_t m_collected_count = 0;
   size_t m_returned_count = 0;
-  std::vector<ResultT> m_results;   // manager only: harvested, ready to return
-  std::vector<TaskT> m_task_store;  // manager only, solo-world fallback
+  detail::TaskErrorLog m_task_errors;  // manager only
+  std::vector<bool> m_errors_seen;     // manager only: error slots already consumed
+  std::vector<ResultT> m_results;      // manager only: harvested, ready to return
+  std::vector<TaskT> m_task_store;     // manager only, solo-world fallback
   StatisticsT m_statistics;
 
   void initialize_window() {
@@ -403,7 +450,9 @@ class LockFreeRMAWorkDistributor {
     m_task_base = CONTROL_BYTES;
     m_result_base = m_task_base + capacity * m_task_slot_stride;
     m_log_base = m_result_base + capacity * m_result_slot_stride;
-    const size_t manager_window_bytes = m_log_base + capacity * LOG_ENTRY_BYTES;
+    m_error_base = m_log_base + capacity * LOG_ENTRY_BYTES;
+    const size_t manager_window_bytes =
+        m_error_base + static_cast<size_t>(kMaxRecordedErrors) * ERROR_SLOT_BYTES;
 
     if (num_workers() == 0) return;  // solo world: no RMA window needed at all
 
@@ -432,6 +481,9 @@ class LockFreeRMAWorkDistributor {
   }
   MPI_Aint log_slot(int64_t index) const {
     return static_cast<MPI_Aint>(m_log_base + static_cast<size_t>(index) * LOG_ENTRY_BYTES);
+  }
+  MPI_Aint error_slot(int64_t index) const {
+    return static_cast<MPI_Aint>(m_error_base + static_cast<size_t>(index) * ERROR_SLOT_BYTES);
   }
 
   // --- RMA primitives ---
@@ -554,7 +606,61 @@ class LockFreeRMAWorkDistributor {
   // The log write is a plain Put (not an atomic): fetch_add already gave this
   // worker exclusive ownership of `start`, so no concurrent writer shares the
   // slot. The intervening flush is what makes "data before flag" portable.
-  void write_result_range(int64_t start, const std::vector<ResultT>& results) {
+  // Publishes one failed task into the error table. Must complete before the
+  // log entry that advertises it -- every RMA helper here flushes its target
+  // before returning, so calling this before write_result_range() is enough.
+  void report_task_error(const std::string& message) {
+    const int64_t slot = fetch_add(ERROR_COUNT_OFF, 1);
+    if (slot >= kMaxRecordedErrors) return;  // LCOV_EXCL_LINE -- needs >16 concurrent failures
+    // Message first, then the ready word, each flushed separately: fetch_add
+    // hands out the slot before anything is in it, so the count alone never
+    // means a slot can be read. The ready word is rank+1 so that zero stays the
+    // untouched sentinel for rank 0.
+    std::vector<std::byte> message_bytes(kMaxTaskErrorMessage, std::byte{0});
+    const size_t bytes = std::min(message.size(), kMaxTaskErrorMessage - 1);
+    if (bytes > 0) {
+      detail::write_bytes(message_bytes.data(), message_bytes.size(), 0, message.data(), bytes);
+    }
+    const int64_t ready = static_cast<int64_t>(m_comm.rank()) + 1;
+    post_put_bytes(message_bytes.data(), message_bytes.size(),
+                   error_slot(slot) + static_cast<MPI_Aint>(E_DATA));
+    flush_remote();
+    post_put_bytes(&ready, sizeof(ready), error_slot(slot) + static_cast<MPI_Aint>(E_RANK));
+    flush_remote();
+  }
+
+  // Owner-side. Reads whatever error records have appeared since the last call.
+  // Only ever called after the log scan has seen a negative entry, so it costs
+  // nothing on a run with no failures.
+  void harvest_task_errors() {
+    const int64_t claimed = std::min(atomic_read(ERROR_COUNT_OFF), kMaxRecordedErrors);
+    if (claimed <= 0) return;  // LCOV_EXCL_LINE -- only reachable on a spurious flag
+    // Reads the whole (at most kMaxRecordedErrors) table and takes only the
+    // slots that are ready, rather than a contiguous frontier: slots are
+    // claimed in fetch_add order but completed out of order, so a slot still in
+    // flight must be skipped now and picked up later, not waited on. That is
+    // safe because a claimant flushes its record before writing the completion
+    // log entry that brings the manager here, so by the time this runs for a
+    // given failure, that failure's own slot is readable.
+    std::vector<std::byte> buf(static_cast<size_t>(claimed) * ERROR_SLOT_BYTES);
+    get_bytes_local(buf.data(), buf.size(), error_slot(0));
+    m_errors_seen.resize(static_cast<size_t>(kMaxRecordedErrors), false);
+    for (int64_t i = 0; i < claimed; ++i) {
+      if (m_errors_seen[static_cast<size_t>(i)]) continue;
+      const size_t off = static_cast<size_t>(i) * ERROR_SLOT_BYTES;
+      const int64_t ready = detail::read_i64(buf.data(), buf.size(), off + E_RANK);
+      if (ready == 0) continue;  // still in flight; its own flag will bring us back
+      TaskError error;
+      error.worker_rank = static_cast<int>(ready - 1);
+      const char* text = reinterpret_cast<const char*>(buf.data() + off + E_DATA);
+      error.message.assign(text, ::strnlen(text, kMaxTaskErrorMessage - 1));
+      m_task_errors.record(std::move(error));
+      m_errors_seen[static_cast<size_t>(i)] = true;
+    }
+  }
+
+  void write_result_range(int64_t start, const std::vector<ResultT>& results,
+                          bool contains_error = false) {
     const int64_t count = static_cast<int64_t>(results.size());
     assert(count > 0);
     std::vector<std::byte> buffer(static_cast<size_t>(count) * m_result_slot_stride);
@@ -573,7 +679,11 @@ class LockFreeRMAWorkDistributor {
     }
     post_put_bytes(buffer.data(), buffer.size(), result_slot(start));
     flush_remote();
-    post_put_bytes(&count, sizeof(count), log_slot(start));
+    // A negated length marks "this range produced at least one error"; the
+    // manager already reads every log entry, so the flag is free, and it only
+    // pays for the error table when something has actually failed.
+    const int64_t entry = contains_error ? -count : count;
+    post_put_bytes(&entry, sizeof(entry), log_slot(start));
     flush_remote();
   }
 
@@ -612,12 +722,15 @@ class LockFreeRMAWorkDistributor {
     get_bytes_local(log_buf.data(), log_buf.size(), log_slot(frontier));
 
     int64_t confirmed_end = frontier;
+    bool saw_error = false;
     while (confirmed_end < head_now) {
       const size_t off = static_cast<size_t>(confirmed_end - frontier) * LOG_ENTRY_BYTES;
-      const int64_t count = detail::read_i64(log_buf.data(), log_buf.size(), off);
-      if (count == 0) break;  // gap: not yet written; stop the contiguous prefix here
-      confirmed_end += count;
+      const int64_t entry = detail::read_i64(log_buf.data(), log_buf.size(), off);
+      if (entry == 0) break;  // gap: not yet written; stop the contiguous prefix here
+      if (entry < 0) saw_error = true;
+      confirmed_end += entry < 0 ? -entry : entry;
     }
+    if (saw_error) harvest_task_errors();
     if (confirmed_end <= frontier) return;
 
     const int64_t n = confirmed_end - frontier;
@@ -640,7 +753,14 @@ class LockFreeRMAWorkDistributor {
   }
 
   void run_one_task_locally() {
-    m_results.push_back(m_worker_function(m_task_store[m_collected_count]));
+    // Guarded like every other execution path: the solo case exists so a
+    // workload can be debugged without MPI, which it cannot be if failures
+    // surface differently here.
+    ResultT result;
+    auto failure =
+        detail::run_task_guarded(m_worker_function, m_task_store[m_collected_count], result);
+    if (failure) m_task_errors.record(TaskError{m_comm.rank(), std::move(*failure)});
+    m_results.push_back(std::move(result));
     m_collected_count++;
   }
 

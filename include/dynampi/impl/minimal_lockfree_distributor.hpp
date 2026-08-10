@@ -22,6 +22,7 @@
 #include "../mpi/mpi_communicator.hpp"
 #include "../mpi/mpi_types.hpp"
 #include "dynampi/mpi/mpi_error.hpp"
+#include "dynampi/task_error.hpp"
 
 namespace dynampi {
 
@@ -157,6 +158,12 @@ class MinimalLockFreeWorkDistributor {
   struct Config {
     MPI_Comm comm = MPI_COMM_WORLD;
     int manager_rank = 0;
+
+    // If true (default), run() throws dynampi::TaskFailure on the manager once
+    // a task has thrown -- after every collective in the run has completed, so
+    // the other ranks are never left waiting on one that the manager skipped.
+    // Set false to recover instead, via take_task_errors().
+    bool rethrow_task_errors = true;
   };
 
   explicit MinimalLockFreeWorkDistributor(std::function<ResultT(size_t)> worker_function,
@@ -197,8 +204,12 @@ class MinimalLockFreeWorkDistributor {
       std::vector<ResultT> results;
       results.reserve(static_cast<size_t>(n));
       for (unsigned long long i = 0; i < n; ++i) {
-        results.push_back(m_worker_function(static_cast<size_t>(i)));
+        ResultT result;
+        auto failure = detail::run_task_guarded(m_worker_function, static_cast<size_t>(i), result);
+        if (failure) m_task_errors.record(TaskError{m_comm.rank(), std::move(*failure)});
+        results.push_back(std::move(result));
       }
+      m_task_errors.rethrow_first_if(m_config.rethrow_task_errors);
       return results;
     }
 
@@ -206,21 +217,39 @@ class MinimalLockFreeWorkDistributor {
     DYNAMPI_MPI_CHECK(MPI_Barrier, (m_comm.get()));  // reset visible + synchronized start
 
     std::vector<std::pair<int64_t, ResultT>> local;
+    std::vector<TaskError> local_errors;
     while (true) {
       int64_t index = fetch_add(1);
       if (index >= static_cast<int64_t>(n)) break;
-      local.emplace_back(index, m_worker_function(static_cast<size_t>(index)));
+      // A failed task still contributes its (default-constructed) slot, so the
+      // gathered output stays one result per index and the surviving results
+      // keep their positions.
+      ResultT result;
+      auto failure =
+          detail::run_task_guarded(m_worker_function, static_cast<size_t>(index), result);
+      if (failure) local_errors.push_back(TaskError{m_comm.rank(), std::move(*failure)});
+      local.emplace_back(index, std::move(result));
     }
 
-    return gather_sorted(local);
+    auto results = gather_sorted(local);
+    // Collective, and deliberately after the result gather: every rank reaches
+    // both, so the manager can throw below without stranding anyone.
+    gather_task_errors(local_errors);
+    m_task_errors.rethrow_first_if(m_config.rethrow_task_errors);
+    return results;
   }
+
+  // Tasks that threw, oldest first, removed as they are returned. Manager only;
+  // empty on every other rank. See Config::rethrow_task_errors.
+  [[nodiscard]] std::vector<TaskError> take_task_errors() { return m_task_errors.take(); }
 
  private:
   Config m_config;
   MPICommunicator<> m_comm;
   std::function<ResultT(size_t)> m_worker_function;
   MPI_Win m_window = MPI_WIN_NULL;
-  int64_t m_counter = 0;  // window-exposed claim counter (manager only)
+  int64_t m_counter = 0;               // window-exposed claim counter (manager only)
+  detail::TaskErrorLog m_task_errors;  // manager only
   alignas(int64_t) std::byte m_worker_window[sizeof(int64_t)]{};
 
   void set_counter(int64_t value) {
@@ -234,6 +263,65 @@ class MinimalLockFreeWorkDistributor {
     m_comm.fetch_and_op(in, out, m_config.manager_rank, 0, MPI_SUM, m_window);
     DYNAMPI_MPI_CHECK(MPI_Win_flush, (m_config.manager_rank, m_window));
     return out;
+  }
+
+  // Collects every rank's failures onto the manager. Records are packed as
+  // [int64 rank][int64 length][chars] and moved with the same
+  // Gather-then-Gatherv pair as the results; it runs once per run(), on a path
+  // that is already collective, so the cost is irrelevant next to the gather it
+  // follows.
+  void gather_task_errors(const std::vector<TaskError>& local_errors) {
+    const bool manager = is_root_manager();
+    const int size = m_comm.size();
+
+    std::vector<std::byte> send_buf;
+    for (const auto& error : local_errors) {
+      const size_t length = std::min(error.message.size(), kMaxTaskErrorMessage);
+      const size_t offset = send_buf.size();
+      send_buf.resize(offset + 16 + length);
+      detail::write_i64(send_buf.data(), send_buf.size(), offset, error.worker_rank);
+      detail::write_i64(send_buf.data(), send_buf.size(), offset + 8, static_cast<int64_t>(length));
+      if (length > 0) {
+        detail::write_bytes(send_buf.data(), send_buf.size(), offset + 16, error.message.data(),
+                            length);
+      }
+    }
+
+    const int send_count = static_cast<int>(send_buf.size());
+    std::vector<int> byte_counts(manager ? static_cast<size_t>(size) : 0);
+    DYNAMPI_MPI_CHECK(MPI_Gather, (&send_count, 1, MPI_INT, manager ? byte_counts.data() : nullptr,
+                                   1, MPI_INT, m_config.manager_rank, m_comm.get()));
+
+    std::vector<int> displacements;
+    std::vector<std::byte> recv_buf;
+    int total_bytes = 0;
+    if (manager) {
+      displacements.resize(static_cast<size_t>(size));
+      for (int r = 0; r < size; ++r) {
+        displacements[static_cast<size_t>(r)] = total_bytes;
+        total_bytes += byte_counts[static_cast<size_t>(r)];
+      }
+      recv_buf.resize(static_cast<size_t>(total_bytes));
+    }
+
+    DYNAMPI_MPI_CHECK(
+        MPI_Gatherv,
+        (send_buf.data(), send_count, MPI_BYTE, manager ? recv_buf.data() : nullptr,
+         manager ? byte_counts.data() : nullptr, manager ? displacements.data() : nullptr, MPI_BYTE,
+         m_config.manager_rank, m_comm.get()));
+
+    if (!manager) return;
+    size_t pos = 0;
+    while (pos + 16 <= static_cast<size_t>(total_bytes)) {
+      TaskError error;
+      error.worker_rank = static_cast<int>(detail::read_i64(recv_buf.data(), recv_buf.size(), pos));
+      const auto length =
+          static_cast<size_t>(detail::read_i64(recv_buf.data(), recv_buf.size(), pos + 8));
+      pos += 16;
+      error.message.assign(reinterpret_cast<const char*>(recv_buf.data() + pos), length);
+      pos += length;
+      m_task_errors.record(std::move(error));
+    }
   }
 
   std::vector<ResultT> gather_sorted(std::vector<std::pair<int64_t, ResultT>>& local) {
