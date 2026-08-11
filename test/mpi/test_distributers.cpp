@@ -21,6 +21,7 @@
 #include "dynampi/impl/hierarchical_distributor.hpp"
 #include "dynampi/impl/hierarchical_lockfree_rma_distributor.hpp"
 #include "dynampi/impl/lockfree_rma_distributor.hpp"
+#include "dynampi/impl/variable_batch.hpp"
 #include "dynampi/mpi/mpi_communicator.hpp"
 #include "mpi_test_environment.hpp"
 
@@ -295,6 +296,10 @@ TYPED_TEST(DynamicDistribution, VariableSizeTaskAndResult) {
       }
       return a.size() < b.size();
     };
+    // The generated task/result bytes never happen to make one result a
+    // prefix of another, so exercise the tie-break directly.
+    EXPECT_TRUE(byte_vector_less(Result{std::byte{1}}, Result{std::byte{1}, std::byte{2}}));
+    EXPECT_FALSE(byte_vector_less(Result{std::byte{1}, std::byte{2}}, Result{std::byte{1}}));
     std::sort(results.begin(), results.end(), byte_vector_less);
     std::sort(expected.begin(), expected.end(), byte_vector_less);
     EXPECT_EQ(results, expected);
@@ -564,6 +569,20 @@ TEST(LockFreeCapacity, RejectsTaskTableOverflow) {
   EXPECT_THROW(dist.insert_tasks(std::vector<int>{1, 2}), std::length_error);
 }
 
+TEST(VariableBatch, RejectsBufferTooShortForItemCount) {
+  using Item = std::vector<std::byte>;
+  const std::vector<std::byte> truncated(4);  // shorter than the 8-byte item-count header
+  EXPECT_THROW(dynampi::detail::unpack_variable_batch<Item>(truncated), std::runtime_error);
+}
+
+TEST(VariableBatch, RejectsLengthTableOverflowingBuffer) {
+  using Item = std::vector<std::byte>;
+  std::vector<std::byte> buf(16);  // room for the header plus one length-table slot
+  const uint64_t n_items = 5;      // claims more items than the buffer can back
+  std::copy_n(reinterpret_cast<const std::byte*>(&n_items), sizeof(n_items), buf.data());
+  EXPECT_THROW(dynampi::detail::unpack_variable_batch<Item>(buf), std::runtime_error);
+}
+
 // A fixed-size struct described by its scalar element type: one Vec3 is three
 // MPI_DOUBLE elements, so everything that sizes a buffer per value -- the
 // fixed-width RMA window slots, and the element count of a batched
@@ -673,7 +692,9 @@ TEST(FixedSizeMPIType, RejectsPayloadThatIsNotAWholeNumberOfElements) {
   EXPECT_EQ(dynampi::MPI_Type<Unaligned>::ptr(std::as_const(value)),
             static_cast<const void*>(&value));
 
-  auto identity = [](Unaligned v) { return v; };
+  // Never actually invoked: both constructors below reject Unaligned before
+  // running any task, so the body is structurally unreachable here.
+  auto identity = [](Unaligned v) { return v; };  // LCOV_EXCL_LINE
   {
     using Distributor = dynampi::LockFreeRMAWorkDistributor<Unaligned, Unaligned>;
     typename Distributor::Config config;
@@ -693,7 +714,8 @@ TEST(FixedSizeMPIType, RejectsUnqueryableDatatype) {
                std::invalid_argument);
   try {
     dynampi::check_fixed_size_mpi_type<UnqueryableDatatype>("task", "TestDistributor");
-    FAIL() << "expected invalid_argument";
+    FAIL() << "expected invalid_argument";  // LCOV_EXCL_LINE -- only reached if the test above is
+                                            // already failing
   } catch (const std::invalid_argument& e) {
     EXPECT_NE(std::string(e.what()).find("could not query the MPI datatype"), std::string::npos);
   }
