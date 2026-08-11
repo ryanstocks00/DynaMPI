@@ -26,6 +26,25 @@ TEST(TaskErrorLog, WarnIfUnreportedDoesNotThrowWithPendingErrors) {
   EXPECT_NO_THROW(log.warn_if_unreported("TestDistributor"));
 }
 
+TEST(TaskErrorCodec, DecodeRoundTripsAnEncodedError) {
+  const TaskError original{3, "boom"};
+  const TaskError decoded = decode_task_error(encode_task_error(original));
+  EXPECT_EQ(decoded.worker_rank, original.worker_rank);
+  EXPECT_EQ(decoded.message, original.message);
+}
+
+TEST(TaskErrorCodec, DecodeFallsBackToRankMinusOneOnCorruptedRankPrefix) {
+  const TaskError decoded = decode_task_error("not-a-number\nmessage");
+  EXPECT_EQ(decoded.worker_rank, -1);
+  EXPECT_EQ(decoded.message, "message");
+}
+
+TEST(TaskErrorCodec, DecodeWithoutSeparatorUsesRankMinusOne) {
+  const TaskError decoded = decode_task_error("no separator here");
+  EXPECT_EQ(decoded.worker_rank, -1);
+  EXPECT_EQ(decoded.message, "no separator here");
+}
+
 TEST(RunTaskGuarded, NonStdExceptionIsCaughtAndReported) {
   auto worker = [](int) -> int { throw 42; };
   int out = -1;

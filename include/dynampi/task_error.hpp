@@ -101,8 +101,8 @@ inline TaskError decode_task_error(const std::string& payload) {
   TaskError error;
   try {
     error.worker_rank = std::stoi(payload.substr(0, split));
-  } catch (const std::exception&) {  // LCOV_EXCL_LINE -- only a corrupted payload gets here
-    error.worker_rank = -1;          // LCOV_EXCL_LINE
+  } catch (const std::exception&) {
+    error.worker_rank = -1;
   }
   error.message = payload.substr(split + 1);
   return error;

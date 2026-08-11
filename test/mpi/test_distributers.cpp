@@ -569,6 +569,34 @@ TEST(LockFreeCapacity, RejectsTaskTableOverflow) {
   EXPECT_THROW(dist.insert_tasks(std::vector<int>{1, 2}), std::length_error);
 }
 
+TEST(LockFreeCapacity, CapsRecordedTaskErrorsAt16) {
+  // A single rank (num_workers() == 0) runs tasks through a locally-serial
+  // fallback rather than the RMA error table this test targets, so a worker
+  // rank is required.
+  if (MPIEnvironment::world_comm_size() < 2) {
+    GTEST_SKIP() << "Need a worker rank to exercise the RMA error table";
+  }
+  using Distributor = dynampi::LockFreeRMAWorkDistributor<int, int>;
+  Distributor::Config config;
+  config.rethrow_task_errors = false;
+  constexpr int kFailures = 20;  // exceeds the 16-slot error table
+  auto always_throws = [](int task) -> int {
+    throw std::runtime_error("fail " + std::to_string(task));
+  };
+  Distributor dist(always_throws, config);
+
+  if (dist.is_root_manager()) {
+    std::vector<int> tasks(kFailures);
+    for (int i = 0; i < kFailures; ++i) tasks[i] = i;
+    dist.insert_tasks(tasks);
+    auto results = dist.finish_remaining_tasks();
+    EXPECT_EQ(results.size(), static_cast<size_t>(kFailures));
+
+    auto errors = dist.take_task_errors();
+    EXPECT_EQ(errors.size(), 16u);
+  }
+}
+
 TEST(VariableBatch, RejectsBufferTooShortForItemCount) {
   using Item = std::vector<std::byte>;
   const std::vector<std::byte> truncated(4);  // shorter than the 8-byte item-count header
@@ -1184,4 +1212,29 @@ TEST(HierarchicalLockFreeRMA, TaskErrorPropagatesToManager) {
       dynampi::TaskFailure);
   auto rest = distributor.finish_remaining_tasks();
   EXPECT_EQ(rest.size(), static_cast<size_t>(kTaskCount));
+}
+
+TEST(HierarchicalLockFreeRMA, CapsRecordedTaskErrorsAt16) {
+  if (MPIEnvironment::world_comm_size() < 2) {
+    GTEST_SKIP() << "Need a worker rank to exercise the RMA error table";
+  }
+  using Distributor = dynampi::HierarchicalLockFreeRMAWorkDistributor<int, int>;
+  Distributor::Config config;
+  config.rethrow_task_errors = false;
+  constexpr int kFailures = 20;  // exceeds the 16-slot error table
+  auto always_throws = [](int task) -> int {
+    throw std::runtime_error("fail " + std::to_string(task));
+  };
+  Distributor dist(always_throws, config);
+
+  if (dist.is_root_manager()) {
+    std::vector<int> tasks(kFailures);
+    for (int i = 0; i < kFailures; ++i) tasks[i] = i;
+    dist.insert_tasks(tasks);
+    auto results = dist.finish_remaining_tasks();
+    EXPECT_EQ(results.size(), static_cast<size_t>(kFailures));
+
+    auto errors = dist.take_task_errors();
+    EXPECT_EQ(errors.size(), 16u);
+  }
 }

@@ -612,7 +612,7 @@ class LockFreeRMAWorkDistributor {
   // before returning, so calling this before write_result_range() is enough.
   void report_task_error(const std::string& message) {
     const int64_t slot = fetch_add(ERROR_COUNT_OFF, 1);
-    if (slot >= kMaxRecordedErrors) return;  // LCOV_EXCL_LINE -- needs >16 concurrent failures
+    if (slot >= kMaxRecordedErrors) return;
     // Message first, then the ready word, each flushed separately: fetch_add
     // hands out the slot before anything is in it, so the count alone never
     // means a slot can be read. The ready word is rank+1 so that zero stays the
