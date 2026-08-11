@@ -10,7 +10,6 @@ set(examples
     04_custom_task_type
     05_lockfree_rma
     06_statistics
-    07_parallel_for
     08_task_errors)
 
 foreach(example IN LISTS examples)

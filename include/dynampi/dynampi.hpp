@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "dynampi/impl/hierarchical_distributor.hpp"
-#include "dynampi/impl/minimal_lockfree_distributor.hpp"
 #include "dynampi/impl/naive_distributor.hpp"
 #include "dynampi/version.hpp"
 

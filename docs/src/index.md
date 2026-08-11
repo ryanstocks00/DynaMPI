@@ -13,7 +13,7 @@ queue; the remaining ranks act as *workers* and pull work as they finish what
 they already have.  This keeps every rank busy when task costs are irregular or
 unknown in advance.
 
-Six distributors implement that contract with different communication
+Four distributors implement that contract with different communication
 strategies — from a 400-line two-sided loop to a tree of one-sided RMA windows
 that sustains millions of task hand-offs per second.  They share one interface,
 so switching between them is a single type change.
@@ -101,7 +101,6 @@ rank must construct and destroy the distributor.
 | General purpose, multi-node, fixed-size task/result types | [`DynamicWorkDistributor`](implementations.md#hierarchicalworkdistributor-dynamicworkdistributor) (default) |
 | Fine-grained tasks, want the highest hand-off rate at moderate scale | [`LockFreeRMAWorkDistributor`](implementations.md#lockfreermaworkdistributor) |
 | Same, but at large node counts where one manager window saturates | [`HierarchicalLockFreeRMAWorkDistributor`](implementations.md#hierarchicallockfreermaworkdistributor) |
-| A plain parallel-for over `0 .. n-1` | [`MinimalLockFreeWorkDistributor`](implementations.md#minimallockfreeworkdistributor) |
 
 The full comparison, including protocol descriptions and the constraints each
 distributor imposes, is in [Implementations](implementations.md).

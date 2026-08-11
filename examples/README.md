@@ -16,7 +16,6 @@ beyond MPI and the DynaMPI headers.
 | [04_custom_task_type.cpp](04_custom_task_type.cpp) | Specialising `dynampi::MPI_Type` for your own struct, and tagging results with their task index |
 | [05_lockfree_rma.cpp](05_lockfree_rma.cpp) | The one-sided RMA distributors, window capacity, and `gather_once()` |
 | [06_statistics.cpp](06_statistics.cpp) | `track_statistics`, and what `Aggregated` gives you that `Detailed` does not |
-| [07_parallel_for.cpp](07_parallel_for.cpp) | `MinimalLockFreeWorkDistributor` for an index-only parallel-for |
 | [08_task_errors.cpp](08_task_errors.cpp) | Tasks that throw: propagating them as `TaskFailure`, or recovering with `take_task_errors()` |
 
 ## Building

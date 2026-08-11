@@ -6,7 +6,7 @@
 # Lock-Free RMA Design Notes
 
 Design background for the three RMA-based distributors:
-`MinimalLockFreeWorkDistributor`, `LockFreeRMAWorkDistributor`, and
+`LockFreeRMAWorkDistributor` and
 `HierarchicalLockFreeRMAWorkDistributor`.  For the user-facing summary
 and configuration, see [Implementations](implementations.md).
 
@@ -29,9 +29,6 @@ the distributor's lifetime.  There are no fences, no per-task lock/unlock, and n
 collectives on the hot path.
 
 ## Minimal index parallel-for
-
-`MinimalLockFreeWorkDistributor` is the smallest useful version: the task *is*
-its index, so the window holds nothing but a claim counter.
 
 ```text
 Manager window:

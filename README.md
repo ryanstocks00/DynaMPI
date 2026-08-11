@@ -31,7 +31,7 @@
 Header-only C++20 library for efficient manager–worker dynamic load distribution over MPI.
 
 One rank manages a task queue; the rest pull work as they finish, keeping every
-rank busy when task costs are irregular or unknown up front. Six distributors
+rank busy when task costs are irregular or unknown up front. Four distributors
 implement that contract behind one interface, from a plain two-sided loop to a
 tree of one-sided RMA windows.
 
@@ -92,10 +92,8 @@ loop in the constructor. Construction and destruction are collective.
 |-------|---------------|---------|-------|
 | `NaiveWorkDistributor` | Two-sided | Yes | Task priorities, variable-length payloads; manager-bound at scale |
 | `DynamicWorkDistributor` (hierarchical) | Two-sided, batched | No | Default. Node-aware tree; fixed-size payloads only |
-| `HierarchicalNonBlockingWorkDistributor` | Two-sided, batched, `Isend` | No | A/B variant of the above |
 | `LockFreeRMAWorkDistributor` | Passive-target RMA | No | No collectives on the hot path; preallocated window |
 | `HierarchicalLockFreeRMAWorkDistributor` | Passive-target RMA, per level | No | RMA protocol applied per tree level, for large node counts |
-| `MinimalLockFreeWorkDistributor` | RMA counter + `Gatherv` | Yes | Parallel-for over `0 .. n-1` |
 
 A task that throws is reported to the manager rather than aborting the job:
 `run_tasks` rethrows it as `dynampi::TaskFailure`, or set

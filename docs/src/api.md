@@ -12,13 +12,10 @@ Everything lives in namespace `dynampi`.
 | Header | Provides |
 |--------|----------|
 | `<dynampi/task_error.hpp>` | `TaskError`, `TaskFailure`, `kMaxTaskErrorMessage` (pulled in by every distributor) |
-| `<dynampi/dynampi.hpp>` | `mpi_manager_worker_distribution`, `DynamicWorkDistributor`, and (transitively) `NaiveWorkDistributor`, `HierarchicalWorkDistributor`, `MinimalLockFreeWorkDistributor`, `version` |
 | `<dynampi/impl/naive_distributor.hpp>` | `NaiveWorkDistributor` |
 | `<dynampi/impl/hierarchical_distributor.hpp>` | `HierarchicalWorkDistributor` |
-| `<dynampi/impl/hierarchical_nonblocking_distributor.hpp>` | `HierarchicalNonBlockingWorkDistributor` |
 | `<dynampi/impl/lockfree_rma_distributor.hpp>` | `LockFreeRMAWorkDistributor` |
 | `<dynampi/impl/hierarchical_lockfree_rma_distributor.hpp>` | `HierarchicalLockFreeRMAWorkDistributor` |
-| `<dynampi/impl/minimal_lockfree_distributor.hpp>` | `MinimalLockFreeWorkDistributor` |
 | `<dynampi/version.hpp>` | `dynampi::version` |
 | `<dynampi/mpi/mpi_types.hpp>` | `MPI_Type<T>` — the trait you specialise for custom payloads |
 | `<dynampi/mpi/mpi_communicator.hpp>` | `MPICommunicator`, `CommStatistics`, `StatisticsMode`, `track_statistics` |
@@ -63,8 +60,6 @@ auto ordered = dynampi::mpi_manager_worker_distribution<
     double, dynampi::NaiveWorkDistributor>(100, work);
 ```
 
-`MinimalLockFreeWorkDistributor` does not fit this template shape; call
-`run()` on it directly.
 
 ## `DynamicWorkDistributor`
 
@@ -95,8 +90,6 @@ class Distributor {
 };
 ```
 
-`MinimalLockFreeWorkDistributor<ResultT>` is separate and smaller — see
-[Implementations](implementations.md#minimallockfreeworkdistributor).
 
 ### Construction and lifecycle
 
@@ -265,7 +258,7 @@ struct Statistics {
   std::vector<size_t>   worker_task_counts;  // indexed by worker index
 };
 
-// HierarchicalWorkDistributor / HierarchicalNonBlockingWorkDistributor
+// HierarchicalWorkDistributor
 struct Statistics {
   const CommStatistics&                     comm_statistics;
   std::optional<std::vector<size_t>>        worker_task_counts;  // by world rank
@@ -290,10 +283,8 @@ Support and caveats:
 |-------------|--------------|------------|-------|
 | `NaiveWorkDistributor` | ✓ | ✓ | `worker_task_counts` is indexed by worker index (this rank's communicator rank with the manager removed) |
 | `HierarchicalWorkDistributor` | ✓ | ✓ | `worker_task_counts` is filled by an `MPI_Gather` inside `finalize()`, so it is `nullopt` before then, and holds locally-executed task counts by world rank |
-| `HierarchicalNonBlockingWorkDistributor` | ✓ | ✓ | As above |
 | `LockFreeRMAWorkDistributor` | ✓ | ✓ | Communication counters only |
 | `HierarchicalLockFreeRMAWorkDistributor` | — | — | Options accepted and ignored; no `get_statistics()` |
-| `MinimalLockFreeWorkDistributor` | — | — | No options parameter |
 
 !!! warning "Statistics enable a collective in `finalize()`"
     On the hierarchical two-sided distributors, `finalize()` performs an
@@ -314,11 +305,11 @@ out of the box:
 `MPI_Type<T>::resize_required` is `false` for fixed-size types and `true` for the
 variable-length ones.  That flag decides where a type may be used:
 
-| Payload | Naive | Hierarchical / NonBlocking | LockFreeRMA / Hier. LockFreeRMA | MinimalLockFree |
-|---------|-------|----------------------------|---------------------------|-----------------|
-| Fixed-size scalar | ✓ | ✓ | ✓ | ✓ (results) |
-| Fixed-size struct | ✓ | ✓ | ✓ | ✓ (results) |
-| Variable-length | ✓ | **✗** | ✓, up to `max_task_count` / `max_result_count` elements | ✓ (results) |
+| Payload | Naive | Hierarchical | LockFreeRMA / Hier. LockFreeRMA |
+|---------|-------|---------------|----------------------------------|
+| Fixed-size scalar | ✓ | ✓ | ✓ |
+| Fixed-size struct | ✓ | ✓ | ✓ |
+| Variable-length | ✓ | **✗** | ✓, up to `max_task_count` / `max_result_count` elements |
 
 ### Custom types
 

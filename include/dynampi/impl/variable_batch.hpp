@@ -29,7 +29,7 @@ namespace dynampi::detail {
 // those bogus pointers.
 //
 // So the hierarchical distributors' TASK_BATCH/RESULT_BATCH transfer (see
-// hierarchical_distributor.hpp / hierarchical_nonblocking_distributor.hpp)
+// hierarchical_distributor.hpp)
 // packs such batches manually instead, as a flat std::vector<std::byte>
 // (which *is* representable via the fixed-size path) with a length-prefixed
 // layout:
@@ -57,8 +57,8 @@ std::vector<std::byte> pack_variable_batch(const std::vector<T>& items) {
   size_t offset = 0;
   // std::copy_n rather than memcpy throughout this file: Codacy/Flawfinder
   // flags every memcpy as CWE-120 regardless of prior range checks or a
-  // destination sized immediately above it (see minimal_lockfree_distributor
-  // .hpp's write_bytes()/read_bytes() for the same convention).
+  // destination sized immediately above it (see rma_detail.hpp's
+  // write_bytes()/read_bytes() for the same convention).
   std::copy_n(reinterpret_cast<const std::byte*>(&n_items), sizeof(uint64_t), buf.data() + offset);
   offset += sizeof(uint64_t);
   if (n_items > 0) {

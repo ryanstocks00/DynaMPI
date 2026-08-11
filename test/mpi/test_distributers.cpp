@@ -20,9 +20,7 @@
 
 #include "dynampi/impl/hierarchical_distributor.hpp"
 #include "dynampi/impl/hierarchical_lockfree_rma_distributor.hpp"
-#include "dynampi/impl/hierarchical_nonblocking_distributor.hpp"
 #include "dynampi/impl/lockfree_rma_distributor.hpp"
-#include "dynampi/impl/minimal_lockfree_distributor.hpp"
 #include "dynampi/mpi/mpi_communicator.hpp"
 #include "mpi_test_environment.hpp"
 
@@ -64,27 +62,6 @@ struct HierarchicalDistributerTypeWrapper {
   }
 };
 
-// Specialized wrapper for HierarchicalNonBlockingWorkDistributor with coordinator_per_node
-// config
-template <bool CoordinatorPerNode>
-struct HierarchicalNonBlockingDistributerTypeWrapper {
-  template <typename TaskT, typename ResultT, typename... Options>
-  using type = dynampi::HierarchicalNonBlockingWorkDistributor<TaskT, ResultT, Options...>;
-
-  static constexpr bool use_immediate_recv = false;
-  static constexpr size_t max_result_size = 1024;
-
-  template <typename TaskT, typename ResultT, typename... Options>
-  static
-      typename dynampi::HierarchicalNonBlockingWorkDistributor<TaskT, ResultT, Options...>::Config
-      get_config() {
-    typename dynampi::HierarchicalNonBlockingWorkDistributor<TaskT, ResultT, Options...>::Config
-        config;
-    config.coordinator_per_node = CoordinatorPerNode;
-    return config;
-  }
-};
-
 // Helper to get config from wrapper
 template <typename Wrapper, typename TaskT, typename ResultT, typename... Options>
 auto get_distributer_config() {
@@ -118,11 +95,11 @@ class DynamicDistribution : public ::testing::Test {
   }
 };
 
-using DistributerTypes = ::testing::Types<
-    DistributerTypeWrapper<dynampi::NaiveWorkDistributor>, HierarchicalDistributerTypeWrapper<true>,
-    HierarchicalDistributerTypeWrapper<false>, HierarchicalNonBlockingDistributerTypeWrapper<true>,
-    HierarchicalNonBlockingDistributerTypeWrapper<false>,
-    DistributerTypeWrapper<dynampi::LockFreeRMAWorkDistributor>>;
+using DistributerTypes =
+    ::testing::Types<DistributerTypeWrapper<dynampi::NaiveWorkDistributor>,
+                     HierarchicalDistributerTypeWrapper<true>,
+                     HierarchicalDistributerTypeWrapper<false>,
+                     DistributerTypeWrapper<dynampi::LockFreeRMAWorkDistributor>>;
 
 TYPED_TEST_SUITE(DynamicDistribution, DistributerTypes);
 
@@ -239,9 +216,7 @@ TYPED_TEST(DynamicDistribution, Example2) {
   using Result = std::vector<int>;
   using Distributer = DistributerOf<TypeParam, Task, Result>;
   // Variable-size ResultT is unimplemented for both hierarchical variants.
-  if constexpr (is_specialization_of<dynampi::HierarchicalWorkDistributor, Distributer>::value ||
-                is_specialization_of<dynampi::HierarchicalNonBlockingWorkDistributor,
-                                     Distributer>::value) {
+  if constexpr (is_specialization_of<dynampi::HierarchicalWorkDistributor, Distributer>::value) {
     GTEST_SKIP() << "This test is not applicable for this distributor.";
   } else {
     auto worker_task = [](Task task) -> Result {
@@ -267,7 +242,7 @@ TYPED_TEST(DynamicDistribution, Example2) {
 // Mirrors how EXESS ships serialized MBE fragment requests/results through
 // DynaMPI: both TaskT and ResultT are variable-length std::vector<std::byte>
 // buffers, well past the single-element case. HierarchicalMPIWorkDistributor
-// and HierarchicalNonBlockingMPIWorkDistributor's leaf-result path
+// and the hierarchical distributor's leaf-result path
 // (receive_result_from) hits `if constexpr (result_mpi_type::resize_required)
 // DYNAMPI_UNIMPLEMENTED(...)` for such ResultT types; under NDEBUG,
 // DYNAMPI_ASSERT/DYNAMPI_UNIMPLEMENTED compile to nothing followed by
@@ -577,76 +552,6 @@ TYPED_TEST(DynamicDistribution, GatherOnce) {
       std::sort(rest.begin(), rest.end());
       EXPECT_EQ(rest, (std::vector<int>{81, 100}));
     }
-  }
-}
-
-// --- MinimalLockFreeWorkDistributor (index parallel-for) ---
-// This distributor has a distinct, collective API (run(n)), so it is tested
-// directly rather than through the generic DynamicDistribution suite.
-
-TEST(MinimalLockFree, ScalarResults) {
-  dynampi::MinimalLockFreeWorkDistributor<double> dist(
-      [](size_t i) -> double { return std::sqrt(static_cast<double>(i)); });
-
-  auto results = dist.run(20);
-
-  if (MPIEnvironment::world_comm_rank() == 0) {
-    ASSERT_EQ(results.size(), 20u);
-    for (size_t i = 0; i < results.size(); ++i) {
-      EXPECT_DOUBLE_EQ(results[i] * results[i], static_cast<double>(i));
-    }
-  } else {
-    EXPECT_TRUE(results.empty());
-  }
-}
-
-TEST(MinimalLockFree, ManagerRankNonZero) {
-  if (MPIEnvironment::world_comm_size() < 2) {
-    GTEST_SKIP() << "Need at least 2 ranks for non-zero manager rank";
-  }
-  const int manager_rank = 1;
-  dynampi::MinimalLockFreeWorkDistributor<size_t> dist(
-      [](size_t i) -> size_t { return i * i; },
-      {.comm = MPI_COMM_WORLD, .manager_rank = manager_rank});
-
-  auto results = dist.run(8);
-
-  if (MPIEnvironment::world_comm_rank() == manager_rank) {
-    ASSERT_EQ(results.size(), 8u);
-    for (size_t i = 0; i < results.size(); ++i) EXPECT_EQ(results[i], i * i);
-  } else {
-    EXPECT_TRUE(results.empty());
-  }
-}
-
-TEST(MinimalLockFree, VariableSizeResults) {
-  dynampi::MinimalLockFreeWorkDistributor<std::vector<int>> dist([](size_t i) -> std::vector<int> {
-    int v = static_cast<int>(i);
-    return {v, v * v, v * v * v};
-  });
-
-  auto results = dist.run(5);
-
-  if (MPIEnvironment::world_comm_rank() == 0) {
-    ASSERT_EQ(results.size(), 5u);
-    for (size_t i = 0; i < results.size(); ++i) {
-      int v = static_cast<int>(i);
-      EXPECT_EQ(results[i], (std::vector<int>{v, v * v, v * v * v}));
-    }
-  }
-}
-
-TEST(MinimalLockFree, EmptyAndReusable) {
-  dynampi::MinimalLockFreeWorkDistributor<int> dist(
-      [](size_t i) -> int { return static_cast<int>(i) + 1; });
-
-  auto empty = dist.run(0);
-  EXPECT_TRUE(empty.empty());
-
-  // The distributor can be reused for multiple independent runs.
-  auto results = dist.run(4);
-  if (MPIEnvironment::world_comm_rank() == 0) {
-    EXPECT_EQ(results, (std::vector<int>{1, 2, 3, 4}));
   }
 }
 
@@ -1257,30 +1162,4 @@ TEST(HierarchicalLockFreeRMA, TaskErrorPropagatesToManager) {
       dynampi::TaskFailure);
   auto rest = distributor.finish_remaining_tasks();
   EXPECT_EQ(rest.size(), static_cast<size_t>(kTaskCount));
-}
-
-TEST(MinimalLockFree, TaskErrorIsRecoverable) {
-  dynampi::MinimalLockFreeWorkDistributor<int>::Config config;
-  config.rethrow_task_errors = false;
-  dynampi::MinimalLockFreeWorkDistributor<int> distributor(
-      [](size_t i) -> int {
-        if (i == static_cast<size_t>(kFailingTask)) throw std::runtime_error("task blew up");
-        return static_cast<int>(i) * 2;
-      },
-      config);
-
-  // Collective: every rank calls run().
-  auto results = distributor.run(kTaskCount);
-  auto errors = distributor.take_task_errors();
-
-  if (!distributor.is_root_manager()) {
-    EXPECT_TRUE(results.empty());
-    return;
-  }
-  ASSERT_EQ(results.size(), static_cast<size_t>(kTaskCount));
-  for (int i = 0; i < kTaskCount; ++i) {
-    EXPECT_EQ(results[static_cast<size_t>(i)], i == kFailingTask ? 0 : i * 2);
-  }
-  ASSERT_EQ(errors.size(), 1u);
-  EXPECT_NE(errors[0].message.find("task blew up"), std::string::npos);
 }

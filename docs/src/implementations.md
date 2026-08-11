@@ -13,13 +13,10 @@ deliberately minimal parallel-for helper with its own small API.
 |-------|--------|---------------|----------|---------|
 | [`NaiveWorkDistributor`](#naiveworkdistributor) | `impl/naive_distributor.hpp` | Two-sided `Send`/`Recv` | Flat | **Yes** |
 | [`HierarchicalWorkDistributor`](#hierarchicalworkdistributor-dynamicworkdistributor) | `impl/hierarchical_distributor.hpp` | Two-sided, batched | Tree | No |
-| [`HierarchicalNonBlockingWorkDistributor`](#hierarchicalnonblockingworkdistributor) | `impl/hierarchical_nonblocking_distributor.hpp` | Two-sided, batched, `Isend` | Tree | No |
 | [`LockFreeRMAWorkDistributor`](#lockfreermaworkdistributor) | `impl/lockfree_rma_distributor.hpp` | Passive-target RMA | Flat | No |
 | [`HierarchicalLockFreeRMAWorkDistributor`](#hierarchicallockfreermaworkdistributor) | `impl/hierarchical_lockfree_rma_distributor.hpp` | Passive-target RMA | Tree | No |
-| [`MinimalLockFreeWorkDistributor`](#minimallockfreeworkdistributor) | `impl/minimal_lockfree_distributor.hpp` | RMA counter + one `Gatherv` | Flat | **Yes** |
 
-Only `NaiveWorkDistributor`, `HierarchicalWorkDistributor` and
-`MinimalLockFreeWorkDistributor` are pulled in by `<dynampi/dynampi.hpp>`.
+Only `NaiveWorkDistributor`, `HierarchicalWorkDistributor` are pulled in by `<dynampi/dynampi.hpp>`.
 The other three need their own `#include` — see [Headers](api.md#headers).
 
 ---
@@ -34,8 +31,6 @@ Ordering is exposed as a compile-time constant, `Distributor::ordered`:
   results by task ID and only releases a contiguous prefix, so returned results
   are always in insertion order.  A slow task therefore holds back every result
   behind it.
-- **`MinimalLockFreeWorkDistributor`** — sorts by task index during the final
-  gather.  (It has no `ordered` member; the whole API is a single `run()` call.)
 - **Everything else (`ordered == false`)** — results are returned as they are
   confirmed complete.  For the hierarchical distributors this is roughly
   submission order, but nothing guarantees it.
@@ -267,35 +262,6 @@ inside `finalize()`, so it is `std::nullopt` until then.
 
 ---
 
-## HierarchicalNonBlockingWorkDistributor
-
-**Best for:** workloads where coordinators are send-bound — many children, large
-batches, or an MPI stack with expensive blocking sends.
-
-Byte-for-byte the same topology, protocol and pipelining as
-`HierarchicalWorkDistributor`, with one change: every payload-carrying send
-(`TASK`, `TASK_BATCH`, `RESULT`, `RESULT_BATCH`, `REQUEST_BATCH`) is posted with
-`MPI_Isend` rather than `MPI_Send`, so a coordinator replying to one child never
-stalls before serving the next.  Each in-flight buffer is held in a small
-per-message-type pool and reaped opportunistically when the next send of that
-type is posted.  Zero-payload messages (`REQUEST`, `DONE`) are genuine
-fire-and-forget (`MPI_Isend` + `MPI_Request_free`).
-
-Receiving is unchanged (blocking `MPI_Probe` + matching `MPI_Recv`): every site
-that waits has nothing else useful to do, and posting `MPI_Irecv` for the
-variable-length batch messages would require a separate size-exchange step.
-
-The same [constraints](#constraints) apply: fixed-size `TaskT` / `ResultT`, no
-working prioritization.  `Config` is identical to the blocking variant **minus**
-`max_local_group_size` and `max_upper_fanout` — its leader layer is always a
-single flat group.
-
-Treat this as an A/B variant of the default rather than a separate design: if
-you are unsure, benchmark it against `HierarchicalWorkDistributor` on your
-workload.
-
----
-
 ## LockFreeRMAWorkDistributor
 
 **Best for:** fine-grained tasks where two-sided hand-off latency dominates.  No
@@ -442,63 +408,21 @@ local window *and* its share of the upper ones.
 
 ---
 
-## MinimalLockFreeWorkDistributor
-
-**Best for:** an embarrassingly parallel loop over `0 .. n-1` where the task
-payload *is* the loop index.
-
-```cpp
-#include <dynampi/impl/minimal_lockfree_distributor.hpp>
-
-dynampi::MinimalLockFreeWorkDistributor<double> dist(
-    [](size_t i) { return std::sqrt(static_cast<double>(i)); });
-
-std::vector<double> results = dist.run(1'000'000);  // populated on the manager
-```
-
-Every rank pulls the next index by atomically incrementing one shared counter in
-the manager's window; results are packed locally and collected once at the end
-with a single `MPI_Gatherv`, then sorted by index.
-
-```text
-lock_all once
-broadcast n
-while true:
-    idx ← fetch_and_op(+1, head)
-    if idx >= n: break
-    local.append(idx, worker_function(idx))
-gather_sorted(local) on the manager
-```
-
-- **`run(n_tasks)` is collective** — every rank must call it, and `n_tasks` is
-  broadcast from the manager.  It returns the ordered results on the manager and
-  an empty vector on workers.
-- **Ordering:** by task index.
-- **`Config`:** `comm` and `manager_rank` only.  There is no `auto_run_workers`,
-  no `insert_task`, no `finalize`, and no statistics.
-- **Scaling limit:** the single terminal `MPI_Gatherv` bounds it to roughly the
-  low hundreds of ranks.  Beyond that, or for arbitrary task payloads and
-  incremental result collection, use a lock-free RMA distributor.
-
-Design background is in [Lock-free RMA design](lockfree_rma_design.md).
-
----
-
 ## Feature matrix
 
-| | Naive | Hierarchical | Hier. NonBlocking | LockFreeRMA | Hier. LockFreeRMA | MinimalLockFree |
-|---|---|---|---|---|---|---|
-| Communication | Two-sided | Two-sided, batched | Two-sided, batched, `Isend` | Passive RMA | Passive RMA, per level | RMA counter + `Gatherv` |
-| Collectives on the hot path | No | No | No | No | No | One `Gatherv` at the end |
-| Ordered results | **Yes** | No | No | No | No | **Yes** |
-| Arbitrary `TaskT` / `ResultT` | Yes | Fixed-size only | Fixed-size only | Yes | Yes | `size_t` task only |
-| Variable-length payloads | Yes | **No** | **No** | Yes (capped) | Yes (capped) | Results only |
-| [Custom structs](api.md#custom-types) | Yes | Yes | Yes | Yes | Yes | Results only |
-| Prioritization | **Yes** | No | No | No (ignored) | No | No |
-| Statistics | `Aggregated`, `Detailed` | `Aggregated`, `Detailed` | `Aggregated`, `Detailed` | `Aggregated`, `Detailed` | **None** | None |
-| Node-aware topology | No | Yes | Yes | No | Yes | No |
-| Incremental insertion | Yes | Yes | Yes | Yes | Yes | No |
-| Preallocated capacity limit | No | No | No | `max_tasks` | `max_tasks`, `max_local_tasks` | No |
+| | Naive | Hierarchical | LockFreeRMA | Hier. LockFreeRMA |
+|---|---|---|---|---|
+| Communication | Two-sided | Two-sided, batched | Passive RMA | Passive RMA, per level |
+| Collectives on the hot path | No | No | No | No |
+| Ordered results | **Yes** | No | No | No |
+| Arbitrary `TaskT` / `ResultT` | Yes | Fixed-size only | Yes | Yes |
+| Variable-length payloads | Yes | **No** | Yes (capped) | Yes (capped) |
+| [Custom structs](api.md#custom-types) | Yes | Yes | Yes | Yes |
+| Prioritization | **Yes** | No | No (ignored) | No |
+| Statistics | `Aggregated`, `Detailed` | `Aggregated`, `Detailed` | `Aggregated`, `Detailed` | **None** |
+| Node-aware topology | No | Yes | No | Yes |
+| Incremental insertion | Yes | Yes | Yes | Yes |
+| Preallocated capacity limit | No | No | `max_tasks` | `max_tasks`, `max_local_tasks` |
 | Manager load per task | 2 messages | O(1/batch), per coordinator | O(1/batch), per coordinator | ~3 RMA ops | ~3 RMA ops, per level | 1 atomic |
 
 ---

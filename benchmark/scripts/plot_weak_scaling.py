@@ -83,8 +83,6 @@ def parse_rows(paths: Sequence[str]) -> list[WeakScalingRow]:
         world_size = int(float(row.get("world_size", 0)))
         ranks_per_node = int(round(world_size / nodes)) if nodes else 0
         distributor = row.get("distributor", "").strip()
-        if distributor == "minimal_lockfree":
-            continue
         fanout = int(float(row.get("max_upper_fanout", -1) or -1))
         if "hierarchical" not in distributor:
             fanout = -1

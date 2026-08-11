@@ -21,7 +21,7 @@
 #include "../mpi/mpi_communicator.hpp"
 #include "../mpi/mpi_group.hpp"
 #include "../mpi/mpi_types.hpp"
-#include "dynampi/impl/minimal_lockfree_distributor.hpp"  // reuses dynampi::detail byte-packing helpers
+#include "dynampi/impl/rma_detail.hpp"
 #include "dynampi/mpi/mpi_error.hpp"
 #include "dynampi/task_error.hpp"
 #include "dynampi/utilities/timer.hpp"
