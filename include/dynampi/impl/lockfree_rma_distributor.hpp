@@ -41,9 +41,14 @@ namespace dynampi {
 // Manager publish: put(tasks) + atomic_set(TOTAL) + flush
 // Manager harvest reads use flush_local only.
 //
-// Results are explicitly NOT ordered: harvested in completion order (which,
-// via the completion log's contiguous-prefix scan, is close to submission
-// order but not guaranteed).
+// Results ARE ordered: each write_result_range() writes into the result slot
+// at the claimed index, the same index publish_tasks() assigned in submission
+// order, and harvest_ready_results() only ever advances past a *contiguous*
+// prefix of the completion log -- a gap at index i blocks every result after
+// it from being released, however long ago they finished. So the returned
+// vector always matches submission order, same as NaiveWorkDistributor and
+// for the same reason (see its class comment): the cost of guaranteeing order
+// is that one slow task holds back everything behind it.
 
 // ---------------------------------------------------------------------------
 // Options currently only recognizes track_statistics<...> (no prioritization support in this
@@ -77,8 +82,8 @@ class LockFreeRMAWorkDistributor {
     std::optional<double> max_seconds = std::nullopt;
   };
 
-  // Not ordered
-  static const bool ordered = false;
+  // Ordered -- see the class comment above for why.
+  static const bool ordered = true;
 
   struct Statistics {
     const CommStatistics& comm_statistics;

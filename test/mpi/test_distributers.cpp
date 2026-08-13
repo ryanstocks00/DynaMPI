@@ -547,15 +547,15 @@ TYPED_TEST(DynamicDistribution, GatherOnce) {
       EXPECT_LE(snapshot.size(), 8u);
 
       auto drained = dist.finish_remaining_tasks();
+      // Ordered: the snapshot is a prefix of submission order and the drain
+      // is its exact continuation, so concatenating (no sort) reproduces it.
       std::vector<int> all = std::move(snapshot);
       all.insert(all.end(), drained.begin(), drained.end());
-      std::sort(all.begin(), all.end());
       EXPECT_EQ(all, (std::vector<int>{1, 4, 9, 16, 25, 36, 49, 64}));
       EXPECT_EQ(dist.remaining_tasks_count(), 0u);
 
       dist.insert_tasks({9, 10});
       auto rest = dist.finish_remaining_tasks();
-      std::sort(rest.begin(), rest.end());
       EXPECT_EQ(rest, (std::vector<int>{81, 100}));
     }
   }
@@ -778,8 +778,8 @@ TEST(LockFreeRMALevel, SingletonCommunicator) {
 // Node-aware tree topology (root manager <-> per-node managers <-> local
 // workers) with LockFreeRMAWorkDistributor's one-sided,
 // collective-free protocol (fetch-and-add claiming, Put-based result return
-// via a completion log) at each level. Results are unordered, so tests sort
-// before comparing.
+// via a completion log) at each level. Results are ordered (see the class
+// comment), so tests below check exact order rather than sorting.
 
 TEST(HierarchicalLockFreeRMA, BasicFlow) {
   using TaskT = int;
@@ -797,7 +797,6 @@ TEST(HierarchicalLockFreeRMA, BasicFlow) {
     for (int i = 0; i < 10; ++i) distributor.insert_task(i);
     auto results = distributor.finish_remaining_tasks();
     EXPECT_EQ(results.size(), 10u);
-    std::sort(results.begin(), results.end());
     for (size_t i = 0; i < results.size(); ++i) {
       EXPECT_DOUBLE_EQ(results[i] * results[i], static_cast<double>(i));
     }
@@ -827,7 +826,6 @@ TEST(HierarchicalLockFreeRMA, ManagerRankNonZero) {
   if (distributor.is_root_manager()) {
     for (int i = 0; i < 10; ++i) distributor.insert_task(i);
     auto results = distributor.finish_remaining_tasks();
-    std::sort(results.begin(), results.end());
     EXPECT_EQ(results.size(), 10u);
     for (size_t i = 0; i < results.size(); ++i) {
       EXPECT_DOUBLE_EQ(results[i] * results[i], static_cast<double>(i));
@@ -848,12 +846,10 @@ TEST(HierarchicalLockFreeRMA, MultipleRoundsOfTasks) {
   if (work_distributer.is_root_manager()) {
     work_distributer.insert_tasks({1, 2, 3, 4, 5});
     auto results = work_distributer.finish_remaining_tasks();
-    std::sort(results.begin(), results.end());
     EXPECT_EQ(results, (std::vector<int>{1, 4, 9, 16, 25}));
 
     work_distributer.insert_tasks({6, 7, 8});
     results = work_distributer.finish_remaining_tasks();
-    std::sort(results.begin(), results.end());
     EXPECT_EQ(results, (std::vector<int>{36, 49, 64}));
   }
 }
@@ -873,21 +869,16 @@ TEST(HierarchicalLockFreeRMA, RunTasksMaxTasks) {
     run_config.target_num_tasks = 3;
     run_config.allow_more_than_target_tasks = false;
     auto results = work_distributer.run_tasks(run_config);
-    EXPECT_EQ(results.size(), 3u);
+    // Ordered, so each capped run_tasks() call returns exactly the next
+    // contiguous slice of submission order, not just some 3-of-10 subset.
+    EXPECT_EQ(results, (std::vector<int>{2, 4, 6}));
 
     run_config.target_num_tasks = 4;
     auto more_results = work_distributer.run_tasks(run_config);
-    EXPECT_EQ(more_results.size(), 4u);
+    EXPECT_EQ(more_results, (std::vector<int>{8, 10, 12, 14}));
 
     auto remaining_results = work_distributer.run_tasks();
-    EXPECT_EQ(remaining_results.size(), 3u);
-
-    std::vector<int> all_results;
-    all_results.insert(all_results.end(), results.begin(), results.end());
-    all_results.insert(all_results.end(), more_results.begin(), more_results.end());
-    all_results.insert(all_results.end(), remaining_results.begin(), remaining_results.end());
-    std::sort(all_results.begin(), all_results.end());
-    EXPECT_EQ(all_results, (std::vector<int>{2, 4, 6, 8, 10, 12, 14, 16, 18, 20}));
+    EXPECT_EQ(remaining_results, (std::vector<int>{16, 18, 20}));
   }
 }
 
@@ -910,7 +901,7 @@ void expect_upper_hierarchy_squares(typename Distributer::Config config) {
   for (int i = 0; i < kNumTasks; ++i) tasks[i] = i;
   work_distributer.insert_tasks(tasks);
   auto results = work_distributer.finish_remaining_tasks();
-  std::sort(results.begin(), results.end());
+  if constexpr (!Distributer::ordered) std::sort(results.begin(), results.end());
   std::vector<int> expected(kNumTasks);
   for (int i = 0; i < kNumTasks; ++i) expected[i] = i * i;
   EXPECT_EQ(results, expected);
@@ -999,7 +990,6 @@ TEST(HierarchicalLockFreeRMA, AutoRunWorkers) {
   if (dist.is_root_manager()) {
     dist.insert_tasks({1, 2, 3, 4, 5});
     auto results = dist.finish_remaining_tasks();
-    std::sort(results.begin(), results.end());
     EXPECT_EQ(results, (std::vector<int>{1, 4, 9, 16, 25}));
   }
 }
@@ -1020,9 +1010,10 @@ TEST(HierarchicalLockFreeRMA, GatherOnce) {
     EXPECT_LE(snapshot.size(), 8u);
 
     auto drained = dist.finish_remaining_tasks();
+    // Ordered: the snapshot is a prefix of submission order and the drain is
+    // its exact continuation, so concatenating (no sort) must reproduce it.
     std::vector<int> all = std::move(snapshot);
     all.insert(all.end(), drained.begin(), drained.end());
-    std::sort(all.begin(), all.end());
     EXPECT_EQ(all, (std::vector<int>{1, 4, 9, 16, 25, 36, 49, 64}));
     EXPECT_EQ(dist.remaining_tasks_count(), 0u);
   }

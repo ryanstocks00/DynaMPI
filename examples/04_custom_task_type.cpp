@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * Sending your own struct as the task and result payload, by specialising
- * dynampi::MPI_Type. The result here also carries its task index, which is how
- * you recover task identity from an unordered distributor.
+ * dynampi::MPI_Type. The result here also carries its task index -- a pattern
+ * that works with any distributor and is required for the ones that don't
+ * guarantee result order (see implementations.md#result-ordering).
  *
  *   mpirun -n 4 ./04_custom_task_type
  */
@@ -68,7 +69,8 @@ int main(int argc, char** argv) {
     using Distributor = dynampi::LockFreeRMAWorkDistributor<Ray, Hit>;
 
     // The index rides along in the task so the worker can stamp it on the
-    // result; this distributor is unordered, so nothing else recovers it.
+    // result. LockFreeRMAWorkDistributor actually preserves order, but this
+    // pattern works unconditionally, including on distributors that don't.
     auto trace = [](Ray ray) -> Hit {
       return Hit{ray.origin, ray.direction * ray.length, std::sqrt(ray.length)};
     };

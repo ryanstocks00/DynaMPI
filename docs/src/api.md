@@ -138,8 +138,10 @@ are documented per class in [Implementations](implementations.md).
 
 Two semantics worth knowing:
 
-- On `NaiveWorkDistributor`, `target_num_tasks` counts *contiguous* results
-  from the front of the ordered stream.  Elsewhere it counts buffered results.
+- On the ordered distributors (`NaiveWorkDistributor` and the two RMA
+  distributors), `target_num_tasks` counts *contiguous* results from the front
+  of the ordered stream.  On `HierarchicalWorkDistributor` (unordered), it
+  counts however many have arrived, in any order.
 - `max_seconds` is checked between messages, not asynchronously.  A call already
   blocked in a probe or an RMA wait will overshoot the deadline until the next
   event arrives.
@@ -171,19 +173,19 @@ Two semantics worth knowing:
 
 ### Availability
 
-| | Naive | Hierarchical | Hier. NonBlocking | LockFreeRMA | Hier. LockFreeRMA |
-|---|---|---|---|---|---|
-| `insert_task(TaskT)` | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `insert_task(task, priority)` | ✓ | ✓ ¹ | ✓ ¹ | ✓ ² | — |
-| `insert_tasks(vector)` | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `insert_tasks(Range)` | — | ✓ | ✓ | — | — |
-| `run_tasks` / `finish_remaining_tasks` | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `gather_once` | — | — | — | ✓ | ✓ |
-| `run_worker` / `finalize` | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `get_statistics` | ✓ | ✓ | ✓ | ✓ | — |
-| `num_workers()` | — | — | — | ✓ | — |
-| `static ordered` | `true` | `false` | `false` | `false` | `false` |
-| `static prioritize_tasks` | — | ✓ | ✓ | — | — |
+| | Naive | Hierarchical | LockFreeRMA | Hier. LockFreeRMA |
+|---|---|---|---|---|
+| `insert_task(TaskT)` | ✓ | ✓ | ✓ | ✓ |
+| `insert_task(task, priority)` | ✓ | ✓ ¹ | ✓ ² | — |
+| `insert_tasks(vector)` | ✓ | ✓ | ✓ | ✓ |
+| `insert_tasks(Range)` | — | ✓ | — | — |
+| `run_tasks` / `finish_remaining_tasks` | ✓ | ✓ | ✓ | ✓ |
+| `gather_once` | — | — | ✓ | ✓ |
+| `run_worker` / `finalize` | ✓ | ✓ | ✓ | ✓ |
+| `get_statistics` | ✓ | ✓ | ✓ | — |
+| `num_workers()` | — | — | ✓ | — |
+| `static ordered` | `true` | `false` | `true` | `true` |
+| `static prioritize_tasks` | — | ✓ | — | — |
 
 ¹ Compiles, but the hierarchical batch path raises `DYNAMPI_UNIMPLEMENTED` as
 soon as a manager has children — treat prioritization as naive-only.

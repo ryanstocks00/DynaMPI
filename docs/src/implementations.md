@@ -13,8 +13,8 @@ deliberately minimal parallel-for helper with its own small API.
 |-------|--------|---------------|----------|---------|
 | [`NaiveWorkDistributor`](#naiveworkdistributor) | `impl/naive_distributor.hpp` | Two-sided `Send`/`Recv` | Flat | **Yes** |
 | [`HierarchicalWorkDistributor`](#hierarchicalworkdistributor-dynamicworkdistributor) | `impl/hierarchical_distributor.hpp` | Two-sided, batched | Tree | No |
-| [`LockFreeRMAWorkDistributor`](#lockfreermaworkdistributor) | `impl/lockfree_rma_distributor.hpp` | Passive-target RMA | Flat | No |
-| [`HierarchicalLockFreeRMAWorkDistributor`](#hierarchicallockfreermaworkdistributor) | `impl/hierarchical_lockfree_rma_distributor.hpp` | Passive-target RMA | Tree | No |
+| [`LockFreeRMAWorkDistributor`](#lockfreermaworkdistributor) | `impl/lockfree_rma_distributor.hpp` | Passive-target RMA | Flat | **Yes** |
+| [`HierarchicalLockFreeRMAWorkDistributor`](#hierarchicallockfreermaworkdistributor) | `impl/hierarchical_lockfree_rma_distributor.hpp` | Passive-target RMA | Tree | **Yes** |
 
 Only `NaiveWorkDistributor`, `HierarchicalWorkDistributor` are pulled in by `<dynampi/dynampi.hpp>`.
 The other three need their own `#include` — see [Headers](api.md#headers).
@@ -27,13 +27,16 @@ The other three need their own `#include` — see [Headers](api.md#headers).
 
 Ordering is exposed as a compile-time constant, `Distributor::ordered`:
 
-- **`NaiveWorkDistributor` (`ordered == true`)** — the manager buffers
-  results by task ID and only releases a contiguous prefix, so returned results
-  are always in insertion order.  A slow task therefore holds back every result
-  behind it.
-- **Everything else (`ordered == false`)** — results are returned as they are
-  confirmed complete.  For the hierarchical distributors this is roughly
-  submission order, but nothing guarantees it.
+- **`NaiveWorkDistributor`, `LockFreeRMAWorkDistributor`,
+  `HierarchicalLockFreeRMAWorkDistributor` (`ordered == true`)** — the manager
+  buffers results by task ID (a result table slot for the RMA distributors,
+  keyed the same way as the task it answers) and only releases a contiguous
+  prefix, so returned results are always in insertion order.  A slow task
+  therefore holds back every result behind it, all the way up the tree for the
+  hierarchical variant.
+- **`HierarchicalWorkDistributor` (`ordered == false`)** — results are
+  returned as they are confirmed complete, roughly submission order but not
+  guaranteed.
 
 If you need to know which task a result came from and the distributor is
 unordered, carry the identity in the result type (e.g. `std::pair<size_t, T>`).
@@ -306,7 +309,9 @@ Harvesting reads the manager's *own* window through the RMA API rather than
 plain loads: under `MPI_WIN_SEPARATE` (always the case on MS-MPI) local loads are
 not guaranteed to observe remote writes at all.
 
-- **Ordering:** none.  Results come back in completion order.
+- **Ordering:** guaranteed, via the contiguous-prefix harvest above -- same
+  cost as `NaiveWorkDistributor`'s ordering, a straggler holds back every
+  result behind it.
 - **Prioritization:** not supported.  `insert_task(task, priority)` exists for
   interface compatibility and ignores the priority.
 - **Variable-length payloads:** supported, within the per-slot capacity below.
@@ -393,7 +398,8 @@ The constructor ends with an `MPI_Barrier`: level setup runs a chain of
 a caller that starts timing when the manager's constructor returns would measure
 other ranks still finishing setup.
 
-- **Ordering:** none.
+- **Ordering:** guaranteed, recursively at every level of the relay chain --
+  see [Result ordering](#result-ordering).
 - **Prioritization:** not supported (no priority overload at all).
 - **Statistics:** **not supported.**  The `Options...` pack is accepted and
   ignored, and there is no `get_statistics()`.
@@ -420,7 +426,7 @@ local window *and* its share of the upper ones.
 |---|---|---|---|---|
 | Communication | Two-sided | Two-sided, batched | Passive RMA | Passive RMA, per level |
 | Collectives on the hot path | No | No | No | No |
-| Ordered results | **Yes** | No | No | No |
+| Ordered results | **Yes** | No | **Yes** | **Yes** |
 | Arbitrary `TaskT` / `ResultT` | Yes | Yes | Yes | Yes |
 | Variable-length payloads | Yes | Yes | Yes (capped) | Yes (capped) |
 | [Custom structs](api.md#custom-types) | Yes | Yes | Yes | Yes |

@@ -91,9 +91,9 @@ loop in the constructor. Construction and destruction are collective.
 | Class | Communication | Ordered | Notes |
 |-------|---------------|---------|-------|
 | `NaiveWorkDistributor` | Two-sided | Yes | Task priorities, variable-length payloads; manager-bound at scale |
-| `DynamicWorkDistributor` (hierarchical) | Two-sided, batched | No | Default. Node-aware tree; fixed-size payloads only |
-| `LockFreeRMAWorkDistributor` | Passive-target RMA | No | No collectives on the hot path; preallocated window |
-| `HierarchicalLockFreeRMAWorkDistributor` | Passive-target RMA, per level | No | RMA protocol applied per tree level, for large node counts |
+| `DynamicWorkDistributor` (hierarchical) | Two-sided, batched | No | Default. Node-aware tree; variable-length payloads supported |
+| `LockFreeRMAWorkDistributor` | Passive-target RMA | Yes | No collectives on the hot path; preallocated window |
+| `HierarchicalLockFreeRMAWorkDistributor` | Passive-target RMA, per level | Yes | RMA protocol applied per tree level, for large node counts |
 
 A task that throws is reported to the manager rather than aborting the job:
 `run_tasks` rethrows it as `dynampi::TaskFailure`, or set

@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 
       // NOTE: the default distributor is hierarchical, so results come back in
       // completion order -- (*results)[i] is NOT the result of task i. See
-      // 02_ordered_results.cpp if you need index alignment.
+      // 03_ordered_and_prioritized.cpp if you need index alignment.
     }
   }
   MPI_Finalize();

@@ -98,7 +98,7 @@ rank must construct and destroy the distributor.
 | Situation | Use |
 |-----------|-----|
 | Small communicator, need results in task order or task priorities | [`NaiveWorkDistributor`](implementations.md#naiveworkdistributor) |
-| General purpose, multi-node, fixed-size task/result types | [`DynamicWorkDistributor`](implementations.md#hierarchicalworkdistributor-dynamicworkdistributor) (default) |
+| General purpose, multi-node | [`DynamicWorkDistributor`](implementations.md#hierarchicalworkdistributor-dynamicworkdistributor) (default) |
 | Fine-grained tasks, want the highest hand-off rate at moderate scale | [`LockFreeRMAWorkDistributor`](implementations.md#lockfreermaworkdistributor) |
 | Same, but at large node counts where one manager window saturates | [`HierarchicalLockFreeRMAWorkDistributor`](implementations.md#hierarchicallockfreermaworkdistributor) |
 

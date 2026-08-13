@@ -51,17 +51,12 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     // manager.
     int batch_size_multiplier = 1;
 
-    // How many batches' worth of tasks/requests a manager tries to keep
-    // in the pipeline at once, including the one currently being
-    // distributed to its children. 1 disables prefetching entirely (a
-    // manager only asks for its next batch after fully finishing the
-    // current one). 2 is double-buffering: one batch active, one already
-    // requested (or in flight) so children never wait a full round trip
-    // between batches. Values above 2 keep additional batches' worth of
-    // requests outstanding simultaneously, trading more slack against
-    // round-trip latency variance for coarser load-balancing granularity
-    // (tasks committed this far ahead can't be reassigned to an idle
-    // sibling manager).
+    // Batches a manager keeps in the pipeline at once, including the one
+    // being distributed. 1 disables prefetching; 2 is double-buffering, so
+    // children never wait a full round trip between batches. Higher values
+    // buy more slack against latency variance at the cost of coarser load
+    // balancing -- tasks committed that far ahead cannot be reassigned to an
+    // idle sibling.
     int pipeline_depth = 2;
 
     // If true, topology is strictly mapped to physical nodes:
@@ -77,17 +72,11 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     // and exercise max_upper_fanout grouping.
     int max_local_group_size = 0;
 
-    // Only meaningful when manager_per_node is true. <0 (default,
-    // "auto"): pick a fanout from node manager count -- see
-    // setup_leader_hierarchy()'s comment for the formula (mirrors
-    // HierarchicalLockFreeRMAWorkDistributor::Config::max_upper_fanout,
-    // same measured sweet spot). 0: disabled, exactly today's flat two-level
-    // tree -- root manager talks directly to every node manager. >0: caps how
-    // many direct claimants any single leader-layer rank may have; if the
-    // node manager count exceeds this, they are grouped
-    // (recursively, as many times as needed) into a tree of intermediate
-    // leaders so no single rank -- not even the manager -- ever has more
-    // than max_upper_fanout direct leader-layer children.
+    // manager_per_node only. <0 (default, auto): derive a fanout from the
+    // node manager count -- see setup_leader_hierarchy() for the formula.
+    // 0: disabled, a flat two-level tree. >0: caps direct leader-layer
+    // children per rank, grouping node managers recursively into
+    // intermediate leaders once they exceed it.
     int max_upper_fanout = -1;
 
     // If true (default), run_tasks()/finish_remaining_tasks() throw
@@ -163,19 +152,13 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
   std::optional<MPIGroup> m_local_group;  // Intra-node group (Shared Memory, excludes manager)
 
   // Leader-layer topology (root manager + node managers), built by
-  // setup_leader_hierarchy(). Mirrors
-  // HierarchicalLockFreeRMAWorkDistributor's m_owned_upper_levels /
-  // m_parent_level split: a rank promoted through zero or more grouping
-  // rounds owns one group per round it leads (m_owned_leader_levels, its
-  // direct leader-layer children at that round -- the manager always owns
-  // exactly the top round, even when grouping is disabled/unneeded), and
-  // every non-manager leader-layer rank has exactly one m_leader_parent_group
-  // whose owner is its immediate parent (the manager when that group includes
-  // them -- looked up by manager_rank, since flat/top groups are keyed by
-  // world rank so the manager need not be group rank 0; otherwise group rank
-  // 0, the intermediate group leader by construction). When grouping is
-  // disabled or the manager count already fits, this degenerates to
-  // exactly one round: byte-for-byte today's single flat group.
+  // setup_leader_hierarchy(). A rank owns one group per promotion round it
+  // leads (the manager always owns the top round), and every non-manager
+  // leader-layer rank has exactly one parent group. That group's owner is
+  // the manager when it is a member -- looked up by manager_rank, since
+  // flat/top groups are keyed by world rank and the manager need not be
+  // group rank 0 -- otherwise group rank 0 by construction. With grouping
+  // disabled or unneeded this degenerates to a single flat group.
   std::vector<MPIGroup> m_owned_leader_levels;
   std::optional<MPIGroup> m_leader_parent_group;
 
@@ -202,17 +185,12 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     return std::max(1, configured);
   }
 
-  // Resolves Config::max_upper_fanout to an actual branching factor.
-  // manager_count excludes the root manager. Auto mode mirrors
-  // HierarchicalLockFreeRMAWorkDistributor's identically-named
-  // formula (see its setup_upper_chain() comment for the measurements
-  // behind it): below ~32 managers, a fanout sweep showed grouped and
-  // flat topologies are statistically indistinguishable, so stay flat.
-  // At and above that, group into a tree with branching factor equal to
-  // the smallest power of 2 not less than sqrt(manager_count) -- the
-  // same sweep measured a deeper tree (smaller branching factor) at ~6x
-  // worse throughput, and a shallower tree that concentrates traffic onto
-  // too few leaders also measured worse.
+  // Resolves max_upper_fanout to a branching factor; manager_count excludes
+  // the root manager. Auto mode matches the RMA class: stay flat below ~32
+  // managers, where a fanout sweep found grouped and flat indistinguishable,
+  // and above that use the smallest power of 2 >= sqrt(manager_count). The
+  // same sweep measured a deeper tree ~6x worse and a shallower one, which
+  // concentrates traffic onto too few leaders, worse again.
   inline int resolve_leader_fanout(int manager_count) const {
     if (m_config.max_upper_fanout < 0) {
       if (manager_count <= 32) return std::numeric_limits<int>::max();
@@ -226,13 +204,9 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
   }
 
   // Builds the leader layer (root manager + node managers), optionally
-  // grouped into a k-ary tree with branching factor resolve_leader_fanout()
-  // when the manager count exceeds it. Mirrors
-  // HierarchicalLockFreeRMAWorkDistributor::setup_upper_chain() --
-  // see its comment for the general shape; this builds the same tree over
-  // send/recv instead of RMA windows, so there's no per-level window to
-  // create, just group membership to record (m_owned_leader_levels /
-  // m_leader_parent_group).
+  // grouped into a k-ary tree. The same shape as setup_upper_chain() in the
+  // RMA class, but over send/recv, so there is no per-level window to create
+  // -- only group membership to record.
   //
   // Every MPI_Comm_split call below is collective over its *input* comm's
   // full membership; the control flow is written so every rank in that
@@ -346,18 +320,11 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         int node_manager_world_rank = m_local_group->translate_rank(0, m_world_group);
         result = {node_manager_world_rank, CommLayer::Local};
       } else {
-        // Case 2: I am a leader-layer rank (a node manager, and
-        // possibly promoted one or more further times by
-        // setup_leader_hierarchy()). My parent is whichever rank owns
-        // m_leader_parent_group -- the manager directly when grouping is
-        // disabled/unneeded or I'm in the top round, or a higher-level
-        // leader if grouping promoted me but not all the way up.
-        //
-        // Flat/top groups include the manager but are keyed by world rank,
-        // so the manager is not necessarily group rank 0 when
-        // manager_rank != 0 (mirrors LockFreeRMA's owner_rank lookup).
-        // Intermediate grouping levels never include the manager; their
-        // owner is group rank 0 by construction of the color/key split.
+        // Case 2: leader-layer rank. My parent owns m_leader_parent_group
+        // -- the root manager if I am in the top round, otherwise a
+        // higher-level leader. Flat/top groups include the manager but are
+        // keyed by world rank, so it need not be group rank 0; intermediate
+        // levels never include it and their owner is group rank 0.
         DYNAMPI_ASSERT(m_leader_parent_group.has_value(),
                        "Non-manager leader-layer rank must have a parent group");
         int parent_in_group = 0;
@@ -437,19 +404,15 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
   // How many tasks one round should carry: the leaf workers this rank is
   // responsible for feeding, not how many messages it sends to do it.
   //
-  // These differ at every level above the node managers, and by a factor
-  // of the fanout per level: a leader's leader-layer children are themselves
-  // managers fronting whole nodes, so sizing a request to the direct
-  // child count asks for one task per *subtree* rather than one per worker.
-  // At 2048 nodes with 7 ranks per node that is 69 tasks for 384 leaf
-  // workers, and the shortfall compounds with tree depth --
-  // HierarchicalLockFreeRMAWorkDistributor has always scaled its claims this
-  // way (see setup_upper_chain()'s feed_width).
+  // These differ above the node managers by a factor of the fanout per
+  // level: a leader's children are themselves managers fronting whole nodes,
+  // so sizing to the direct child count asks for one task per subtree rather
+  // than per worker -- 69 tasks for 384 leaf workers at 2048 nodes, 7 ranks
+  // per node. The RMA class scales its claims the same way (feed_width).
   //
-  // The rank-order virtual tree (manager_per_node == false) keeps the
-  // direct-child count: total_num_children() exists for it but counts all
-  // descendants rather than leaves, and that topology is not what any
-  // measured configuration runs.
+  // The rank-order virtual tree (manager_per_node == false) keeps the direct
+  // child count; total_num_children() exists there but counts descendants
+  // rather than leaves, and no measured configuration runs that topology.
   inline int subtree_leaf_count() const {
     return m_config.manager_per_node ? m_subtree_leaf_count : num_direct_children();
   }
@@ -614,16 +577,11 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         }
       };
 
-      // Prime with exactly one request, not the full pipeline_depth: while
-      // we're waiting for this very first reply, m_round_active is still
-      // false, so receive_task_batch_from() has no round to quarantine
-      // against yet and routes any reply straight into
-      // m_unallocated_task_queue (see below). Priming with more than one
-      // would risk several replies landing there before we ever set
-      // m_round_active, merging what should be separate rounds into one
-      // oversized first batch. Sending only one guarantees at most one
-      // reply is pending during this wait; the rest of the pipeline_depth
-      // is built up below, entirely after m_round_active is true.
+      // Prime with one request, not the full pipeline_depth: m_round_active
+      // is still false here, so replies route straight into the queue rather
+      // than being quarantined, and several of them would merge into one
+      // oversized first round. The rest of the depth is built up below,
+      // after the flag is set.
       top_up_pipeline(1);
 
       while (!m_done) {
@@ -640,18 +598,11 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
           }
         }
 
-        // If we have no tasks to give, wait for tasks from parent. Flush
-        // any results gained while waiting -- a real, confirmed deadlock
-        // otherwise: once this manager has distributed everything it
-        // currently has, this loop is the ONLY place it spends time until
-        // its parent sends more (which may never happen, e.g. once the
-        // parent's own task supply is exhausted but m_done hasn't arrived
-        // yet). Straggler results trickling in via receive_from_anyone()
-        // here would sit in m_results forever with no other flush point to
-        // reach -- and the parent's own exhaustion check depends on
-        // eventually seeing them, so both ends would wait on each other
-        // permanently. Flushing here closes that gap the same way the
-        // round-boundary flush does for the normal case.
+        // Wait for tasks from the parent, flushing any results that arrive
+        // meanwhile. Without that flush this deadlocks: once everything on
+        // hand is distributed, this loop is the only place the manager
+        // spends time, so stragglers would sit in m_results unsent while the
+        // parent's exhaustion check waits to see them.
         while (!m_done && m_unallocated_task_queue.empty()) {
           receive_from_anyone();
           if (!m_results.empty()) {
@@ -677,15 +628,11 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         // idle for a full parent round trip between batches.
         top_up_pipeline(pipeline_depth - 1);
 
-        // Process tasks: Give to workers or execute ourselves if needed.
         // Deliberately does NOT break on m_done: a pipelined request can be
-        // answered with DONE (if the manager has nothing left and
-        // finalize() runs) while THIS round is still being handed out to
-        // our own children. Since m_round_active already quarantines any
-        // newly-arriving TASK_BATCH into m_prefetched_tasks, nothing new
-        // can leak into m_unallocated_task_queue here -- so finishing it
-        // out is always safe, and required: abandoning it would silently
-        // drop this round's tasks.
+        // answered with DONE while this round is still being handed out.
+        // Quarantining keeps anything new out of the queue, so finishing the
+        // round is safe -- and required, since abandoning it would silently
+        // drop the tasks in hand.
         while (!m_unallocated_task_queue.empty()) {
           if (m_free_worker_indices.empty()) {
             // Must wait for a worker to become free
@@ -697,22 +644,13 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
 
         m_round_active = false;
 
-        // Deliberately NOT gated on every result from this round having
-        // arrived: this class is unordered (see `static const bool ordered
-        // = false` above), so nothing downstream cares which round a result
-        // came from. Waiting here for a round's slowest straggler used to
-        // block send_results_to_parent() entirely -- even results from
-        // OTHER children that finished long ago sat unsent the whole time.
-        // Sending whatever has accumulated so far (possibly nothing, if
-        // every child in this round is still working) and moving straight
-        // on to distributing the next round lets fast children's results
-        // flow upward immediately and lets those same children pick up
-        // next-round work right away (allocate_task_to_child() only needs a
-        // free worker, not a fully-drained round) instead of sitting idle
-        // behind one slow sibling. Any straggler's result still gets
-        // collected and forwarded eventually -- either by a later round's
-        // flush below, or by the final drain after send_done_to_children_
-        // when_free() if it lands after the last round.
+        // Not gated on the whole round having arrived: results are
+        // unordered, so nothing downstream cares which round one came from.
+        // Waiting for a round's slowest straggler used to hold back results
+        // from children that finished long ago, and those children can pick
+        // up next-round work immediately since allocation only needs a free
+        // worker. Stragglers are forwarded by a later round's flush or the
+        // final drain.
         if (!m_results.empty()) {
           send_results_to_parent();
         }

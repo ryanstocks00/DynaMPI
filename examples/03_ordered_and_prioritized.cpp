@@ -2,8 +2,9 @@
  * SPDX-FileCopyrightText: 2026 Ryan Stocks
  * SPDX-License-Identifier: Apache-2.0
  *
- * NaiveWorkDistributor is the one distributor that returns results in task
- * order, and the one where task priorities work. Both are shown here.
+ * NaiveWorkDistributor is one of three distributors that return results in
+ * task order (see implementations.md#result-ordering for the others), and
+ * the one where task priorities work. Both are shown here.
  *
  *   mpirun -n 4 ./03_ordered_and_prioritized
  */
@@ -19,9 +20,11 @@ int main(int argc, char** argv) {
     // --- Ordered results -------------------------------------------------
     //
     // `ordered == true`: the manager buffers results by task ID and only
-    // releases a contiguous prefix, so results[i] is always task i. Variable
-    // length payloads (std::vector, std::string) work here too, as they do on
-    // every other distributor -- what the others lack is the ordering.
+    // releases a contiguous prefix, so results[i] is always task i. The two
+    // RMA distributors use the same contiguous-prefix trick over their
+    // completion log and are ordered too; only HierarchicalWorkDistributor
+    // (the default) is not. Variable length payloads (std::vector,
+    // std::string) work on every distributor here regardless.
     {
       using Distributor = dynampi::NaiveWorkDistributor<int, std::string>;
       static_assert(Distributor::ordered);
