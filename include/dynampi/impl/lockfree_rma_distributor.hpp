@@ -185,17 +185,10 @@ class LockFreeRMAWorkDistributor {
 
   [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() { return run_tasks({}); }
 
-  // Requests exactly one harvest pass and returns whatever's ready --
-  // possibly none, possibly everything outstanding, depending on how far
-  // workers have gotten. Unlike run_tasks()/finish_remaining_tasks(), this
-  // does not loop retrying until every outstanding task is collected: those
-  // block until m_collected_count reaches m_total_tasks (or a target/
-  // timeout), which is the wrong shape for "take one snapshot and return
-  // control" callers -- e.g. a benchmark driver measuring throughput of an
-  // uninterrupted worker-side spin, which wants to publish a batch, let
-  // workers run completely undisturbed for a fixed window, then harvest
-  // once at the end (see LockFreeRMA's benchmark path in
-  // strong_scaling_distribution_rate.cpp).
+  // One harvest pass, returning whatever is ready. Unlike run_tasks(), does
+  // not retry until everything outstanding is collected -- for callers that
+  // want a snapshot and control back, such as a benchmark measuring an
+  // undisturbed worker spin over a fixed window.
   [[nodiscard]] std::vector<ResultT> gather_once() {
     assert(is_root_manager());
     if (num_workers() == 0) {
@@ -212,12 +205,17 @@ class LockFreeRMAWorkDistributor {
       if (num_workers() == 0) {
         while (m_collected_count < static_cast<size_t>(m_total_tasks)) run_one_task_locally();
       } else {
+        // Raised before the harvest, not after: FINISHED only means "TOTAL
+        // won't grow", already true here, so workers drain out while the
+        // last results are collected instead of contending the window
+        // throughout. Safe because a worker flushes every result before it
+        // can reach its exit check.
+        atomic_set(FINISHED_OFF, 1);
         while (m_collected_count < static_cast<size_t>(m_total_tasks)) {
           const size_t before = m_collected_count;
           harvest_ready_results();
           if (m_collected_count == before) detail::rma_wait_idle(m_window, m_comm.get());
         }
-        atomic_set(FINISHED_OFF, 1);  // tell workers to stop
         detail::rma_wait_idle(m_window, m_comm.get());
       }
     }
@@ -227,124 +225,63 @@ class LockFreeRMAWorkDistributor {
   void run_worker() {
     assert(!is_root_manager());
 
-    // One-task-at-a-time fetch-and-add claim loop, bounded by a cached
-    // read of TOTAL_OFF (a fresh atomic_read() only when this rank's own
-    // claimed range has caught up to what it last observed as published --
-    // cached_total is a monotonic lower bound, never an overestimate, since
-    // it's just a stale snapshot of a monotonically-increasing counter).
-    //
-    // The claim branch is deliberately NOT gated on !finished_seen:
-    // finished_seen only means "TOTAL_OFF won't grow anymore", not "stop
-    // claiming what's already known to be available" -- gating the whole
-    // branch on !finished_seen meant that once finished_seen went true,
-    // nothing could ever claim again, even a real, never-claimed gap
-    // between cached_head and a just-learned final_total (see the exit
-    // check below, which discovers and records that gap into
-    // cached_total). Confirmed via gdb backtraces on a caught hang: 15/16
-    // ranks parked in the destructor's teardown barrier while the 16th sat
-    // in an idle-wait loop forever.
-    //
-    // Even at claim size 1, HEAD_OFF (claims) can race ahead of TOTAL_OFF
-    // (publishes): with many workers each doing their own unconditional
-    // fetch_add, aggregate claim rate can outpace publish_tasks()'s rate,
-    // so a freshly claimed index can land beyond what's actually published
-    // yet. pending_start/pending_end track that unresolved remainder across
-    // iterations; a worker with a pending tail must still process whatever
-    // prefix is already ready immediately rather than blocking on the rest,
-    // since finalize() can't set FINISHED_OFF until it has collected every
-    // result -- including this worker's already-ready prefix -- so blocking
-    // here would deadlock against a manager waiting on results this worker
-    // refuses to compute.
-    //
-    // No maybe_participate_in_gather() here at all -- there is no gather
-    // protocol in this class, a result goes out via one-sided Put the
-    // moment its task finishes.
+    // One index per claim, gated on a cached TOTAL_OFF (a stale snapshot of
+    // a monotonic counter, so always a safe lower bound). Claims can still
+    // outrun publication, so a claim that lands past TOTAL is held in
+    // `pending` until it is published or FINISHED says it never will be.
+    // Held across iterations rather than spun on inline so the FINISHED
+    // check and idle backoff below keep running meanwhile.
     int64_t cached_head = 0;
     int64_t cached_total = 0;
-    int64_t pending_start = -1;
-    int64_t pending_end = -1;
+    int64_t pending = -1;  // claimed but not yet published; -1 = none
     bool finished_seen = false;
 
-    auto process_range = [&](int64_t start, int64_t count) {
-      std::vector<TaskT> tasks = read_task_batch(start, count);
+    auto process_one = [&](int64_t index) {
+      std::vector<TaskT> tasks = read_task_batch(index, 1);
+      ResultT result;
+      auto failure = detail::run_task_guarded(m_worker_function, std::move(tasks[0]), result);
+      if (failure) report_task_error(*failure);
       std::vector<ResultT> results;
-      results.reserve(static_cast<size_t>(count));
-      bool failed = false;
-      for (int64_t i = 0; i < count; ++i) {
-        ResultT result;
-        auto failure = detail::run_task_guarded(m_worker_function,
-                                                std::move(tasks[static_cast<size_t>(i)]), result);
-        if (failure) {
-          report_task_error(*failure);
-          failed = true;
-        }
-        results.push_back(std::move(result));
-      }
-      write_result_range(start, results, failed);
+      results.push_back(std::move(result));
+      write_result_range(index, results, failure.has_value());
     };
 
     while (true) {
       bool made_progress = false;
 
-      if (pending_start != -1) {
-        const int64_t total = atomic_read(TOTAL_OFF);
-        const int64_t ready = std::min(pending_end, total);
-        if (ready > pending_start) {
-          process_range(pending_start, ready - pending_start);
-          pending_start = ready;
+      if (pending != -1) {
+        if (atomic_read(TOTAL_OFF) > pending) {
+          process_one(pending);
+          pending = -1;
           made_progress = true;
-        }
-        if (pending_start >= pending_end) {
-          pending_start = -1;  // LCOV_EXCL_LINE -- depends on publication racing a batch claim
         } else if (finished_seen) {
-          pending_start = -1;
+          pending = -1;  // past the end of the run; owes no result
         }
       } else {
-        // Deliberately NOT gated on !finished_seen: see the comment on the
-        // exit check below -- gating this branch on !finished_seen was the
-        // exact bug caught via gdb (15/16 ranks parked in the destructor's
-        // teardown barrier, the 16th spinning forever re-discovering a real
-        // unclaimed gap it had no way left to act on).
+        // Claiming is NOT gated on !finished_seen: that flag only means
+        // TOTAL is final, and a real unclaimed gap can still remain below
+        // it (see the exit check below, which records that gap).
         if (cached_head >= cached_total && !finished_seen) cached_total = atomic_read(TOTAL_OFF);
 
         if (cached_head < cached_total) {
-          const int64_t claim = 1;
-          const int64_t start = fetch_add(HEAD_OFF, claim);
-          const int64_t end = start + claim;
-          cached_head = end;
+          const int64_t index = fetch_add(HEAD_OFF, 1);
+          cached_head = index + 1;
 
-          const int64_t total = (end <= cached_total) ? cached_total : atomic_read(TOTAL_OFF);
-          // Clamped into [start, end], not just capped at end: total can be
-          // *less than start* here, not only less than end -- cached_total
-          // (used above to size the claim) can be stale enough that this
-          // worker's whole claim lands beyond what's actually published yet,
-          // not merely straddling the boundary. Before this clamp, an
-          // unclamped `ready = std::min(end, total)` could come out below
-          // `start`, and the pending_start assignment below would then set
-          // pending_start to that sub-start value -- an index this worker
-          // never claimed and does not own, since fetch_add already handed
-          // it to whichever earlier claimant's range covers it. This was a
-          // real, confirmed bug: two ranks ended up both writing results
-          // for the same task index (one legitimately, one via this
-          // corrupted pending_start), and whichever write landed last in
-          // the completion log silently clobbered the other's entry,
-          // permanently stalling the manager's harvest (confirmed via
-          // instrumented logging on a caught hang -- see git history).
-          const int64_t ready = std::clamp(total, start, end);
-          if (ready > start) {
-            process_range(start, ready - start);
+          // cached_total may be stale enough that this index still landed
+          // past what is published; re-read unless it already covers it.
+          const int64_t total = (index < cached_total) ? cached_total : atomic_read(TOTAL_OFF);
+          if (index < total) {
+            process_one(index);
             made_progress = true;
-          }
-          if (ready < end) {
-            pending_start = ready;
-            pending_end = end;
+          } else {
+            pending = index;
           }
         }
       }
 
       if (!finished_seen && atomic_read(FINISHED_OFF) != 0) finished_seen = true;
 
-      if (pending_start == -1 && finished_seen) {
+      if (pending == -1 && finished_seen) {
         const int64_t final_total = atomic_read(TOTAL_OFF);
         if (cached_head >= final_total) break;
         cached_total = final_total;
@@ -381,14 +318,11 @@ class LockFreeRMAWorkDistributor {
   // claimed batch rather than one flag per task.
   static constexpr size_t R_COUNT = 0;
   static constexpr size_t R_DATA = 8;
-  // Completion log entry: a single int64. 0 = untouched (sentinel; a real
-  // entry always has count >= 1, see process_range's `ready > start` guard
-  // before it ever calls write_result_range). count > 0 at log index `s`
-  // means "the batch claimed at task index s, covering [s, s+count), is
-  // fully written to the result table". Keyed by the claim's own start
-  // index -- collision-free for free, since fetch_add already guarantees
-  // this worker is the sole owner of that start index, so no separate
-  // slot-allocation round trip is needed to place this entry.
+  // Completion log entry: a single int64, 0 = untouched. count > 0 at index
+  // `s` means the claim starting at task index s, covering [s, s+count), is
+  // fully written to the result table. Keyed by the claim's own start index,
+  // which fetch_add already made exclusive -- so no slot-allocation round
+  // trip is needed.
   static constexpr size_t LOG_ENTRY_BYTES = 8;
 
   Config m_config;
@@ -532,26 +466,13 @@ class LockFreeRMAWorkDistributor {
 
   // --- Task publish (manager side) / read (claimant side) ---
 
-  // Publishes tasks.size() tasks in two round trips total, regardless of
-  // how many: one bulk Put for the whole range's [count][data] slots, then
-  // one atomic_set for TOTAL_OFF at the end -- the same batching this class
-  // already applies on the claim side (fetch_add) and the result-write side
-  // (write_result_range). Before this, insert_task()/insert_tasks() called
-  // a per-task publish_task() that did its own Put + atomic_set per task (2
-  // round trips per task, unbatched) -- confirmed via measurement to be the
-  // actual bottleneck once the claim and result paths were already batched:
-  // near-zero-compute-time throughput (isolating publish+claim+write from
-  // real work) only reached ~18K tasks/s against rma_atomic_microbench's
-  // ~900K/s raw ceiling, and this per-task publish loop is exactly the same
-  // shape of problem already fixed twice elsewhere in this file.
+  // Two round trips regardless of batch size: one bulk Put for the whole
+  // range's [count][data] slots, then one atomic_set of TOTAL_OFF. A
+  // per-task publish measured ~18K tasks/s against the ~900K/s raw ceiling
+  // in rma_atomic_microbench.
   //
-  // TOTAL_OFF is only bumped once, after every task's data is durably in
-  // place -- unlike the old per-task version, a claimant can no longer
-  // observe a bumped TOTAL_OFF for some prefix of this batch while the rest
-  // is still being Put; that's fine because TOTAL_OFF is the only signal
-  // that gates claiming, and this batch was never claimable mid-flight
-  // either way (compare to write_result_range's ordering requirement, which
-  // is about a *different* pair of fields).
+  // TOTAL_OFF is bumped last, once every task's data is in place, so a
+  // claimant can never see an index whose payload is still in flight.
   void publish_tasks(std::span<const TaskT> tasks) {
     if (tasks.empty()) return;
     const int64_t start = m_total_tasks;
@@ -636,13 +557,11 @@ class LockFreeRMAWorkDistributor {
   void harvest_task_errors() {
     const int64_t claimed = std::min(atomic_read(ERROR_COUNT_OFF), kMaxRecordedErrors);
     if (claimed <= 0) return;  // LCOV_EXCL_LINE -- only reachable on a spurious flag
-    // Reads the whole (at most kMaxRecordedErrors) table and takes only the
-    // slots that are ready, rather than a contiguous frontier: slots are
-    // claimed in fetch_add order but completed out of order, so a slot still in
-    // flight must be skipped now and picked up later, not waited on. That is
-    // safe because a claimant flushes its record before writing the completion
-    // log entry that brings the manager here, so by the time this runs for a
-    // given failure, that failure's own slot is readable.
+    // Takes ready slots anywhere in the table, not a contiguous frontier:
+    // slots are claimed in fetch_add order but completed out of order, so an
+    // in-flight slot is skipped now and picked up later. Safe because a
+    // claimant flushes its record before the log entry that brings the
+    // manager here.
     std::vector<std::byte> buf(static_cast<size_t>(claimed) * ERROR_SLOT_BYTES);
     get_bytes_local(buf.data(), buf.size(), error_slot(0));
     for (int64_t i = 0; i < claimed; ++i) {
@@ -687,27 +606,16 @@ class LockFreeRMAWorkDistributor {
     flush_remote();
   }
 
-  // Owner-only. Three round trips regardless of how many batches turn out
-  // to be ready: one to see how far claiming has progressed (HEAD_OFF), one
-  // bulk read of the completion log over the unscanned range, one bulk read
-  // of the result table over whatever contiguous prefix of that range the
-  // log confirms is done. A gap (a still-in-flight or straggling batch)
-  // simply stops the contiguous-prefix scan there for this call; already-
-  // confirmed entries past a gap are picked up on a later call once the gap
-  // fills in, at the cost of re-scanning that stretch of the log -- cheap,
-  // since the scan is one bulk Get either way, not a per-entry round trip.
+  // Owner-only. Three round trips however many claims are ready: read
+  // HEAD_OFF, bulk-read the log over the unscanned range, bulk-read the
+  // results over whatever contiguous prefix the log confirms. A gap ends
+  // the scan for this pass and is picked up on the next one.
   //
-  // Goes through the real RMA API (Fetch_and_op/Get), even though the
-  // target is this same rank: MPI only guarantees a window owner sees
-  // another rank's completed RMA writes via its *local* loads under
-  // MPI_WIN_UNIFIED, not MPI_WIN_SEPARATE, and the RMA API is correct
-  // either way. Confirmed necessary via a caught hang earlier: plain local
-  // loads on m_window_buffer never observed workers' writes at all.
-  //
-  // On MS-MPI (always SEPARATE), even these self-targeted Gets need the
-  // two-sided progress engine driven between polls -- see detail::rma_wait_idle
-  // (MPI_Iprobe). flush_all alone is not enough; without Iprobe the manager
-  // harvest loop spins forever seeing HEAD/log as unchanged.
+  // Uses the RMA API even though the target is this rank: under
+  // MPI_WIN_SEPARATE a window owner is not guaranteed to see remote writes
+  // through local loads. On MS-MPI these self-targeted Gets also need the
+  // two-sided progress engine driven between polls (detail::rma_wait_idle);
+  // flush_all alone leaves the loop spinning on an unchanging HEAD.
   void harvest_ready_results() {
     assert(is_root_manager());
     int64_t head_in = 0, head_now = 0;
