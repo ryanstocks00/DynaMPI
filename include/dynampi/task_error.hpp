@@ -86,7 +86,7 @@ class TaskErrorLog {
 
 // Wire form for the tree distributors: "<rank>\n<message>".
 //
-// A leaf's failure has to reach the root through however many coordinators sit
+// A leaf's failure has to reach the root through however many managers sit
 // in between, and each hop only knows the child it received from -- so the
 // originating rank travels in the payload rather than being read off
 // MPI_SOURCE. The flat distributors, where the reporting rank is the

@@ -186,7 +186,7 @@ Two semantics worth knowing:
 | `static prioritize_tasks` | — | ✓ | ✓ | — | — |
 
 ¹ Compiles, but the hierarchical batch path raises `DYNAMPI_UNIMPLEMENTED` as
-soon as a coordinator has children — treat prioritization as naive-only.
+soon as a manager has children — treat prioritization as naive-only.
 ² Accepted for interface compatibility; the priority is ignored.
 
 ## Options
@@ -309,7 +309,7 @@ variable-length ones.  That flag decides where a type may be used:
 |---------|-------|---------------|----------------------------------|
 | Fixed-size scalar | ✓ | ✓ | ✓ |
 | Fixed-size struct | ✓ | ✓ | ✓ |
-| Variable-length | ✓ | **✗** | ✓, up to `max_task_count` / `max_result_count` elements |
+| Variable-length | ✓ | ✓ | ✓, up to `max_task_count` / `max_result_count` elements |
 
 ### Custom types
 

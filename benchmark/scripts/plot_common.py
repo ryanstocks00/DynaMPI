@@ -5,9 +5,10 @@ from __future__ import annotations
 
 import argparse
 import csv
+import math
 import os
 import re
-from collections.abc import Callable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from typing import Any, TypeVar, cast
 
@@ -128,10 +129,10 @@ def normalize_mode(mode: str) -> str:
 def format_fanout(fanout: int) -> str:
     """Name a hierarchy depth by its number of coordination layers.
 
-    ``0`` disables upper grouping, leaving manager -> node coordinators:
+    ``0`` disables upper grouping, leaving root manager -> node managers:
     two layers. The default (negative, auto) inserts a grouping level above
-    the node coordinators once they outnumber ~32, giving manager -> group
-    leaders -> node coordinators: three layers. Below that threshold auto
+    the node managers once they outnumber ~32, giving root manager -> group
+    leaders -> node managers: three layers. Below that threshold auto
     resolves to the same flat topology as ``0``.
     """
     if fanout < 0:
@@ -387,7 +388,12 @@ def plot_node_series(
 
 
 def finish_compact_node_plot(
-    ax: Axes, all_nodes: set[int], handles: Sequence[Any], labels: Sequence[str], ylabel: str
+    ax: Axes,
+    all_nodes: set[int],
+    handles: Sequence[Any],
+    labels: Sequence[str],
+    ylabel: str,
+    ylim: tuple[float, float] | None = None,
 ) -> None:
     """Common tail for a per-series node-count plot: axes, grid, and a compact legend.
 
@@ -395,12 +401,40 @@ def finish_compact_node_plot(
     data from the upper-left corner; a function whose legend needs a
     different placement (locations, ncol, etc.) calls legend_avoiding_data()
     directly instead.
+
+    ``ylim`` pins the vertical range so that a set of figures meant to be read
+    against each other shares one axis; it must be applied before the legend
+    is placed, since legend_avoiding_data() picks its corner from where the
+    data falls within the axes.
     """
     ax.set_xlabel("Nodes")
     ax.set_ylabel(ylabel)
     set_log_node_axes(ax, all_nodes)
+    if ylim is not None:
+        ax.set_ylim(ylim)
     add_light_grid(ax)
     legend_avoiding_data(ax, handles, labels, locations=("upper left",), **COMPACT_LEGEND_STYLE)
+
+
+def log_padded_limits(
+    values: Iterable[float], pad: float = 0.09
+) -> tuple[float, float] | None:
+    """Bound ``values`` on a log axis with the same relative padding as margins().
+
+    ``pad`` matches the y-margin set_log_node_axes() applies, so a figure given
+    these limits sits in its frame exactly like an autoscaled one; the point of
+    passing them explicitly is to make several figures share a range rather
+    than each picking its own. Returns None when nothing can be bounded, so
+    callers fall back to autoscaling.
+    """
+    positive = [value for value in values if value > 0]
+    if not positive:
+        return None
+    low, high = min(positive), max(positive)
+    if low == high:
+        low, high = low / 2.0, high * 2.0
+    span = math.log10(high / low)
+    return 10 ** (math.log10(low) - pad * span), 10 ** (math.log10(high) + pad * span)
 
 
 def format_node_tick(nodes: int) -> str:

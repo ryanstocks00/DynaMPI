@@ -170,7 +170,7 @@ participate together.
 
 The claim and write steps are exposed as separate non-blocking calls
 (`try_claim()` / `write_result_range()`) rather than a single claim-compute-write
-loop, because a coordinator does not compute what it claims — it republishes into
+loop, because a manager does not compute what it claims — it republishes into
 the level below and writes results back only once they return.  A leaf worker
 simply calls both back to back, reassembling the flat class's loop from the same
 two primitives.

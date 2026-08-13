@@ -19,7 +19,7 @@ DURATION_S="${DURATION_S:-10}"
 # hierarchical_lockfree_rma and hierarchical only: forwarded as
 # --max_upper_fanout (ignored by every other distributor, which is run
 # exactly once regardless of how many values are listed here). Negative
-# (default) = auto. 0 = single unbounded coordinator level. See
+# (default) = auto. 0 = single unbounded manager level. See
 # launch_aurora_strong_scaling.sh for the matching Aurora behavior.
 IFS=' ' read -r -a MAX_UPPER_FANOUT_LIST <<< "${MAX_UPPER_FANOUT_LIST:-${MAX_UPPER_FANOUT:--1}}"
 # Lifetime task capacity of each preallocated RMA window (lockfree_rma and

@@ -39,7 +39,7 @@ namespace detail {
 // communicator and factored out here so it can be composed at multiple
 // levels of a tree topology -- see HierarchicalLockFreeRMAWorkDistributor
 // below, which instantiates one LockFreeRMALevel per tree level: manager<->node
-// coordinators, and, independently, node coordinator<->its local workers.
+// managers, and, independently, node manager<->its local workers.
 //
 // Unlike a gather/barrier/broadcast round protocol, there is no collective
 // lockstep here at all: publishing, claiming, writing results, and harvesting
@@ -51,7 +51,7 @@ namespace detail {
 //
 // The claim/write-result API is split into discrete non-blocking steps
 // (try_claim() / write_result_range()) rather than a single "claim, compute,
-// write" loop like the flat distributor's run_worker(): a coordinator using
+// write" loop like the flat distributor's run_worker(): a manager using
 // this level as a claimant doesn't compute results itself, it republishes
 // claimed tasks into a *different* LockFreeRMALevel (the local level) and only
 // later, once those results come back, writes them here -- so the caller
@@ -187,7 +187,7 @@ class LockFreeRMALevel {
   // derivation (this is the same logic, factored out so it isn't tied to a
   // single top-level result vector -- see this level's callers, which each
   // route the returned batch somewhere different: the top-level manager
-  // appends it straight to its own result buffer, while a node coordinator
+  // appends it straight to its own result buffer, while a node manager
   // routes it into a relay queue bound for the leader level).
   std::vector<ResultT> harvest_ready_results() {
     assert(is_owner());
@@ -317,7 +317,7 @@ class LockFreeRMALevel {
 
   // Refreshes the cached finished-observation; call periodically (try_claim()
   // does not do this itself, since a caller managing multiple levels --
-  // see run_node_coordinator() -- may want to control polling cadence
+  // see run_node_manager() -- may want to control polling cadence
   // explicitly rather than pay a FINISHED_OFF read on every try_claim()).
   bool check_finished() {
     if (!m_seen_finished && atomic_read(FINISHED_OFF) != 0) m_seen_finished = true;
@@ -356,7 +356,7 @@ class LockFreeRMALevel {
   }
 
   // Claimant-side. Publishes one failed task into the error table, preserving
-  // the rank that actually ran it -- a coordinator relaying a subtree's failure
+  // the rank that actually ran it -- a manager relaying a subtree's failure
   // upward reports the original rank, not its own. Must complete before the log
   // entry that advertises it; every RMA helper here flushes its target before
   // returning, so calling this before write_result_range() is enough.
@@ -376,7 +376,7 @@ class LockFreeRMALevel {
     const int64_t ready = static_cast<int64_t>(error.worker_rank) + 1;
     if (local_only()) {
       // LCOV_EXCL_START -- only reachable when this level's own owned group
-      // is a singleton (an odd coordinator count under max_upper_fanout
+      // is a singleton (an odd manager count under max_upper_fanout
       // leaves one such leftover group; see setup_upper_chain()) AND a task
       // fails there specifically, rather than in the far more common case
       // of a genuinely remote claimant.
@@ -662,7 +662,7 @@ class LockFreeRMALevel {
 // HierarchicalLockFreeRMAWorkDistributor
 //
 // Combines HierarchicalWorkDistributor's node-aware tree topology
-// (manager <-> per-node coordinators <-> per-node local workers) with
+// (root manager <-> per-node managers <-> per-node local workers) with
 // LockFreeRMAWorkDistributor's one-sided, collective-free RMA
 // protocol (fetch-and-add claiming, batched Put-based result return via a
 // completion log), applied independently at each level of the tree.
@@ -675,23 +675,23 @@ class LockFreeRMALevel {
 // capacity to service that RMA traffic becomes the ceiling (measured
 // plateauing around 2.1-2.26M tasks/s from 32 nodes onward, while
 // HierarchicalWorkDistributor's tree topology kept climbing to 5.2M/s at
-// 128 nodes by spreading coordination load across many coordinators). This
+// 128 nodes by spreading coordination load across many managers). This
 // class applies that same fix -- one independent LockFreeRMALevel window per
-// node coordinator (the local level) plus one at the leader level -- to the
+// node manager (the local level) plus one at the leader level -- to the
 // lock-free RMA protocol specifically, aiming to combine both distributors'
 // advantages: no collective-call overhead *and* no single-window ceiling.
 //
-// A node coordinator plays two roles at once: owner of its local level, and
+// A node manager plays two roles at once: owner of its local level, and
 // claimant of the leader level. The one genuinely new piece of bookkeeping
-// versus the flat class: a coordinator doesn't compute claimed tasks
+// versus the flat class: a manager doesn't compute claimed tasks
 // itself, it republishes them into its local level and only later, once
 // local results are confirmed, relays them upward -- and because local
 // harvesting returns whatever contiguous prefix is ready (which can span
 // multiple leader-level claims, or only partially cover one), the
-// coordinator tracks a small FIFO of {leader_start, local_start, local_end}
+// manager tracks a small FIFO of {leader_start, local_start, local_end}
 // relay entries (m_pending_relays) and slices harvested local-result batches
 // against that queue's boundaries to know when and where to write each
-// completed leader-level range back. See run_node_coordinator().
+// completed leader-level range back. See run_node_manager().
 //
 // Results are unordered (see LockFreeRMALevel); use a different distributor if
 // task-index-ordered output is required. Task prioritization and detailed
@@ -713,12 +713,12 @@ class HierarchicalLockFreeRMAWorkDistributor {
     // contention on each local RMA window and making the upper hierarchy
     // useful on machines with many ranks per node.
     int max_local_group_size = 0;
-    // <0 (default, "auto"): pick a fanout from coordinator count -- see
+    // <0 (default, "auto"): pick a fanout from manager count -- see
     // setup_upper_chain()'s auto-fanout comment for the formula and the
     // measurements behind it. 0: disabled, exactly the two-level tree --
-    // manager talks directly to every node coordinator. >0: caps how many
+    // root manager talks directly to every node manager. >0: caps how many
     // direct claimants any single upper-level window may have; if the node
-    // coordinator count exceeds this, coordinators are grouped (recursively,
+    // manager count exceeds this, managers are grouped (recursively,
     // as many times as needed) into a tree of intermediate levels so no
     // single window -- not even the manager's -- ever has more than
     // max_upper_fanout direct claimants. See setup_upper_chain() for the
@@ -788,7 +788,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
       // LockFreeRMALevel teardown is collective only over that level's
       // communicator.  Without a final world-wide rendezvous, ranks that
       // participate in fewer levels can start constructing the next
-      // distributor while coordinators are still freeing subgroup windows.
+      // distributor while managers are still freeing subgroup windows.
       // MS-MPI can then stop making progress (or abort) as the old and new
       // window lifecycles overlap.
       //
@@ -911,7 +911,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
     const bool has_upper_chain = m_parent_level.has_value() || !m_owned_upper_levels.empty();
     if (m_local_level && m_local_comm->size() > 1) {
       if (has_upper_chain) {
-        run_node_coordinator();
+        run_node_manager();
       } else {
         run_local_worker();
       }
@@ -939,10 +939,10 @@ class HierarchicalLockFreeRMAWorkDistributor {
 
   // Levels this rank OWNS in the upper chain, ordered top (closest to the
   // manager) to bottom (closest to m_local_level). The manager always has
-  // exactly one entry (see manager_level()). A node coordinator promoted to
+  // exactly one entry (see manager_level()). A node manager promoted to
   // lead one or more groups (max_upper_fanout mode) has one entry per level
   // it was promoted at, each one also self-claimed (see LockFreeRMALevel's
-  // claimant-side API comment). A plain (non-promoted) coordinator or leaf
+  // claimant-side API comment). A plain (non-promoted) manager or leaf
   // leader-worker has none.
   //
   // std::deque, not std::vector: LockFreeRMALevel manages an MPI_Win exposing
@@ -983,10 +983,10 @@ class HierarchicalLockFreeRMAWorkDistributor {
     if (local_opt.has_value()) m_local_comm.emplace(std::move(*local_opt));
 
     const bool is_manager = (m_world_comm.rank() == m_config.manager_rank);
-    bool is_node_coordinator = false;
-    if (m_local_comm.has_value()) is_node_coordinator = (m_local_comm->rank() == 0);
+    bool is_node_manager = false;
+    if (m_local_comm.has_value()) is_node_manager = (m_local_comm->rank() == 0);
 
-    const int leader_color = (is_manager || is_node_coordinator) ? 0 : MPI_UNDEFINED;
+    const int leader_color = (is_manager || is_node_manager) ? 0 : MPI_UNDEFINED;
     auto leader_opt = m_world_comm.split(leader_color, m_world_comm.rank());
     if (!leader_opt.has_value()) return;  // plain local worker: no upper-chain role at all
 
@@ -1026,16 +1026,16 @@ class HierarchicalLockFreeRMAWorkDistributor {
   // alive for the LockFreeRMALevel objects' lifetime, since LockFreeRMALevel only
   // stores a raw MPI_Comm handle) / m_owned_upper_levels / m_parent_level.
   //
-  // `flat_comm` is manager + every node coordinator -- exactly the single
+  // `flat_comm` is the root manager + every node manager -- exactly the single
   // flat level this class used before max_upper_fanout existed. If
-  // max_upper_fanout is disabled (0) or the coordinator count already fits
+  // max_upper_fanout is disabled (0) or the manager count already fits
   // under it, that flat comm IS the whole chain: one level, owned by the
-  // manager, claimed directly by every coordinator -- byte-for-byte today's
+  // manager, claimed directly by every node manager -- byte-for-byte today's
   // behavior.
   //
-  // Otherwise, coordinators (manager excluded) are grouped into a k-ary tree
+  // Otherwise, node managers (root manager excluded) are grouped into a k-ary tree
   // with branching factor max_upper_fanout: repeatedly split the current
-  // "round" of coordinator-like ranks into groups of at most
+  // "round" of manager-like ranks into groups of at most
   // max_upper_fanout, promote each group's local rank 0 to own that group's
   // level, and treat the promoted set as the next round's input -- until a
   // round's membership already fits directly under the manager. A rank
@@ -1059,13 +1059,13 @@ class HierarchicalLockFreeRMAWorkDistributor {
     // to feed one task to every child in its immediate subtree.
     const int leaf_claim_width = std::max(1, local_children);
 
-    const int coordinator_count = flat_comm.size() - 1;
-    // Auto mode (max_upper_fanout < 0): below ~32 coordinators, a fanout
-    // sweep at 128 coordinators (128 nodes) showed grouped and flat
+    const int manager_count = flat_comm.size() - 1;
+    // Auto mode (max_upper_fanout < 0): below ~32 managers, a fanout
+    // sweep at 128 managers (128 nodes) showed grouped and flat
     // topologies are statistically indistinguishable, so stay flat there --
     // fewer moving parts, no relay-depth cost for no measured benefit. At
     // and above that, group into a tree with branching factor equal to the
-    // smallest power of 2 not less than sqrt(coordinator_count): the same
+    // smallest power of 2 not less than sqrt(manager_count): the same
     // sweep measured branching factor 8 (a deeper tree) at ~6x worse
     // throughput than 16 or 32 (both matching the flat baseline), and
     // branching factor 64 (a shallower tree that concentrates all traffic
@@ -1073,9 +1073,9 @@ class HierarchicalLockFreeRMAWorkDistributor {
     // of 2 >= sqrt(128) ~= 11.3, landing in that measured sweet spot.
     const int effective_fanout = [&] {
       if (m_config.max_upper_fanout < 0) {
-        if (coordinator_count <= 32) return std::numeric_limits<int>::max();
+        if (manager_count <= 32) return std::numeric_limits<int>::max();
         int fanout = 1;
-        const double target = std::sqrt(static_cast<double>(coordinator_count));
+        const double target = std::sqrt(static_cast<double>(manager_count));
         while (fanout < target) fanout *= 2;
         return fanout;
       }
@@ -1083,7 +1083,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
                                            : std::numeric_limits<int>::max();
     }();
 
-    if (coordinator_count <= effective_fanout) {
+    if (manager_count <= effective_fanout) {
       // Fits directly under the manager: exactly today's single flat level
       // (also always true when max_upper_fanout is disabled).
       MPIGroup flat_group(flat_comm);
@@ -1096,10 +1096,10 @@ class HierarchicalLockFreeRMAWorkDistributor {
       return;
     }
 
-    // Real grouping needed. Carve "coordinators only" out of flat_comm --
+    // Real grouping needed. Carve "managers only" out of flat_comm --
     // every member of flat_comm (manager included) calls this split
-    // together, even though only coordinators use the result.
-    auto coordinators_opt = flat_comm.split(is_manager ? MPI_UNDEFINED : 0, flat_comm.rank());
+    // together, even though only managers use the result.
+    auto managers_opt = flat_comm.split(is_manager ? MPI_UNDEFINED : 0, flat_comm.rank());
 
     bool is_final_round_leader = false;
     int feed_width = leaf_claim_width;
@@ -1108,7 +1108,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
       // move assignment (only move construction -- see its deleted
       // operator=), so replacing round_comm each iteration needs
       // emplace()'s in-place construction rather than `round_comm = ...`.
-      std::optional<MPICommunicator<>> round_comm(std::move(*coordinators_opt));
+      std::optional<MPICommunicator<>> round_comm(std::move(*managers_opt));
       while (true) {
         if (round_comm->size() <= effective_fanout) {
           // This round's membership (this rank included) already fits
@@ -1140,7 +1140,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
     }
 
     // Attach to the manager: every ORIGINAL member of flat_comm (manager +
-    // every coordinator, whether promoted zero, one, or many times) reaches
+    // every manager, whether promoted zero, one, or many times) reaches
     // this exact call.
     auto top_opt = flat_comm.split((is_manager || is_final_round_leader) ? 0 : MPI_UNDEFINED,
                                    flat_comm.rank());
@@ -1175,7 +1175,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
   // One (parent, child) bridge relationship: claim tasks from
   // `parent` and republish them into `child` (a *different* LockFreeRMALevel
   // this rank owns), relaying completed results back to `parent` once
-  // they're confirmed. This is the single-hop unit run_node_coordinator()
+  // they're confirmed. This is the single-hop unit run_node_manager()
   // used to run exactly once, inline, before max_upper_fanout existed --
   // factored out here so a rank promoted through several grouping rounds
   // (see setup_upper_chain()) can run several of these, chained, in one
@@ -1217,7 +1217,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
   // finish transition) -- callers use this, per hop, to decide whether that
   // hop's OWN parent-level polling should back off, independent of every
   // other hop's state and independent of child-harvest activity (see
-  // run_node_coordinator()'s idle_wait() comment for why conflating the two
+  // run_node_manager()'s idle_wait() comment for why conflating the two
   // was a real, confirmed bottleneck: a rank bridging levels has no natural
   // compute-time delay between parent polls the way a rank that actually
   // computes tasks does, so without an explicit and correctly-scoped
@@ -1253,11 +1253,11 @@ class HierarchicalLockFreeRMAWorkDistributor {
     // it adds *ordering* latency, since a fully-caught-up relay near the
     // back of the queue still can't flush until everything ahead of it
     // does. Confirmed as a real, severe bottleneck at 32+ nodes:
-    // without this cap, a coordinator claims from parent every iteration
+    // without this cap, a manager claims from parent every iteration
     // whenever parent isn't drained (no natural throttle, same reasoning as
     // the leader-poll backoff above, just for the claim side instead of the
     // idle side), racing far ahead of what child's claimants can actually
-    // drain -- one observed coordinator had 670 queued relay entries (roughly
+    // drain -- one observed manager had 670 queued relay entries (roughly
     // 9,300 tasks) after one second, and since flushing is strictly
     // FIFO-ordered, that whole backlog has to clear before parent ever sees
     // the tail end of it confirmed, regardless of how fast child itself is
@@ -1369,7 +1369,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
 
   // Builds the chain of bridge hops this rank participates in, from its
   // immediate parent down to (but not including) `terminal_extra` (pass
-  // m_local_level for a node coordinator with real local peers, or nullptr
+  // m_local_level for a node manager with real local peers, or nullptr
   // for a leaf leader-worker, which claims+computes directly against the
   // last upper level instead -- see run_leaf_leader_worker()). Most ranks
   // (never promoted -- see setup_upper_chain()) get exactly one hop here,
@@ -1386,20 +1386,20 @@ class HierarchicalLockFreeRMAWorkDistributor {
   // The bottom-most level in this rank's own upper chain: its last owned
   // group level if it was promoted at least once, otherwise its immediate
   // parent. This is what a terminal action (feeding a real local_level in
-  // run_node_coordinator(), or claiming+computing directly in
+  // run_node_manager(), or claiming+computing directly in
   // run_leaf_leader_worker()) attaches to.
   detail::LockFreeRMALevel<TaskT, ResultT>& last_upper_level() {
     return m_owned_upper_levels.empty() ? *m_parent_level : m_owned_upper_levels.back();
   }
 
-  // A node coordinator: bridges its parent level (claiming tasks
+  // A node manager: bridges its parent level (claiming tasks
   // from the manager or an intermediate group level -- see
   // setup_upper_chain()) down to its local level (its own window, published
   // to for its local workers to claim from), and, if promoted to lead one
   // or more groups, one or more intermediate hops in between. Unlike a
   // plain worker, this rank never computes a task itself -- see
   // step_bridge_hop() and the class comment for the full rationale.
-  void run_node_coordinator() {
+  void run_node_manager() {
     std::vector<BridgeHop> hops = build_upper_hops();
     hops.push_back(BridgeHop{&last_upper_level(), &*m_local_level});
 
@@ -1421,7 +1421,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
     }
   }
 
-  // A plain local worker: claims tasks from its node coordinator, computes
+  // A plain local worker: claims tasks from its node manager, computes
   // them inline, writes results back -- the same claim/write pattern
   // LockFreeRMAWorkDistributor::run_worker() uses against its one
   // flat window, here against the local level instead.

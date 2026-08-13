@@ -86,7 +86,7 @@ if (dist.is_root_manager()) {
 |---------|---------|
 | **Manager** | Rank `Config::manager_rank` (default `0`). Owns the queue, collects results, and is the only rank allowed to call `insert_task*` / `run_tasks` / `finish_remaining_tasks`. |
 | **Worker** | Every other rank. Runs `run_worker()` — automatically from the constructor unless you set `auto_run_workers = false`. |
-| **Coordinator** | In the hierarchical distributors, an intermediate rank (one per node by default) that relays batches of tasks down and results up, so the manager never talks to every rank directly. |
+| **Node manager** | In the hierarchical distributors, an intermediate rank (one per node by default) that relays batches of tasks down and results up, so the root manager never talks to every rank directly. |
 | **Task** | A `TaskT` value. Must be sendable — see [task and result types](api.md#task-and-result-types). |
 | **Result** | Whatever the worker function returns. Collected on the manager. |
 

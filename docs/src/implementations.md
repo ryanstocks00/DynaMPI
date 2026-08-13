@@ -152,52 +152,53 @@ currently unused by the implementation.
 `mpi_manager_worker_distribution`, and `dynampi::DynamicWorkDistributor` is an
 alias for it.
 
-Ranks are arranged in a tree.  Leaf workers only ever talk to their coordinator;
-coordinators exchange *batches* with their own parent, so the manager's message
-count scales with the number of coordinators rather than the number of ranks.
+Ranks are arranged in a tree.  Leaf workers only ever talk to their node
+manager; node managers exchange *batches* with their own parent, so the root
+manager's message count scales with the number of node managers rather than the
+number of ranks.
 
 ```text
-  Manager ──┬── Coordinator 0 ──┬── Worker 0
-            │   (node 0)        ├── Worker 1
-            │                   └── Worker 2
-            ├── Coordinator 1 ──┬── Worker 3
-            │   (node 1)        └── Worker 4
-            └── Coordinator 2 ──┬── Worker 5
-                (node 2)        └── Worker 6
+  Root manager ──┬── Node manager 0 ──┬── Worker 0
+                 │       (node 0)     ├── Worker 1
+                 │                    └── Worker 2
+                 ├── Node manager 1 ──┬── Worker 3
+                 │       (node 1)     └── Worker 4
+                 └── Node manager 2 ──┬── Worker 5
+                         (node 2)     └── Worker 6
 ```
 
 ### Topology
 
-**`coordinator_per_node = true` (default).**
+**`manager_per_node = true` (default).**
 `MPI_Comm_split_type(MPI_COMM_TYPE_SHARED)` discovers physical nodes.  Local rank
-0 of each node becomes that node's coordinator; the manager is excluded from its
-own node's local group so it is never also a coordinator.  Manager plus
-coordinators form the *leader layer*.
+0 of each node becomes that node's manager; the root manager is excluded from its
+own node's local group so it is never also a node manager.  The root manager plus
+the node managers form the *leader layer*.
 
 Two knobs reshape this:
 
 - `max_local_group_size > 0` splits large nodes into several contiguous local
-  groups, producing more (smaller) coordinators.  This reduces per-coordinator
-  contention, and lets a single-node job exercise the multi-coordinator paths.
+  groups, producing more (smaller) node managers.  This reduces per-manager
+  contention, and lets a single-node job exercise the multi-manager paths.
 - `max_upper_fanout` caps how many direct children any leader-layer rank may
-  have.  If there are more coordinators than that, they are recursively grouped
+  have.  If there are more managers than that, they are recursively grouped
   into a k-ary tree of intermediate leaders, so not even the manager exceeds the
-  cap.  `-1` (default) is auto: stay flat at ≤ 32 coordinators, otherwise use the
-  smallest power of two ≥ `sqrt(coordinator_count)`.  `0` disables grouping
+  cap.  `-1` (default) is auto: stay flat at ≤ 32 managers, otherwise use the
+  smallest power of two ≥ `sqrt(manager_count)`.  `0` disables grouping
   entirely (one flat leader layer).
 
-**`coordinator_per_node = false`.**  A virtual tree derived purely from rank
-order, with fan-out `max_workers_per_coordinator` (default `max(2, sqrt(N))`).
+**`manager_per_node = false`.**  A virtual tree derived purely from rank
+order, with fan-out `max_workers_per_manager` (default `max(2, sqrt(N))`).
 Useful when shared-memory splitting is unavailable or misleading (e.g. under
 simulators).
 
 ### Protocol
 
 Leaf workers use the unbatched `REQUEST` / `TASK` / `RESULT` exchange.
-Coordinators use the batched one:
+Managers use the batched one:
 
 ```text
-coordinator:
+manager:
   top_up_pipeline(1)                       # one REQUEST_BATCH(n) to parent
   loop until DONE:
     release any prefetched batch into the work queue
@@ -213,46 +214,51 @@ coordinator:
 
 Two details matter for throughput:
 
-- **Pipelining.** A coordinator keeps `pipeline_depth` batch requests in flight
+- **Pipelining.** A manager keeps `pipeline_depth` batch requests in flight
   (default 2 = double buffering) so children never wait a full parent round trip
   between batches.  Replies that arrive mid-round are quarantined until the round
   boundary, so a round can never overshoot into the next round's tasks.  Deeper
   pipelines hide more latency but commit tasks further ahead, which coarsens load
-  balancing — tasks already handed to one coordinator cannot be reassigned to an
+  balancing — tasks already handed to one manager cannot be reassigned to an
   idle sibling.
 - **Partial result flushing.** Results are forwarded upward at every round
   boundary, whether or not that round is complete.  Waiting for a round's slowest
   straggler would otherwise stall results from children that finished long ago.
 
-Batch size is `num_direct_children × batch_size_multiplier`.
+Batch size is `subtree_leaf_count × batch_size_multiplier` — the number of leaf
+workers a manager is responsible for feeding, including its own node's, not
+the number of children it sends to.  The two differ at every level above the
+node managers, since a leader's leader-layer children are themselves
+managers fronting whole nodes: at 2048 nodes with 7 ranks per node a leader
+has 69 direct children but 384 leaf workers beneath it, and the gap grows by a
+factor of the fanout per level.  `HierarchicalLockFreeRMAWorkDistributor` sizes
+its claims the same way (`setup_upper_chain()`'s `feed_width`).
 
 ### Constraints
 
-!!! warning "Fixed-size task and result types only"
-    `TaskT` and `ResultT` must satisfy `MPI_Type<T>::resize_required == false` —
-    scalars and [fixed-size structs](api.md#custom-types), not `std::vector<T>`
-    or `std::string`.  A variable-length `ResultT` raises
-    `DYNAMPI_UNIMPLEMENTED` as soon as a coordinator receives a result, and the
-    batch path does not pack variable-length tasks correctly.
-    Use `NaiveWorkDistributor` or one of the lock-free RMA distributors for
-    variable-length payloads.
+!!! note "Variable-length payloads are supported"
+    `TaskT` and `ResultT` may be `std::vector<T>`, `std::string`, or any other
+    type with `MPI_Type<T>::resize_required == true`.  Single tasks and results
+    are sent with a probed count; batches are packed into a length-prefixed flat
+    buffer (`detail::pack_variable_batch`), so no separate code path is needed
+    and there is no per-element cap of the kind the RMA distributors impose.
 
 !!! warning "Prioritization is not supported here"
     The `enable_prioritization` option compiles and `insert_task(task, priority)`
-    exists, but any coordinator that receives a `TASK_BATCH` hits
+    exists, but any manager that receives a `TASK_BATCH` hits
     `DYNAMPI_UNIMPLEMENTED` (undefined behaviour under `NDEBUG`).  It happens to
-    work only in degenerate topologies where no coordinator has children.
+    work only in degenerate topologies where no manager has children.
 
 ### Configuration
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `max_workers_per_coordinator` | `optional<int>` | `max(2, sqrt(N))` | Fan-out of the virtual tree. Only used when `coordinator_per_node == false`. |
-| `batch_size_multiplier` | `int` | `2` | Batch request size = direct children × this. |
+| `max_workers_per_manager` | `optional<int>` | `max(2, sqrt(N))` | Fan-out of the virtual tree. Only used when `manager_per_node == false`. |
+| `batch_size_multiplier` | `int` | `1` | Batch request size = subtree leaf workers × this. |
 | `pipeline_depth` | `int` | `2` | Batch requests kept outstanding, including the active round. `1` disables prefetching. |
-| `coordinator_per_node` | `bool` | `true` | Use shared-memory node discovery instead of a rank-order virtual tree. |
-| `max_local_group_size` | `int` | `0` | `> 0` splits nodes into local groups of at most this size. `coordinator_per_node` only. |
-| `max_upper_fanout` | `int` | `-1` | Max direct leader-layer children. `-1` auto, `0` disabled, `> 0` explicit. `coordinator_per_node` only. |
+| `manager_per_node` | `bool` | `true` | Use shared-memory node discovery instead of a rank-order virtual tree. |
+| `max_local_group_size` | `int` | `0` | `> 0` splits nodes into local groups of at most this size. `manager_per_node` only. |
+| `max_upper_fanout` | `int` | `-1` | Max direct leader-layer children. `-1` auto, `0` disabled, `> 0` explicit. `manager_per_node` only. |
 
 `message_batch_size` is present on `Config` but currently unused.
 
@@ -350,12 +356,12 @@ bottleneck otherwise.
 ceiling.
 
 Takes the lock-free RMA protocol above and instantiates it once *per level* of the
-node-aware tree: one window at the leader level (manager ↔ coordinators), plus an
-independent window per node (coordinator ↔ its local workers).  Each level is an
+node-aware tree: one window at the leader level (root manager ↔ node managers), plus an
+independent window per node (manager ↔ its local workers).  Each level is an
 independent `detail::LockFreeRMALevel`, so claiming, publishing and harvesting stay
 purely one-sided — composing hierarchically reintroduces no collectives.
 
-A node coordinator plays two roles simultaneously: **owner** of its local level
+A node manager plays two roles simultaneously: **owner** of its local level
 and **claimant** of the level above.  It does not compute tasks itself.  Instead
 each `BridgeHop` runs, non-blocking, per iteration:
 
@@ -401,9 +407,9 @@ other ranks still finishing setup.
 | `max_local_tasks` | `8192` | Lifetime task capacity of each **node-local** window. |
 | `max_task_count` / `max_result_count` | `256` | Per-slot element caps, as for the flat variant. |
 | `max_local_group_size` | `0` | `> 0` splits nodes into smaller local groups. |
-| `max_upper_fanout` | `-1` | `-1` auto (flat at ≤ 32 coordinators, else smallest power of two ≥ `sqrt(coordinator_count)`), `0` disabled, `> 0` explicit. |
+| `max_upper_fanout` | `-1` | `-1` auto (flat at ≤ 32 managers, else smallest power of two ≥ `sqrt(manager_count)`), `0` disabled, `> 0` explicit. |
 
-Memory is the flat formula applied per window, so a coordinator pays for its
+Memory is the flat formula applied per window, so a manager pays for its
 local window *and* its share of the upper ones.
 
 ---
@@ -415,15 +421,15 @@ local window *and* its share of the upper ones.
 | Communication | Two-sided | Two-sided, batched | Passive RMA | Passive RMA, per level |
 | Collectives on the hot path | No | No | No | No |
 | Ordered results | **Yes** | No | No | No |
-| Arbitrary `TaskT` / `ResultT` | Yes | Fixed-size only | Yes | Yes |
-| Variable-length payloads | Yes | **No** | Yes (capped) | Yes (capped) |
+| Arbitrary `TaskT` / `ResultT` | Yes | Yes | Yes | Yes |
+| Variable-length payloads | Yes | Yes | Yes (capped) | Yes (capped) |
 | [Custom structs](api.md#custom-types) | Yes | Yes | Yes | Yes |
 | Prioritization | **Yes** | No | No (ignored) | No |
 | Statistics | `Aggregated`, `Detailed` | `Aggregated`, `Detailed` | `Aggregated`, `Detailed` | **None** |
 | Node-aware topology | No | Yes | No | Yes |
 | Incremental insertion | Yes | Yes | Yes | Yes |
 | Preallocated capacity limit | No | No | `max_tasks` | `max_tasks`, `max_local_tasks` |
-| Manager load per task | 2 messages | O(1/batch), per coordinator | O(1/batch), per coordinator | ~3 RMA ops | ~3 RMA ops, per level | 1 atomic |
+| Manager load per task | 2 messages | O(1/batch), per manager | O(1/batch), per manager | ~3 RMA ops | ~3 RMA ops, per level | 1 atomic |
 
 ---
 

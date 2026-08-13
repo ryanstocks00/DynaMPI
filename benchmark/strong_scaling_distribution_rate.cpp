@@ -412,12 +412,12 @@ int main(int argc, char** argv) {
       "m,mode", "Duration mode: fixed or random (uniform 0-2x expected)",
       cxxopts::value<std::string>()->default_value("fixed"))(
       "max_upper_fanout",
-      "hierarchical_lockfree_rma only: max direct children per coordinator "
+      "hierarchical_lockfree_rma only: max direct children per manager "
       "above the node-local level. Negative (default) = auto, picking a fanout "
-      "from coordinator count (see HierarchicalLockFreeRMAWorkDistributor's "
-      "setup_upper_chain() for the formula); 0 = single unbounded coordinator level "
+      "from manager count (see HierarchicalLockFreeRMAWorkDistributor's "
+      "setup_upper_chain() for the formula); 0 = single unbounded manager level "
       "(matches pre-N-level behavior); >0 activates iterative k-ary grouping into "
-      "multiple upper levels once the coordinator count exceeds this fanout.",
+      "multiple upper levels once the manager count exceeds this fanout.",
       cxxopts::value<int>()->default_value("-1"))(
       "max_tasks",
       "lockfree_rma and hierarchical_lockfree_rma only: lifetime task capacity "

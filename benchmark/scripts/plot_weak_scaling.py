@@ -33,6 +33,7 @@ from plot_common import (
     ieee_figure,
     iter_csv_rows,
     legend_avoiding_data,
+    log_padded_limits,
     normalize_mode,
     plot_node_series,
     save_figure,
@@ -57,6 +58,7 @@ class WeakScalingRow(TypedDict):
 
 
 def format_duration(expected_ns: int | float) -> str:
+    """ASCII form, used to build filenames (``..._compare_100us_7rpn.pdf``)."""
     if expected_ns <= 0:
         return "0 ns"
     if expected_ns >= 1_000_000_000:
@@ -66,6 +68,15 @@ def format_duration(expected_ns: int | float) -> str:
     if expected_ns >= 1_000:
         return f"{expected_ns / 1_000:g} us"
     return f"{expected_ns:g} ns"
+
+
+def format_duration_label(expected_ns: int | float) -> str:
+    """Display form for legends: real mu, to match the prose in the paper.
+
+    Kept separate from format_duration() because that one's output ends up in
+    filenames, where the math escape would be worse than useless.
+    """
+    return format_duration(expected_ns).replace("us", r"$\mu$s")
 
 
 def parse_rows(paths: Sequence[str]) -> list[WeakScalingRow]:
@@ -138,6 +149,97 @@ def group_rows(
     return grouped
 
 
+def comparison_series_kept(distributor: str, fanout: int) -> bool:
+    """Whether a (distributor, fanout) pair appears in the comparison plots.
+
+    Only the auto and flat hierarchical topologies are drawn there; the
+    explicit fan-out sweeps would crowd the figure. Shared with the y-limit
+    pass so the range is computed over exactly the curves that get plotted.
+    """
+    return "hierarchical" not in distributor or fanout in (-1, 0)
+
+
+def per_distributor_ylimits(
+    configs: Sequence[tuple[str, str, int, int]],
+    grouped: dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]],
+) -> dict[tuple[str, int, str], tuple[float, float]]:
+    """One shared y-range per (system, ranks/node, mode).
+
+    The per-distributor figures for one layout are the four designs the paper
+    puts side by side and compares in prose ("about three times the naive
+    ceiling"); autoscaling each one separately spreads them over axes with
+    different top decades and makes that comparison impossible to see. The
+    range covers measured throughput only -- the ideal lines run orders of
+    magnitude above the data at the fine grains and are drawn clipped.
+    """
+    plotted = set(configs)
+    buckets: dict[tuple[str, int, str], list[float]] = defaultdict(list)
+    for (
+        system,
+        distributor,
+        mode,
+        _expected_ns,
+        ranks_per_node,
+        fanout,
+    ), points in grouped.items():
+        if (system, distributor, ranks_per_node, fanout) not in plotted:
+            continue
+        key = (system, ranks_per_node, normalize_mode(mode))
+        buckets[key].extend(throughput for _, throughput in points)
+    return {
+        key: limits
+        for key, values in buckets.items()
+        if (limits := log_padded_limits(values)) is not None
+    }
+
+
+# The cross-machine comparisons are made at matched layouts, not matched rank
+# counts: one worker per GPU (6 + node manager on Aurora, 8 + node manager on
+# Frontier), or every core filled. Each pair is read as a pair and shares an
+# axis; the two pairs are separate comparisons and must not, or the GPU-mapped
+# figures get sized for core-filled rates they never plot.
+LAYOUT_CLASSES = {7: "gpu", 9: "gpu", 102: "core", 56: "core"}
+
+
+def layout_class(ranks_per_node: int) -> str:
+    """Which cross-machine comparison a ranks-per-node value belongs to.
+
+    An unrecognized layout gets a class of its own rather than being pooled
+    with a sweep it was never meant to be compared against.
+    """
+    return LAYOUT_CLASSES.get(ranks_per_node, f"rpn{ranks_per_node}")
+
+
+def comparison_ylimits(
+    grouped: dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]],
+) -> dict[tuple[str, int, str], tuple[float, float]]:
+    """One shared y-range per (mode, task duration, layout class).
+
+    The comparison plots are read as a matched cross-machine pair at a single
+    granularity, so Aurora and Frontier need the same axis for the eye to do
+    the comparison the text claims -- but only against the machine they are
+    paired with.
+    """
+    buckets: dict[tuple[str, int, str], list[float]] = defaultdict(list)
+    for (
+        _system,
+        distributor,
+        mode,
+        expected_ns,
+        ranks_per_node,
+        fanout,
+    ), points in grouped.items():
+        if not comparison_series_kept(distributor, fanout):
+            continue
+        key = (normalize_mode(mode), expected_ns, layout_class(ranks_per_node))
+        buckets[key].extend(throughput for _, throughput in points)
+    return {
+        key: limits
+        for key, values in buckets.items()
+        if (limits := log_padded_limits(values)) is not None
+    }
+
+
 def plot_distributor(
     system: str,
     distributor: str,
@@ -146,6 +248,7 @@ def plot_distributor(
     grouped: dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]],
     output_dir: str,
     image_format: str,
+    ylimits: dict[tuple[str, int, str], tuple[float, float]] | None = None,
 ) -> None:
     for mode in ("fixed", "random"):
         with ieee_figure() as (fig, ax):
@@ -180,7 +283,7 @@ def plot_distributor(
             labels = []
 
             for idx, (expected_ns, nodes, throughput) in enumerate(series_sorted):
-                label = format_duration(expected_ns)
+                label = format_duration_label(expected_ns)
                 line = plot_node_series(ax, idx, nodes, throughput, label)
                 handles.append(line)
                 labels.append(label)
@@ -188,10 +291,13 @@ def plot_distributor(
             ax.set_xlabel("Nodes")
             ax.set_ylabel("Tasks per second")
             set_log_node_axes(ax, all_nodes)
+            shared = (ylimits or {}).get((system, ranks_per_node, mode))
+            if shared is not None:
+                ax.set_ylim(shared)
             add_light_grid(ax)
 
-            # Hierarchical distributors default to coordinator_per_node, so one
-            # rank/node is a coordinator rather than a worker (7 rpn -> 6
+            # Hierarchical distributors default to manager_per_node, so one
+            # rank/node is a manager rather than a worker (7 rpn -> 6
             # workers/node, 9 rpn -> 8 workers/node).
             ideal_workers_per_node = (
                 ranks_per_node - 1
@@ -256,6 +362,7 @@ def plot_distributor_comparison(
     grouped: dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]],
     output_dir: str,
     image_format: str,
+    ylimits: dict[tuple[str, int, str], tuple[float, float]] | None = None,
 ) -> None:
     """Compare distributors at one workload duration (cross-distributor view)."""
     with ieee_figure() as (fig, ax):
@@ -276,8 +383,7 @@ def plot_distributor_comparison(
                 or rpn != ranks_per_node
             ):
                 continue
-            # Keep auto and flat hierarchical topologies only.
-            if "hierarchical" in dist and fanout not in (-1, 0):
+            if not comparison_series_kept(dist, fanout):
                 continue
             nodes, throughput = sorted_series_xy(points)
             all_nodes.update(nodes)
@@ -305,7 +411,14 @@ def plot_distributor_comparison(
             handles.append(line)
             labels.append(label)
 
-        finish_compact_node_plot(ax, all_nodes, handles, labels, "Tasks per second")
+        finish_compact_node_plot(
+            ax,
+            all_nodes,
+            handles,
+            labels,
+            "Tasks per second",
+            ylim=(ylimits or {}).get((mode, expected_ns, layout_class(ranks_per_node))),
+        )
 
         duration = format_duration(expected_ns).replace(" ", "")
         mode_dir = os.path.join(output_dir, mode)
@@ -353,6 +466,7 @@ def main() -> None:
             )
         }
     )
+    distributor_ylimits = per_distributor_ylimits(configs, grouped)
     for system, distributor, ranks_per_node, fanout in configs:
         plot_distributor(
             system,
@@ -362,9 +476,11 @@ def main() -> None:
             grouped,
             args.output_dir,
             args.format,
+            ylimits=distributor_ylimits,
         )
 
     if args.compare_distributors:
+        compare_ylimits = comparison_ylimits(grouped)
         compare_keys = sorted(
             {
                 (
@@ -386,6 +502,7 @@ def main() -> None:
                 grouped,
                 args.output_dir,
                 args.format,
+                ylimits=compare_ylimits,
             )
 
 

@@ -133,7 +133,7 @@ static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& op
         // below. finalize() is what actually does the real shutdown
         // signaling (e.g. HierarchicalWorkDistributor's
         // send_done_to_children_when_free(), which tells the whole
-        // coordinator tree to stop) -- finish_remaining_tasks() alone has
+        // manager tree to stop) -- finish_remaining_tasks() alone has
         // nothing to do here since this benchmark never publishes any
         // tasks, so it returns near-instantly regardless of distributor
         // kind. Before this fix, finalize() only ran via "if
@@ -188,9 +188,9 @@ int main(int argc, char** argv) {
       cxxopts::value<uint64_t>()->default_value("0"))(
       "max_upper_fanout",
       "hierarchical and hierarchical_lockfree_rma only: max direct children per "
-      "coordinator above the node-local level. Negative (default) = auto; 0 = single "
-      "unbounded coordinator level (1-layer); >0 activates k-ary grouping into multiple "
-      "upper levels once coordinator count exceeds this fanout.",
+      "manager above the node-local level. Negative (default) = auto; 0 = single "
+      "unbounded manager level (1-layer); >0 activates k-ary grouping into multiple "
+      "upper levels once manager count exceeds this fanout.",
       cxxopts::value<int>()->default_value("-1"))(
       "S,system", "System label for plotting (frontier, aurora, ...)",
       cxxopts::value<std::string>()->default_value(""))(

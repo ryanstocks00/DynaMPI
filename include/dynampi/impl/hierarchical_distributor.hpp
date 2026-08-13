@@ -40,43 +40,51 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     int manager_rank = 0;
     bool auto_run_workers = true;
     std::optional<size_t> message_batch_size = std::nullopt;
-    std::optional<int> max_workers_per_coordinator = std::nullopt;
-    int batch_size_multiplier = 2;
+    std::optional<int> max_workers_per_manager = std::nullopt;
 
-    // How many batches' worth of tasks/requests a coordinator tries to keep
+    // Scales the batch a manager requests from its parent, which is
+    // sized to the leaf workers in its subtree (see subtree_leaf_count()) --
+    // 1 asks for exactly one task per leaf below it. Raising this trades
+    // coarser load balancing for fewer round trips, the same way
+    // pipeline_depth does; prefer pipeline_depth, which buys the same
+    // latency hiding without widening the unit that can be stranded on one
+    // manager.
+    int batch_size_multiplier = 1;
+
+    // How many batches' worth of tasks/requests a manager tries to keep
     // in the pipeline at once, including the one currently being
     // distributed to its children. 1 disables prefetching entirely (a
-    // coordinator only asks for its next batch after fully finishing the
+    // manager only asks for its next batch after fully finishing the
     // current one). 2 is double-buffering: one batch active, one already
     // requested (or in flight) so children never wait a full round trip
     // between batches. Values above 2 keep additional batches' worth of
     // requests outstanding simultaneously, trading more slack against
     // round-trip latency variance for coarser load-balancing granularity
     // (tasks committed this far ahead can't be reassigned to an idle
-    // sibling coordinator).
+    // sibling manager).
     int pipeline_depth = 2;
 
     // If true, topology is strictly mapped to physical nodes:
-    // Manager <-> Node Coordinators <-> Local Workers
+    // Root Manager <-> Node Managers <-> Local Workers
     // Note: Manager is excluded from its node's Local Comm to separate duties.
-    bool coordinator_per_node = true;
+    bool manager_per_node = true;
 
-    // Only meaningful when coordinator_per_node is true. 0 (default) keeps one
+    // Only meaningful when manager_per_node is true. 0 (default) keeps one
     // local group per shared-memory node. A positive value partitions large
     // nodes into smaller contiguous groups -- same knob as
     // HierarchicalLockFreeRMAWorkDistributor::Config::max_local_group_size
-    // -- so a single-node CI job can still synthesize multiple coordinators
+    // -- so a single-node CI job can still synthesize multiple managers
     // and exercise max_upper_fanout grouping.
     int max_local_group_size = 0;
 
-    // Only meaningful when coordinator_per_node is true. <0 (default,
-    // "auto"): pick a fanout from node coordinator count -- see
+    // Only meaningful when manager_per_node is true. <0 (default,
+    // "auto"): pick a fanout from node manager count -- see
     // setup_leader_hierarchy()'s comment for the formula (mirrors
     // HierarchicalLockFreeRMAWorkDistributor::Config::max_upper_fanout,
     // same measured sweet spot). 0: disabled, exactly today's flat two-level
-    // tree -- manager talks directly to every node coordinator. >0: caps how
+    // tree -- root manager talks directly to every node manager. >0: caps how
     // many direct claimants any single leader-layer rank may have; if the
-    // node coordinator count exceeds this, coordinators are grouped
+    // node manager count exceeds this, they are grouped
     // (recursively, as many times as needed) into a tree of intermediate
     // leaders so no single rank -- not even the manager -- ever has more
     // than max_upper_fanout direct leader-layer children.
@@ -130,7 +138,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
 
   detail::TaskErrorLog m_task_errors;  // root manager only
 
-  // Pipelining (see run_worker()'s intermediate-coordinator branch):
+  // Pipelining (see run_worker()'s intermediate-manager branch):
   // tasks that arrive as a reply to a proactive next-batch request sent
   // while the current round is still active are quarantined here and only
   // released into m_unallocated_task_queue at the next round boundary, so
@@ -154,7 +162,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
   MPIGroup m_world_group;          // Group for the global communicator (for rank translation)
   std::optional<MPIGroup> m_local_group;  // Intra-node group (Shared Memory, excludes manager)
 
-  // Leader-layer topology (manager + node coordinators), built by
+  // Leader-layer topology (root manager + node managers), built by
   // setup_leader_hierarchy(). Mirrors
   // HierarchicalLockFreeRMAWorkDistributor's m_owned_upper_levels /
   // m_parent_level split: a rank promoted through zero or more grouping
@@ -166,10 +174,19 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
   // them -- looked up by manager_rank, since flat/top groups are keyed by
   // world rank so the manager need not be group rank 0; otherwise group rank
   // 0, the intermediate group leader by construction). When grouping is
-  // disabled or the coordinator count already fits, this degenerates to
+  // disabled or the manager count already fits, this degenerates to
   // exactly one round: byte-for-byte today's single flat group.
   std::vector<MPIGroup> m_owned_leader_levels;
   std::optional<MPIGroup> m_leader_parent_group;
+
+  // Leaf workers in this rank's subtree, including its own node's local
+  // workers -- the unit a manager requests from its parent (see
+  // subtree_leaf_count() and run_worker()). Accumulated by
+  // setup_leader_hierarchy() as this rank is promoted, mirroring
+  // HierarchicalLockFreeRMAWorkDistributor::setup_upper_chain()'s
+  // feed_width. Left at its initial value on ranks that never reach the
+  // leader layer (plain local workers), which never request batches.
+  int m_subtree_leaf_count = 1;
 
   std::function<ResultT(TaskT)> m_worker_function;
   Config m_config;
@@ -179,28 +196,28 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
 
   // --- Topology Helper Methods ---
 
-  inline int max_workers_per_coordinator() const {
+  inline int max_workers_per_manager() const {
     const int default_value = std::max(2, static_cast<int>(std::sqrt(m_communicator.size())));
-    const int configured = m_config.max_workers_per_coordinator.value_or(default_value);
+    const int configured = m_config.max_workers_per_manager.value_or(default_value);
     return std::max(1, configured);
   }
 
   // Resolves Config::max_upper_fanout to an actual branching factor.
-  // coordinator_count excludes the manager. Auto mode mirrors
+  // manager_count excludes the root manager. Auto mode mirrors
   // HierarchicalLockFreeRMAWorkDistributor's identically-named
   // formula (see its setup_upper_chain() comment for the measurements
-  // behind it): below ~32 coordinators, a fanout sweep showed grouped and
+  // behind it): below ~32 managers, a fanout sweep showed grouped and
   // flat topologies are statistically indistinguishable, so stay flat.
   // At and above that, group into a tree with branching factor equal to
-  // the smallest power of 2 not less than sqrt(coordinator_count) -- the
+  // the smallest power of 2 not less than sqrt(manager_count) -- the
   // same sweep measured a deeper tree (smaller branching factor) at ~6x
   // worse throughput, and a shallower tree that concentrates traffic onto
   // too few leaders also measured worse.
-  inline int resolve_leader_fanout(int coordinator_count) const {
+  inline int resolve_leader_fanout(int manager_count) const {
     if (m_config.max_upper_fanout < 0) {
-      if (coordinator_count <= 32) return std::numeric_limits<int>::max();
+      if (manager_count <= 32) return std::numeric_limits<int>::max();
       int fanout = 1;
-      const double target = std::sqrt(static_cast<double>(coordinator_count));
+      const double target = std::sqrt(static_cast<double>(manager_count));
       while (fanout < target) fanout *= 2;
       return fanout;
     }
@@ -208,9 +225,9 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
                                          : std::numeric_limits<int>::max();
   }
 
-  // Builds the leader layer (manager + node coordinators), optionally
+  // Builds the leader layer (root manager + node managers), optionally
   // grouped into a k-ary tree with branching factor resolve_leader_fanout()
-  // when the coordinator count exceeds it. Mirrors
+  // when the manager count exceeds it. Mirrors
   // HierarchicalLockFreeRMAWorkDistributor::setup_upper_chain() --
   // see its comment for the general shape; this builds the same tree over
   // send/recv instead of RMA windows, so there's no per-level window to
@@ -221,17 +238,25 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
   // full membership; the control flow is written so every rank in that
   // membership reaches the matching call, even ranks that stop being
   // promoted early (mirrors the same requirement in setup_upper_chain()).
-  void setup_leader_hierarchy(bool is_manager, bool is_node_coordinator) {
-    const int leader_color = (is_manager || is_node_coordinator) ? 0 : MPI_UNDEFINED;
+  void setup_leader_hierarchy(bool is_manager, bool is_node_manager) {
+    // A node manager's subtree is initially just its own node's workers;
+    // each promotion below multiplies that by the round's group size. The
+    // manager has no local group and never requests batches, so its value
+    // stays at the 1 floor and is inert.
+    const int local_children =
+        (m_local_group && m_local_group->rank() == 0) ? (m_local_group->size() - 1) : 0;
+    m_subtree_leaf_count = std::max(1, local_children);
+
+    const int leader_color = (is_manager || is_node_manager) ? 0 : MPI_UNDEFINED;
     // Key is global rank to maintain global ordering among leaders.
     auto flat_opt = m_communicator.split(leader_color, m_communicator.rank());
     if (!flat_opt.has_value()) return;  // plain local worker: no leader-layer role at all
     MPICommunicator flat_comm = std::move(*flat_opt);
 
-    const int coordinator_count = flat_comm.size() - 1;  // excludes manager
-    const int effective_fanout = resolve_leader_fanout(coordinator_count);
+    const int manager_count = flat_comm.size() - 1;  // excludes the root manager
+    const int effective_fanout = resolve_leader_fanout(manager_count);
 
-    if (coordinator_count <= effective_fanout) {
+    if (manager_count <= effective_fanout) {
       // Fits directly under the manager: exactly today's single flat group
       // (also always true when max_upper_fanout is disabled).
       MPIGroup flat_group(flat_comm);
@@ -243,10 +268,10 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       return;
     }
 
-    // Real grouping needed. Carve "coordinators only" out of flat_comm --
+    // Real grouping needed. Carve "managers only" out of flat_comm --
     // every member of flat_comm (manager included) calls this split
-    // together, even though only coordinators use the result.
-    auto coordinators_opt = flat_comm.split(is_manager ? MPI_UNDEFINED : 0, flat_comm.rank());
+    // together, even though only managers use the result.
+    auto managers_opt = flat_comm.split(is_manager ? MPI_UNDEFINED : 0, flat_comm.rank());
 
     bool is_final_round_leader = false;
     if (!is_manager) {
@@ -254,7 +279,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       // move assignment (only move construction), so replacing round_comm
       // each iteration needs emplace()'s in-place construction rather than
       // `round_comm = ...`.
-      std::optional<MPICommunicator> round_comm(std::move(*coordinators_opt));
+      std::optional<MPICommunicator> round_comm(std::move(*managers_opt));
       while (true) {
         if (round_comm->size() <= effective_fanout) {
           // This round's membership (this rank included) already fits
@@ -266,6 +291,11 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         auto group_opt = round_comm->split(color, round_comm->rank());
         MPICommunicator group_comm = std::move(*group_opt);
         const bool is_group_leader = (group_comm.rank() == 0);
+        // Every member of this group fronts a subtree the same size as this
+        // rank's own (nodes are uniform), and the leader feeds its own node
+        // out of the same queue -- so leading this round multiplies the
+        // subtree by the full group size, not by the child count.
+        const int child_count = group_comm.size();
 
         // Collective over round_comm: every member (leader or not) calls
         // this together, before acting on their differing result below.
@@ -277,12 +307,13 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
           break;
         }
         m_owned_leader_levels.emplace_back(group_comm);
+        m_subtree_leaf_count = std::max(1, child_count * m_subtree_leaf_count);
         round_comm.emplace(std::move(*leaders_opt));
       }
     }
 
     // Attach to the manager: every ORIGINAL member of flat_comm (manager +
-    // every coordinator, whether promoted zero, one, or many times) reaches
+    // every manager, whether promoted zero, one, or many times) reaches
     // this exact call.
     auto top_opt = flat_comm.split((is_manager || is_final_round_leader) ? 0 : MPI_UNDEFINED,
                                    flat_comm.rank());
@@ -305,17 +336,17 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
 
     std::pair<int, CommLayer> result;
     DYNAMPI_ASSERT(!is_root_manager(), "Root manager should not have a parent");
-    if (m_config.coordinator_per_node) {
+    if (m_config.manager_per_node) {
       DYNAMPI_ASSERT(m_local_group.has_value() || m_leader_parent_group.has_value(),
                      "Local or leader parent group should be present");
       if (m_local_group && m_local_group->rank() > 0) {
         // Case 1: I am a Local Worker (Rank > 0 in Local Group)
-        // Parent is the Node Coordinator (Local Rank 0).
+        // Parent is the Node Manager (Local Rank 0).
         // Translate local rank 0 to world rank
-        int node_coord_world_rank = m_local_group->translate_rank(0, m_world_group);
-        result = {node_coord_world_rank, CommLayer::Local};
+        int node_manager_world_rank = m_local_group->translate_rank(0, m_world_group);
+        result = {node_manager_world_rank, CommLayer::Local};
       } else {
-        // Case 2: I am a leader-layer rank (a node coordinator, and
+        // Case 2: I am a leader-layer rank (a node manager, and
         // possibly promoted one or more further times by
         // setup_leader_hierarchy()). My parent is whichever rank owns
         // m_leader_parent_group -- the manager directly when grouping is
@@ -343,7 +374,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       // Original Logic
       int rank = m_communicator.rank();
       int virtual_rank = rank == m_config.manager_rank ? 0 : idx_for_worker(rank) + 1;
-      int virtual_parent = (virtual_rank - 1) / max_workers_per_coordinator();
+      int virtual_parent = (virtual_rank - 1) / max_workers_per_manager();
       int parent_rank =
           virtual_parent == 0 ? m_config.manager_rank : worker_for_idx(virtual_parent - 1);
       result = {parent_rank, CommLayer::Global};
@@ -355,13 +386,13 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
   }
 
   inline int total_num_children(int rank) const {
-    if (m_config.coordinator_per_node) {
+    if (m_config.manager_per_node) {
       DYNAMPI_UNIMPLEMENTED("Recursive child counting not supported/needed in Node topology mode");
       return 0;
     }
     int virtual_rank = rank == m_config.manager_rank ? 0 : idx_for_worker(rank) + 1;
     int num_children = 0;
-    int max_children = max_workers_per_coordinator();
+    int max_children = max_workers_per_manager();
     for (int i = 0; i < max_children; ++i) {
       int child = virtual_rank * max_children + i + 1;
       if (child >= m_communicator.size()) break;  // No more children
@@ -372,7 +403,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
 
   // Calculate number of direct children based on active topology
   inline int num_direct_children() const {
-    if (m_config.coordinator_per_node) {
+    if (m_config.manager_per_node) {
       int count = 0;
       // 1. Local Children: Everyone in local group except me (Rank 0)
       if (m_local_group && m_local_group->rank() == 0) {
@@ -380,7 +411,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       }
       // 2. Leader-layer children: every group this rank owns -- the manager
       // always owns exactly the top round (even when grouping is
-      // disabled/unneeded), and a promoted coordinator owns one group per
+      // disabled/unneeded), and a promoted manager owns one group per
       // round it leads. Each owned group's other members are this rank's
       // direct leader-layer children for that round.
       for (const auto& level : m_owned_leader_levels) {
@@ -391,7 +422,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       // Original Logic
       int rank = m_communicator.rank();
       int num_children = 0;
-      int max_children = max_workers_per_coordinator();
+      int max_children = max_workers_per_manager();
       for (int i = 0; i < max_children; ++i) {
         int virtual_rank = rank == m_config.manager_rank ? 0 : idx_for_worker(rank) + 1;
         int virtual_child = virtual_rank * max_children + i + 1;
@@ -403,8 +434,28 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     }
   }
 
+  // How many tasks one round should carry: the leaf workers this rank is
+  // responsible for feeding, not how many messages it sends to do it.
+  //
+  // These differ at every level above the node managers, and by a factor
+  // of the fanout per level: a leader's leader-layer children are themselves
+  // managers fronting whole nodes, so sizing a request to the direct
+  // child count asks for one task per *subtree* rather than one per worker.
+  // At 2048 nodes with 7 ranks per node that is 69 tasks for 384 leaf
+  // workers, and the shortfall compounds with tree depth --
+  // HierarchicalLockFreeRMAWorkDistributor has always scaled its claims this
+  // way (see setup_upper_chain()'s feed_width).
+  //
+  // The rank-order virtual tree (manager_per_node == false) keeps the
+  // direct-child count: total_num_children() exists for it but counts all
+  // descendants rather than leaves, and that topology is not what any
+  // measured configuration runs.
+  inline int subtree_leaf_count() const {
+    return m_config.manager_per_node ? m_subtree_leaf_count : num_direct_children();
+  }
+
   bool is_leaf_worker() const {
-    if (m_config.coordinator_per_node) {
+    if (m_config.manager_per_node) {
       if (is_root_manager()) return false;
 
       // If I am NOT in local group (should only be Manager, handled above), panic?
@@ -414,12 +465,12 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       // Standard Worker: Rank > 0 in Local Group
       if (m_local_group->rank() > 0) return true;
 
-      // Node Coordinator: Rank 0 in Local Comm.
+      // Node Manager: Rank 0 in Local Comm.
       // Leaf only if single-core node (no children).
       return num_direct_children() == 0;
     } else {
       int rank = m_communicator.rank();
-      int max_children = max_workers_per_coordinator();
+      int max_children = max_workers_per_manager();
       int virtual_rank = rank == m_config.manager_rank ? 0 : idx_for_worker(rank) + 1;
       int first_child_virtual = virtual_rank * max_children + 1;
       return first_child_virtual >= m_communicator.size();
@@ -463,7 +514,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         m_worker_function(worker_function),
         m_config(runtime_config),
         _statistics{create_statistics(m_communicator)} {
-    // Coordinators exchange whole batches as one std::vector<T> message, whose
+    // Managers exchange whole batches as one std::vector<T> message, whose
     // element count is the number of values -- so a non-resizable payload
     // spanning more than one datatype element would send a fraction of each.
     // See check_fixed_size_mpi_type().
@@ -471,7 +522,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     check_fixed_size_mpi_type<ResultT>("result", "HierarchicalWorkDistributor");
 
     // --- Initialize Topology Groups ---
-    if (m_config.coordinator_per_node) {
+    if (m_config.manager_per_node) {
       // 1. Identify physical nodes via split_by_node, optionally partitioning
       // large nodes into smaller local domains (max_local_group_size).
       MPICommunicator node_comm = m_communicator.split_by_node();
@@ -495,18 +546,18 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         m_local_group.emplace(*local_comm_opt);
       }
 
-      // 3. Build the leader layer: manager + Node Coordinators (Rank 0 of
+      // 3. Build the leader layer: manager + Node Managers (Rank 0 of
       // the *Local* Comm), optionally grouped into a tree -- see
       // setup_leader_hierarchy().
       bool is_manager = (m_communicator.rank() == m_config.manager_rank);
-      // Check if we're rank 0 in the local group (node coordinator)
-      bool is_node_coordinator = false;
+      // Check if we're rank 0 in the local group (node manager)
+      bool is_node_manager = false;
       if (m_local_group.has_value()) {
         int my_local_rank = m_local_group->rank();
-        is_node_coordinator = (my_local_rank == 0);
+        is_node_manager = (my_local_rank == 0);
       }
 
-      setup_leader_hierarchy(is_manager, is_node_coordinator);
+      setup_leader_hierarchy(is_manager, is_node_manager);
     }
 
     if (m_config.auto_run_workers && m_communicator.rank() != m_config.manager_rank) {
@@ -543,9 +594,9 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         receive_from_anyone();
       }
     } else {
-      // Intermediate nodes (Node Coordinators)
-      int num_children = num_direct_children();
-      int prefetch = num_children * m_config.batch_size_multiplier;
+      // Intermediate nodes (Node Managers)
+      const int prefetch =
+          std::max(1, subtree_leaf_count() * std::max(1, m_config.batch_size_multiplier));
       const int pipeline_depth = std::max(1, m_config.pipeline_depth);
 
       // Keeps up to `target` batches' worth of requests outstanding with
@@ -591,7 +642,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
 
         // If we have no tasks to give, wait for tasks from parent. Flush
         // any results gained while waiting -- a real, confirmed deadlock
-        // otherwise: once this coordinator has distributed everything it
+        // otherwise: once this manager has distributed everything it
         // currently has, this loop is the ONLY place it spends time until
         // its parent sends more (which may never happen, e.g. once the
         // parent's own task supply is exhausted but m_done hasn't arrived
@@ -943,7 +994,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
 
   // --- Helper: Determine which layer a world rank belongs to ---
   CommLayer determine_layer_from_world_rank(int world_rank) const {
-    DYNAMPI_ASSERT(m_config.coordinator_per_node);
+    DYNAMPI_ASSERT(m_config.manager_per_node);
     // Check if rank is in local group (and not manager)
     if (m_local_group) {
       int local_rank = m_world_group.translate_rank(world_rank, *m_local_group);
@@ -1011,7 +1062,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
                            CommLayer layer) {
     // With groups, always use global communicator and determine layer from source rank
     int world_source = status.MPI_SOURCE;
-    if (m_config.coordinator_per_node) {
+    if (m_config.manager_per_node) {
       layer = determine_layer_from_world_rank(world_source);
     }
     if constexpr (result_mpi_type::resize_required) {
@@ -1077,7 +1128,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     // ERROR is a pure notification: it travels alongside the result, never
     // instead of it. Every hop can then forward it upward without deciding
     // whether it also stands in for a completion -- a distinction that is not
-    // even locally decidable at an intermediate coordinator, which forwards a
+    // even locally decidable at an intermediate manager, which forwards a
     // subtree's failure but has already accounted for the placeholder itself.
     if (failure) {
       m_communicator.send(
@@ -1136,7 +1187,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       }
       m_tasks_received_from_parent += tasks.size();
       // This reply fulfills one of our outstanding pipelined requests (see
-      // run_worker()'s top_up_pipeline()); only intermediate coordinators
+      // run_worker()'s top_up_pipeline()); only intermediate managers
       // (never leaf workers, which use the unbatched TASK/RESULT protocol)
       // send REQUEST_BATCH, so only they receive TASK_BATCH replies here.
       if (m_outstanding_requests > 0) --m_outstanding_requests;
@@ -1154,7 +1205,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
                             CommLayer layer) {
     // With groups, always use global communicator and determine layer from source rank
     int world_source = status.MPI_SOURCE;
-    if (m_config.coordinator_per_node) {
+    if (m_config.manager_per_node) {
       layer = determine_layer_from_world_rank(world_source);
     }
     m_communicator.recv_empty_message(world_source, Tag::REQUEST);
@@ -1165,7 +1216,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
                                   CommLayer layer) {
     // With groups, always use global communicator and determine layer from source rank
     int world_source = status.MPI_SOURCE;
-    if (m_config.coordinator_per_node) {
+    if (m_config.manager_per_node) {
       layer = determine_layer_from_world_rank(world_source);
     }
     int request_count;

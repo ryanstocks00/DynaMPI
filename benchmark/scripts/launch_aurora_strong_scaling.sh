@@ -19,9 +19,9 @@ IFS=' ' read -r -a MODES <<< "${MODES:-fixed random}"
 DURATION_S="${DURATION_S:-10}"
 # hierarchical_lockfree_rma only: forwarded as --max_upper_fanout (ignored by
 # every other distributor, which is run exactly once regardless of how many values
-# are listed here). Negative (default) = auto, picking a fanout from coordinator
+# are listed here). Negative (default) = auto, picking a fanout from manager
 # count -- see HierarchicalLockFreeRMAWorkDistributor's setup_upper_chain().
-# 0 = single unbounded coordinator level. Set multiple space-separated values to
+# 0 = single unbounded manager level. Set multiple space-separated values to
 # sweep hierarchy branching factor within one job.
 IFS=' ' read -r -a MAX_UPPER_FANOUT_LIST <<< "${MAX_UPPER_FANOUT_LIST:-${MAX_UPPER_FANOUT:--1}}"
 # Lifetime task capacity of each preallocated RMA window (lockfree_rma and

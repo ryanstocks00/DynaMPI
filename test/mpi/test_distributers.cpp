@@ -45,8 +45,8 @@ struct DistributerTypeWrapper {
   }
 };
 
-// Specialized wrapper for HierarchicalWorkDistributor with coordinator_per_node config
-template <bool CoordinatorPerNode>
+// Specialized wrapper for HierarchicalWorkDistributor with manager_per_node config
+template <bool ManagerPerNode>
 struct HierarchicalDistributerTypeWrapper {
   template <typename TaskT, typename ResultT, typename... Options>
   using type = dynampi::HierarchicalWorkDistributor<TaskT, ResultT, Options...>;
@@ -58,7 +58,7 @@ struct HierarchicalDistributerTypeWrapper {
   static typename dynampi::HierarchicalWorkDistributor<TaskT, ResultT, Options...>::Config
   get_config() {
     typename dynampi::HierarchicalWorkDistributor<TaskT, ResultT, Options...>::Config config;
-    config.coordinator_per_node = CoordinatorPerNode;
+    config.manager_per_node = ManagerPerNode;
     return config;
   }
 };
@@ -216,9 +216,13 @@ TYPED_TEST(DynamicDistribution, Example2) {
   using Task = int;
   using Result = std::vector<int>;
   using Distributer = DistributerOf<TypeParam, Task, Result>;
-  // Variable-size ResultT is unimplemented for both hierarchical variants.
+  // Skipped for the hierarchical variants because this test compares against a
+  // fixed-order expectation, not because variable-size ResultT is unsupported
+  // there -- it is, and VariableSizeTaskAndResult below covers it. Un-skipping
+  // this one yields the right values in a different order (the class declares
+  // `ordered = false`), so the assertion, not the distributor, is what fails.
   if constexpr (is_specialization_of<dynampi::HierarchicalWorkDistributor, Distributer>::value) {
-    GTEST_SKIP() << "This test is not applicable for this distributor.";
+    GTEST_SKIP() << "This test asserts result order, which this distributor does not provide.";
   } else {
     auto worker_task = [](Task task) -> Result {
       return Result{task, task * task, task * task * task};
@@ -242,16 +246,13 @@ TYPED_TEST(DynamicDistribution, Example2) {
 
 // Mirrors how EXESS ships serialized MBE fragment requests/results through
 // DynaMPI: both TaskT and ResultT are variable-length std::vector<std::byte>
-// buffers, well past the single-element case. HierarchicalMPIWorkDistributor
-// and the hierarchical distributor's leaf-result path
-// (receive_result_from) hits `if constexpr (result_mpi_type::resize_required)
-// DYNAMPI_UNIMPLEMENTED(...)` for such ResultT types; under NDEBUG,
-// DYNAMPI_ASSERT/DYNAMPI_UNIMPLEMENTED compile to nothing followed by
-// __builtin_unreachable(), so a reachable "unimplemented" branch is undefined
-// behavior rather than a clean abort -- in practice manifesting as heap
-// corruption/segfaults far away from this function (e.g. in
-// allocate_task_to_child()), not a clean failure here. See also Example2,
-// which documents/skips this exact gap for ResultT = std::vector<int>.
+// buffers, well past the single-element case. Runs on every distributor,
+// hierarchical variants included -- their single-message paths probe the count
+// and resize (receive_result_from, receive_execute_return_task_from) and their
+// batch paths go through pack_variable_batch/unpack_variable_batch, so no
+// resize_required branch is left unimplemented. This is the regression guard
+// for that: Example2 above is skipped for the hierarchical variants over
+// result *ordering* alone, which is easy to misread as a payload limitation.
 TYPED_TEST(DynamicDistribution, VariableSizeTaskAndResult) {
   using Task = std::vector<std::byte>;
   using Result = std::vector<std::byte>;
@@ -774,7 +775,7 @@ TEST(LockFreeRMALevel, SingletonCommunicator) {
 }
 
 // --- HierarchicalLockFreeRMAWorkDistributor ---
-// Node-aware tree topology (manager <-> per-node coordinators <-> local
+// Node-aware tree topology (root manager <-> per-node managers <-> local
 // workers) with LockFreeRMAWorkDistributor's one-sided,
 // collective-free protocol (fetch-and-add claiming, Put-based result return
 // via a completion log) at each level. Results are unordered, so tests sort
@@ -917,7 +918,7 @@ void expect_upper_hierarchy_squares(typename Distributer::Config config) {
 
 // Forces real multi-round grouping of the upper hierarchy (see
 // max_upper_fanout's class comment). max_local_group_size=2 synthesizes
-// multiple coordinators on a single shared-memory node so CI still
+// multiple managers on a single shared-memory node so CI still
 // exercises the grouping path; at tiny rank counts this degenerates to
 // the flat level, which is still a useful no-op-path regression check.
 TEST(HierarchicalLockFreeRMA, GroupedUpperHierarchy) {
@@ -937,7 +938,7 @@ TEST(Hierarchical, GroupedUpperHierarchy) {
 }
 
 // Exercises Config::max_upper_fanout auto mode (default -1).
-// max_local_group_size=1 makes every non-manager rank a coordinator; at
+// max_local_group_size=1 makes every non-root rank a node manager; at
 // world size > 33 that crosses the flat-topology cutoff (~32) so the
 // sqrt-based fanout pick and multi-round grouping both run. At smaller
 // rank counts this stays on the flat auto path, which is still a useful

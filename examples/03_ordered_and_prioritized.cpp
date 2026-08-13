@@ -20,8 +20,8 @@ int main(int argc, char** argv) {
     //
     // `ordered == true`: the manager buffers results by task ID and only
     // releases a contiguous prefix, so results[i] is always task i. Variable
-    // length payloads (std::vector, std::string) work here too -- the
-    // hierarchical distributors accept fixed-size types only.
+    // length payloads (std::vector, std::string) work here too, as they do on
+    // every other distributor -- what the others lack is the ordering.
     {
       using Distributor = dynampi::NaiveWorkDistributor<int, std::string>;
       static_assert(Distributor::ordered);
