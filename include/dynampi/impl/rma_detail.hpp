@@ -51,6 +51,16 @@ inline int mpi_type_size_bytes() {
 
 inline constexpr size_t round_up_8(size_t bytes) { return (bytes + 7) & ~static_cast<size_t>(7); }
 
+// GCC 12+ -Warray-bounds false-positives on the one-past-the-end iterator
+// std::copy_n forms when a caller inlines with a source it can pin to a
+// single small object -- e.g. a scalar ResultT written one at a time. Forming
+// that iterator is legal, and the destination is range-checked below. The
+// pragma wraps the whole function because the warning is attributed to the
+// inlined libstdc++ header, where a statement-scoped pragma does not reach.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
 inline void write_bytes(std::byte* buffer, size_t buffer_size, size_t offset, const void* src,
                         size_t nbytes) {
   if (nbytes == 0) return;
@@ -65,6 +75,9 @@ inline void write_bytes(std::byte* buffer, size_t buffer_size, size_t offset, co
   const auto* in = static_cast<const std::byte*>(src);
   std::copy_n(in, nbytes, buffer + offset);
 }
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 // Bounds-checked copy out of a sized source buffer into a sized destination.
 // Uses std::copy_n rather than memcpy: Codacy/Flawfinder flags every memcpy as
