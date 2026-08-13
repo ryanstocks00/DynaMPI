@@ -51,15 +51,18 @@ inline int mpi_type_size_bytes() {
 
 inline constexpr size_t round_up_8(size_t bytes) { return (bytes + 7) & ~static_cast<size_t>(7); }
 
-// GCC 12+ -Warray-bounds false-positives on the one-past-the-end iterator
-// std::copy_n forms when a caller inlines with a source it can pin to a
-// single small object -- e.g. a scalar ResultT written one at a time. Forming
-// that iterator is legal, and the destination is range-checked below. The
-// pragma wraps the whole function because the warning is attributed to the
-// inlined libstdc++ header, where a statement-scoped pragma does not reach.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
+// Not inlined, deliberately. When a caller writes one small object at a time
+// -- a scalar ResultT, say -- GCC 12+ can inline through here, pin `src` to a
+// one-byte region, and then reject the copy under whichever late-pass
+// diagnostic notices first: -Warray-bounds on the one-past-the-end iterator
+// copy_n forms, then -Wstringop-overread on the copy itself once that is
+// suppressed. Both are false: nbytes is derived from the same object's MPI
+// datatype, and the destination is range-checked below. Since every such
+// warning needs the caller's inline context to fire, denying it is a more
+// durable fix than suppressing them one at a time. The cost is one call per
+// element write, against RMA operations costing microseconds.
+#if defined(__GNUC__)
+[[gnu::noinline]]
 #endif
 inline void write_bytes(std::byte* buffer, size_t buffer_size, size_t offset, const void* src,
                         size_t nbytes) {
@@ -75,9 +78,6 @@ inline void write_bytes(std::byte* buffer, size_t buffer_size, size_t offset, co
   const auto* in = static_cast<const std::byte*>(src);
   std::copy_n(in, nbytes, buffer + offset);
 }
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 // Bounds-checked copy out of a sized source buffer into a sized destination.
 // Uses std::copy_n rather than memcpy: Codacy/Flawfinder flags every memcpy as
