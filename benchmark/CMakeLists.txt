@@ -12,7 +12,7 @@ FetchContent_MakeAvailable(cxxopts)
 set(benchmarks
     asymptotic_distribution_throughput
     strong_scaling_distribution_rate
-    load_balancing_makespan
+    test_load_balancing
     pingpong
     timer_resolution
     shutdown_time

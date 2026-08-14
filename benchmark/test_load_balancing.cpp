@@ -16,6 +16,7 @@
 #include <dynampi/utilities/timer.hpp>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -62,6 +63,15 @@ struct ResultRow {
   uint64_t workers = 0;
   uint64_t total_tasks = 0;
   double elapsed_s = 0.0;
+  // Manager-side wall time for each phase outside the timed batch drain
+  // above, so the fixed per-combo cost (construction, warmup, the done
+  // broadcast, and destructor teardown) can be reported separately instead
+  // of folded into elapsed_s or left to the sub-microsecond floor a k=0 row
+  // shows on its own.
+  double construct_s = 0.0;
+  double warmup_s = 0.0;
+  double finalize_s = 0.0;
+  double destruct_s = 0.0;
 };
 
 static void spin_wait(std::chrono::microseconds duration) {
@@ -85,14 +95,16 @@ struct WorkerFunctor {
 
 static void write_csv_header(std::ostream& os) {
   os << "system,distributor,nodes,world_size,workers,max_upper_fanout,expected_us,"
-        "tasks_per_worker,repeat,total_tasks,elapsed_s\n";
+        "tasks_per_worker,repeat,total_tasks,elapsed_s,construct_s,warmup_s,finalize_s,"
+        "destruct_s\n";
 }
 
 static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts, const ResultRow& row) {
   os << opts.system << "," << to_string(row.distributor) << "," << opts.nodes << ","
      << row.world_size << "," << row.workers << "," << opts.max_upper_fanout << ","
      << opts.expected_us << "," << row.tasks_per_worker << "," << row.repeat << ","
-     << row.total_tasks << "," << row.elapsed_s << "\n";
+     << row.total_tasks << "," << row.elapsed_s << "," << row.construct_s << "," << row.warmup_s
+     << "," << row.finalize_s << "," << row.destruct_s << "\n";
 }
 
 static void append_result(const BenchmarkOptions& opts, const ResultRow& row) {
@@ -100,7 +112,9 @@ static void append_result(const BenchmarkOptions& opts, const ResultRow& row) {
             << " world_size=" << row.world_size << " workers=" << row.workers
             << " max_upper_fanout=" << opts.max_upper_fanout << " expected_us=" << opts.expected_us
             << " tasks_per_worker=" << row.tasks_per_worker << " repeat=" << row.repeat
-            << " total_tasks=" << row.total_tasks << " elapsed_s=" << row.elapsed_s << std::endl;
+            << " total_tasks=" << row.total_tasks << " elapsed_s=" << row.elapsed_s
+            << " construct_s=" << row.construct_s << " warmup_s=" << row.warmup_s
+            << " finalize_s=" << row.finalize_s << " destruct_s=" << row.destruct_s << std::endl;
   if (opts.output_path.empty()) return;
   std::ifstream check(opts.output_path);
   const bool needs_header = !check.good() || check.peek() == std::ifstream::traits_type::eof();
@@ -131,21 +145,29 @@ static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t 
   int size = 0;
   MPI_Comm_size(comm, &size);
   const uint64_t num_workers = (size == 1) ? 1 : static_cast<uint64_t>(size - 1);
-  // Every rank needs the same capacity (it's part of collective Config setup
-  // below), not just the manager, so compute it up front rather than inside
-  // the is_root_manager() branch.
-  const uint64_t total_tasks = tasks_per_worker * num_workers;
-  // One warmup task per worker, run and fully drained before the timer
-  // starts. This absorbs each fresh distributor's one-time first-touch cost
-  // (e.g. the RMA classes' first one-sided op per target lazily triggers
-  // fabric-level connection/registration work, all landing on a single
-  // window for the flat class) outside the timed region, so the timed batch
-  // measures steady-state scheduling overhead instead of construction-
-  // adjacent noise. Confirmed necessary: without it, lockfree_rma's k=1
-  // measurement was 3-10x its own trend line and fell with successive
-  // repeats within the same run (each repeat rebuilds the distributor from
-  // scratch, so that cost recurs every time, not just once per process).
-  const uint64_t warmup_tasks = num_workers;
+
+  // world_size - 1 counts every non-manager rank, but hierarchical's node
+  // managers route/coordinate rather than execute worker_function
+  // themselves (unless their node is single-core, i.e. nodes == world_size)
+  // -- so for that class alone, world_size - 1 overcounts task-executing
+  // ranks by one node manager per node. Computed analytically rather than
+  // queried from the constructed distributor: HierarchicalWorkDistributor's
+  // constructor blocks every non-manager rank inside its own worker loop
+  // (auto_run_workers) until finalize() runs, so a post-construction
+  // collective (e.g. reducing over is_leaf_worker()) only the manager rank
+  // ever reaches deadlocks immediately -- confirmed the hard way, hung for
+  // the full job walltime on the very first hierarchical combo. Exactly one
+  // non-leaf rank exists per node (that node's manager, or the root manager
+  // on the root's node -- see hierarchical_distributor.hpp's
+  // is_leaf_worker()), so real leaf-worker count is world_size - nodes.
+  const uint64_t real_worker_count = (kind == DistributorKind::Hierarchical && opts.nodes > 0 &&
+                                      static_cast<uint64_t>(size) > opts.nodes)
+                                         ? static_cast<uint64_t>(size) - opts.nodes
+                                         : num_workers;
+  // Upper bound only, used purely to size the RMA classes' preallocated
+  // window before construction. Every non-manager rank is a safe
+  // over-estimate of how many ranks will ever actually claim a task.
+  const uint64_t max_possible_tasks = opts.max_tasks_per_worker * num_workers;
 
   WorkerFunctor worker_function{opts.expected_us};
 
@@ -156,35 +178,94 @@ static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t 
   // The lock-free RMA classes preallocate their task/result window to this
   // capacity (library default is a modest 8192, not the 500M constant
   // strong_scaling_distribution_rate.cpp always overrides it with) -- size it
-  // to cover both the warmup and the real batch, plus headroom for the "-1"
-  // reserved slot other drivers in this codebase budget for.
-  const int max_tasks_capacity = static_cast<int>(warmup_tasks + total_tasks) + 8;
+  // to cover both the warmup and the largest real batch this run will ever
+  // publish, plus headroom for the "-1" reserved slot other drivers in this
+  // codebase budget for.
+  const int max_tasks_capacity = static_cast<int>(2 * max_possible_tasks) + 8;
   if constexpr (requires { config.max_tasks; }) config.max_tasks = max_tasks_capacity;
   if constexpr (requires { config.max_local_tasks; }) config.max_local_tasks = max_tasks_capacity;
-  Distributor distributor(worker_function, config);
 
-  if (distributor.is_root_manager()) {
-    std::vector<Task> warmup(warmup_tasks);
-    for (uint64_t i = 0; i < warmup_tasks; ++i) warmup[i] = static_cast<Task>(i);
-    distributor.insert_tasks(warmup);
-    auto warmup_results = distributor.run_tasks();
-    (void)warmup_results;
+  // Heap-allocated and explicitly reset() (rather than a plain stack object)
+  // so construction and destruction can each be timed as their own phase --
+  // a plain local can't have its destructor's own duration measured, since
+  // whatever Timer would stop it is itself out of scope by the time the
+  // destructor runs at the closing brace.
+  //
+  // On non-manager ranks, construct_timer only measures until this rank
+  // returns from the constructor -- which (auto_run_workers) blocks for this
+  // combo's *entire* lifetime, not just its own setup, so the value is
+  // meaningless there. Same for destruct_timer's local reading on managers
+  // vs workers below. Harmless: only the manager's readings are ever pushed
+  // to results.
+  dynampi::Timer construct_timer;
+  auto distributor = std::make_unique<Distributor>(worker_function, config);
+  const double construct_s = construct_timer.stop().count();
 
+  const bool is_manager = distributor->is_root_manager();
+  double warmup_s = 0.0;
+  double elapsed_s = 0.0;
+  double finalize_s = 0.0;
+  uint64_t total_tasks = 0;
+
+  if (is_manager) {
+    // One warmup task per real worker, run and fully drained before the
+    // batch timer starts. This absorbs each fresh distributor's one-time
+    // first-touch cost (e.g. the RMA classes' first one-sided op per target
+    // lazily triggers fabric-level connection/registration work, all
+    // landing on a single window for the flat class) outside the timed
+    // region, so the timed batch measures steady-state scheduling overhead
+    // instead of construction-adjacent noise. Confirmed necessary: without
+    // it, lockfree_rma's k=1 measurement was 3-10x its own trend line and
+    // fell with successive repeats within the same run (each repeat rebuilds
+    // the distributor from scratch, so that cost recurs every time, not just
+    // once per process).
+    const uint64_t warmup_tasks = real_worker_count;
+    dynampi::Timer warmup_timer;
+    if (warmup_tasks > 0) {
+      std::vector<Task> warmup(warmup_tasks);
+      for (uint64_t i = 0; i < warmup_tasks; ++i) warmup[i] = static_cast<Task>(i);
+      distributor->insert_tasks(warmup);
+      auto warmup_results = distributor->run_tasks();
+      (void)warmup_results;
+    }
+    warmup_s = warmup_timer.stop().count();
+
+    total_tasks = tasks_per_worker * real_worker_count;
     std::vector<Task> tasks(total_tasks);
     for (uint64_t i = 0; i < total_tasks; ++i) tasks[i] = static_cast<Task>(warmup_tasks + i);
 
-    dynampi::Timer timer;
-    distributor.insert_tasks(tasks);
-    auto task_results = distributor.run_tasks();
-    (void)task_results;
-    const double elapsed_s = timer.stop().count();
+    dynampi::Timer batch_timer;
+    if (total_tasks > 0) {
+      distributor->insert_tasks(tasks);
+      auto task_results = distributor->run_tasks();
+      (void)task_results;
+    }
+    elapsed_s = batch_timer.stop().count();
 
-    results.push_back(ResultRow{kind, tasks_per_worker, repeat, static_cast<uint64_t>(size),
-                                num_workers, total_tasks, elapsed_s});
+    // Explicit rather than left to the destructor below, so its cost (the
+    // done broadcast that releases every worker from its blocked
+    // constructor call, see setup_leader_hierarchy()/run_worker() for
+    // hierarchical, broadcast_done() for the flat classes) is its own
+    // measurement instead of folded into destruct_s.
+    dynampi::Timer finalize_timer;
+    distributor->finalize();
+    finalize_s = finalize_timer.stop().count();
   }
-  // distributor's destructor runs finalize() here, releasing worker ranks
-  // (already fully drained above, so this is just the done-signal, not a
-  // drain -- safe to repeat across every combo in this loop).
+
+  // Runs on every rank at roughly the same point: the manager reaches it
+  // immediately after finalize() above; workers reach it as soon as that
+  // finalize() call's broadcast releases them from the constructor. Window
+  // free, communicator teardown, etc. -- real cleanup cost, distinct from
+  // finalize()'s done-signal.
+  dynampi::Timer destruct_timer;
+  distributor.reset();
+  const double destruct_s = destruct_timer.stop().count();
+
+  if (is_manager) {
+    results.push_back(ResultRow{kind, tasks_per_worker, repeat, static_cast<uint64_t>(size),
+                                real_worker_count, total_tasks, elapsed_s, construct_s, warmup_s,
+                                finalize_s, destruct_s});
+  }
 }
 
 static void run_all(DistributorKind kind, const BenchmarkOptions& opts, MPI_Comm comm,
@@ -220,7 +301,7 @@ int main(int argc, char** argv) {
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
   cxxopts::Options options(
-      "load_balancing_makespan",
+      "test_load_balancing",
       "Times each distributor's wall-clock drain of a fixed-size task batch "
       "(tasks_per_worker * workers tasks) across a range of tasks_per_worker "
       "values, to compare load-balancing/scheduling overhead between distributors.");
@@ -287,10 +368,9 @@ int main(int argc, char** argv) {
     MPI_Finalize();
     return 1;
   }
-  if (opts.min_tasks_per_worker == 0 || opts.min_tasks_per_worker > opts.max_tasks_per_worker) {
+  if (opts.min_tasks_per_worker > opts.max_tasks_per_worker) {
     if (world_rank == 0) {
-      std::cerr << "--min_tasks_per_worker must be >= 1 and <= --max_tasks_per_worker."
-                << std::endl;
+      std::cerr << "--min_tasks_per_worker must be <= --max_tasks_per_worker." << std::endl;
     }
     MPI_Finalize();
     return 1;
