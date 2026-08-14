@@ -127,8 +127,11 @@ static void append_result(const BenchmarkOptions& opts, const ResultRow& row) {
 }
 
 // Runs one (distributor kind, tasks_per_worker, repeat) combo: constructs a
-// fresh distributor, publishes exactly tasks_per_worker * num_workers tasks,
-// and times the manager's insert_tasks()+run_tasks() call. run_tasks() with a
+// fresh distributor, publishes exactly tasks_per_worker * hierarchical's
+// worker count tasks (the same total batch size across all four classes at a
+// given k, even though the other three have more real workers -- see
+// hierarchical_worker_count below), and times the manager's
+// insert_tasks()+run_tasks() call. run_tasks() with a
 // default RunConfig blocks until every published task is drained (its
 // "total exhaustion" exit condition), for every distributor kind here -- so
 // by construction there is nothing left outstanding when it returns, and the
@@ -160,10 +163,23 @@ static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t 
   // non-leaf rank exists per node (that node's manager, or the root manager
   // on the root's node -- see hierarchical_distributor.hpp's
   // is_leaf_worker()), so real leaf-worker count is world_size - nodes.
-  const uint64_t real_worker_count = (kind == DistributorKind::Hierarchical && opts.nodes > 0 &&
-                                      static_cast<uint64_t>(size) > opts.nodes)
-                                         ? static_cast<uint64_t>(size) - opts.nodes
-                                         : num_workers;
+  const bool nodes_known = opts.nodes > 0 && static_cast<uint64_t>(size) > opts.nodes;
+  const uint64_t real_worker_count =
+      (kind == DistributorKind::Hierarchical && nodes_known)
+          ? static_cast<uint64_t>(size) - opts.nodes
+          : num_workers;
+  // hierarchical's worker count (world_size - nodes, always <= the other
+  // three classes' world_size - 1) is the shared baseline for how many
+  // tasks a combo actually publishes, so tasks_per_worker means the same
+  // total batch size across all four distributors at a given k -- otherwise
+  // the flat/RMA classes' extra node-manager-turned-worker ranks would make
+  // their batches larger than hierarchical's for the "same" k, comparing
+  // different amounts of total work rather than just scheduling overhead.
+  // real_worker_count above is still used for warmup sizing and the
+  // reported "workers" column, since that's about warming/reporting each
+  // class's own real ranks, not the shared batch size.
+  const uint64_t hierarchical_worker_count =
+      nodes_known ? static_cast<uint64_t>(size) - opts.nodes : num_workers;
   // Upper bound only, used purely to size the RMA classes' preallocated
   // window before construction. Every non-manager rank is a safe
   // over-estimate of how many ranks will ever actually claim a task.
@@ -230,7 +246,7 @@ static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t 
     }
     warmup_s = warmup_timer.stop().count();
 
-    total_tasks = tasks_per_worker * real_worker_count;
+    total_tasks = tasks_per_worker * hierarchical_worker_count;
     std::vector<Task> tasks(total_tasks);
     for (uint64_t i = 0; i < total_tasks; ++i) tasks[i] = static_cast<Task>(warmup_tasks + i);
 
