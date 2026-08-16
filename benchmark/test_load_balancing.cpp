@@ -30,6 +30,14 @@ enum class DistributorKind {
   HierarchicalLockFreeRMA,
 };
 
+static DistributorKind parse_distributor(const std::string& value) {
+  if (value == "naive") return DistributorKind::Naive;
+  if (value == "hierarchical") return DistributorKind::Hierarchical;
+  if (value == "lockfree_rma") return DistributorKind::LockFreeRMA;
+  if (value == "hierarchical_lockfree_rma") return DistributorKind::HierarchicalLockFreeRMA;
+  throw std::runtime_error("Unknown distributor: " + value);
+}
+
 static std::string to_string(DistributorKind kind) {
   switch (kind) {
     case DistributorKind::Naive:
@@ -50,6 +58,12 @@ struct BenchmarkOptions {
   uint64_t max_tasks_per_worker = 10;
   uint64_t repeats = 3;
   int max_upper_fanout = -1;
+  // <0 (default): leave the library's own default in place. Only forwarded
+  // to distributors whose Config actually has the matching field (see the
+  // if constexpr guards in run_batch), so an override for one class's knob
+  // never gets silently applied where it doesn't apply.
+  int pipeline_depth = -1;
+  int max_pending_rounds = -1;
   uint64_t nodes = 0;
   std::string system;
   std::string output_path;
@@ -94,27 +108,31 @@ struct WorkerFunctor {
 };
 
 static void write_csv_header(std::ostream& os) {
-  os << "system,distributor,nodes,world_size,workers,max_upper_fanout,expected_us,"
-        "tasks_per_worker,repeat,total_tasks,elapsed_s,construct_s,warmup_s,finalize_s,"
-        "destruct_s\n";
+  os << "system,distributor,nodes,world_size,workers,max_upper_fanout,pipeline_depth,"
+        "max_pending_rounds,expected_us,tasks_per_worker,repeat,total_tasks,elapsed_s,"
+        "construct_s,warmup_s,finalize_s,destruct_s\n";
 }
 
 static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts, const ResultRow& row) {
   os << opts.system << "," << to_string(row.distributor) << "," << opts.nodes << ","
      << row.world_size << "," << row.workers << "," << opts.max_upper_fanout << ","
-     << opts.expected_us << "," << row.tasks_per_worker << "," << row.repeat << ","
-     << row.total_tasks << "," << row.elapsed_s << "," << row.construct_s << "," << row.warmup_s
-     << "," << row.finalize_s << "," << row.destruct_s << "\n";
+     << opts.pipeline_depth << "," << opts.max_pending_rounds << "," << opts.expected_us << ","
+     << row.tasks_per_worker << "," << row.repeat << "," << row.total_tasks << ","
+     << row.elapsed_s << "," << row.construct_s << "," << row.warmup_s << "," << row.finalize_s
+     << "," << row.destruct_s << "\n";
 }
 
 static void append_result(const BenchmarkOptions& opts, const ResultRow& row) {
   std::cout << "RESULT distributor=" << to_string(row.distributor) << " nodes=" << opts.nodes
             << " world_size=" << row.world_size << " workers=" << row.workers
-            << " max_upper_fanout=" << opts.max_upper_fanout << " expected_us=" << opts.expected_us
-            << " tasks_per_worker=" << row.tasks_per_worker << " repeat=" << row.repeat
-            << " total_tasks=" << row.total_tasks << " elapsed_s=" << row.elapsed_s
-            << " construct_s=" << row.construct_s << " warmup_s=" << row.warmup_s
-            << " finalize_s=" << row.finalize_s << " destruct_s=" << row.destruct_s << std::endl;
+            << " max_upper_fanout=" << opts.max_upper_fanout
+            << " pipeline_depth=" << opts.pipeline_depth
+            << " max_pending_rounds=" << opts.max_pending_rounds
+            << " expected_us=" << opts.expected_us << " tasks_per_worker=" << row.tasks_per_worker
+            << " repeat=" << row.repeat << " total_tasks=" << row.total_tasks
+            << " elapsed_s=" << row.elapsed_s << " construct_s=" << row.construct_s
+            << " warmup_s=" << row.warmup_s << " finalize_s=" << row.finalize_s
+            << " destruct_s=" << row.destruct_s << std::endl;
   if (opts.output_path.empty()) return;
   std::ifstream check(opts.output_path);
   const bool needs_header = !check.good() || check.peek() == std::ifstream::traits_type::eof();
@@ -190,6 +208,12 @@ static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t 
   typename Distributor::Config config{.comm = comm, .manager_rank = 0};
   if constexpr (requires { config.max_upper_fanout; }) {
     config.max_upper_fanout = opts.max_upper_fanout;
+  }
+  if constexpr (requires { config.pipeline_depth; }) {
+    if (opts.pipeline_depth >= 0) config.pipeline_depth = opts.pipeline_depth;
+  }
+  if constexpr (requires { config.max_pending_rounds; }) {
+    if (opts.max_pending_rounds >= 0) config.max_pending_rounds = opts.max_pending_rounds;
   }
   // The lock-free RMA classes preallocate their task/result window to this
   // capacity (library default is a modest 8192, not the 500M constant
@@ -333,6 +357,20 @@ int main(int argc, char** argv) {
       "hierarchical and hierarchical_lockfree_rma only: max direct children per "
       "coordinator above the node-local level. Negative (default) = auto.",
       cxxopts::value<int>()->default_value("-1"))(
+      "pipeline_depth",
+      "hierarchical only: batches kept in flight at once (1 disables "
+      "prefetching, 2 is double-buffering). Negative (default) leaves the "
+      "library default (2) in place.",
+      cxxopts::value<int>()->default_value("-1"))(
+      "max_pending_rounds",
+      "hierarchical_lockfree_rma only: rounds (at the parent's own claim "
+      "granularity) a relay hop may claim ahead of its parent before backing "
+      "off. Negative (default) leaves the library default (8) in place.",
+      cxxopts::value<int>()->default_value("-1"))(
+      "D,distribution",
+      "Comma-separated distributor(s) to run: naive, hierarchical, lockfree_rma, "
+      "hierarchical_lockfree_rma, or all (default).",
+      cxxopts::value<std::string>()->default_value("all"))(
       "n,nodes", "Number of nodes for labeling output (defaults to world size)",
       cxxopts::value<uint64_t>()->default_value("0"))(
       "S,system", "System label for plotting (frontier, aurora, ...)",
@@ -366,6 +404,8 @@ int main(int argc, char** argv) {
     opts.max_tasks_per_worker = args["max_tasks_per_worker"].as<uint64_t>();
     opts.repeats = args["repeats"].as<uint64_t>();
     opts.max_upper_fanout = args["max_upper_fanout"].as<int>();
+    opts.pipeline_depth = args["pipeline_depth"].as<int>();
+    opts.max_pending_rounds = args["max_pending_rounds"].as<int>();
     opts.nodes = args["nodes"].as<uint64_t>();
     opts.system = args["system"].as<std::string>();
     opts.output_path = args["output"].as<std::string>();
@@ -400,6 +440,7 @@ int main(int argc, char** argv) {
   }
 
   try {
+    const std::string distribution_arg = args["distribution"].as<std::string>();
     MPI_Comm comm = MPI_COMM_WORLD;
     int size = 0;
     MPI_Comm_size(comm, &size);
@@ -407,12 +448,23 @@ int main(int argc, char** argv) {
       opts.nodes = static_cast<uint64_t>(size);
     }
 
-    static constexpr std::array<DistributorKind, 4> kKinds = {
-        DistributorKind::Naive, DistributorKind::Hierarchical, DistributorKind::LockFreeRMA,
-        DistributorKind::HierarchicalLockFreeRMA};
+    std::vector<DistributorKind> kinds;
+    if (distribution_arg == "all") {
+      kinds = {DistributorKind::Naive, DistributorKind::Hierarchical,
+               DistributorKind::LockFreeRMA, DistributorKind::HierarchicalLockFreeRMA};
+    } else {
+      size_t start = 0;
+      while (start <= distribution_arg.size()) {
+        const size_t comma = distribution_arg.find(',', start);
+        const size_t end = (comma == std::string::npos) ? distribution_arg.size() : comma;
+        kinds.push_back(parse_distributor(distribution_arg.substr(start, end - start)));
+        if (comma == std::string::npos) break;
+        start = comma + 1;
+      }
+    }
 
     std::vector<ResultRow> results;
-    for (auto kind : kKinds) {
+    for (auto kind : kinds) {
       const size_t before = results.size();
       run_all(kind, opts, comm, results);
       if (world_rank == 0) {

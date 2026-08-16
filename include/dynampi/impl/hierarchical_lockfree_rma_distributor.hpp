@@ -675,6 +675,23 @@ class HierarchicalLockFreeRMAWorkDistributor {
     // recursively into intermediate levels once they exceed it.
     int max_upper_fanout = -1;
 
+    // Caps how many rounds ahead (at the parent's own claim granularity) a
+    // relay hop may claim from its parent before backing off, so the
+    // pipeline stays fed without unbounded relay latency -- see the
+    // backpressure comment at its one call site (step_bridge_hop) for the
+    // regression this guards against. Exposed here (rather than left a
+    // local constexpr) so it can be swept experimentally against
+    // HierarchicalWorkDistributor::Config::pipeline_depth, which plays a
+    // comparable role for the two-sided class.
+    //
+    // A 128-node/rpn=9 sweep (test_load_balancing, tasks_per_worker 0-20)
+    // found 2 matched or beat every other tested value (1, 4, 8, 16, 32) at
+    // nearly every batch size, by up to 18% in the middle of the range.
+    // Values much above this regress for the same reason the cap exists at
+    // all: claiming further ahead of a still-FIFO relay buffer adds
+    // ordering latency, not useful slack.
+    int max_pending_rounds = 2;
+
     // If true (default), run_tasks()/finish_remaining_tasks() throw
     // dynampi::TaskFailure on the root manager once a task has thrown. Set
     // false to recover instead: distribution runs to completion and the
@@ -1158,8 +1175,9 @@ class HierarchicalLockFreeRMAWorkDistributor {
     // manager held 670 relay entries (~9,300 tasks) after a second. Capping
     // at a few rounds of the parent's own claim granularity keeps the
     // pipeline fed without unbounded relay latency.
-    constexpr int64_t kMaxPendingRounds = 8;
-    const int64_t pending_cap = static_cast<int64_t>(hop.parent->claim_width()) * kMaxPendingRounds;
+    const int64_t max_pending_rounds = m_config.max_pending_rounds;
+    const int64_t pending_cap =
+        static_cast<int64_t>(hop.parent->claim_width()) * max_pending_rounds;
     if (!parent_drained && hop.pending_task_count < pending_cap) {
       auto claimed = hop.parent->try_claim();
       if (claimed.start != -1) {
