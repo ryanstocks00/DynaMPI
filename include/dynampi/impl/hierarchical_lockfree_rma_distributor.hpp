@@ -210,6 +210,18 @@ class LockFreeRMALevel {
     return m_owner_collected_count;
   }
 
+  // Order-independent lower bound on how many tasks have actually finished,
+  // as of the last harvest_ready_results() call -- unlike
+  // owner_collected_count(), not blocked by an unresolved straggler at a
+  // lower index (see harvest_ready_results()'s comment on how it's derived).
+  // Not safe to use for anything requiring the actual result data or for
+  // ring-slot reuse (still exclusively owner_collected_count()'s job) --
+  // only as a hint for whether it's safe to feed more work into this level.
+  int64_t owner_unordered_completed_estimate() const {
+    assert(is_owner());
+    return m_owner_unordered_completed;
+  }
+
   // Returns the newly-confirmed contiguous prefix of results, possibly
   // empty, in at most three round trips -- see
   // LockFreeRMAWorkDistributor::harvest_ready_results(). Factored out here so
@@ -249,6 +261,30 @@ class LockFreeRMALevel {
     // A negated length means "this range produced at least one error". The scan
     // reads every entry anyway, so the flag costs nothing until it fires.
     if (saw_error) harvest_task_errors();
+
+    // Order-independent completed-count estimate, reusing the log_buf fetch
+    // above at no extra RMA round trip: continues past the gap that stopped
+    // confirmed_end (a straggler at a low index) to also tally every run
+    // found further ahead, one slot at a time, jumping past each run once
+    // found (entries are start-of-run markers only -- the interior slots of
+    // a multi-task write are never independently marked, so a lone straggler
+    // can only ever cost this walk one skipped slot, not the whole
+    // remainder). See owner_unordered_completed_estimate()'s comment for
+    // what this is (and is not) safe to use for.
+    int64_t unordered_total = confirmed_end - frontier;
+    for (int64_t pos = confirmed_end; pos < head_now_capped;) {
+      const size_t off = static_cast<size_t>(pos - frontier) * LOG_ENTRY_BYTES;
+      const int64_t entry = detail::read_i64(log_buf.data(), log_buf.size(), off);
+      if (entry == 0) {
+        ++pos;
+        continue;
+      }
+      const int64_t run = entry < 0 ? -entry : entry;
+      unordered_total += run;
+      pos += run;
+    }
+    m_owner_unordered_completed = frontier + unordered_total;
+
     if (confirmed_end <= frontier) return {};
 
     const int64_t n = confirmed_end - frontier;
@@ -503,6 +539,7 @@ class LockFreeRMALevel {
   int64_t m_total_tasks = 0;
   bool m_owner_marked_finished = false;
   size_t m_owner_collected_count = 0;
+  int64_t m_owner_unordered_completed = 0;
 
   // Claimant-only state (see try_claim()/drained()).
   int64_t m_cached_head = 0;
@@ -576,7 +613,8 @@ class LockFreeRMALevel {
                                  static_cast<size_t>(ring_slot(index)) * m_result_slot_stride);
   }
   MPI_Aint log_slot(int64_t index) const {
-    return static_cast<MPI_Aint>(m_log_base + static_cast<size_t>(ring_slot(index)) * LOG_ENTRY_BYTES);
+    return static_cast<MPI_Aint>(m_log_base +
+                                 static_cast<size_t>(ring_slot(index)) * LOG_ENTRY_BYTES);
   }
   // Not ring-indexed: the error table is a separate, fixed-size, never-reused
   // table (see kMaxRecordedErrors) unrelated to the task/result/log ring.
@@ -1276,6 +1314,8 @@ class HierarchicalLockFreeRMAWorkDistributor {
     bool relay_error_pending = false;
     int64_t pending_task_count =
         0;  // sum of child_len across pending_relays -- see step_bridge_hop()
+    int64_t total_claimed =
+        0;  // cumulative, never decremented -- see step_bridge_hop()'s claim gate
     bool finish_marked = false;
   };
 
@@ -1307,17 +1347,47 @@ class HierarchicalLockFreeRMAWorkDistributor {
     // 1. Claim from parent and republish into child, queueing a relay entry
     // recording where this batch's results must eventually be written back.
     //
-    // Gated by backpressure. Because pending_relays flushes strictly FIFO,
-    // claiming far ahead adds ordering latency rather than useful slack: a
-    // caught-up relay at the back cannot flush until everything ahead of it
-    // does. Uncapped, a manager claimed every iteration the parent wasn't
-    // drained and raced far past what its child could drain -- one observed
-    // manager held 670 relay entries (~9,300 tasks) after a second. Capping
-    // at a few rounds of the parent's own claim granularity keeps the
-    // pipeline fed without unbounded relay latency.
+    // Gated by backpressure, on two independent conditions:
+    //
+    // - claim_paced_ok compares total_claimed (cumulative, never
+    //   decremented) against child->owner_unordered_completed_estimate()
+    //   (order-independent -- see its comment), not against how much has
+    //   been relayed back to `parent`. Relay-back is strict FIFO (pending_
+    //   relays flushes front-to-back -- see step 3) and a straggler anywhere
+    //   in the child's index space stops harvest_ready_results()'s confirmed
+    //   prefix cold, so gating new claims on relayed-back count meant one
+    //   slow task starved every worker in this whole subtree of new work,
+    //   not just delayed that one result -- confirmed as the dominant cost
+    //   under lognormal (heavy-tailed) task-duration variance, worse at
+    //   higher claim counts since more relay entries could queue up behind
+    //   the one straggler. Pacing against actual completion instead keeps
+    //   workers fed through a straggler stall; only the bookkeeping (relay-
+    //   back) lags, and it drains fast once unblocked since by then the
+    //   results it's relaying are already computed.
+    // - backlog_safe bounds pending_task_count (claimed minus relayed, the
+    //   old gate) against a looser ceiling, purely as a safety valve: claim_
+    //   paced_ok alone would let relay-back backlog grow unboundedly during
+    //   a long stall (completion keeps advancing even while relay-back
+    //   can't), which is the exact runaway this cap was originally added to
+    //   prevent -- one observed manager held 670 relay entries (~9,300
+    //   tasks) after a second once uncapped. A multiple of pending_cap
+    //   rather than pending_cap itself: under the common case (no
+    //   straggler) relay-back keeps pace with completion and this never
+    //   binds, so it only has to catch the pathological case, not police
+    //   the everyday one -- that's claim_paced_ok's job.
+    //
+    // Both start from the same per-worker budget (pending_cap, still exactly
+    // claim_width * max_pending_rounds -- unchanged in meaning, just no
+    // longer the only thing standing between a straggler and a starved
+    // subtree).
     const int64_t max_pending_rounds = m_config.max_pending_rounds;
     const int64_t pending_cap =
         static_cast<int64_t>(hop.parent->claim_width()) * max_pending_rounds;
+    const int64_t pending_cap_hard = pending_cap * 4;
+    const int64_t uncompleted_claimed =
+        hop.total_claimed - hop.child->owner_unordered_completed_estimate();
+    const bool claim_paced_ok = uncompleted_claimed < pending_cap;
+    const bool backlog_safe = hop.pending_task_count < pending_cap_hard;
     // Also gated on the child ring having room for the largest possible
     // claim (claim_width) before even attempting one: publish_tasks() into a
     // full ring returns false rather than blocking (this step must stay
@@ -1327,7 +1397,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
     // not after.
     const bool child_has_room =
         hop.child->owner_available_capacity() >= static_cast<int64_t>(hop.parent->claim_width());
-    if (!parent_drained && hop.pending_task_count < pending_cap && child_has_room) {
+    if (!parent_drained && claim_paced_ok && backlog_safe && child_has_room) {
       auto claimed = hop.parent->try_claim();
       if (claimed.start != -1) {
         const int64_t child_len = static_cast<int64_t>(claimed.tasks.size());
@@ -1339,6 +1409,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
         (void)published;
         hop.pending_relays.push_back(PendingRelay{claimed.start, child_len});
         hop.pending_task_count += child_len;
+        hop.total_claimed += child_len;
         made_parent_progress = true;
       }
     } else if (parent_drained && !hop.finish_marked) {
