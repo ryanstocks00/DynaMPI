@@ -135,20 +135,18 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
 
   detail::TaskErrorLog m_task_errors;  // root manager only
 
-  // Pipelining (see run_worker()'s intermediate-manager branch):
-  // tasks that arrive as a reply to a proactive next-batch request sent
-  // while the current round is still active are quarantined here and only
-  // released into m_unallocated_task_queue at the next round boundary, so
-  // the current round's distribution loop can never overshoot into the
-  // next round's tasks. Replies stay in arrival order (FIFO) regardless of
-  // which of possibly several outstanding requests they answer.
+  // Pipelining (see run_worker()'s intermediate-manager branch and
+  // request_next_batch_if_room()): a batch requested while the current
+  // round is still active is quarantined here and only released into
+  // m_unallocated_task_queue at the next round boundary, so the current
+  // round's distribution loop can never overshoot into the next round's
+  // tasks.
   bool m_round_active = false;
   std::deque<TaskT> m_prefetched_tasks;
-  // Requests sent to our parent (Tag::REQUEST_BATCH) whose reply --
-  // Tag::TASK_BATCH into m_prefetched_tasks/m_unallocated_task_queue, or
-  // Tag::DONE -- hasn't arrived yet. Kept below Config::pipeline_depth (see
-  // top_up_pipeline()).
-  int m_outstanding_requests = 0;
+  // Whether our one allowed Tag::REQUEST_BATCH to our parent is still
+  // unanswered (reply is Tag::TASK_BATCH or Tag::DONE). At most one is ever
+  // outstanding at a time -- see request_next_batch_if_room().
+  bool m_request_outstanding = false;
 
   static constexpr StatisticsMode statistics_mode =
       get_option_value<track_statistics_t, Options...>();
@@ -566,31 +564,12 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       }
     } else {
       // Intermediate nodes (Node Managers)
-      const int prefetch =
-          std::max(1, subtree_leaf_count() * std::max(1, m_config.batch_size_multiplier));
-      const int pipeline_depth = std::max(1, m_config.pipeline_depth);
 
-      // Keeps up to `target` batches' worth of requests outstanding with
-      // our parent at once (see Config::pipeline_depth), sending only as
-      // many new ones as needed to close the gap -- so calling this
-      // repeatedly as replies trickle in and reduce m_outstanding_requests
-      // never over-sends. No-ops once m_done is known: the manager has
-      // stopped listening (finalize() only answers each child once -- see
-      // send_done_to_children_when_free()), so a request sent after that
-      // would never be received.
-      auto top_up_pipeline = [&](int target) {
-        while (!m_done && m_outstanding_requests < target) {
-          send_to_parent(prefetch, Tag::REQUEST_BATCH);
-          m_outstanding_requests++;
-        }
-      };
-
-      // Prime with one request, not the full pipeline_depth: m_round_active
-      // is still false here, so replies route straight into the queue rather
-      // than being quarantined, and several of them would merge into one
-      // oversized first round. The rest of the depth is built up below,
-      // after the flag is set.
-      top_up_pipeline(1);
+      // Primes the first request; from here on, request_next_batch_if_room()
+      // re-fires itself from receive_task_batch_from() and
+      // send_results_to_parent() whenever it's answered or exposure drops,
+      // so no explicit top-up call is needed anywhere below.
+      request_next_batch_if_room();
 
       while (!m_done) {
         // A batch prefetched during the previous round (see below) is
@@ -620,21 +599,13 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         if (m_done) break;
 
         // While this round is active, any TASK_BATCH that arrives (a reply
-        // to a pipelined request) is quarantined in m_prefetched_tasks
-        // rather than merged into m_unallocated_task_queue, so this round's
-        // distribution loop can never overshoot past this round's own
-        // starting queue size into next round's tasks.
+        // to the next pipelined request, already sent by
+        // request_next_batch_if_room() as soon as this round's batch
+        // arrived) is quarantined in m_prefetched_tasks rather than merged
+        // into m_unallocated_task_queue, so this round's distribution loop
+        // can never overshoot past this round's own starting queue size
+        // into next round's tasks.
         m_round_active = true;
-
-        // Pipelining: top up outstanding requests to pipeline_depth-1 (the
-        // "-1" is this now-active round itself) as soon as we start working
-        // it, rather than only after its results have been fully collected
-        // and sent upstream. Requests and result returns are independent
-        // messages (see receive_request_batch_from / receive_result_batch_from),
-        // so replies can already be arriving while we're still distributing
-        // or awaiting results for this round. Without this, children sit
-        // idle for a full parent round trip between batches.
-        top_up_pipeline(pipeline_depth - 1);
 
         // Deliberately does NOT break on m_done: a pipelined request can be
         // answered with DONE while this round is still being handed out.
@@ -662,21 +633,6 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         if (!m_results.empty()) {
           send_results_to_parent();
         }
-
-        // Minimum-progress guarantee: ensure at least one request is
-        // outstanding before we loop back to wait for the next round.
-        // Without this, pipeline_depth == 1 (top_up_pipeline(pipeline_depth
-        // - 1) above is a no-op at 0) would never ask for a next batch at
-        // all -- unlike the old implicit protocol this replaced, where
-        // sending RESULT_BATCH itself doubled as a request (see
-        // receive_result_batch_from), nothing here sends a request except
-        // top_up_pipeline. This is also not just a depth==1 special case:
-        // even at higher depths, a long round can fully drain
-        // m_outstanding_requests to 0 (every previously-sent request
-        // already answered and parked in m_prefetched_tasks) before the
-        // round finishes, and needs the same top-up to keep the pipeline
-        // fed afterward.
-        top_up_pipeline(1);
         // Safe to honor m_done now: this round is fully distributed and
         // whatever was ready has been flushed to our parent. Any results
         // still outstanding after the loop (e.g. in-flight RESULT_BATCH
@@ -701,6 +657,36 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     }
   }
 
+  // Sends the next Tag::REQUEST_BATCH once there's room, keeping at most
+  // pipeline_depth batches of exposure: tasks currently held (received from
+  // our parent, not yet returned) plus the one batch this request would add.
+  //
+  // At most one request is ever outstanding at a time. Firing several
+  // concurrently (the previous design) meant send_done_to_children_when_free()
+  // only had to see one of a child's requests to count it "notified", so a
+  // second, redundant one could still be unreceived -- not yet locally
+  // probed, just in flight -- when this rank's communicator is freed. MPI
+  // doesn't wait for that: a send left unmatched at that point can be
+  // delivered to a *future* communicator that reuses the freed one's context
+  // id, surfacing as a phantom request from an unrelated rank. Confirmed via
+  // a live termination trace, not theoretical. With only ever one request
+  // outstanding, the single reply send_done_to_children_when_free() consumes
+  // to count a child is necessarily the one it's waiting on -- nothing is
+  // ever left behind.
+  void request_next_batch_if_room() {
+    if (m_done || m_request_outstanding) return;
+    const int prefetch =
+        std::max(1, subtree_leaf_count() * std::max(1, m_config.batch_size_multiplier));
+    const int pipeline_depth = std::max(1, m_config.pipeline_depth);
+    const size_t held = m_tasks_received_from_parent - m_results_sent_to_parent;
+    if (held + static_cast<size_t>(prefetch) >
+        static_cast<size_t>(pipeline_depth) * static_cast<size_t>(prefetch)) {
+      return;
+    }
+    send_to_parent(prefetch, Tag::REQUEST_BATCH);
+    m_request_outstanding = true;
+  }
+
   void send_results_to_parent() {
     DYNAMPI_ASSERT(!is_leaf_worker(), "Leaf workers should not return results directly");
     DYNAMPI_ASSERT_NE(m_communicator.rank(), m_config.manager_rank,
@@ -714,6 +700,9 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       send_to_parent(results, Tag::RESULT_BATCH);
     }
     m_results_sent_to_parent += results.size();
+    // Returning results may have dropped our held exposure back under the
+    // cap -- see request_next_batch_if_room().
+    request_next_batch_if_room();
   }
 
   bool is_root_manager() const { return m_communicator.rank() == m_config.manager_rank; }
@@ -975,13 +964,11 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
 
   void send_done_to_children_when_free() {
     const int direct_children = num_direct_children();
-    // Tracks unique children notified, not requests answered: with
-    // pipeline_depth > 1 (see run_worker()) a single child can have several
-    // outstanding requests queued here at once, all requesting the same
-    // "no more work" answer. Counting requests instead of children would let
-    // one over-represented child consume the whole direct_children budget,
-    // leaving others never told to stop -- a real deadlock, not a
-    // theoretical one, once more than one request per child is possible.
+    // Tracks unique children notified, not requests answered. Each child
+    // has at most one request outstanding at a time (see
+    // request_next_batch_if_room()), so this is normally exactly one pop
+    // per child -- the dedup below is a defensive backstop, not something
+    // the steady state relies on.
     std::set<int> notified;
     while (static_cast<int>(notified.size()) < direct_children) {
       if (m_free_worker_indices.empty()) {
@@ -992,9 +979,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       m_free_worker_indices.pop();
 
       if (notified.contains(request.worker_rank)) {
-        // Already told this child; it doesn't need (or expect) a separate
-        // reply per request it happened to have outstanding.
-        continue;  // LCOV_EXCL_LINE -- duplicate arrival order is MPI timing-dependent
+        continue;  // LCOV_EXCL_LINE -- defensive; see comment above
       }
       send_to_worker(nullptr, request.worker_rank, Tag::DONE, request.source_layer);
       notified.insert(request.worker_rank);
@@ -1132,11 +1117,14 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         m_communicator.recv(tasks, world_source, Tag::TASK_BATCH);
       }
       m_tasks_received_from_parent += tasks.size();
-      // This reply fulfills one of our outstanding pipelined requests (see
-      // run_worker()'s top_up_pipeline()); only intermediate managers
-      // (never leaf workers, which use the unbatched TASK/RESULT protocol)
-      // send REQUEST_BATCH, so only they receive TASK_BATCH replies here.
-      if (m_outstanding_requests > 0) --m_outstanding_requests;
+      // This reply fulfills our one outstanding request (see
+      // request_next_batch_if_room()); only intermediate managers (never
+      // leaf workers, which use the unbatched TASK/RESULT protocol) send
+      // REQUEST_BATCH, so only they receive TASK_BATCH replies here.
+      m_request_outstanding = false;
+      // Ask for the next batch now, before distributing this one, so a
+      // child never sits idle a full parent round trip between batches.
+      request_next_batch_if_room();
       // While a round is active, this is the reply to a request for a
       // *future* round: quarantine it so the current round's distribution
       // loop can't overshoot into it (see run_worker()).

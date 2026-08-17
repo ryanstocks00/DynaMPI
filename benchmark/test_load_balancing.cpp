@@ -249,13 +249,13 @@ static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t 
   // (auto_run_workers) until finalize() runs, so a post-construction
   // collective (e.g. reducing over is_leaf_worker()) only the manager rank
   // ever reaches deadlocks immediately -- confirmed the hard way, hung for
-  // the full job walltime on the very first hierarchical combo. Exactly one
-  // non-leaf rank exists per node (that node's manager, or the root manager
-  // on the root's node -- see hierarchical_distributor.hpp's
-  // is_leaf_worker()), so real leaf-worker count is world_size - nodes.
-  const bool nodes_known = opts.nodes > 0 && static_cast<uint64_t>(size) > opts.nodes;
+  // the full job walltime on the very first hierarchical combo. One
+  // non-leaf rank exists per node PLUS the root manager itself, which gets
+  // its own node manager too (see hierarchical_distributor.hpp's
+  // is_leaf_worker()), so real leaf-worker count is world_size - nodes - 1.
+  const bool nodes_known = opts.nodes > 0 && static_cast<uint64_t>(size) > opts.nodes + 1;
   const uint64_t real_worker_count = (kind == DistributorKind::Hierarchical && nodes_known)
-                                         ? static_cast<uint64_t>(size) - opts.nodes
+                                         ? static_cast<uint64_t>(size) - opts.nodes - 1
                                          : num_workers;
   // hierarchical_worker_count (a parameter, not derived from `comm` here) is
   // the shared baseline for how many tasks a combo actually publishes, so
@@ -544,9 +544,12 @@ int main(int argc, char** argv) {
     // Shared task-count baseline across all four distributors (see
     // run_batch()'s comment) -- computed once here from the true world size,
     // not per-call from whichever comm a given kind ends up using below.
-    const bool nodes_known = opts.nodes > 0 && static_cast<uint64_t>(size) > opts.nodes;
+    // -1: every node, including the root manager's own, elects its own node
+    // manager separate from the root itself (see HierarchicalWorkDistributor's
+    // manager_per_node topology) -- so non-worker ranks are nodes+1, not nodes.
+    const bool nodes_known = opts.nodes > 0 && static_cast<uint64_t>(size) > opts.nodes + 1;
     const uint64_t hierarchical_worker_count =
-        nodes_known ? static_cast<uint64_t>(size) - opts.nodes
+        nodes_known ? static_cast<uint64_t>(size) - opts.nodes - 1
                     : (size == 1 ? 1 : static_cast<uint64_t>(size - 1));
 
     // naive and lockfree_rma are flat: every non-manager rank in whatever
