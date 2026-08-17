@@ -1229,7 +1229,14 @@ class HierarchicalLockFreeRMAWorkDistributor {
         auto group_opt = round_comm->split(color, round_comm->rank());
         MPICommunicator<> group_comm = std::move(*group_opt);
         const bool is_group_leader = (group_comm.rank() == 0);
-        const int child_count = group_comm.size();
+        // Sum the actual widths rather than multiplying the leader's width
+        // by the group size. The root manager is excluded from its local
+        // group, so its node manager fronts one fewer leaf than managers on
+        // other nodes; multiplication undercounted every group containing
+        // that manager (112 instead of 127 leaves at 128 nodes).
+        int group_feed_width = 0;
+        DYNAMPI_MPI_CHECK(MPI_Reduce, (&feed_width, &group_feed_width, 1, MPI_INT, MPI_SUM, 0,
+                                       static_cast<MPI_Comm>(group_comm)));
 
         // Collective over round_comm: every member (leader or not) calls
         // this together, before acting on their differing result below.
@@ -1246,7 +1253,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
         // (unlike the bottom, m_local_level-feeding round) shares that ring
         // size regardless of round, since emplace_owned_upper_level()/
         // emplace_parent_level() always set cfg.max_tasks = m_config.max_tasks.
-        feed_width = std::clamp(child_count * feed_width, 1, m_config.max_tasks);
+        feed_width = std::clamp(group_feed_width, 1, m_config.max_tasks);
         round_comm.emplace(std::move(*leaders_opt));
       }
     }

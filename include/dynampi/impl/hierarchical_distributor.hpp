@@ -271,11 +271,14 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         auto group_opt = round_comm->split(color, round_comm->rank());
         MPICommunicator group_comm = std::move(*group_opt);
         const bool is_group_leader = (group_comm.rank() == 0);
-        // Every member of this group fronts a subtree the same size as this
-        // rank's own (nodes are uniform), and the leader feeds its own node
-        // out of the same queue -- so leading this round multiplies the
-        // subtree by the full group size, not by the child count.
-        const int child_count = group_comm.size();
+        // Sum the actual widths rather than multiplying the leader's width
+        // by the group size. The root manager is excluded from its local
+        // group, so its node manager fronts one fewer leaf than managers on
+        // other nodes; multiplication undercounted every group containing
+        // that manager (112 instead of 127 leaves at 128 nodes).
+        int group_leaf_count = 0;
+        DYNAMPI_MPI_CHECK(MPI_Reduce, (&m_subtree_leaf_count, &group_leaf_count, 1, MPI_INT,
+                                       MPI_SUM, 0, static_cast<MPI_Comm>(group_comm)));
 
         // Collective over round_comm: every member (leader or not) calls
         // this together, before acting on their differing result below.
@@ -287,7 +290,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
           break;
         }
         m_owned_leader_levels.emplace_back(group_comm);
-        m_subtree_leaf_count = std::max(1, child_count * m_subtree_leaf_count);
+        m_subtree_leaf_count = std::max(1, group_leaf_count);
         round_comm.emplace(std::move(*leaders_opt));
       }
     }
@@ -657,9 +660,13 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     }
   }
 
-  // Sends the next Tag::REQUEST_BATCH once there's room, keeping at most
-  // pipeline_depth batches of exposure: tasks currently held (received from
-  // our parent, not yet returned) plus the one batch this request would add.
+  // Sends the next Tag::REQUEST_BATCH once there's room: at most
+  // pipeline_depth batches taken from our parent and not yet completed by our
+  // subtree. Paced on completion, not on results relayed to our parent, which
+  // lags it by up to a round -- pacing on the relayed count held the next
+  // request until results had left, exposing the parent round trip once per
+  // round (2.1x makespan at 128 nodes, variable durations; no effect with
+  // fixed ones). Same rule as the RMA hierarchy's claim_paced_ok.
   //
   // At most one request is ever outstanding at a time. Firing several
   // concurrently (the previous design) meant send_done_to_children_when_free()
@@ -678,8 +685,9 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     const int prefetch =
         std::max(1, subtree_leaf_count() * std::max(1, m_config.batch_size_multiplier));
     const int pipeline_depth = std::max(1, m_config.pipeline_depth);
-    const size_t held = m_tasks_received_from_parent - m_results_sent_to_parent;
-    if (held + static_cast<size_t>(prefetch) >
+    const size_t uncompleted =
+        m_tasks_received_from_parent - m_results_received_from_child - m_tasks_executed;
+    if (uncompleted + static_cast<size_t>(prefetch) >
         static_cast<size_t>(pipeline_depth) * static_cast<size_t>(prefetch)) {
       return;
     }
