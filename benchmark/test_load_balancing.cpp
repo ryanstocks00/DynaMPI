@@ -133,7 +133,7 @@ struct WorkerFunctor {
           return seed_gen() + static_cast<uint64_t>(rank);
         }()),
         uniform(0, 2 * expected_us_in),
-        lognormal(lognormal_mu(expected_us_in, task_duration_cv),
+        lognormal(lognormal_mu(static_cast<double>(expected_us_in), task_duration_cv),
                   lognormal_sigma(task_duration_cv)) {}
 
   // Derives the underlying normal distribution's (mu, sigma) so the
@@ -141,7 +141,7 @@ struct WorkerFunctor {
   // task_duration_cv exactly, rather than expecting the caller to reason
   // about the underlying-normal parameterization std::lognormal_distribution
   // itself takes.
-  static double lognormal_sigma(double cv) { return std::sqrt(std::log(1.0 + cv * cv)); }
+  static double lognormal_sigma(double cv) { return std::sqrt(std::log1p(cv * cv)); }
   static double lognormal_mu(double mean, double cv) {
     const double sigma = lognormal_sigma(cv);
     return std::log(mean) - sigma * sigma / 2.0;
@@ -184,10 +184,10 @@ static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts, const 
   os << opts.system << "," << to_string(row.distributor) << "," << opts.nodes << ","
      << row.world_size << "," << row.workers << "," << opts.max_upper_fanout << ","
      << opts.pipeline_depth << "," << opts.max_pending_rounds << "," << opts.expected_us << ","
-     << to_string(opts.duration_mode) << "," << opts.task_duration_cv << ","
-     << row.tasks_per_worker << "," << row.repeat << "," << row.total_tasks << ","
-     << row.elapsed_s << "," << row.construct_s << "," << row.warmup_s << "," << row.finalize_s
-     << "," << row.destruct_s << "\n";
+     << to_string(opts.duration_mode) << "," << opts.task_duration_cv << "," << row.tasks_per_worker
+     << "," << row.repeat << "," << row.total_tasks << "," << row.elapsed_s << ","
+     << row.construct_s << "," << row.warmup_s << "," << row.finalize_s << "," << row.destruct_s
+     << "\n";
 }
 
 static void append_result(const BenchmarkOptions& opts, const ResultRow& row) {
@@ -254,10 +254,9 @@ static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t 
   // on the root's node -- see hierarchical_distributor.hpp's
   // is_leaf_worker()), so real leaf-worker count is world_size - nodes.
   const bool nodes_known = opts.nodes > 0 && static_cast<uint64_t>(size) > opts.nodes;
-  const uint64_t real_worker_count =
-      (kind == DistributorKind::Hierarchical && nodes_known)
-          ? static_cast<uint64_t>(size) - opts.nodes
-          : num_workers;
+  const uint64_t real_worker_count = (kind == DistributorKind::Hierarchical && nodes_known)
+                                         ? static_cast<uint64_t>(size) - opts.nodes
+                                         : num_workers;
   // hierarchical's worker count (world_size - nodes, always <= the other
   // three classes' world_size - 1) is the shared baseline for how many
   // tasks a combo actually publishes, so tasks_per_worker means the same
@@ -426,8 +425,7 @@ int main(int argc, char** argv) {
       "mode), or lognormal (shaped like real task-duration variance -- "
       "mostly short, a long right tail, no hard cutoff).",
       cxxopts::value<std::string>()->default_value("fixed"))(
-      "task_duration_cv",
-      "duration_mode=lognormal only: coefficient of variation (stddev/mean).",
+      "task_duration_cv", "duration_mode=lognormal only: coefficient of variation (stddev/mean).",
       cxxopts::value<double>()->default_value("1.0"))(
       "min_tasks_per_worker", "Smallest tasks-per-worker batch size to test",
       cxxopts::value<uint64_t>()->default_value("1"))(
@@ -543,8 +541,8 @@ int main(int argc, char** argv) {
 
     std::vector<DistributorKind> kinds;
     if (distribution_arg == "all") {
-      kinds = {DistributorKind::Naive, DistributorKind::Hierarchical,
-               DistributorKind::LockFreeRMA, DistributorKind::HierarchicalLockFreeRMA};
+      kinds = {DistributorKind::Naive, DistributorKind::Hierarchical, DistributorKind::LockFreeRMA,
+               DistributorKind::HierarchicalLockFreeRMA};
     } else {
       size_t start = 0;
       while (start <= distribution_arg.size()) {

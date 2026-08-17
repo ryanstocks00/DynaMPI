@@ -444,7 +444,8 @@ class LockFreeRMAWorkDistributor {
                                  static_cast<size_t>(ring_slot(index)) * m_result_slot_stride);
   }
   MPI_Aint log_slot(int64_t index) const {
-    return static_cast<MPI_Aint>(m_log_base + static_cast<size_t>(ring_slot(index)) * LOG_ENTRY_BYTES);
+    return static_cast<MPI_Aint>(m_log_base +
+                                 static_cast<size_t>(ring_slot(index)) * LOG_ENTRY_BYTES);
   }
   MPI_Aint error_slot(int64_t index) const {
     return static_cast<MPI_Aint>(m_error_base + static_cast<size_t>(index) * ERROR_SLOT_BYTES);
