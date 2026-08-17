@@ -49,6 +49,12 @@ namespace dynampi {
 // vector always matches submission order, same as NaiveWorkDistributor and
 // for the same reason (see its class comment): the cost of guaranteeing order
 // is that one slow task holds back everything behind it.
+//
+// The task/result/log tables are a ring of Config::max_tasks slots (index %
+// max_tasks), not sized for the run's lifetime total -- publish_tasks()
+// blocks until harvesting has freed enough slots for a batch rather than
+// failing, so window memory stays bounded no matter how many tasks a run
+// publishes over its life. See Config::max_tasks and ring_slot().
 
 // ---------------------------------------------------------------------------
 // Options currently only recognizes track_statistics<...> (no prioritization support in this
@@ -65,6 +71,13 @@ class LockFreeRMAWorkDistributor {
     MPI_Comm comm = MPI_COMM_WORLD;
     int manager_rank = 0;
     bool auto_run_workers = true;
+    // Ring capacity: the task/result/log tables are this many slots, reused
+    // via index % max_tasks once a slot's result has been harvested -- not a
+    // lifetime cap. publish_tasks() blocks (harvesting to make room) rather
+    // than failing if the ring is currently full; it only throws if a single
+    // call asks for more than max_tasks tasks at once, which can never fit
+    // regardless of how much harvesting happens. Bounds RMA window memory
+    // independent of how many tasks a run publishes over its lifetime.
     int max_tasks = 8192;
     int max_task_count = 256;
     int max_result_count = 256;
@@ -297,8 +310,11 @@ class LockFreeRMAWorkDistributor {
 
  private:
   // Window layout: [head][total][finished] then the task table, the result
-  // table, and the completion log, each sized for max_tasks entries. No
-  // gather-sequence field -- there is no gather protocol.
+  // table, and the completion log, each max_tasks entries wide and reused as
+  // a ring (index % max_tasks, see ring_slot()) -- head and total are
+  // absolute task indices that grow without bound over the run's lifetime,
+  // not ring-relative. No gather-sequence field -- there is no gather
+  // protocol.
   static constexpr MPI_Aint HEAD_OFF = 0;
   static constexpr MPI_Aint TOTAL_OFF = 8;
   static constexpr MPI_Aint FINISHED_OFF = 16;
@@ -413,14 +429,22 @@ class LockFreeRMAWorkDistributor {
     DYNAMPI_MPI_CHECK(MPI_Win_lock_all, (MPI_MODE_NOCHECK, m_window));
   }
 
+  // Ring slot for a task index: reused every max_tasks indices. Callers are
+  // responsible for never having two live (published, not yet harvested)
+  // indices map to the same slot -- see publish_tasks()'s capacity wait.
+  int64_t ring_slot(int64_t index) const {
+    return index % static_cast<int64_t>(m_config.max_tasks);
+  }
   MPI_Aint task_slot(int64_t index) const {
-    return static_cast<MPI_Aint>(m_task_base + static_cast<size_t>(index) * m_task_slot_stride);
+    return static_cast<MPI_Aint>(m_task_base +
+                                 static_cast<size_t>(ring_slot(index)) * m_task_slot_stride);
   }
   MPI_Aint result_slot(int64_t index) const {
-    return static_cast<MPI_Aint>(m_result_base + static_cast<size_t>(index) * m_result_slot_stride);
+    return static_cast<MPI_Aint>(m_result_base +
+                                 static_cast<size_t>(ring_slot(index)) * m_result_slot_stride);
   }
   MPI_Aint log_slot(int64_t index) const {
-    return static_cast<MPI_Aint>(m_log_base + static_cast<size_t>(index) * LOG_ENTRY_BYTES);
+    return static_cast<MPI_Aint>(m_log_base + static_cast<size_t>(ring_slot(index)) * LOG_ENTRY_BYTES);
   }
   MPI_Aint error_slot(int64_t index) const {
     return static_cast<MPI_Aint>(m_error_base + static_cast<size_t>(index) * ERROR_SLOT_BYTES);
@@ -469,6 +493,25 @@ class LockFreeRMAWorkDistributor {
     flush_local();
   }
 
+  // Reads `count` consecutive task indices starting at `start` into `dst`,
+  // splitting into two Gets if the range crosses a ring lap boundary --
+  // slot_fn() (task_slot/result_slot/log_slot) is only contiguous within one
+  // lap. Safe to assume at most one wrap: callers here only ever scan a
+  // range bounded by max_tasks (see publish_tasks()'s capacity wait, which
+  // keeps m_total_tasks - m_collected_count <= max_tasks at all times).
+  template <typename SlotFn>
+  void get_ring_bytes_local(void* dst, int64_t start, int64_t count, size_t stride,
+                            SlotFn&& slot_fn) {
+    const int64_t ring = static_cast<int64_t>(m_config.max_tasks);
+    const int64_t first_count = std::min(count, ring - ring_slot(start));
+    get_bytes_local(dst, static_cast<size_t>(first_count) * stride, slot_fn(start));
+    if (first_count < count) {
+      get_bytes_local(static_cast<std::byte*>(dst) + static_cast<size_t>(first_count) * stride,
+                      static_cast<size_t>(count - first_count) * stride,
+                      slot_fn(start + first_count));
+    }
+  }
+
   // --- Task publish (manager side) / read (claimant side) ---
 
   // Two round trips regardless of batch size: one bulk Put for the whole
@@ -480,29 +523,86 @@ class LockFreeRMAWorkDistributor {
   // claimant can never see an index whose payload is still in flight.
   void publish_tasks(std::span<const TaskT> tasks) {
     if (tasks.empty()) return;
+    const int64_t count = static_cast<int64_t>(tasks.size());
+    // A single call can never publish more than the ring holds, however much
+    // harvesting happens -- check with a hypothetical start of 0 purely to
+    // test that absolute bound (real indices grow unboundedly with the ring,
+    // so checking against the true start would spuriously fail once it
+    // first exceeds max_tasks). The capacity wait below handles "fits in the
+    // ring, just not free yet."
+    detail::check_task_capacity(0, tasks.size(), m_config.max_tasks, "LockFreeRMA");
+
+    // Block until the ring has room for the whole batch. Waiting for a
+    // partial batch to free up mid-publish would need a second start index,
+    // complicating the single-Put-per-batch design below for no benefit --
+    // this only spins when the caller publishes faster than the ring
+    // drains, an unusual calling pattern to begin with.
+    while (count > static_cast<int64_t>(m_config.max_tasks) -
+                       (m_total_tasks - static_cast<int64_t>(m_collected_count))) {
+      if (num_workers() == 0) {
+        run_one_task_locally();
+      } else {
+        const size_t before = m_collected_count;
+        harvest_ready_results();
+        if (m_collected_count == before) detail::rma_wait_idle(m_window, m_comm.get());
+      }
+    }
+
     const int64_t start = m_total_tasks;
-    detail::check_task_capacity(start, tasks.size(), m_config.max_tasks, "LockFreeRMA");
     if (num_workers() == 0) {
       m_task_store.insert(m_task_store.end(), tasks.begin(), tasks.end());
-      m_total_tasks += static_cast<int64_t>(tasks.size());
+      m_total_tasks += count;
       return;
     }
     std::vector<std::byte> buffer(tasks.size() * m_task_slot_stride);
     for (size_t i = 0; i < tasks.size(); ++i) {
       const TaskT& task = tasks[i];
-      const int count = MPI_Type<TaskT>::count(task);
-      assert(static_cast<size_t>(count) <= m_max_task_count &&
+      const int elem_count = MPI_Type<TaskT>::count(task);
+      assert(static_cast<size_t>(elem_count) <= m_max_task_count &&
              "LockFreeRMA: task exceeds max_task_count");
-      const size_t data_bytes = static_cast<size_t>(count) * m_task_elem;
+      const size_t data_bytes = static_cast<size_t>(elem_count) * m_task_elem;
       const size_t off = i * m_task_slot_stride;
-      detail::write_i64(buffer.data(), buffer.size(), off + T_COUNT, count);
+      detail::write_i64(buffer.data(), buffer.size(), off + T_COUNT, elem_count);
       if (data_bytes > 0) {
         detail::write_bytes(buffer.data(), buffer.size(), off + T_DATA, MPI_Type<TaskT>::ptr(task),
                             data_bytes);
       }
     }
-    post_put_bytes(buffer.data(), buffer.size(), task_slot(start));
-    m_total_tasks += static_cast<int64_t>(tasks.size());
+    // The ring can wrap mid-batch (task_slot() is only contiguous within one
+    // lap), so a batch crossing the boundary needs two Puts instead of one --
+    // both flush together with the atomic_set below, so this costs no extra
+    // round trip in the common (non-wrapping) case and only one extra Put
+    // issuance in the wrapping one.
+    const int64_t ring = static_cast<int64_t>(m_config.max_tasks);
+    const int64_t first_count = std::min(count, ring - ring_slot(start));
+    post_put_bytes(buffer.data(), static_cast<size_t>(first_count) * m_task_slot_stride,
+                   task_slot(start));
+    if (first_count < count) {
+      post_put_bytes(buffer.data() + static_cast<size_t>(first_count) * m_task_slot_stride,
+                     static_cast<size_t>(count - first_count) * m_task_slot_stride,
+                     task_slot(start + first_count));
+    }
+    // Reused slots (every index past the first lap) still hold whatever
+    // completion-log entry their previous occupant's write_result_range()
+    // left behind. Left uncleared, harvest_ready_results()'s scan would read
+    // that stale non-zero entry and treat the brand new index as already
+    // complete before this lap's worker has even claimed it -- confirmed as
+    // a real bug, not a theoretical one (a stress test with a small ring
+    // reproduced exactly this: index i's "result" coming back as index
+    // (i - max_tasks)'s, the value the harvester picked up from the
+    // not-yet-cleared log slot's leftover entry). Zeroing here, ahead of the
+    // TOTAL_OFF bump that makes these indices claimable, guarantees the log
+    // entry a claimant's write_result_range() later sets is the only
+    // non-zero value the harvester can ever see for this lap.
+    std::vector<std::byte> log_clear(static_cast<size_t>(count) * LOG_ENTRY_BYTES, std::byte{0});
+    post_put_bytes(log_clear.data(), static_cast<size_t>(first_count) * LOG_ENTRY_BYTES,
+                   log_slot(start));
+    if (first_count < count) {
+      post_put_bytes(log_clear.data() + static_cast<size_t>(first_count) * LOG_ENTRY_BYTES,
+                     static_cast<size_t>(count - first_count) * LOG_ENTRY_BYTES,
+                     log_slot(start + first_count));
+    }
+    m_total_tasks += count;
     atomic_set(TOTAL_OFF, m_total_tasks);
   }
 
@@ -627,16 +727,31 @@ class LockFreeRMAWorkDistributor {
     post_fetch_and_op(head_in, head_now, HEAD_OFF, MPI_NO_OP);
     flush_local();
 
-    const int64_t frontier = static_cast<int64_t>(m_collected_count);
-    if (head_now <= frontier) return;
+    // A claimant can fetch_add HEAD_OFF for an index it hasn't actually been
+    // published yet -- run_worker()'s "pending" path deliberately lets
+    // claims outrun publication so a claimant doesn't have to wait for a
+    // fresh TOTAL_OFF read before claiming. Before the ring, scanning that
+    // far ahead was harmless (an unpublished slot's log entry was always
+    // still zero, since nothing had ever touched it); with the ring, that
+    // same slot may hold a stale non-zero entry left over from a prior lap
+    // that this index hasn't reached yet -- confirmed as a real bug (a
+    // small-ring stress test misread stale entries this way, several laps
+    // behind the true completion). Capping at m_total_tasks means the scan
+    // never reads a slot this rank hasn't itself published in the current
+    // lap, so it can never see anything but that lap's own entry.
+    const int64_t head_now_capped = std::min(head_now, m_total_tasks);
 
-    const size_t scan_count = static_cast<size_t>(head_now - frontier);
-    std::vector<std::byte> log_buf(scan_count * LOG_ENTRY_BYTES);
-    get_bytes_local(log_buf.data(), log_buf.size(), log_slot(frontier));
+    const int64_t frontier = static_cast<int64_t>(m_collected_count);
+    if (head_now_capped <= frontier) return;
+
+    const int64_t scan_count = head_now_capped - frontier;
+    std::vector<std::byte> log_buf(static_cast<size_t>(scan_count) * LOG_ENTRY_BYTES);
+    get_ring_bytes_local(log_buf.data(), frontier, scan_count, LOG_ENTRY_BYTES,
+                         [this](int64_t i) { return log_slot(i); });
 
     int64_t confirmed_end = frontier;
     bool saw_error = false;
-    while (confirmed_end < head_now) {
+    while (confirmed_end < head_now_capped) {
       const size_t off = static_cast<size_t>(confirmed_end - frontier) * LOG_ENTRY_BYTES;
       const int64_t entry = detail::read_i64(log_buf.data(), log_buf.size(), off);
       if (entry == 0) break;  // gap: not yet written; stop the contiguous prefix here
@@ -648,7 +763,8 @@ class LockFreeRMAWorkDistributor {
 
     const int64_t n = confirmed_end - frontier;
     std::vector<std::byte> result_buf(static_cast<size_t>(n) * m_result_slot_stride);
-    get_bytes_local(result_buf.data(), result_buf.size(), result_slot(frontier));
+    get_ring_bytes_local(result_buf.data(), frontier, n, m_result_slot_stride,
+                         [this](int64_t i) { return result_slot(i); });
 
     m_results.reserve(m_results.size() + static_cast<size_t>(n));
     for (int64_t i = 0; i < n; ++i) {

@@ -56,6 +56,10 @@ class LockFreeRMALevel {
   struct Config {
     MPI_Comm comm = MPI_COMM_NULL;
     int owner_rank = 0;
+    // Ring capacity: the task/result/log tables are this many slots, reused
+    // via index % max_tasks once a slot's result has been harvested -- not a
+    // lifetime cap. See LockFreeRMAWorkDistributor::Config::max_tasks for
+    // the full rationale (identical here).
     int max_tasks = 8192;
     int max_task_count = 256;
     int max_result_count = 256;
@@ -105,41 +109,78 @@ class LockFreeRMALevel {
 
   // --- Owner-side API ---
 
+  // Owner-side. How many tasks could be published right now without
+  // exceeding ring capacity -- i.e. how much room harvesting has freed up so
+  // far. Lets a non-blocking caller (step_bridge_hop) check before claiming
+  // from its parent, since a claim already taken can't be handed back if
+  // publishing it here turned out not to fit.
+  int64_t owner_available_capacity() const {
+    assert(is_owner());
+    const int64_t in_flight = m_total_tasks - static_cast<int64_t>(m_owner_collected_count);
+    return static_cast<int64_t>(m_config.max_tasks) - in_flight;
+  }
+
   // Publishes tasks.size() tasks in two round trips total regardless of how
   // many: one bulk Put, then one atomic_set(TOTAL_OFF) -- see
   // LockFreeRMAWorkDistributor::publish_tasks() for the full
   // rationale (this is the same fix applied there).
-  void publish_tasks(const std::vector<TaskT>& tasks) {
+  //
+  // Returns false (publishing nothing) rather than blocking if the ring
+  // doesn't currently have room for the whole batch: this level is also
+  // driven from the non-blocking relay step (step_bridge_hop), where
+  // blocking here would stall every other hop, not just this one. A caller
+  // that can afford to block (the top-level manager's insert_tasks()) loops
+  // on the return value itself, harvesting in between attempts; the relay
+  // instead checks owner_available_capacity() before ever claiming, so it
+  // should never actually see false in practice. Still throws
+  // std::length_error (via check_task_capacity, checked unconditionally) if
+  // the batch could never fit regardless of how much harvesting happens --
+  // that's a caller bug, not a transient condition, so callers must not
+  // treat it as retriable.
+  bool publish_tasks(const std::vector<TaskT>& tasks) {
     assert(is_owner());
-    if (tasks.empty()) return;
+    if (tasks.empty()) return true;
+    const int64_t count = static_cast<int64_t>(tasks.size());
+    detail::check_task_capacity(0, tasks.size(), m_config.max_tasks, "LockFreeRMALevel");
+    if (count > owner_available_capacity()) return false;
+
     const int64_t start = m_total_tasks;
-    detail::check_task_capacity(start, tasks.size(), m_config.max_tasks, "LockFreeRMALevel");
     std::vector<std::byte> buffer(tasks.size() * m_task_slot_stride);
     for (size_t i = 0; i < tasks.size(); ++i) {
       const TaskT& task = tasks[i];
-      const int count = MPI_Type<TaskT>::count(task);
-      assert(static_cast<size_t>(count) <= m_max_task_count &&
+      const int elem_count = MPI_Type<TaskT>::count(task);
+      assert(static_cast<size_t>(elem_count) <= m_max_task_count &&
              "LockFreeRMALevel: task exceeds max_task_count");
-      const size_t data_bytes = static_cast<size_t>(count) * m_task_elem;
+      const size_t data_bytes = static_cast<size_t>(elem_count) * m_task_elem;
       const size_t off = i * m_task_slot_stride;
-      detail::write_i64(buffer.data(), buffer.size(), off + T_COUNT, count);
+      detail::write_i64(buffer.data(), buffer.size(), off + T_COUNT, elem_count);
       if (data_bytes > 0) {
         detail::write_bytes(buffer.data(), buffer.size(), off + T_DATA, MPI_Type<TaskT>::ptr(task),
                             data_bytes);
       }
     }
+    put_ring_bytes(buffer.data(), start, count, m_task_slot_stride,
+                   [this](int64_t i) { return task_slot(i); });
+    // Reused slots still hold whatever completion-log entry their previous
+    // occupant's write_result_range() left behind. Left uncleared, a
+    // harvest scan would read that stale non-zero entry and treat this lap's
+    // index as already complete before this lap's claimant has even claimed
+    // it -- see the identical fix, and the stress test that caught it, on
+    // LockFreeRMAWorkDistributor::publish_tasks().
+    std::vector<std::byte> log_clear(static_cast<size_t>(count) * LOG_ENTRY_BYTES, std::byte{0});
+    put_ring_bytes(log_clear.data(), start, count, LOG_ENTRY_BYTES,
+                   [this](int64_t i) { return log_slot(i); });
+
     if (local_only()) {
-      detail::write_bytes(m_window_buffer.data(), m_window_buffer.size(),
-                          static_cast<size_t>(task_slot(start)), buffer.data(), buffer.size());
-      m_total_tasks += static_cast<int64_t>(tasks.size());
+      m_total_tasks += count;
       local_store_i64(TOTAL_OFF, m_total_tasks);
-      return;
+      return true;
     }
-    post_put_bytes(buffer.data(), buffer.size(), task_slot(start));
-    m_total_tasks += static_cast<int64_t>(tasks.size());
+    m_total_tasks += count;
     int64_t total_out = 0;
     post_fetch_and_op(m_total_tasks, total_out, TOTAL_OFF, MPI_REPLACE);
     flush_remote();
+    return true;
   }
 
   void mark_finished() {
@@ -177,16 +218,28 @@ class LockFreeRMALevel {
   std::vector<ResultT> harvest_ready_results() {
     assert(is_owner());
     const int64_t head_now = atomic_read(HEAD_OFF);
-    const int64_t frontier = static_cast<int64_t>(m_owner_collected_count);
-    if (head_now <= frontier) return {};
+    // A claimant can fetch_add HEAD_OFF for an index that hasn't actually
+    // been published yet (try_claim()'s pending path deliberately lets
+    // claims outrun publication). Before the ring, scanning that far ahead
+    // was harmless (an unpublished slot's log entry was always still zero);
+    // with the ring, that same slot may hold a stale non-zero entry left
+    // over from a prior lap -- see the identical fix, and the stress test
+    // that caught it, on LockFreeRMAWorkDistributor::harvest_ready_results().
+    // Capping at m_total_tasks means the scan never reads a slot this level
+    // hasn't itself published in the current lap.
+    const int64_t head_now_capped = std::min(head_now, m_total_tasks);
 
-    const size_t scan_count = static_cast<size_t>(head_now - frontier);
-    std::vector<std::byte> log_buf(scan_count * LOG_ENTRY_BYTES);
-    get_bytes_local(log_buf.data(), log_buf.size(), log_slot(frontier));
+    const int64_t frontier = static_cast<int64_t>(m_owner_collected_count);
+    if (head_now_capped <= frontier) return {};
+
+    const int64_t scan_count = head_now_capped - frontier;
+    std::vector<std::byte> log_buf(static_cast<size_t>(scan_count) * LOG_ENTRY_BYTES);
+    get_ring_bytes_local(log_buf.data(), frontier, scan_count, LOG_ENTRY_BYTES,
+                         [this](int64_t i) { return log_slot(i); });
 
     int64_t confirmed_end = frontier;
     bool saw_error = false;
-    while (confirmed_end < head_now) {
+    while (confirmed_end < head_now_capped) {
       const size_t off = static_cast<size_t>(confirmed_end - frontier) * LOG_ENTRY_BYTES;
       const int64_t entry = detail::read_i64(log_buf.data(), log_buf.size(), off);
       if (entry == 0) break;  // gap: not yet written; stop the contiguous prefix here
@@ -200,7 +253,8 @@ class LockFreeRMALevel {
 
     const int64_t n = confirmed_end - frontier;
     std::vector<std::byte> result_buf(static_cast<size_t>(n) * m_result_slot_stride);
-    get_bytes_local(result_buf.data(), result_buf.size(), result_slot(frontier));
+    get_ring_bytes_local(result_buf.data(), frontier, n, m_result_slot_stride,
+                         [this](int64_t i) { return result_slot(i); });
 
     std::vector<ResultT> output;
     output.reserve(static_cast<size_t>(n));
@@ -390,13 +444,16 @@ class LockFreeRMALevel {
       }
     }
     const int64_t entry = contains_error ? -count : count;
+    // The log entry is a single value at the batch's own start index (one
+    // entry per whole claimed range, not per task), so log_slot(start)'s own
+    // ring-aware modulo is always enough -- only the result data (one slot
+    // per task) can itself straddle a ring lap boundary.
+    put_ring_bytes(buffer.data(), start, count, m_result_slot_stride,
+                   [this](int64_t i) { return result_slot(i); });
     if (local_only()) {
-      detail::write_bytes(m_window_buffer.data(), m_window_buffer.size(),
-                          static_cast<size_t>(result_slot(start)), buffer.data(), buffer.size());
       local_store_i64(log_slot(start), entry);
       return;
     }
-    post_put_bytes(buffer.data(), buffer.size(), result_slot(start));
     flush_remote();
     post_put_bytes(&entry, sizeof(entry), log_slot(start));
     flush_remote();
@@ -504,15 +561,25 @@ class LockFreeRMALevel {
     DYNAMPI_MPI_CHECK(MPI_Win_lock_all, (MPI_MODE_NOCHECK, m_window));
   }
 
+  // Ring slot for a task index: reused every max_tasks indices. Callers are
+  // responsible for never having two live (published, not yet harvested)
+  // indices map to the same slot -- see publish_tasks()'s capacity check.
+  int64_t ring_slot(int64_t index) const {
+    return index % static_cast<int64_t>(m_config.max_tasks);
+  }
   MPI_Aint task_slot(int64_t index) const {
-    return static_cast<MPI_Aint>(m_task_base + static_cast<size_t>(index) * m_task_slot_stride);
+    return static_cast<MPI_Aint>(m_task_base +
+                                 static_cast<size_t>(ring_slot(index)) * m_task_slot_stride);
   }
   MPI_Aint result_slot(int64_t index) const {
-    return static_cast<MPI_Aint>(m_result_base + static_cast<size_t>(index) * m_result_slot_stride);
+    return static_cast<MPI_Aint>(m_result_base +
+                                 static_cast<size_t>(ring_slot(index)) * m_result_slot_stride);
   }
   MPI_Aint log_slot(int64_t index) const {
-    return static_cast<MPI_Aint>(m_log_base + static_cast<size_t>(index) * LOG_ENTRY_BYTES);
+    return static_cast<MPI_Aint>(m_log_base + static_cast<size_t>(ring_slot(index)) * LOG_ENTRY_BYTES);
   }
+  // Not ring-indexed: the error table is a separate, fixed-size, never-reused
+  // table (see kMaxRecordedErrors) unrelated to the task/result/log ring.
   MPI_Aint error_slot(int64_t index) const {
     return static_cast<MPI_Aint>(m_error_base + static_cast<size_t>(index) * ERROR_SLOT_BYTES);
   }
@@ -571,6 +638,54 @@ class LockFreeRMALevel {
     flush_local();
   }
 
+  // Single-chunk Put, dispatching local_only() vs RMA the same way
+  // get_bytes_local() already does for reads. No flush here (matches
+  // post_put_bytes()'s own contract) -- callers flush once after every chunk
+  // of a possibly-split write is issued.
+  void put_bytes_owner(const void* src, size_t n, MPI_Aint offset) {
+    if (local_only()) {
+      detail::write_bytes(m_window_buffer.data(), m_window_buffer.size(),
+                          static_cast<size_t>(offset), src, n);
+      return;
+    }
+    post_put_bytes(src, n, offset);
+  }
+
+  // Writes `count` consecutive task indices starting at `start` from `src`,
+  // splitting into two chunks if the range crosses a ring lap boundary --
+  // slot_fn() (task_slot/result_slot/log_slot) is only contiguous within one
+  // lap. Unlike the flat class, a single claim/publish here can cover more
+  // than one index (claim_width), so this is exercised on ordinary claim
+  // widths, not just as a rare edge case.
+  template <typename SlotFn>
+  void put_ring_bytes(const void* src, int64_t start, int64_t count, size_t stride,
+                      SlotFn&& slot_fn) {
+    const int64_t ring = static_cast<int64_t>(m_config.max_tasks);
+    const int64_t first_count = std::min(count, ring - ring_slot(start));
+    const auto* bytes = static_cast<const std::byte*>(src);
+    put_bytes_owner(bytes, static_cast<size_t>(first_count) * stride, slot_fn(start));
+    if (first_count < count) {
+      put_bytes_owner(bytes + static_cast<size_t>(first_count) * stride,
+                      static_cast<size_t>(count - first_count) * stride,
+                      slot_fn(start + first_count));
+    }
+  }
+
+  // Read counterpart of put_ring_bytes(), built on get_bytes_local() (which
+  // already dispatches local_only() vs RMA).
+  template <typename SlotFn>
+  void get_ring_bytes_local(void* dst, int64_t start, int64_t count, size_t stride,
+                            SlotFn&& slot_fn) {
+    const int64_t ring = static_cast<int64_t>(m_config.max_tasks);
+    const int64_t first_count = std::min(count, ring - ring_slot(start));
+    get_bytes_local(dst, static_cast<size_t>(first_count) * stride, slot_fn(start));
+    if (first_count < count) {
+      get_bytes_local(static_cast<std::byte*>(dst) + static_cast<size_t>(first_count) * stride,
+                      static_cast<size_t>(count - first_count) * stride,
+                      slot_fn(start + first_count));
+    }
+  }
+
   // Owner-side. Reads whatever error records appeared since the last call.
   void harvest_task_errors() {
     const int64_t claimed = std::min(atomic_read(ERROR_COUNT_OFF), kMaxRecordedErrors);
@@ -599,7 +714,8 @@ class LockFreeRMALevel {
   std::vector<TaskT> read_task_batch(int64_t index, int64_t count) {
     const size_t bytes = static_cast<size_t>(count) * m_task_slot_stride;
     std::vector<std::byte> buf(bytes);
-    get_bytes_local(buf.data(), bytes, task_slot(index));
+    get_ring_bytes_local(buf.data(), index, count, m_task_slot_stride,
+                         [this](int64_t i) { return task_slot(i); });
 
     std::vector<TaskT> tasks;
     tasks.reserve(static_cast<size_t>(count));
@@ -776,8 +892,19 @@ class HierarchicalLockFreeRMAWorkDistributor {
     assert(is_root_manager());
     if (m_solo) {
       m_local_task_store.insert(m_local_task_store.end(), tasks.begin(), tasks.end());
-    } else {
-      m_owned_upper_levels.front().publish_tasks(tasks);  // manager's top-of-chain level
+      return;
+    }
+    auto& top = m_owned_upper_levels.front();  // manager's top-of-chain level
+    // publish_tasks() returns false rather than blocking when its ring is
+    // full (it's also driven from the non-blocking relay step, where
+    // blocking would stall every other hop) -- this call site has no such
+    // constraint, so loop here instead, harvesting to free ring room between
+    // attempts.
+    while (!top.publish_tasks(tasks)) {
+      auto results = top.harvest_ready_results_throttled();
+      collect_level_errors(top);
+      m_results.insert(m_results.end(), std::make_move_iterator(results.begin()),
+                       std::make_move_iterator(results.end()));
     }
   }
 
@@ -996,8 +1123,16 @@ class HierarchicalLockFreeRMAWorkDistributor {
     MPIGroup world_group(m_world_comm);
     const int local_children = m_local_comm.has_value() ? std::max(0, m_local_comm->size() - 1) : 0;
     // A leaf executes one task per claim. Each non-leaf claims enough tasks
-    // to feed one task to every child in its immediate subtree.
-    const int leaf_claim_width = std::max(1, local_children);
+    // to feed one task to every child in its immediate subtree -- capped at
+    // max_local_tasks, what this claim is republished into (m_local_level,
+    // directly or via step_bridge_hop): a claim wider than the ring it feeds
+    // could never be published at all, since publish_tasks() only succeeds
+    // for a batch that fits the *entire* ring, not a partial one -- child
+    // ranks would starve forever waiting for a claim already too big to ever
+    // land. Confirmed as a real deadlock, not a theoretical one: a
+    // small-ring stress test with rpn=9 (8 local children) and max_local_tasks
+    // 4 hung every rank, every one stuck on a claim that could never fit.
+    const int leaf_claim_width = std::clamp(local_children, 1, m_config.max_local_tasks);
 
     const int manager_count = flat_comm.size() - 1;
     // Auto mode: stay flat below ~32 managers, where a sweep at 128 nodes
@@ -1068,7 +1203,12 @@ class HierarchicalLockFreeRMAWorkDistributor {
           break;
         }
         emplace_owned_upper_level(std::move(group_comm), 0, feed_width);
-        feed_width = std::max(1, child_count * feed_width);
+        // Same reasoning and cap as leaf_claim_width above, against
+        // max_tasks instead of max_local_tasks: every level from here up
+        // (unlike the bottom, m_local_level-feeding round) shares that ring
+        // size regardless of round, since emplace_owned_upper_level()/
+        // emplace_parent_level() always set cfg.max_tasks = m_config.max_tasks.
+        feed_width = std::clamp(child_count * feed_width, 1, m_config.max_tasks);
         round_comm.emplace(std::move(*leaders_opt));
       }
     }
@@ -1178,11 +1318,25 @@ class HierarchicalLockFreeRMAWorkDistributor {
     const int64_t max_pending_rounds = m_config.max_pending_rounds;
     const int64_t pending_cap =
         static_cast<int64_t>(hop.parent->claim_width()) * max_pending_rounds;
-    if (!parent_drained && hop.pending_task_count < pending_cap) {
+    // Also gated on the child ring having room for the largest possible
+    // claim (claim_width) before even attempting one: publish_tasks() into a
+    // full ring returns false rather than blocking (this step must stay
+    // non-blocking), and a claim already taken from the parent via
+    // try_claim()'s fetch_add can't be handed back if publishing it here
+    // turned out not to fit -- so the check has to happen before claiming,
+    // not after.
+    const bool child_has_room =
+        hop.child->owner_available_capacity() >= static_cast<int64_t>(hop.parent->claim_width());
+    if (!parent_drained && hop.pending_task_count < pending_cap && child_has_room) {
       auto claimed = hop.parent->try_claim();
       if (claimed.start != -1) {
         const int64_t child_len = static_cast<int64_t>(claimed.tasks.size());
-        hop.child->publish_tasks(claimed.tasks);
+        const bool published = hop.child->publish_tasks(claimed.tasks);
+        // Guaranteed by child_has_room above: claim_width bounds child_len,
+        // and nothing else can publish into child between that check and
+        // here (single-threaded, sequential steps).
+        assert(published && "LockFreeRMALevel: child ring capacity check raced");
+        (void)published;
         hop.pending_relays.push_back(PendingRelay{claimed.start, child_len});
         hop.pending_task_count += child_len;
         made_parent_progress = true;

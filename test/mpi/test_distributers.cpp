@@ -1019,6 +1019,186 @@ TEST(HierarchicalLockFreeRMA, GatherOnce) {
   }
 }
 
+TEST(LockFreeRMA, RingBufferWraparound) {
+  if (MPIEnvironment::world_comm_size() < 2) {
+    GTEST_SKIP() << "Need a worker rank to exercise real RMA wraparound";
+  }
+
+  // Deliberately tiny ring (library default is 8192) so a modest task count
+  // forces many wraparounds -- exercises publish_tasks()'s capacity-wait
+  // path (a slot can't be reused until its previous occupant's result has
+  // been harvested) and the split-Put/Get path in publish_tasks()/
+  // harvest_ready_results() when a batch or scan straddles the ring
+  // boundary.
+  constexpr int kRingSize = 4;
+  constexpr int kTaskCount = 200;  // 50x the ring size
+
+  auto worker_task = [](int task) -> int {
+    // A genuine straggler (not just uniform pacing) is what actually
+    // exercises the wait loop rather than it always finding room already
+    // free.
+    if (task % 3 == 0) std::this_thread::sleep_for(std::chrono::microseconds(200));
+    return task * task;
+  };
+
+  using Distributor = dynampi::LockFreeRMAWorkDistributor<int, int>;
+  Distributor::Config config;
+  config.comm = MPI_COMM_WORLD;
+  config.auto_run_workers = true;
+  config.max_tasks = kRingSize;
+  Distributor dist(worker_task, config);
+
+  if (dist.is_root_manager()) {
+    std::vector<int> all_results;
+    // Batches smaller than the ring, interleaved across many wraps: each
+    // insert_tasks() call blocks (harvesting internally) until the ring has
+    // room, so no explicit run_tasks()/gather is required between batches
+    // just to make progress.
+    constexpr int kBatchSize = 3;  // < kRingSize
+    for (int start = 0; start < kTaskCount; start += kBatchSize) {
+      const int n = std::min(kBatchSize, kTaskCount - start);
+      std::vector<int> batch(static_cast<size_t>(n));
+      for (int i = 0; i < n; ++i) batch[static_cast<size_t>(i)] = start + i;
+      dist.insert_tasks(batch);
+
+      // Occasionally harvest mid-run too, so both "results collected purely
+      // via publish_tasks()'s own backpressure" and "results collected via
+      // an explicit gather" are exercised in the same run.
+      if ((start / kBatchSize) % 5 == 0) {
+        auto snapshot = dist.gather_once();
+        all_results.insert(all_results.end(), snapshot.begin(), snapshot.end());
+      }
+    }
+    auto rest = dist.finish_remaining_tasks();
+    all_results.insert(all_results.end(), rest.begin(), rest.end());
+
+    ASSERT_EQ(all_results.size(), static_cast<size_t>(kTaskCount));
+    for (int i = 0; i < kTaskCount; ++i) {
+      EXPECT_EQ(all_results[static_cast<size_t>(i)], i * i) << "mismatch at task index " << i;
+    }
+    EXPECT_EQ(dist.remaining_tasks_count(), 0u);
+  }
+}
+
+TEST(HierarchicalLockFreeRMA, RingBufferWraparound) {
+  if (MPIEnvironment::world_comm_size() < 2) {
+    GTEST_SKIP() << "Need a worker rank to exercise real RMA wraparound";
+  }
+
+  // Deliberately tiny rings at both the leader/upper level and each node's
+  // local level (library defaults are 8192) so a modest task count forces
+  // many wraparounds at every level of the tree the run happens to build,
+  // not just one flat window -- see LockFreeRMA.RingBufferWraparound for the
+  // matching flat-class test and the bugs this exact shape of test caught
+  // there (both equally applicable to LockFreeRMALevel, the shared
+  // per-level primitive this class composes across the tree).
+  constexpr int kRingSize = 4;
+  constexpr int kTaskCount = 200;  // 50x the ring size
+
+  auto worker_task = [](int task) -> int {
+    // A genuine straggler (not just uniform pacing) is what actually
+    // exercises the capacity-wait path rather than it always finding room
+    // already free.
+    if (task % 3 == 0) std::this_thread::sleep_for(std::chrono::microseconds(200));
+    return task * task;
+  };
+
+  using Distributor = dynampi::HierarchicalLockFreeRMAWorkDistributor<int, int>;
+  Distributor::Config config;
+  config.comm = MPI_COMM_WORLD;
+  config.auto_run_workers = true;
+  config.max_tasks = kRingSize;
+  config.max_local_tasks = kRingSize;
+  Distributor dist(worker_task, config);
+
+  if (dist.is_root_manager()) {
+    std::vector<int> all_results;
+    // Batches smaller than the ring, interleaved across many wraps: each
+    // insert_tasks() call loops on LockFreeRMALevel::publish_tasks()'s
+    // return value (harvesting internally) until the top-of-chain level has
+    // room, so no explicit run_tasks()/gather is required between batches
+    // just to make progress.
+    constexpr int kBatchSize = 3;  // < kRingSize
+    for (int start = 0; start < kTaskCount; start += kBatchSize) {
+      const int n = std::min(kBatchSize, kTaskCount - start);
+      std::vector<int> batch(static_cast<size_t>(n));
+      for (int i = 0; i < n; ++i) batch[static_cast<size_t>(i)] = start + i;
+      dist.insert_tasks(batch);
+
+      // Occasionally harvest mid-run too, so both "results collected purely
+      // via insert_tasks()'s own backpressure" and "results collected via an
+      // explicit gather" are exercised in the same run.
+      if ((start / kBatchSize) % 5 == 0) {
+        auto snapshot = dist.gather_once();
+        all_results.insert(all_results.end(), snapshot.begin(), snapshot.end());
+      }
+    }
+    auto rest = dist.finish_remaining_tasks();
+    all_results.insert(all_results.end(), rest.begin(), rest.end());
+
+    ASSERT_EQ(all_results.size(), static_cast<size_t>(kTaskCount));
+    for (int i = 0; i < kTaskCount; ++i) {
+      EXPECT_EQ(all_results[static_cast<size_t>(i)], i * i) << "mismatch at task index " << i;
+    }
+    EXPECT_EQ(dist.remaining_tasks_count(), 0u);
+  }
+}
+
+// Same shape as RingBufferWraparound above, but with max_upper_fanout forced
+// low enough (well below this test environment's node-manager count) to
+// force real multi-round node-manager grouping instead of the default
+// auto-fanout's single flat level below ~32 managers -- exercises
+// setup_upper_chain()'s feed_width *growth* path (child_count * feed_width
+// at each promotion round) and its own ring-capacity clamp, which
+// RingBufferWraparound's flat topology never reaches.
+TEST(HierarchicalLockFreeRMA, RingBufferWraparoundGrouped) {
+  // Needs enough node managers for max_upper_fanout=2 to force at least one
+  // real grouping round (i.e. more than 2 node managers).
+  if (MPIEnvironment::world_comm_size() < 27) {
+    GTEST_SKIP() << "Need enough ranks for multiple node managers to group";
+  }
+
+  constexpr int kRingSize = 4;
+  constexpr int kTaskCount = 200;  // 50x the ring size
+
+  auto worker_task = [](int task) -> int {
+    if (task % 3 == 0) std::this_thread::sleep_for(std::chrono::microseconds(200));
+    return task * task;
+  };
+
+  using Distributor = dynampi::HierarchicalLockFreeRMAWorkDistributor<int, int>;
+  Distributor::Config config;
+  config.comm = MPI_COMM_WORLD;
+  config.auto_run_workers = true;
+  config.max_tasks = kRingSize;
+  config.max_local_tasks = kRingSize;
+  config.max_upper_fanout = 2;
+  Distributor dist(worker_task, config);
+
+  if (dist.is_root_manager()) {
+    std::vector<int> all_results;
+    constexpr int kBatchSize = 3;  // < kRingSize
+    for (int start = 0; start < kTaskCount; start += kBatchSize) {
+      const int n = std::min(kBatchSize, kTaskCount - start);
+      std::vector<int> batch(static_cast<size_t>(n));
+      for (int i = 0; i < n; ++i) batch[static_cast<size_t>(i)] = start + i;
+      dist.insert_tasks(batch);
+      if ((start / kBatchSize) % 5 == 0) {
+        auto snapshot = dist.gather_once();
+        all_results.insert(all_results.end(), snapshot.begin(), snapshot.end());
+      }
+    }
+    auto rest = dist.finish_remaining_tasks();
+    all_results.insert(all_results.end(), rest.begin(), rest.end());
+
+    ASSERT_EQ(all_results.size(), static_cast<size_t>(kTaskCount));
+    for (int i = 0; i < kTaskCount; ++i) {
+      EXPECT_EQ(all_results[static_cast<size_t>(i)], i * i) << "mismatch at task index " << i;
+    }
+    EXPECT_EQ(dist.remaining_tasks_count(), 0u);
+  }
+}
+
 TEST(LockFreeFinalization, FlatDrainsOutstandingWork) {
   if (MPIEnvironment::world_comm_size() < 2) {
     GTEST_SKIP() << "Need a worker rank to exercise remote finalization";
