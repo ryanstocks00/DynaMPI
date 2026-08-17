@@ -356,6 +356,14 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       setup_leader_hierarchy(is_manager, is_node_manager);
     }
 
+    // Ensure every rank finishes topology setup before use, matching
+    // HierarchicalLockFreeRMAWorkDistributor's constructor barrier. Without
+    // it, a straggler rank still inside setup_leader_hierarchy()'s
+    // collectives can miss the manager's first request round, folding that
+    // one-time setup latency into the caller's first batch instead of
+    // construction.
+    DYNAMPI_MPI_CHECK(MPI_Barrier, (static_cast<MPI_Comm>(m_communicator)));
+
     if (m_config.auto_run_workers && m_communicator.rank() != m_config.manager_rank) {
       run_worker();
     }
