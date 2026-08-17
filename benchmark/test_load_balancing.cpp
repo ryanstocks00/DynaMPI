@@ -232,7 +232,7 @@ static void append_result(const BenchmarkOptions& opts, const ResultRow& row) {
 template <typename Distributor>
 static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t repeat,
                       const BenchmarkOptions& opts, MPI_Comm comm,
-                      std::vector<ResultRow>& results) {
+                      uint64_t hierarchical_worker_count, std::vector<ResultRow>& results) {
   int size = 0;
   int rank = 0;
   MPI_Comm_size(comm, &size);
@@ -257,18 +257,21 @@ static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t 
   const uint64_t real_worker_count = (kind == DistributorKind::Hierarchical && nodes_known)
                                          ? static_cast<uint64_t>(size) - opts.nodes
                                          : num_workers;
-  // hierarchical's worker count (world_size - nodes, always <= the other
-  // three classes' world_size - 1) is the shared baseline for how many
-  // tasks a combo actually publishes, so tasks_per_worker means the same
-  // total batch size across all four distributors at a given k -- otherwise
-  // the flat/RMA classes' extra node-manager-turned-worker ranks would make
-  // their batches larger than hierarchical's for the "same" k, comparing
-  // different amounts of total work rather than just scheduling overhead.
-  // real_worker_count above is still used for warmup sizing and the
-  // reported "workers" column, since that's about warming/reporting each
-  // class's own real ranks, not the shared batch size.
-  const uint64_t hierarchical_worker_count =
-      nodes_known ? static_cast<uint64_t>(size) - opts.nodes : num_workers;
+  // hierarchical_worker_count (a parameter, not derived from `comm` here) is
+  // the shared baseline for how many tasks a combo actually publishes, so
+  // tasks_per_worker means the same total batch size across all four
+  // distributors at a given k -- otherwise the flat/RMA classes' extra
+  // ranks-per-worker would make their batches larger than hierarchical's for
+  // the "same" k, comparing different amounts of total work rather than just
+  // scheduling overhead. Computed once in main() from the true world size
+  // (nodes * 8, one worker per GPU) rather than from this call's own `comm`,
+  // since naive/lockfree_rma run against a smaller, node-reduced comm (see
+  // main()'s flat_comm) to get the same one-worker-rank-per-GPU shape
+  // hierarchical already has -- deriving it from `size` here would double
+  // the node-count subtraction for those two classes. real_worker_count
+  // above is still local to this call: it's about warming/reporting each
+  // class's own real ranks (which do vary with the comm actually used), not
+  // the shared batch size.
   // Upper bound only, used purely to size the RMA classes' preallocated
   // window before construction. Every non-manager rank is a safe
   // over-estimate of how many ranks will ever actually claim a task.
@@ -380,26 +383,26 @@ static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t 
 }
 
 static void run_all(DistributorKind kind, const BenchmarkOptions& opts, MPI_Comm comm,
-                    std::vector<ResultRow>& results) {
+                    uint64_t hierarchical_worker_count, std::vector<ResultRow>& results) {
   for (uint64_t k = opts.min_tasks_per_worker; k <= opts.max_tasks_per_worker; ++k) {
     for (uint64_t repeat = 0; repeat < opts.repeats; ++repeat) {
       MPI_Barrier(comm);
       switch (kind) {
         case DistributorKind::Naive:
-          run_batch<dynampi::NaiveWorkDistributor<Task, Result>>(kind, k, repeat, opts, comm,
-                                                                 results);
+          run_batch<dynampi::NaiveWorkDistributor<Task, Result>>(
+              kind, k, repeat, opts, comm, hierarchical_worker_count, results);
           break;
         case DistributorKind::Hierarchical:
-          run_batch<dynampi::HierarchicalWorkDistributor<Task, Result>>(kind, k, repeat, opts, comm,
-                                                                        results);
+          run_batch<dynampi::HierarchicalWorkDistributor<Task, Result>>(
+              kind, k, repeat, opts, comm, hierarchical_worker_count, results);
           break;
         case DistributorKind::LockFreeRMA:
-          run_batch<dynampi::LockFreeRMAWorkDistributor<Task, Result>>(kind, k, repeat, opts, comm,
-                                                                       results);
+          run_batch<dynampi::LockFreeRMAWorkDistributor<Task, Result>>(
+              kind, k, repeat, opts, comm, hierarchical_worker_count, results);
           break;
         case DistributorKind::HierarchicalLockFreeRMA:
           run_batch<dynampi::HierarchicalLockFreeRMAWorkDistributor<Task, Result>>(
-              kind, k, repeat, opts, comm, results);
+              kind, k, repeat, opts, comm, hierarchical_worker_count, results);
           break;
       }
     }
@@ -538,6 +541,37 @@ int main(int argc, char** argv) {
     if (opts.nodes == 0) {
       opts.nodes = static_cast<uint64_t>(size);
     }
+    // Shared task-count baseline across all four distributors (see
+    // run_batch()'s comment) -- computed once here from the true world size,
+    // not per-call from whichever comm a given kind ends up using below.
+    const bool nodes_known = opts.nodes > 0 && static_cast<uint64_t>(size) > opts.nodes;
+    const uint64_t hierarchical_worker_count =
+        nodes_known ? static_cast<uint64_t>(size) - opts.nodes
+                    : (size == 1 ? 1 : static_cast<uint64_t>(size - 1));
+
+    // naive and lockfree_rma are flat: every non-manager rank in whatever
+    // comm they're given becomes a worker, unlike hierarchical/
+    // hierarchical_lockfree_rma, which already carve one non-worker
+    // (node-manager/relay) rank out of each node's 9 themselves. Run against
+    // MPI_COMM_WORLD unchanged, the flat classes would get 9 real workers on
+    // every node but the manager's (one more than the node's 8 GPUs), while
+    // the hierarchical classes get 8 -- not a fair comparison, and not
+    // representative of real usage where a worker rank binds to a GPU.
+    // flat_comm drops the same one rank per node (the last local rank,
+    // chosen so world rank 0 -- always local rank 0 -- is never the one
+    // dropped, keeping "manager = world rank 0" consistent with the
+    // hierarchical classes too) via MPI_COMM_TYPE_SHARED to find each rank's
+    // node-local group, so this doesn't depend on ranks being placed in
+    // contiguous per-node blocks.
+    MPI_Comm node_comm = MPI_COMM_NULL;
+    MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &node_comm);
+    int local_rank = 0, local_size = 0;
+    MPI_Comm_rank(node_comm, &local_rank);
+    MPI_Comm_size(node_comm, &local_size);
+    MPI_Comm_free(&node_comm);
+    const bool in_flat_comm = local_size <= 1 || local_rank != local_size - 1;
+    MPI_Comm flat_comm = MPI_COMM_NULL;
+    MPI_Comm_split(comm, in_flat_comm ? 0 : MPI_UNDEFINED, world_rank, &flat_comm);
 
     std::vector<DistributorKind> kinds;
     if (distribution_arg == "all") {
@@ -556,14 +590,25 @@ int main(int argc, char** argv) {
 
     std::vector<ResultRow> results;
     for (auto kind : kinds) {
+      const bool use_flat_comm =
+          kind == DistributorKind::Naive || kind == DistributorKind::LockFreeRMA;
+      // This rank was excluded from flat_comm above (it's each node's extra,
+      // 9th rank): it has nothing to do for naive/lockfree_rma's turn and
+      // must not enter run_all() for them, since that would call MPI
+      // collectives (starting with run_all()'s own MPI_Barrier) against a
+      // comm it isn't a member of. Still participates normally in
+      // hierarchical/hierarchical_lockfree_rma's turns, which use the full
+      // `comm` below.
+      if (use_flat_comm && !in_flat_comm) continue;
       const size_t before = results.size();
-      run_all(kind, opts, comm, results);
+      run_all(kind, opts, use_flat_comm ? flat_comm : comm, hierarchical_worker_count, results);
       if (world_rank == 0) {
         for (size_t i = before; i < results.size(); ++i) {
           append_result(opts, results[i]);
         }
       }
     }
+    if (flat_comm != MPI_COMM_NULL) MPI_Comm_free(&flat_comm);
   } catch (const std::exception& e) {
     if (world_rank == 0) {
       std::cerr << "Benchmark failed: " << e.what() << std::endl;
