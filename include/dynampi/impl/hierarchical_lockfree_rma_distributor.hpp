@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -21,6 +20,7 @@
 #include "../mpi/mpi_communicator.hpp"
 #include "../mpi/mpi_group.hpp"
 #include "../mpi/mpi_types.hpp"
+#include "dynampi/impl/hierarchical_topology_detail.hpp"
 #include "dynampi/impl/rma_detail.hpp"
 #include "dynampi/mpi/mpi_error.hpp"
 #include "dynampi/task_error.hpp"
@@ -1082,18 +1082,8 @@ class HierarchicalLockFreeRMAWorkDistributor {
   void setup_topology() {
     if (m_solo) return;
 
-    MPICommunicator<> node_comm = m_world_comm.split_by_node();
-    std::optional<MPICommunicator<>> local_domain;
-    if (m_config.max_local_group_size > 0 && node_comm.size() > m_config.max_local_group_size) {
-      const int color = node_comm.rank() / m_config.max_local_group_size;
-      auto partition = node_comm.split(color, node_comm.rank());
-      local_domain.emplace(std::move(*partition));
-    } else {
-      local_domain.emplace(std::move(node_comm));
-    }
-
-    const int local_color = (m_world_comm.rank() == m_config.manager_rank) ? MPI_UNDEFINED : 0;
-    auto local_opt = local_domain->split(local_color, m_world_comm.rank());
+    auto local_opt = detail::split_local_worker_communicator(m_world_comm, m_config.manager_rank,
+                                                             m_config.max_local_group_size);
     if (local_opt.has_value()) m_local_comm.emplace(std::move(*local_opt));
 
     const bool is_manager = (m_world_comm.rank() == m_config.manager_rank);
@@ -1173,22 +1163,8 @@ class HierarchicalLockFreeRMAWorkDistributor {
     const int leaf_claim_width = std::clamp(local_children, 1, m_config.max_local_tasks);
 
     const int manager_count = flat_comm.size() - 1;
-    // Auto mode: stay flat below ~32 managers, where a sweep at 128 nodes
-    // found grouped and flat indistinguishable. Above that use the smallest
-    // power of 2 >= sqrt(manager_count). The same sweep measured branching
-    // factor 8 at ~6x worse than 16 or 32, and 64 -- which concentrates all
-    // traffic onto two leaders -- worse again.
-    const int effective_fanout = [&] {
-      if (m_config.max_upper_fanout < 0) {
-        if (manager_count <= 32) return std::numeric_limits<int>::max();
-        int fanout = 1;
-        const double target = std::sqrt(static_cast<double>(manager_count));
-        while (fanout < target) fanout *= 2;
-        return fanout;
-      }
-      return m_config.max_upper_fanout > 0 ? m_config.max_upper_fanout
-                                           : std::numeric_limits<int>::max();
-    }();
+    const int effective_fanout =
+        detail::resolve_upper_fanout(manager_count, m_config.max_upper_fanout);
 
     if (manager_count <= effective_fanout) {
       // Fits directly under the manager: exactly today's single flat level
@@ -1229,14 +1205,8 @@ class HierarchicalLockFreeRMAWorkDistributor {
         auto group_opt = round_comm->split(color, round_comm->rank());
         MPICommunicator<> group_comm = std::move(*group_opt);
         const bool is_group_leader = (group_comm.rank() == 0);
-        // Sum the actual widths rather than multiplying the leader's width
-        // by the group size. The root manager is excluded from its local
-        // group, so its node manager fronts one fewer leaf than managers on
-        // other nodes; multiplication undercounted every group containing
-        // that manager (112 instead of 127 leaves at 128 nodes).
-        int group_feed_width = 0;
-        DYNAMPI_MPI_CHECK(MPI_Reduce, (&feed_width, &group_feed_width, 1, MPI_INT, MPI_SUM, 0,
-                                       static_cast<MPI_Comm>(group_comm)));
+        const int group_feed_width =
+            detail::sum_subtree_widths_to_group_leader(feed_width, group_comm);
 
         // Collective over round_comm: every member (leader or not) calls
         // this together, before acting on their differing result below.

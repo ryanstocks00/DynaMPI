@@ -1148,8 +1148,8 @@ TEST(HierarchicalLockFreeRMA, RingBufferWraparound) {
 // low enough (well below this test environment's node-manager count) to
 // force real multi-round node-manager grouping instead of the default
 // auto-fanout's single flat level below ~32 managers -- exercises
-// setup_upper_chain()'s feed_width *growth* path (child_count * feed_width
-// at each promotion round) and its own ring-capacity clamp, which
+// setup_upper_chain()'s feed_width growth path (the sum of the child subtree
+// widths at each promotion round) and its own ring-capacity clamp, which
 // RingBufferWraparound's flat topology never reaches.
 TEST(HierarchicalLockFreeRMA, RingBufferWraparoundGrouped) {
   // Needs enough node managers for max_upper_fanout=2 to force at least one

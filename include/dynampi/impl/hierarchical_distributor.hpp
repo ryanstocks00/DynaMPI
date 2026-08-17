@@ -23,6 +23,7 @@
 #include "../mpi/mpi_communicator.hpp"
 #include "../mpi/mpi_types.hpp"
 #include "dynampi/impl/base_distributor.hpp"
+#include "dynampi/impl/hierarchical_topology_detail.hpp"
 #include "dynampi/impl/variable_batch.hpp"
 #include "dynampi/task_error.hpp"
 #include "dynampi/utilities/assert.hpp"
@@ -191,24 +192,6 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     return std::max(1, configured);
   }
 
-  // Resolves max_upper_fanout to a branching factor; manager_count excludes
-  // the root manager. Auto mode matches the RMA class: stay flat below ~32
-  // managers, where a fanout sweep found grouped and flat indistinguishable,
-  // and above that use the smallest power of 2 >= sqrt(manager_count). The
-  // same sweep measured a deeper tree ~6x worse and a shallower one, which
-  // concentrates traffic onto too few leaders, worse again.
-  inline int resolve_leader_fanout(int manager_count) const {
-    if (m_config.max_upper_fanout < 0) {
-      if (manager_count <= 32) return std::numeric_limits<int>::max();
-      int fanout = 1;
-      const double target = std::sqrt(static_cast<double>(manager_count));
-      while (fanout < target) fanout *= 2;
-      return fanout;
-    }
-    return m_config.max_upper_fanout > 0 ? m_config.max_upper_fanout
-                                         : std::numeric_limits<int>::max();
-  }
-
   // Builds the leader layer (root manager + node managers), optionally
   // grouped into a k-ary tree. The same shape as setup_upper_chain() in the
   // RMA class, but over send/recv, so there is no per-level window to create
@@ -234,7 +217,8 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     MPICommunicator flat_comm = std::move(*flat_opt);
 
     const int manager_count = flat_comm.size() - 1;  // excludes the root manager
-    const int effective_fanout = resolve_leader_fanout(manager_count);
+    const int effective_fanout =
+        detail::resolve_upper_fanout(manager_count, m_config.max_upper_fanout);
 
     if (manager_count <= effective_fanout) {
       // Fits directly under the manager: exactly today's single flat group
@@ -271,14 +255,8 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         auto group_opt = round_comm->split(color, round_comm->rank());
         MPICommunicator group_comm = std::move(*group_opt);
         const bool is_group_leader = (group_comm.rank() == 0);
-        // Sum the actual widths rather than multiplying the leader's width
-        // by the group size. The root manager is excluded from its local
-        // group, so its node manager fronts one fewer leaf than managers on
-        // other nodes; multiplication undercounted every group containing
-        // that manager (112 instead of 127 leaves at 128 nodes).
-        int group_leaf_count = 0;
-        DYNAMPI_MPI_CHECK(MPI_Reduce, (&m_subtree_leaf_count, &group_leaf_count, 1, MPI_INT,
-                                       MPI_SUM, 0, static_cast<MPI_Comm>(group_comm)));
+        const int group_leaf_count =
+            detail::sum_subtree_widths_to_group_leader(m_subtree_leaf_count, group_comm);
 
         // Collective over round_comm: every member (leader or not) calls
         // this together, before acting on their differing result below.
@@ -495,30 +473,16 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
 
     // --- Initialize Topology Groups ---
     if (m_config.manager_per_node) {
-      // 1. Identify physical nodes via split_by_node, optionally partitioning
-      // large nodes into smaller local domains (max_local_group_size).
-      MPICommunicator node_comm = m_communicator.split_by_node();
-      std::optional<MPICommunicator> local_domain;
-      if (m_config.max_local_group_size > 0 && node_comm.size() > m_config.max_local_group_size) {
-        const int color = node_comm.rank() / m_config.max_local_group_size;
-        auto partition = node_comm.split(color, node_comm.rank());
-        local_domain.emplace(std::move(*partition));
-      } else {
-        local_domain.emplace(std::move(node_comm));
-      }
-
-      // 2. Create Local Group: Exclude Manager!
-      // If I am Manager, color is Undefined (I don't participate in local worker pool).
-      // Everyone else participates.
-      int local_color = (m_communicator.rank() == m_config.manager_rank) ? MPI_UNDEFINED : 0;
-
-      auto local_comm_opt = local_domain->split(local_color, m_communicator.rank());
+      // Identify physical/local domains and exclude the root manager from
+      // its node's worker communicator.
+      auto local_comm_opt = detail::split_local_worker_communicator(
+          m_communicator, m_config.manager_rank, m_config.max_local_group_size);
       if (local_comm_opt.has_value()) {
         // Extract group from the temporary communicator, then let it be freed
         m_local_group.emplace(*local_comm_opt);
       }
 
-      // 3. Build the leader layer: manager + Node Managers (Rank 0 of
+      // Build the leader layer: manager + Node Managers (Rank 0 of
       // the *Local* Comm), optionally grouped into a tree -- see
       // setup_leader_hierarchy().
       bool is_manager = (m_communicator.rank() == m_config.manager_rank);
