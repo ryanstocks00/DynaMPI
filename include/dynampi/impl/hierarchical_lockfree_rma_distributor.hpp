@@ -30,44 +30,22 @@ namespace dynampi {
 
 namespace detail {
 
-// ---------------------------------------------------------------------------
-// LockFreeRMALevel
-//
-// One level of LockFreeRMAWorkDistributor's protocol (fetch-and-add claiming,
-// one-sided Put of results plus a completion log, no collectives on the hot
-// path), scoped to an arbitrary communicator so it can be composed per tree
-// level: root manager <-> node managers, and node manager <-> its local
-// workers.
-//
-// Publishing, claiming, writing results and harvesting are each purely
-// one-sided, with no requirement that claimants participate together, so
-// composing the protocol hierarchically reintroduces no synchronization.
-//
-// The API is split into non-blocking steps (try_claim() /
-// write_result_range()) rather than one claim-compute-write loop: a manager
-// claiming here does not compute the results, it republishes into a
-// different level and writes them back once they return, so it must
-// interleave the two independently. A leaf worker just calls both
-// back-to-back.
-// ---------------------------------------------------------------------------
+// One composable level of fetch-and-add claims, task/result storage, and
+// completion logging. Its non-blocking steps let managers relay between levels.
 template <typename TaskT, typename ResultT>
 class LockFreeRMALevel {
  public:
   struct Config {
     MPI_Comm comm = MPI_COMM_NULL;
     int owner_rank = 0;
-    // Ring capacity: the task/result/log tables are this many slots, reused
-    // via index % max_tasks once a slot's result has been harvested -- not a
-    // lifetime cap. See LockFreeRMAWorkDistributor::Config::max_tasks for
-    // the full rationale (identical here).
+    // Ring capacity; harvested slots are reused modulo max_tasks.
     int max_tasks = 8192;
     int max_task_count = 256;
     int max_result_count = 256;
   };
 
   struct ClaimedRange {
-    int64_t start =
-        -1;  // -1: nothing claimable right now (not necessarily drained -- see drained())
+    int64_t start = -1;  // Nothing currently claimable; drained() determines final exhaustion.
     std::vector<TaskT> tasks;
   };
 
@@ -98,45 +76,22 @@ class LockFreeRMALevel {
 
   void idle_wait() {
     if (m_window == MPI_WIN_NULL) {
-      // Size-1 local path: no RMA window (Open MPI rejects Win_create on
-      // singleton communicators). Still yield so a tight owner/claimant
-      // spin doesn't burn a core.
+      // Singleton levels have no MPI window.
       std::this_thread::yield();
       return;
     }
     detail::rma_wait_idle(m_window, m_comm.get());
   }
 
-  // --- Owner-side API ---
-
-  // Owner-side. How many tasks could be published right now without
-  // exceeding ring capacity -- i.e. how much room harvesting has freed up so
-  // far. Lets a non-blocking caller (step_bridge_hop) check before claiming
-  // from its parent, since a claim already taken can't be handed back if
-  // publishing it here turned out not to fit.
+  // Capacity must be checked before an irreversible parent claim.
   int64_t owner_available_capacity() const {
     assert(is_owner());
     const int64_t in_flight = m_total_tasks - static_cast<int64_t>(m_owner_collected_count);
     return static_cast<int64_t>(m_config.max_tasks) - in_flight;
   }
 
-  // Publishes tasks.size() tasks in two round trips total regardless of how
-  // many: one bulk Put, then one atomic_set(TOTAL_OFF) -- see
-  // LockFreeRMAWorkDistributor::publish_tasks() for the full
-  // rationale (this is the same fix applied there).
-  //
-  // Returns false (publishing nothing) rather than blocking if the ring
-  // doesn't currently have room for the whole batch: this level is also
-  // driven from the non-blocking relay step (step_bridge_hop), where
-  // blocking here would stall every other hop, not just this one. A caller
-  // that can afford to block (the top-level manager's insert_tasks()) loops
-  // on the return value itself, harvesting in between attempts; the relay
-  // instead checks owner_available_capacity() before ever claiming, so it
-  // should never actually see false in practice. Still throws
-  // std::length_error (via check_task_capacity, checked unconditionally) if
-  // the batch could never fit regardless of how much harvesting happens --
-  // that's a caller bug, not a transient condition, so callers must not
-  // treat it as retriable.
+  // Publishes all tasks or returns false if ring space is temporarily
+  // insufficient. A batch larger than the ring is an error.
   bool publish_tasks(const std::vector<TaskT>& tasks) {
     assert(is_owner());
     if (tasks.empty()) return true;
@@ -161,12 +116,7 @@ class LockFreeRMALevel {
     }
     put_ring_bytes(buffer.data(), start, count, m_task_slot_stride,
                    [this](int64_t i) { return task_slot(i); });
-    // Reused slots still hold whatever completion-log entry their previous
-    // occupant's write_result_range() left behind. Left uncleared, a
-    // harvest scan would read that stale non-zero entry and treat this lap's
-    // index as already complete before this lap's claimant has even claimed
-    // it -- see the identical fix, and the stress test that caught it, on
-    // LockFreeRMAWorkDistributor::publish_tasks().
+    // Clear stale completion entries before reusing ring slots.
     std::vector<std::byte> log_clear(static_cast<size_t>(count) * LOG_ENTRY_BYTES, std::byte{0});
     put_ring_bytes(log_clear.data(), start, count, LOG_ENTRY_BYTES,
                    [this](int64_t i) { return log_slot(i); });
@@ -210,35 +160,19 @@ class LockFreeRMALevel {
     return m_owner_collected_count;
   }
 
-  // Order-independent lower bound on how many tasks have actually finished,
-  // as of the last harvest_ready_results() call -- unlike
-  // owner_collected_count(), not blocked by an unresolved straggler at a
-  // lower index (see harvest_ready_results()'s comment on how it's derived).
-  // Not safe to use for anything requiring the actual result data or for
-  // ring-slot reuse (still exclusively owner_collected_count()'s job) --
-  // only as a hint for whether it's safe to feed more work into this level.
+  // Completion estimate not blocked by lower-index gaps. It is only a pacing
+  // hint; ordered collection controls result access and ring reuse.
   int64_t owner_unordered_completed_estimate() const {
     assert(is_owner());
     return m_owner_unordered_completed;
   }
 
-  // Returns the newly-confirmed contiguous prefix of results, possibly
-  // empty, in at most three round trips -- see
-  // LockFreeRMAWorkDistributor::harvest_ready_results(). Factored out here so
-  // it is not tied to one result vector: the top-level manager appends the
-  // batch to its own buffer, a node manager routes it into a relay queue.
+  // Returns the newly completed contiguous result prefix.
   std::vector<ResultT> harvest_ready_results() {
     assert(is_owner());
     const int64_t head_now = atomic_read(HEAD_OFF);
-    // A claimant can fetch_add HEAD_OFF for an index that hasn't actually
-    // been published yet (try_claim()'s pending path deliberately lets
-    // claims outrun publication). Before the ring, scanning that far ahead
-    // was harmless (an unpublished slot's log entry was always still zero);
-    // with the ring, that same slot may hold a stale non-zero entry left
-    // over from a prior lap -- see the identical fix, and the stress test
-    // that caught it, on LockFreeRMAWorkDistributor::harvest_ready_results().
-    // Capping at m_total_tasks means the scan never reads a slot this level
-    // hasn't itself published in the current lap.
+    // Claims may outrun publication; never scan reused slots beyond this
+    // owner's currently published range.
     const int64_t head_now_capped = std::min(head_now, m_total_tasks);
 
     const int64_t frontier = static_cast<int64_t>(m_owner_collected_count);
@@ -258,19 +192,10 @@ class LockFreeRMALevel {
       if (entry < 0) saw_error = true;
       confirmed_end += entry < 0 ? -entry : entry;
     }
-    // A negated length means "this range produced at least one error". The scan
-    // reads every entry anyway, so the flag costs nothing until it fires.
+    // A negative run length indicates at least one task error.
     if (saw_error) harvest_task_errors();
 
-    // Order-independent completed-count estimate, reusing the log_buf fetch
-    // above at no extra RMA round trip: continues past the gap that stopped
-    // confirmed_end (a straggler at a low index) to also tally every run
-    // found further ahead, one slot at a time, jumping past each run once
-    // found (entries are start-of-run markers only -- the interior slots of
-    // a multi-task write are never independently marked, so a lone straggler
-    // can only ever cost this walk one skipped slot, not the whole
-    // remainder). See owner_unordered_completed_estimate()'s comment for
-    // what this is (and is not) safe to use for.
+    // Continue past ordering gaps to estimate total completed work.
     int64_t unordered_total = confirmed_end - frontier;
     for (int64_t pos = confirmed_end; pos < head_now_capped;) {
       const size_t off = static_cast<size_t>(pos - frontier) * LOG_ENTRY_BYTES;
@@ -309,10 +234,7 @@ class LockFreeRMALevel {
     return output;
   }
 
-  // Like harvest_ready_results(), but backs off briefly if nothing new was
-  // found, instead of being called back-to-back in a tight owner loop -- a
-  // politeness backoff against pure CPU/RMA-poll churn rather than a
-  // correctness requirement (there's no gather round to flood).
+  // Harvest once, yielding if no result became available.
   std::vector<ResultT> harvest_ready_results_throttled() {
     const size_t before = owner_collected_count();
     auto results = harvest_ready_results();
@@ -320,22 +242,8 @@ class LockFreeRMALevel {
     return results;
   }
 
-  // --- Claimant-side API ---
-  //
-  // NOTE: unlike the owner-side API, these do NOT assert !is_owner(). A
-  // promoted group leader owns this level and must also claim from it, since
-  // its own subtree needs feeding. Every RMA helper targets owner_rank
-  // unconditionally, so a self-targeted call is just a loopback of the
-  // remote path -- the same reason an owner reads its own window through
-  // the RMA API rather than a memory load.
-
-  // Attempts one non-blocking claim step (same state machine as
-  // LockFreeRMAWorkDistributor::run_worker(), exposed here as a
-  // discrete callable rather than an internal loop -- see the class
-  // comment). Returns start=-1 if nothing is claimable right this instant
-  // (could be a genuine claim miss, a wait for TOTAL_OFF to catch up to an
-  // already-reserved range, or true exhaustion -- see drained() for the
-  // latter).
+  // Attempts one non-blocking claim. Owners may self-claim when they also
+  // lead a child subtree. start=-1 means no work is currently available.
   ClaimedRange try_claim() {
     if (m_pending_start != -1) {
       const int64_t total = atomic_read(TOTAL_OFF);
@@ -351,11 +259,7 @@ class LockFreeRMALevel {
       return ClaimedRange{};
     }
 
-    // Deliberately NOT gated on !m_seen_finished when re-checking
-    // cached_total below the threshold -- see drained()'s exit-check
-    // symmetric handling and LockFreeRMAWorkDistributor::run_worker()'s
-    // identical comment: once finished_seen is true, a stale cached_total
-    // must still be correctable by drained()'s own fresh read, not frozen.
+    // A stale total must remain refreshable after FINISHED is observed.
     if (m_cached_head >= m_cached_total && !m_seen_finished)
       m_cached_total = atomic_read(TOTAL_OFF);
 
@@ -366,12 +270,7 @@ class LockFreeRMALevel {
       m_cached_head = end;
 
       const int64_t total = (end <= m_cached_total) ? m_cached_total : atomic_read(TOTAL_OFF);
-      // Clamped into [start, end]: total can land below start (this whole
-      // claim landed beyond what's published yet), not just below end. See
-      // LockFreeRMAWorkDistributor::run_worker()'s comment on the
-      // exact bug this guards -- an unclamped `min(end, total)` here could
-      // produce a pending_start below this claim's own start, an index this
-      // rank never actually owns, corrupting another claimant's range.
+      // Publication may trail the entire claim, so clamp to its owned range.
       const int64_t ready = std::clamp(total, start, end);
       if (ready < end) {
         m_pending_start = ready;
@@ -384,25 +283,15 @@ class LockFreeRMALevel {
     return ClaimedRange{};
   }
 
-  // Refreshes the cached finished-observation; call periodically (try_claim()
-  // does not do this itself, since a caller managing multiple levels --
-  // see run_node_manager() -- may want to control polling cadence
-  // explicitly rather than pay a FINISHED_OFF read on every try_claim()).
+  // Refreshes FINISHED without charging every try_claim() for the RMA read.
   bool check_finished() {
     if (!m_seen_finished && atomic_read(FINISHED_OFF) != 0) m_seen_finished = true;
     return m_seen_finished;
   }
 
-  // True once nothing more will ever be claimable: no pending remainder,
-  // FINISHED_OFF observed, and cached_head caught up to a fresh read of
-  // TOTAL_OFF -- fresh because cached_total can lag the point where
-  // publishing actually stopped.
+  // True when FINISHED is observed and no published or pending work remains.
   bool drained() {
-    // Refreshed BEFORE the pending-remainder early return, not after. A
-    // claimant holding a remainder would otherwise return false here every
-    // time without reaching check_finished(), leaving m_seen_finished stuck
-    // false -- and try_claim()'s pending branch needs that flag to give up
-    // on a remainder that will never resolve, so the claimant deadlocks.
+    // Refresh before the pending check so an unpublished remainder can expire.
     check_finished();
     if (m_pending_start != -1) return false;
     if (!m_seen_finished) return false;
@@ -412,18 +301,11 @@ class LockFreeRMALevel {
     return false;
   }
 
-  // Claimant-side. Publishes one failed task into the error table, preserving
-  // the rank that actually ran it -- a manager relaying a subtree's failure
-  // upward reports the original rank, not its own. Must complete before the log
-  // entry that advertises it; every RMA helper here flushes its target before
-  // returning, so calling this before write_result_range() is enough.
+  // Publishes a worker failure before its result range advertises completion.
   void report_task_error(const TaskError& error) {
     const int64_t slot = fetch_add(ERROR_COUNT_OFF, 1);
     if (slot >= kMaxRecordedErrors) return;
-    // Message first, then the ready word, each flushed separately: fetch_add
-    // hands out the slot before anything is in it, so the count alone never
-    // means a slot can be read. The ready word is rank+1 so that zero stays the
-    // untouched sentinel for rank 0.
+    // Publish payload before readiness; rank+1 preserves zero as the sentinel.
     std::vector<std::byte> message_bytes(kMaxTaskErrorMessage, std::byte{0});
     const size_t bytes = std::min(error.message.size(), kMaxTaskErrorMessage - 1);
     if (bytes > 0) {
@@ -432,11 +314,7 @@ class LockFreeRMALevel {
     }
     const int64_t ready = static_cast<int64_t>(error.worker_rank) + 1;
     if (local_only()) {
-      // LCOV_EXCL_START -- only reachable when this level's own owned group
-      // is a singleton (an odd manager count under max_upper_fanout
-      // leaves one such leftover group; see setup_upper_chain()) AND a task
-      // fails there specifically, rather than in the far more common case
-      // of a genuinely remote claimant.
+      // LCOV_EXCL_START -- singleton owned upper group
       detail::write_bytes(m_window_buffer.data(), m_window_buffer.size(),
                           static_cast<size_t>(error_slot(slot)) + E_DATA, message_bytes.data(),
                           message_bytes.size());
@@ -451,16 +329,13 @@ class LockFreeRMALevel {
     flush_remote();
   }
 
-  // Owner-side. Everything harvested since the last call, oldest first.
   std::vector<TaskError> take_errors() {
     std::vector<TaskError> taken;
     taken.swap(m_owner_errors);
     return taken;
   }
 
-  // Writes results.size() results starting at task index `start`:
-  // Put data -> flush -> Put completion-log flag -> flush. The log write is a
-  // plain Put (not an atomic): the claim index is exclusively owned.
+  // Writes result data before publishing its completion-log entry.
   void write_result_range(int64_t start, const std::vector<ResultT>& results,
                           bool contains_error = false) {
     const int64_t count = static_cast<int64_t>(results.size());
@@ -480,10 +355,7 @@ class LockFreeRMALevel {
       }
     }
     const int64_t entry = contains_error ? -count : count;
-    // The log entry is a single value at the batch's own start index (one
-    // entry per whole claimed range, not per task), so log_slot(start)'s own
-    // ring-aware modulo is always enough -- only the result data (one slot
-    // per task) can itself straddle a ring lap boundary.
+    // One log entry covers the range; only result data can cross a ring lap.
     put_ring_bytes(buffer.data(), start, count, m_result_slot_stride,
                    [this](int64_t i) { return result_slot(i); });
     if (local_only()) {
@@ -496,17 +368,13 @@ class LockFreeRMALevel {
   }
 
  private:
-  // Window layout: [head][total][finished] then the task table, the result
-  // table, and the completion log, each sized for max_tasks entries -- same
-  // layout as LockFreeRMAWorkDistributor.
+  // Window layout: controls, task ring, result ring, completion log, errors.
   static constexpr MPI_Aint HEAD_OFF = 0;
   static constexpr MPI_Aint TOTAL_OFF = 8;
   static constexpr MPI_Aint FINISHED_OFF = 16;
   static constexpr MPI_Aint ERROR_COUNT_OFF = 24;
   static constexpr size_t CONTROL_BYTES = 32;
 
-  // Failed tasks report into a small fixed table -- same layout and rationale
-  // as LockFreeRMAWorkDistributor's.
   static constexpr int64_t kMaxRecordedErrors = 16;
   static constexpr size_t E_RANK = 0;
   static constexpr size_t E_DATA = 8;
@@ -551,13 +419,11 @@ class LockFreeRMALevel {
   std::vector<TaskError> m_owner_errors;  // owner-side, drained by take_errors()
 
   void initialize_window() {
-    // Same fixed-width slot requirement as the flat distributor's window.
     check_fixed_size_mpi_type<TaskT>("task", "LockFreeRMALevel");
     check_fixed_size_mpi_type<ResultT>("result", "LockFreeRMALevel");
 
     m_task_elem = static_cast<size_t>(detail::mpi_type_size_bytes<TaskT>());
     m_result_elem = static_cast<size_t>(detail::mpi_type_size_bytes<ResultT>());
-    // Same per-value element sizing as the flat distributor's window.
     m_max_task_count = MPI_Type<TaskT>::resize_required
                            ? static_cast<size_t>(m_config.max_task_count)
                            : static_cast<size_t>(mpi_elements_per_value<TaskT>());
@@ -576,10 +442,7 @@ class LockFreeRMALevel {
     const size_t owner_window_bytes =
         m_error_base + static_cast<size_t>(kMaxRecordedErrors) * ERROR_SLOT_BYTES;
 
-    // Size-1 communicators deliberately skip MPI_Win_create: Open MPI and
-    // others reject it with MPI_ERR_WIN. A solo group leader still
-    // self-claims from its size-1 level via the local helpers below -- same
-    // process, so plain loads/stores are correct.
+    // Some MPI implementations reject windows on singleton communicators.
     if (is_owner()) {
       m_window_buffer.resize(owner_window_bytes);
     }
@@ -598,9 +461,7 @@ class LockFreeRMALevel {
     DYNAMPI_MPI_CHECK(MPI_Win_lock_all, (MPI_MODE_NOCHECK, m_window));
   }
 
-  // Ring slot for a task index: reused every max_tasks indices. Callers are
-  // responsible for never having two live (published, not yet harvested)
-  // indices map to the same slot -- see publish_tasks()'s capacity check.
+  // publish_tasks() prevents live indices from colliding modulo max_tasks.
   int64_t ring_slot(int64_t index) const {
     return index % static_cast<int64_t>(m_config.max_tasks);
   }
@@ -616,8 +477,7 @@ class LockFreeRMALevel {
     return static_cast<MPI_Aint>(m_log_base +
                                  static_cast<size_t>(ring_slot(index)) * LOG_ENTRY_BYTES);
   }
-  // Not ring-indexed: the error table is a separate, fixed-size, never-reused
-  // table (see kMaxRecordedErrors) unrelated to the task/result/log ring.
+  // Error slots are fixed and not ring-indexed.
   MPI_Aint error_slot(int64_t index) const {
     return static_cast<MPI_Aint>(m_error_base + static_cast<size_t>(index) * ERROR_SLOT_BYTES);
   }
@@ -676,10 +536,7 @@ class LockFreeRMALevel {
     flush_local();
   }
 
-  // Single-chunk Put, dispatching local_only() vs RMA the same way
-  // get_bytes_local() already does for reads. No flush here (matches
-  // post_put_bytes()'s own contract) -- callers flush once after every chunk
-  // of a possibly-split write is issued.
+  // Issues one local or remote chunk; callers flush after all chunks.
   void put_bytes_owner(const void* src, size_t n, MPI_Aint offset) {
     if (local_only()) {
       detail::write_bytes(m_window_buffer.data(), m_window_buffer.size(),
@@ -689,12 +546,7 @@ class LockFreeRMALevel {
     post_put_bytes(src, n, offset);
   }
 
-  // Writes `count` consecutive task indices starting at `start` from `src`,
-  // splitting into two chunks if the range crosses a ring lap boundary --
-  // slot_fn() (task_slot/result_slot/log_slot) is only contiguous within one
-  // lap. Unlike the flat class, a single claim/publish here can cover more
-  // than one index (claim_width), so this is exercised on ordinary claim
-  // widths, not just as a rare edge case.
+  // Splits a write when its logical range crosses the ring boundary.
   template <typename SlotFn>
   void put_ring_bytes(const void* src, int64_t start, int64_t count, size_t stride,
                       SlotFn&& slot_fn) {
@@ -709,8 +561,7 @@ class LockFreeRMALevel {
     }
   }
 
-  // Read counterpart of put_ring_bytes(), built on get_bytes_local() (which
-  // already dispatches local_only() vs RMA).
+  // Read counterpart of put_ring_bytes().
   template <typename SlotFn>
   void get_ring_bytes_local(void* dst, int64_t start, int64_t count, size_t stride,
                             SlotFn&& slot_fn) {
@@ -724,15 +575,10 @@ class LockFreeRMALevel {
     }
   }
 
-  // Owner-side. Reads whatever error records appeared since the last call.
   void harvest_task_errors() {
     const int64_t claimed = std::min(atomic_read(ERROR_COUNT_OFF), kMaxRecordedErrors);
     if (claimed <= 0) return;  // LCOV_EXCL_LINE -- only reachable on a spurious flag
-    // Takes ready slots anywhere in the table, not a contiguous frontier:
-    // slots are claimed in fetch_add order but completed out of order, so an
-    // in-flight slot is skipped now and picked up later. Safe because a
-    // claimant flushes its record before the log entry that brings the
-    // manager here.
+    // Read ready slots independently because writers complete out of order.
     std::vector<std::byte> buf(static_cast<size_t>(claimed) * ERROR_SLOT_BYTES);
     get_bytes_local(buf.data(), buf.size(), error_slot(0));
     for (int64_t i = 0; i < claimed; ++i) {
@@ -773,39 +619,9 @@ class LockFreeRMALevel {
 
 }  // namespace detail
 
-// ---------------------------------------------------------------------------
-// HierarchicalLockFreeRMAWorkDistributor
-//
-// Combines HierarchicalWorkDistributor's node-aware tree topology
-// (root manager <-> per-node managers <-> per-node local workers) with
-// LockFreeRMAWorkDistributor's one-sided, collective-free RMA
-// protocol (fetch-and-add claiming, batched Put-based result return via a
-// completion log), applied independently at each level of the tree.
-//
-// Motivation: the flat class is collective-free but funnels every claim,
-// publish and harvest through one manager-owned window, which plateaued
-// around 2.1-2.26M tasks/s from 32 nodes on, while the two-sided tree kept
-// climbing to 5.2M/s at 128 nodes. One window per level gets both: no
-// collectives and no single-window ceiling.
-//
-// A node manager is owner of its local level and claimant of the leader
-// level at once. It never computes a claim itself -- it republishes it into
-// its local level and relays results up once confirmed. Local harvesting
-// returns whatever contiguous prefix is ready, which can span several
-// leader-level claims or partly cover one, so the manager keeps a FIFO of
-// {leader_start, local_start, local_end} relay entries (m_pending_relays)
-// and slices harvested batches against those boundaries. See
-// run_node_manager().
-//
-// Results ARE ordered: every level's completion log positionally maps a
-// result back to the index its claim was assigned, and a level's harvest only
-// ever advances past a contiguous prefix of confirmed entries (see
-// LockFreeRMALevel::harvest_ready_results()) -- true recursively at each hop
-// of the relay chain, so the final vector at the root manager matches
-// submission order. Same cost as any ordered distributor: one slow task holds
-// back every result behind it, all the way up the tree. Task prioritization
-// and detailed statistics are not supported.
-// ---------------------------------------------------------------------------
+// Node-aware tree of one-sided RMA levels. Managers relay claimed tasks down
+// and contiguous result prefixes up. Ordering is preserved across every level;
+// task prioritization and detailed statistics are unsupported.
 template <typename TaskT, typename ResultT, typename... Options>
 class HierarchicalLockFreeRMAWorkDistributor {
  public:
@@ -813,43 +629,22 @@ class HierarchicalLockFreeRMAWorkDistributor {
     MPI_Comm comm = MPI_COMM_WORLD;
     int manager_rank = 0;
     bool auto_run_workers = true;
-    int max_tasks = 8192;        // leader-level task table capacity (lifetime total)
-    int max_local_tasks = 8192;  // per-node local task table capacity (lifetime total, per node)
+    int max_tasks = 8192;        // Upper-level ring capacity
+    int max_local_tasks = 8192;  // Per-node ring capacity
     int max_task_count = 256;
     int max_result_count = 256;
-    // 0 keeps one local group per shared-memory node. A positive value
-    // partitions large nodes into smaller contiguous groups, reducing
-    // contention on each local RMA window and making the upper hierarchy
-    // useful on machines with many ranks per node.
+    // 0 keeps one local group per node; positive values partition it into
+    // contiguous groups of at most this size.
     int max_local_group_size = 0;
-    // <0 (default, "auto"): derive a fanout from the manager count -- see
-    // setup_upper_chain() for the formula. 0: disabled, a two-level tree
-    // where the root manager talks directly to every node manager. >0: caps
-    // direct claimants per upper-level window, grouping node managers
-    // recursively into intermediate levels once they exceed it.
+    // <0 selects fanout automatically, 0 keeps a flat upper layer, and >0
+    // recursively caps direct upper-level claimants.
     int max_upper_fanout = -1;
 
-    // Caps how many rounds ahead (at the parent's own claim granularity) a
-    // relay hop may claim from its parent before backing off, so the
-    // pipeline stays fed without unbounded relay latency -- see the
-    // backpressure comment at its one call site (step_bridge_hop) for the
-    // regression this guards against. Exposed here (rather than left a
-    // local constexpr) so it can be swept experimentally against
-    // HierarchicalWorkDistributor::Config::pipeline_depth, which plays a
-    // comparable role for the two-sided class.
-    //
-    // A 128-node/rpn=9 sweep (test_load_balancing, tasks_per_worker 0-20)
-    // found 2 matched or beat every other tested value (1, 4, 8, 16, 32) at
-    // nearly every batch size, by up to 18% in the middle of the range.
-    // Values much above this regress for the same reason the cap exists at
-    // all: claiming further ahead of a still-FIFO relay buffer adds
-    // ordering latency, not useful slack.
+    // Parent claim rounds allowed ahead of child completion.
     int max_pending_rounds = 2;
 
-    // If true (default), run_tasks()/finish_remaining_tasks() throw
-    // dynampi::TaskFailure on the root manager once a task has thrown. Set
-    // false to recover instead: distribution runs to completion and the
-    // failures are available from take_task_errors().
+    // Rethrow worker failures at the root; otherwise collect them for
+    // take_task_errors().
     bool rethrow_task_errors = true;
   };
 
@@ -869,12 +664,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
     setup_topology();
     setup_levels();
 
-    // setup_topology()/setup_levels() run MPI_Comm_split chains whose cost
-    // grows with rank and level count, and the manager's constructor returns
-    // as soon as its own finish. Without this barrier a caller that starts
-    // timing there burns the window on ranks still in setup -- measured at
-    // ~700-900ms of dead time with zero results relayed, flat across task
-    // durations, so a one-time setup cost rather than a per-task one.
+    // Ensure every rank finishes communicator and window setup before use.
     DYNAMPI_MPI_CHECK(MPI_Barrier, (m_world_comm.get()));
 
     if (m_config.auto_run_workers && !is_root_manager()) run_worker();
@@ -896,12 +686,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
     if (!m_finalized) finalize();
     m_task_errors.warn_if_unreported("HierarchicalLockFreeRMAWorkDistributor");
     if (!m_solo) {
-      // Level teardown is collective only over that level's communicator,
-      // so without a world-wide rendezvous a rank in fewer levels can start
-      // constructing the next distributor while managers are still freeing
-      // subgroup windows -- MS-MPI can stall or abort on the overlap.
-      // Destroy levels explicitly while m_world_comm is alive, keeping their
-      // top-to-bottom order, then hold every rank until all windows are gone.
+      // Destroy every subgroup window before any rank starts another instance.
       m_parent_level.reset();
       m_owned_upper_levels.clear();
       m_local_level.reset();
@@ -916,8 +701,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
   size_t remaining_tasks_count() const {
     assert(is_root_manager());
     if (m_solo) return m_local_task_store.size() - m_local_collected_count;
-    const auto& top =
-        m_owned_upper_levels.front();  // manager always owns exactly one top-of-chain level
+    const auto& top = top_level();
     return top.owner_published_count() - top.owner_collected_count() - m_results.size();
   }
 
@@ -932,17 +716,10 @@ class HierarchicalLockFreeRMAWorkDistributor {
       m_local_task_store.insert(m_local_task_store.end(), tasks.begin(), tasks.end());
       return;
     }
-    auto& top = m_owned_upper_levels.front();  // manager's top-of-chain level
-    // publish_tasks() returns false rather than blocking when its ring is
-    // full (it's also driven from the non-blocking relay step, where
-    // blocking would stall every other hop) -- this call site has no such
-    // constraint, so loop here instead, harvesting to free ring room between
-    // attempts.
+    auto& top = top_level();
+    // This blocking API harvests until enough ring space is available.
     while (!top.publish_tasks(tasks)) {
-      auto results = top.harvest_ready_results_throttled();
-      collect_level_errors(top);
-      m_results.insert(m_results.end(), std::make_move_iterator(results.begin()),
-                       std::make_move_iterator(results.end()));
+      harvest_top_level(true);
     }
   }
 
@@ -957,15 +734,12 @@ class HierarchicalLockFreeRMAWorkDistributor {
         run_one_solo_task();
       }
     } else {
-      auto& top = m_owned_upper_levels.front();  // manager's top-of-chain level
+      auto& top = top_level();
       while (true) {
         if (m_results.size() >= config.target_num_tasks) break;
         if (config.max_seconds && timer.elapsed().count() >= *config.max_seconds) break;
         if (top.owner_collected_count() >= top.owner_published_count()) break;
-        auto results = top.harvest_ready_results_throttled();
-        collect_level_errors(top);
-        m_results.insert(m_results.end(), std::make_move_iterator(results.begin()),
-                         std::make_move_iterator(results.end()));
+        harvest_top_level(true);
       }
     }
 
@@ -979,10 +753,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
 
   [[nodiscard]] std::vector<ResultT> finish_remaining_tasks() { return run_tasks({}); }
 
-  // One non-looping harvest snapshot -- see
-  // LockFreeRMAWorkDistributor::gather_once() for the full
-  // rationale (this mirrors it exactly, against the leader level instead
-  // of a single flat window).
+  // One non-looping harvest snapshot.
   [[nodiscard]] std::vector<ResultT> gather_once() {
     assert(is_root_manager());
     if (m_solo) {
@@ -990,11 +761,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
         run_one_solo_task();
       }
     } else {
-      auto& top = m_owned_upper_levels.front();  // manager's top-of-chain level
-      auto results = top.harvest_ready_results();
-      collect_level_errors(top);
-      m_results.insert(m_results.end(), std::make_move_iterator(results.begin()),
-                       std::make_move_iterator(results.end()));
+      harvest_top_level(false);
     }
     return drain_results(std::numeric_limits<size_t>::max());
   }
@@ -1007,17 +774,11 @@ class HierarchicalLockFreeRMAWorkDistributor {
           run_one_solo_task();
         }
       } else {
-        auto& top = m_owned_upper_levels.front();  // manager's top-of-chain level
+        auto& top = top_level();
         while (top.owner_collected_count() < top.owner_published_count()) {
-          auto results = top.harvest_ready_results_throttled();
-          collect_level_errors(top);
-          m_results.insert(m_results.end(), std::make_move_iterator(results.begin()),
-                           std::make_move_iterator(results.end()));
+          harvest_top_level(true);
         }
-        // Only the manager's own level needs an explicit mark_finished()
-        // call: every level below it in the chain learns "finished" by
-        // observing ITS OWN parent drain (see run_bridge_chain()'s
-        // leader_drained handling), cascading down automatically.
+        // Each lower level is marked finished when its own parent drains.
         top.mark_finished();
       }
     }
@@ -1039,6 +800,8 @@ class HierarchicalLockFreeRMAWorkDistributor {
   }
 
  private:
+  using RMALevel = detail::LockFreeRMALevel<TaskT, ResultT>;
+
   Config m_config;
   MPICommunicator<> m_world_comm;
   std::function<ResultT(TaskT)> m_worker_function;
@@ -1047,37 +810,40 @@ class HierarchicalLockFreeRMAWorkDistributor {
   std::optional<MPICommunicator<>> m_local_comm;
   std::optional<detail::LockFreeRMALevel<TaskT, ResultT>> m_local_level;
 
-  // Upper hierarchy (everything above the node-local level) -- see
-  // setup_upper_chain() for how this is built.
-  //
-  // m_upper_comms keeps every comm this rank uses up there alive for the
-  // distributor's lifetime (LockFreeRMALevel only stores a raw MPI_Comm
-  // handle, it doesn't own one).
+  // Owns communicators referenced by upper-level RMA objects.
   std::vector<MPICommunicator<>> m_upper_comms;
 
-  // Levels this rank owns in the upper chain, top (nearest the manager) to
-  // bottom. The manager always has exactly one; a promoted node manager has
-  // one per level it leads, each also self-claimed; a non-promoted manager
-  // or leaf leader-worker has none.
-  //
-  // std::deque, not vector: LockFreeRMALevel owns an MPI_Win exposing its own
-  // member's address and is neither copyable nor movable, so growth must
-  // never relocate existing elements.
+  // Top-to-bottom levels owned by this rank. A deque keeps non-movable RMA
+  // levels at stable addresses.
   std::deque<detail::LockFreeRMALevel<TaskT, ResultT>> m_owned_upper_levels;
 
-  // The one level this rank is a pure claimant of (never owns) -- its
-  // immediate parent in the tree. Unset only for the manager (which owns
-  // the top of the chain instead, in m_owned_upper_levels) and for a rank
-  // with no upper-chain participation at all (a plain local worker).
+  // Immediate parent level, claimed but not owned by this rank.
   std::optional<detail::LockFreeRMALevel<TaskT, ResultT>> m_parent_level;
 
   bool m_finalized = false;
   detail::TaskErrorLog m_task_errors;  // root manager only
   std::vector<ResultT> m_results;
-  size_t m_returned_count = 0;
 
   std::vector<TaskT> m_local_task_store;
   size_t m_local_collected_count = 0;
+
+  RMALevel& top_level() {
+    assert(!m_owned_upper_levels.empty());
+    return m_owned_upper_levels.front();
+  }
+
+  const RMALevel& top_level() const {
+    assert(!m_owned_upper_levels.empty());
+    return m_owned_upper_levels.front();
+  }
+
+  void harvest_top_level(bool throttled) {
+    auto& top = top_level();
+    auto results = throttled ? top.harvest_ready_results_throttled() : top.harvest_ready_results();
+    collect_level_errors(top);
+    m_results.insert(m_results.end(), std::make_move_iterator(results.begin()),
+                     std::make_move_iterator(results.end()));
+  }
 
   void setup_topology() {
     if (m_solo) return;
@@ -1097,10 +863,10 @@ class HierarchicalLockFreeRMAWorkDistributor {
     setup_upper_chain(std::move(*leader_opt), is_manager);
   }
 
-  // Appends one LockFreeRMALevel this rank OWNS (and, per the class comment on
-  // LockFreeRMALevel's claimant-side API, will also claim from -- its own
-  // subtree still needs feeding) to m_owned_upper_levels.
-  void emplace_owned_upper_level(MPICommunicator<> comm, int owner_rank, int claim_width) {
+  enum class UpperLevelRole { Owned, Parent };
+
+  void emplace_upper_level(MPICommunicator<> comm, int owner_rank, int claim_width,
+                           UpperLevelRole role) {
     m_upper_comms.push_back(std::move(comm));
     typename detail::LockFreeRMALevel<TaskT, ResultT>::Config cfg;
     cfg.comm = m_upper_comms.back().get();
@@ -1108,58 +874,19 @@ class HierarchicalLockFreeRMAWorkDistributor {
     cfg.max_tasks = m_config.max_tasks;
     cfg.max_task_count = m_config.max_task_count;
     cfg.max_result_count = m_config.max_result_count;
-    m_owned_upper_levels.emplace_back(cfg, claim_width);
+    if (role == UpperLevelRole::Owned) {
+      m_owned_upper_levels.emplace_back(cfg, claim_width);
+    } else {
+      m_parent_level.emplace(cfg, claim_width);
+    }
   }
 
-  // Sets m_parent_level: the one level this rank is a pure claimant of
-  // (never owns) -- its immediate parent in the tree.
-  void emplace_parent_level(MPICommunicator<> comm, int owner_rank, int claim_width) {
-    m_upper_comms.push_back(std::move(comm));
-    typename detail::LockFreeRMALevel<TaskT, ResultT>::Config cfg;
-    cfg.comm = m_upper_comms.back().get();
-    cfg.owner_rank = owner_rank;
-    cfg.max_tasks = m_config.max_tasks;
-    cfg.max_task_count = m_config.max_task_count;
-    cfg.max_result_count = m_config.max_result_count;
-    m_parent_level.emplace(cfg, claim_width);
-  }
-
-  // Builds this rank's view of the upper hierarchy (everything above the
-  // node-local level): a chain of LockFreeRMALevel windows from the manager
-  // down to this rank's immediate parent, filling in m_upper_comms (kept
-  // alive for the LockFreeRMALevel objects' lifetime, since LockFreeRMALevel only
-  // stores a raw MPI_Comm handle) / m_owned_upper_levels / m_parent_level.
-  //
-  // `flat_comm` is the root manager + every node manager. If grouping is
-  // disabled or the manager count already fits under max_upper_fanout, that
-  // comm IS the whole chain: one level, owned by the manager, claimed
-  // directly by every node manager.
-  //
-  // Otherwise the node managers are grouped into a k-ary tree: repeatedly
-  // split the current round into groups of at most max_upper_fanout, promote
-  // each group's rank 0 to own that group's level, and feed the promoted set
-  // into the next round, until a round fits under the manager. A promoted
-  // rank both owns its group's level and claims from it, since its own
-  // subtree still needs feeding -- safe because self-targeted RMA is
-  // mechanically no different from any other claimant.
-  //
-  // Every MPI_Comm_split call below is collective over its *input* comm's
-  // full membership; the control flow is written so every rank in that
-  // membership reaches the matching call, even ranks that stop being
-  // promoted early (see the inline notes at each split).
+  // Builds the k-ary upper RMA chain. Every rank in each input communicator
+  // must reach its matching MPI_Comm_split, including ranks not promoted.
   void setup_upper_chain(MPICommunicator<> flat_comm, bool is_manager) {
     MPIGroup world_group(m_world_comm);
     const int local_children = m_local_comm.has_value() ? std::max(0, m_local_comm->size() - 1) : 0;
-    // A leaf executes one task per claim. Each non-leaf claims enough tasks
-    // to feed one task to every child in its immediate subtree -- capped at
-    // max_local_tasks, what this claim is republished into (m_local_level,
-    // directly or via step_bridge_hop): a claim wider than the ring it feeds
-    // could never be published at all, since publish_tasks() only succeeds
-    // for a batch that fits the *entire* ring, not a partial one -- child
-    // ranks would starve forever waiting for a claim already too big to ever
-    // land. Confirmed as a real deadlock, not a theoretical one: a
-    // small-ring stress test with rpn=9 (8 local children) and max_local_tasks
-    // 4 hung every rank, every one stuck on a claim that could never fit.
+    // A claim must fit the child ring into which it is republished.
     const int leaf_claim_width = std::clamp(local_children, 1, m_config.max_local_tasks);
 
     const int manager_count = flat_comm.size() - 1;
@@ -1167,37 +894,28 @@ class HierarchicalLockFreeRMAWorkDistributor {
         detail::resolve_upper_fanout(manager_count, m_config.max_upper_fanout);
 
     if (manager_count <= effective_fanout) {
-      // Fits directly under the manager: exactly today's single flat level
-      // (also always true when max_upper_fanout is disabled).
       MPIGroup flat_group(flat_comm);
       const int owner_rank = world_group.translate_rank(m_config.manager_rank, flat_group);
       if (flat_comm.rank() == owner_rank) {
-        emplace_owned_upper_level(std::move(flat_comm), owner_rank, leaf_claim_width);
+        emplace_upper_level(std::move(flat_comm), owner_rank, leaf_claim_width,
+                            UpperLevelRole::Owned);
       } else {
-        emplace_parent_level(std::move(flat_comm), owner_rank, leaf_claim_width);
+        emplace_upper_level(std::move(flat_comm), owner_rank, leaf_claim_width,
+                            UpperLevelRole::Parent);
       }
       return;
     }
 
-    // Real grouping needed. Carve "managers only" out of flat_comm --
-    // every member of flat_comm (manager included) calls this split
-    // together, even though only managers use the result.
+    // Collective over flat_comm; only node managers join the result.
     auto managers_opt = flat_comm.split(is_manager ? MPI_UNDEFINED : 0, flat_comm.rank());
 
     bool is_final_round_leader = false;
     int feed_width = leaf_claim_width;
     if (!is_manager) {
-      // std::optional, not a bare MPICommunicator: MPICommunicator has no
-      // move assignment (only move construction -- see its deleted
-      // operator=), so replacing round_comm each iteration needs
-      // emplace()'s in-place construction rather than `round_comm = ...`.
+      // optional::emplace works around MPICommunicator's deleted move assignment.
       std::optional<MPICommunicator<>> round_comm(std::move(*managers_opt));
       while (true) {
         if (round_comm->size() <= effective_fanout) {
-          // This round's membership (this rank included) already fits
-          // directly under the manager -- stop promoting; round_comm itself
-          // was only ever bookkeeping (the manager isn't part of it), so it
-          // just falls out of scope here.
           is_final_round_leader = true;
           break;
         }
@@ -1208,48 +926,36 @@ class HierarchicalLockFreeRMAWorkDistributor {
         const int group_feed_width =
             detail::sum_subtree_widths_to_group_leader(feed_width, group_comm);
 
-        // Collective over round_comm: every member (leader or not) calls
-        // this together, before acting on their differing result below.
         auto leaders_opt =
             round_comm->split(is_group_leader ? 0 : MPI_UNDEFINED, round_comm->rank());
 
         if (!is_group_leader) {
-          emplace_parent_level(std::move(group_comm), 0, feed_width);
+          emplace_upper_level(std::move(group_comm), 0, feed_width, UpperLevelRole::Parent);
           break;
         }
-        emplace_owned_upper_level(std::move(group_comm), 0, feed_width);
-        // Same reasoning and cap as leaf_claim_width above, against
-        // max_tasks instead of max_local_tasks: every level from here up
-        // (unlike the bottom, m_local_level-feeding round) shares that ring
-        // size regardless of round, since emplace_owned_upper_level()/
-        // emplace_parent_level() always set cfg.max_tasks = m_config.max_tasks.
+        emplace_upper_level(std::move(group_comm), 0, feed_width, UpperLevelRole::Owned);
+        // Upper levels share max_tasks as their ring capacity.
         feed_width = std::clamp(group_feed_width, 1, m_config.max_tasks);
         round_comm.emplace(std::move(*leaders_opt));
       }
     }
 
-    // Attach to the manager: every ORIGINAL member of flat_comm (manager +
-    // every manager, whether promoted zero, one, or many times) reaches
-    // this exact call.
+    // Collective over the original flat_comm attaches final leaders to root.
     auto top_opt = flat_comm.split((is_manager || is_final_round_leader) ? 0 : MPI_UNDEFINED,
                                    flat_comm.rank());
     if (top_opt.has_value()) {
       MPIGroup top_group(*top_opt);
       const int owner_rank = world_group.translate_rank(m_config.manager_rank, top_group);
       if (is_manager) {
-        emplace_owned_upper_level(std::move(*top_opt), owner_rank, feed_width);
+        emplace_upper_level(std::move(*top_opt), owner_rank, feed_width, UpperLevelRole::Owned);
       } else {
-        emplace_parent_level(std::move(*top_opt), owner_rank, feed_width);
+        emplace_upper_level(std::move(*top_opt), owner_rank, feed_width, UpperLevelRole::Parent);
       }
     }
   }
 
   void setup_levels() {
-    // Size-1 local_comm means this rank is alone on its node (manager excluded
-    // from the local split). Leaf leader-workers claim/compute against the
-    // upper chain directly and never use a local_level, so skip constructing
-    // one -- including avoiding a size-1 LockFreeRMALevel that some MPIs cannot
-    // Win_create for.
+    // Singleton local groups execute directly against the upper chain.
     if (m_local_comm.has_value() && m_local_comm->size() > 1) {
       typename detail::LockFreeRMALevel<TaskT, ResultT>::Config local_cfg;
       local_cfg.comm = m_local_comm->get();
@@ -1261,17 +967,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
     }
   }
 
-  // One (parent, child) bridge: claim from `parent`, republish into `child`
-  // (a different level this rank owns), relay confirmed results back up. A
-  // rank promoted through several grouping rounds runs several of these
-  // chained in one loop.
-  //
-  // Harvesting `child` can return a batch spanning several parent-level
-  // claims, or part of one, so pending_relays + relay_buffer map child-side
-  // result positions back to the parent range they belong to. Relays are
-  // contiguous and gap-free by construction -- a claim is always republished
-  // with its relay entry queued in the same step -- so a prefix of
-  // relay_buffer always aligns with the front relay's boundary.
+  // Maps child result positions back to their claimed parent ranges.
   struct PendingRelay {
     int64_t parent_start;
     int64_t child_len;
@@ -1283,80 +979,25 @@ class HierarchicalLockFreeRMAWorkDistributor {
     detail::LockFreeRMALevel<TaskT, ResultT>* parent;
     detail::LockFreeRMALevel<TaskT, ResultT>* child;
     std::deque<PendingRelay> pending_relays;
-    std::vector<ResultT> relay_buffer;  // child results collected but not yet fully relayed upward
-    // Set once a failure from below has been republished into `parent`'s error
-    // table, and cleared by the next write_result_range() that carries the flag
-    // up. The records are already in place by then; the flag only tells the
-    // level above to go and read them.
+    std::vector<ResultT> relay_buffer;
+    // Tells the next parent write to read already-published error records.
     bool relay_error_pending = false;
-    int64_t pending_task_count =
-        0;  // sum of child_len across pending_relays -- see step_bridge_hop()
-    int64_t total_claimed =
-        0;  // cumulative, never decremented -- see step_bridge_hop()'s claim gate
+    int64_t pending_task_count = 0;
+    int64_t total_claimed = 0;
     bool finish_marked = false;
   };
 
-  // One non-blocking step of a single hop. Returns whether it accomplished
-  // anything against `parent`, which the caller uses per hop to decide
-  // whether that hop's own parent-level polling backs off -- scoped per hop
-  // and excluding child-harvest activity, because a bridging rank has no
-  // compute time between parent polls and otherwise spins as fast as RMA
-  // round trips allow.
+  // One non-blocking relay step. Progress excludes local child harvesting so
+  // callers still back off parent polling.
   bool step_bridge_hop(BridgeHop& hop) {
     bool made_parent_progress = false;
 
-    // Read once per call and reuse for both the claim-guard and (via the
-    // caller's bridge_hop_done()) the exit check -- LockFreeRMALevel::drained()
-    // is not a pure query (it does fresh RMA reads and can flip from false
-    // to true between two calls made moments apart), so calling it
-    // separately for those two decisions was a real, confirmed bug: if it
-    // flipped true *between* them, the exit check could fire having never
-    // gone through the "else" branch below at all -- the only place that
-    // calls hop.child->mark_finished(). That could let this rank exit (and
-    // reach its destructor's teardown barrier) without ever telling its
-    // child's claimants to stop, hanging them forever. Reusing one cached
-    // value and gating exit on hop.finish_marked itself (not a re-derived
-    // drained() call) makes "mark_finished() happens before this hop can
-    // possibly be done" true by construction, not by hoping two nearby
-    // calls agree.
+    // Cache this RMA query so marking the child finished cannot be skipped by
+    // a false-to-true transition between checks.
     const bool parent_drained = hop.parent->drained();
 
-    // 1. Claim from parent and republish into child, queueing a relay entry
-    // recording where this batch's results must eventually be written back.
-    //
-    // Gated by backpressure, on two independent conditions:
-    //
-    // - claim_paced_ok compares total_claimed (cumulative, never
-    //   decremented) against child->owner_unordered_completed_estimate()
-    //   (order-independent -- see its comment), not against how much has
-    //   been relayed back to `parent`. Relay-back is strict FIFO (pending_
-    //   relays flushes front-to-back -- see step 3) and a straggler anywhere
-    //   in the child's index space stops harvest_ready_results()'s confirmed
-    //   prefix cold, so gating new claims on relayed-back count meant one
-    //   slow task starved every worker in this whole subtree of new work,
-    //   not just delayed that one result -- confirmed as the dominant cost
-    //   under lognormal (heavy-tailed) task-duration variance, worse at
-    //   higher claim counts since more relay entries could queue up behind
-    //   the one straggler. Pacing against actual completion instead keeps
-    //   workers fed through a straggler stall; only the bookkeeping (relay-
-    //   back) lags, and it drains fast once unblocked since by then the
-    //   results it's relaying are already computed.
-    // - backlog_safe bounds pending_task_count (claimed minus relayed, the
-    //   old gate) against a looser ceiling, purely as a safety valve: claim_
-    //   paced_ok alone would let relay-back backlog grow unboundedly during
-    //   a long stall (completion keeps advancing even while relay-back
-    //   can't), which is the exact runaway this cap was originally added to
-    //   prevent -- one observed manager held 670 relay entries (~9,300
-    //   tasks) after a second once uncapped. A multiple of pending_cap
-    //   rather than pending_cap itself: under the common case (no
-    //   straggler) relay-back keeps pace with completion and this never
-    //   binds, so it only has to catch the pathological case, not police
-    //   the everyday one -- that's claim_paced_ok's job.
-    //
-    // Both start from the same per-worker budget (pending_cap, still exactly
-    // claim_width * max_pending_rounds -- unchanged in meaning, just no
-    // longer the only thing standing between a straggler and a starved
-    // subtree).
+    // Pace claims by unordered child completion so an ordering gap does not
+    // starve the subtree. Separately cap the unrelayed backlog.
     const int64_t max_pending_rounds = m_config.max_pending_rounds;
     const int64_t pending_cap =
         static_cast<int64_t>(hop.parent->claim_width()) * max_pending_rounds;
@@ -1365,13 +1006,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
         hop.total_claimed - hop.child->owner_unordered_completed_estimate();
     const bool claim_paced_ok = uncompleted_claimed < pending_cap;
     const bool backlog_safe = hop.pending_task_count < pending_cap_hard;
-    // Also gated on the child ring having room for the largest possible
-    // claim (claim_width) before even attempting one: publish_tasks() into a
-    // full ring returns false rather than blocking (this step must stay
-    // non-blocking), and a claim already taken from the parent via
-    // try_claim()'s fetch_add can't be handed back if publishing it here
-    // turned out not to fit -- so the check has to happen before claiming,
-    // not after.
+    // Parent claims cannot be returned, so reserve child capacity first.
     const bool child_has_room =
         hop.child->owner_available_capacity() >= static_cast<int64_t>(hop.parent->claim_width());
     if (!parent_drained && claim_paced_ok && backlog_safe && child_has_room) {
@@ -1379,9 +1014,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
       if (claimed.start != -1) {
         const int64_t child_len = static_cast<int64_t>(claimed.tasks.size());
         const bool published = hop.child->publish_tasks(claimed.tasks);
-        // Guaranteed by child_has_room above: claim_width bounds child_len,
-        // and nothing else can publish into child between that check and
-        // here (single-threaded, sequential steps).
+        // Safe because this rank is the child's only publisher.
         assert(published && "LockFreeRMALevel: child ring capacity check raced");
         (void)published;
         hop.pending_relays.push_back(PendingRelay{claimed.start, child_len});
@@ -1390,25 +1023,14 @@ class HierarchicalLockFreeRMAWorkDistributor {
         made_parent_progress = true;
       }
     } else if (parent_drained && !hop.finish_marked) {
-      // Parent is fully drained: nothing more will ever be published to
-      // child either (every task this rank will ever see from parent has
-      // already been claimed and republished above).
       hop.child->mark_finished();
       hop.finish_marked = true;
       made_parent_progress = true;
     }
 
-    // 2. Harvest whatever's ready in child and append to the relay buffer.
-    // Deliberately NOT counted towards made_parent_progress: this is
-    // same-owner-rank RMA against child (this rank's own window, no
-    // upstream contention), and it succeeds almost every iteration once
-    // child's claimants are active -- counting it here is exactly what
-    // previously masked parent-level polling from ever backing off.
+    // Child harvesting does not count as parent progress.
     auto child_results = hop.child->harvest_ready_results();
-    // Failures travel with the results they belong to: harvest_ready_results()
-    // has already read the child's error table by the time it returns a range
-    // containing one, so republishing here keeps a failure exactly one hop
-    // behind its own placeholder result all the way up to the root.
+    // Forward errors alongside the harvested range that exposed them.
     for (auto& error : hop.child->take_errors()) {
       hop.parent->report_task_error(error);
       hop.relay_error_pending = true;
@@ -1419,18 +1041,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
                               std::make_move_iterator(child_results.end()));
     }
 
-    // 3. Flush whatever contiguous prefix of the front relay is ready now as
-    // its own partial write_result_range(), rather than waiting for the whole
-    // claimed batch. All-or-nothing flushing was a severe bottleneck: with
-    // claim_width scaled to feed every local child at once, nothing relayed
-    // upward until the slowest of ~100 tasks finished, costing 5-10x once
-    // task duration passed ~1ms.
-    //
-    // Order across entries is still strict FIFO -- the parent harvests by
-    // contiguous-prefix scan, so relay N+1 cannot be confirmed before N is
-    // fully covered. Only covering N in a single write is relaxed: successive
-    // partial calls are indistinguishable to that scan from one whole-range
-    // call.
+    // Flush partial prefixes of the oldest relay while preserving FIFO order.
     size_t consumed = 0;
     while (!hop.pending_relays.empty() && consumed < hop.relay_buffer.size()) {
       auto& front = hop.pending_relays.front();
@@ -1456,21 +1067,12 @@ class HierarchicalLockFreeRMAWorkDistributor {
     return made_parent_progress;
   }
 
-  // A hop is done once child's claimants have been told to stop
-  // (finish_marked, not a re-derived parent->drained() -- see
-  // step_bridge_hop()'s comment) and every claimed task has been relayed
-  // back upward.
+  // Completion requires both child shutdown and a fully drained relay.
   static bool bridge_hop_done(const BridgeHop& hop) {
     return hop.finish_marked && hop.pending_relays.empty();
   }
 
-  // Builds the chain of bridge hops this rank participates in, from its
-  // immediate parent down to (but not including) `terminal_extra` (pass
-  // m_local_level for a node manager with real local peers, or nullptr
-  // for a leaf leader-worker, which claims+computes directly against the
-  // last upper level instead -- see run_leaf_leader_worker()). Most ranks
-  // (never promoted -- see setup_upper_chain()) get exactly one hop here,
-  // identical in shape to this class's original single-level design.
+  // Builds this rank's upper relay chain.
   std::vector<BridgeHop> build_upper_hops() {
     std::vector<detail::LockFreeRMALevel<TaskT, ResultT>*> chain;
     chain.push_back(&*m_parent_level);
@@ -1480,22 +1082,12 @@ class HierarchicalLockFreeRMAWorkDistributor {
     return hops;
   }
 
-  // The bottom-most level in this rank's own upper chain: its last owned
-  // group level if it was promoted at least once, otherwise its immediate
-  // parent. This is what a terminal action (feeding a real local_level in
-  // run_node_manager(), or claiming+computing directly in
-  // run_leaf_leader_worker()) attaches to.
+  // Bottom-most upper level attached to this rank's terminal action.
   detail::LockFreeRMALevel<TaskT, ResultT>& last_upper_level() {
     return m_owned_upper_levels.empty() ? *m_parent_level : m_owned_upper_levels.back();
   }
 
-  // A node manager: bridges its parent level (claiming tasks
-  // from the manager or an intermediate group level -- see
-  // setup_upper_chain()) down to its local level (its own window, published
-  // to for its local workers to claim from), and, if promoted to lead one
-  // or more groups, one or more intermediate hops in between. Unlike a
-  // plain worker, this rank never computes a task itself -- see
-  // step_bridge_hop() and the class comment for the full rationale.
+  // Relay the upper chain into the local worker level.
   void run_node_manager() {
     std::vector<BridgeHop> hops = build_upper_hops();
     hops.push_back(BridgeHop{&last_upper_level(), &*m_local_level});
@@ -1509,56 +1101,43 @@ class HierarchicalLockFreeRMAWorkDistributor {
       }
       if (all_done) break;
 
-      // See step_bridge_hop()'s comment: only back off when NONE of this
-      // rank's hops made progress. Drive progress on the terminal child,
-      // where local workers' result Puts are in flight. This distinction is
-      // required by MS-MPI: probing only the upper parent communicator can
-      // leave the local window's completion traffic stalled indefinitely.
+      // Wait on the terminal child so local result traffic can progress.
       if (!any_progress) hops.back().child->idle_wait();
     }
   }
 
-  // A plain local worker: claims tasks from its node manager, computes
-  // them inline, writes results back -- the same claim/write pattern
-  // LockFreeRMAWorkDistributor::run_worker() uses against its one
-  // flat window, here against the local level instead.
+  bool claim_and_execute(RMALevel& level) {
+    auto claimed = level.try_claim();
+    if (claimed.start == -1) return false;
+
+    std::vector<ResultT> results;
+    results.reserve(claimed.tasks.size());
+    bool failed = false;
+    for (auto& task : claimed.tasks) {
+      ResultT result;
+      auto failure = detail::run_task_guarded(m_worker_function, std::move(task), result);
+      if (failure) {
+        level.report_task_error(TaskError{m_world_comm.rank(), std::move(*failure)});
+        failed = true;
+      }
+      results.push_back(std::move(result));
+    }
+    level.write_result_range(claimed.start, results, failed);
+    return true;
+  }
+
+  // Claim from the local level and compute inline.
   void run_local_worker() {
     while (true) {
-      // Cache once per iteration -- see step_bridge_hop()'s comment on why
-      // calling LockFreeRMALevel::drained() separately for the claim guard and
-      // the exit check is a real bug class (it does fresh RMA reads and is
-      // not guaranteed to agree with itself moments apart), not just a
-      // style preference.
+      // Cache this RMA query for a consistent claim and exit decision.
       const bool is_drained = m_local_level->drained();
-      if (!is_drained) {
-        auto claimed = m_local_level->try_claim();
-        if (claimed.start != -1) {
-          std::vector<ResultT> results;
-          results.reserve(claimed.tasks.size());
-          bool failed = false;
-          for (auto& task : claimed.tasks) {
-            ResultT result;
-            auto failure = detail::run_task_guarded(m_worker_function, std::move(task), result);
-            if (failure) {
-              m_local_level->report_task_error(TaskError{m_world_comm.rank(), std::move(*failure)});
-              failed = true;
-            }
-            results.push_back(std::move(result));
-          }
-          m_local_level->write_result_range(claimed.start, results, failed);
-          continue;
-        }
-      }
+      if (!is_drained && claim_and_execute(*m_local_level)) continue;
       if (is_drained) break;
       m_local_level->idle_wait();
     }
   }
 
-  // A leaf leader-worker (no local peers -- alone on its node): bridges
-  // whatever upper hops this rank is promoted through (usually none), then
-  // claims and executes tasks directly against the bottom of its own chain
-  // (its parent level, or its own last owned group level if promoted),
-  // instead of publishing further down to a local_level it doesn't have.
+  // Bridge promoted levels, then compute directly against the terminal one.
   void run_leaf_leader_worker() {
     std::vector<BridgeHop> hops = build_upper_hops();
     detail::LockFreeRMALevel<TaskT, ResultT>& terminal = last_upper_level();
@@ -1570,25 +1149,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
       }
 
       const bool is_drained = terminal.drained();
-      if (!is_drained) {
-        auto claimed = terminal.try_claim();
-        if (claimed.start != -1) {
-          std::vector<ResultT> results;
-          results.reserve(claimed.tasks.size());
-          bool failed = false;
-          for (auto& task : claimed.tasks) {
-            ResultT result;
-            auto failure = detail::run_task_guarded(m_worker_function, std::move(task), result);
-            if (failure) {
-              terminal.report_task_error(TaskError{m_world_comm.rank(), std::move(*failure)});
-              failed = true;
-            }
-            results.push_back(std::move(result));
-          }
-          terminal.write_result_range(claimed.start, results, failed);
-          any_progress = true;
-        }
-      }
+      if (!is_drained && claim_and_execute(terminal)) any_progress = true;
 
       bool all_hops_done = true;
       for (auto& hop : hops) {
@@ -1603,8 +1164,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
     }
   }
 
-  // Solo (size-1 communicator) execution, guarded like every other path so a
-  // workload behaves the same when debugged without MPI.
+  // Size-one communicator execution.
   void run_one_solo_task() {
     ResultT result;
     auto failure = detail::run_task_guarded(m_worker_function,
@@ -1624,7 +1184,6 @@ class HierarchicalLockFreeRMAWorkDistributor {
     output.reserve(count);
     for (size_t i = 0; i < count; ++i) output.push_back(std::move(m_results[i]));
     m_results.erase(m_results.begin(), m_results.begin() + static_cast<ptrdiff_t>(count));
-    m_returned_count += count;
     return output;
   }
 };
