@@ -13,10 +13,10 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <queue>
 #include <ranges>
 #include <set>
 #include <span>
-#include <stack>
 #include <type_traits>
 #include <vector>
 
@@ -113,7 +113,15 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     std::optional<int> num_tasks_requested = std::nullopt;
   };
   static constexpr int kMaxTasksRequested = 1'000'000;  // guard against pathological reserve()
-  std::stack<TaskRequest, std::vector<TaskRequest>> m_free_worker_indices;
+  // FIFO, not LIFO: allocate_task_or_batch() drains this whenever new work
+  // arrives, and a stack would serve whichever request arrived most
+  // recently first, letting it jump every request already queued ahead of
+  // it. Harmless once there's enough work to eventually serve everyone
+  // fully regardless of order, but visible at low tasks_per_worker as
+  // latency (not lost tasks) piling onto whichever request loses that race
+  // repeatedly -- it can wait behind an unbounded number of later arrivals
+  // instead of just the ones actually ahead of it.
+  std::queue<TaskRequest> m_free_worker_indices;
 
   size_t m_tasks_sent_to_child = 0;
   size_t m_results_received_from_child = 0;
@@ -755,7 +763,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     if (m_communicator.size() > 1) {
       DYNAMPI_ASSERT(!m_free_worker_indices.empty(), "Cannot allocate task with no free workers");
 
-      TaskRequest request = m_free_worker_indices.top();
+      TaskRequest request = m_free_worker_indices.front();
       m_free_worker_indices.pop();
 
       // Determine target and communicator based on request source
@@ -980,7 +988,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         receive_from_anyone();
         continue;
       }
-      TaskRequest request = m_free_worker_indices.top();
+      TaskRequest request = m_free_worker_indices.front();
       m_free_worker_indices.pop();
 
       if (notified.contains(request.worker_rank)) {
