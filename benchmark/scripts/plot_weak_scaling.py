@@ -304,13 +304,22 @@ def plot_distributor(
                 if "hierarchical" in distributor and ranks_per_node > 1
                 else ranks_per_node
             )
+
+            # The root manager is one further rank in both families: it never
+            # executes a task, and it is excluded from its own node's local
+            # group, so that node contributes one fewer worker than the rest.
+            # Worth 0.1% at 128 nodes but an eighth of the ideal at a single
+            # node, which is why every curve otherwise appears to start around
+            # 85% efficiency rather than tracking its reference line.
+            def ideal_worker_count(nodes: int) -> int:
+                return max(1, nodes * ideal_workers_per_node - 1)
             xlim = ax.get_xlim()
             ylim = ax.get_ylim()
             for idx, (expected_ns, _nodes, _throughput) in enumerate(series_sorted):
                 if all_nodes and expected_ns > 0:
                     ideal_nodes = sorted(all_nodes)
                     ideal_throughput = [
-                        n * ideal_workers_per_node * 1e9 / expected_ns for n in ideal_nodes
+                        ideal_worker_count(n) * 1e9 / expected_ns for n in ideal_nodes
                     ]
                     ax.plot(
                         ideal_nodes,

@@ -12,6 +12,7 @@
 #include <cstring>
 #include <deque>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <optional>
 #include <thread>
@@ -1074,7 +1075,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
 
   // Builds this rank's upper relay chain.
   std::vector<BridgeHop> build_upper_hops() {
-    std::vector<detail::LockFreeRMALevel<TaskT, ResultT>*> chain;
+    std::vector<RMALevel*> chain;
     chain.push_back(&*m_parent_level);
     for (auto& level : m_owned_upper_levels) chain.push_back(&level);
     std::vector<BridgeHop> hops;
@@ -1082,9 +1083,15 @@ class HierarchicalLockFreeRMAWorkDistributor {
     return hops;
   }
 
-  // Bottom-most upper level attached to this rank's terminal action.
-  detail::LockFreeRMALevel<TaskT, ResultT>& last_upper_level() {
+  RMALevel& last_upper_level() {
     return m_owned_upper_levels.empty() ? *m_parent_level : m_owned_upper_levels.back();
+  }
+
+  static bool hops_done(const std::vector<BridgeHop>& hops) {
+    for (const auto& hop : hops) {
+      if (!bridge_hop_done(hop)) return false;
+    }
+    return true;
   }
 
   // Relay the upper chain into the local worker level.
@@ -1094,14 +1101,10 @@ class HierarchicalLockFreeRMAWorkDistributor {
 
     while (true) {
       bool any_progress = false;
-      bool all_done = true;
       for (auto& hop : hops) {
         if (step_bridge_hop(hop)) any_progress = true;
-        if (!bridge_hop_done(hop)) all_done = false;
       }
-      if (all_done) break;
-
-      // Wait on the terminal child so local result traffic can progress.
+      if (hops_done(hops)) break;
       if (!any_progress) hops.back().child->idle_wait();
     }
   }
@@ -1140,7 +1143,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
   // Bridge promoted levels, then compute directly against the terminal one.
   void run_leaf_leader_worker() {
     std::vector<BridgeHop> hops = build_upper_hops();
-    detail::LockFreeRMALevel<TaskT, ResultT>& terminal = last_upper_level();
+    RMALevel& terminal = last_upper_level();
 
     while (true) {
       bool any_progress = false;
@@ -1150,16 +1153,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
 
       const bool is_drained = terminal.drained();
       if (!is_drained && claim_and_execute(terminal)) any_progress = true;
-
-      bool all_hops_done = true;
-      for (auto& hop : hops) {
-        if (!bridge_hop_done(hop)) {
-          all_hops_done = false;
-          break;
-        }
-      }
-      if (all_hops_done && is_drained) break;
-
+      if (hops_done(hops) && is_drained) break;
       if (!any_progress) terminal.idle_wait();
     }
   }
@@ -1182,8 +1176,9 @@ class HierarchicalLockFreeRMAWorkDistributor {
     const size_t count = std::min(limit, m_results.size());
     std::vector<ResultT> output;
     output.reserve(count);
-    for (size_t i = 0; i < count; ++i) output.push_back(std::move(m_results[i]));
-    m_results.erase(m_results.begin(), m_results.begin() + static_cast<ptrdiff_t>(count));
+    auto end = m_results.begin() + static_cast<ptrdiff_t>(count);
+    std::move(m_results.begin(), end, std::back_inserter(output));
+    m_results.erase(m_results.begin(), end);
     return output;
   }
 };

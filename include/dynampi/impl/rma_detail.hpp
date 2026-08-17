@@ -51,16 +51,6 @@ inline int mpi_type_size_bytes() {
 
 inline constexpr size_t round_up_8(size_t bytes) { return (bytes + 7) & ~static_cast<size_t>(7); }
 
-// Not inlined, deliberately. When a caller writes one small object at a time
-// -- a scalar ResultT, say -- GCC 12+ can inline through here, pin `src` to a
-// one-byte region, and then reject the copy under whichever late-pass
-// diagnostic notices first: -Warray-bounds on the one-past-the-end iterator
-// copy_n forms, then -Wstringop-overread on the copy itself once that is
-// suppressed. Both are false: nbytes is derived from the same object's MPI
-// datatype, and the destination is range-checked below. Since every such
-// warning needs the caller's inline context to fire, denying it is a more
-// durable fix than suppressing them one at a time. The cost is one call per
-// element write, against RMA operations costing microseconds.
 #if defined(__GNUC__)
 [[gnu::noinline]]
 #endif
@@ -80,8 +70,6 @@ inline void write_bytes(std::byte* buffer, size_t buffer_size, size_t offset, co
 }
 
 // Bounds-checked copy out of a sized source buffer into a sized destination.
-// Uses std::copy_n rather than memcpy: Codacy/Flawfinder flags every memcpy as
-// CWE-120 regardless of prior range checks or clamped lengths.
 inline void read_bytes(void* dst, size_t dst_capacity, const std::byte* buffer, size_t buffer_size,
                        size_t offset, size_t nbytes) {
   if (nbytes == 0) return;
@@ -126,14 +114,10 @@ inline void read_result_bytes(const std::byte* buffer, size_t buffer_size, size_
 inline void rma_wait_idle(MPI_Win /*window*/, MPI_Comm comm) {
   int flag = 0;
   DYNAMPI_MPI_CHECK(MPI_Iprobe, (MPI_ANY_SOURCE, MPI_ANY_TAG, comm, &flag, MPI_STATUS_IGNORE));
-  // A yield alone can immediately reschedule oversubscribed ranks. With
-  // MS-MPI that lets idle workers continuously flood the passive-target
-  // window with synchronized polls, starving in-flight task/result RMA
-  // indefinitely. Stagger ranks so they do not wake as a thundering herd.
 #if defined(_WIN32)
   int rank = 0;
   DYNAMPI_MPI_CHECK(MPI_Comm_rank, (comm, &rank));
-  std::this_thread::sleep_for(std::chrono::microseconds(100 + (rank % 32) * 100));
+  std::this_thread::sleep_for(std::chrono::microseconds(50 + (rank % 32) * 10));
 #else
   std::this_thread::sleep_for(std::chrono::microseconds(50));
 #endif

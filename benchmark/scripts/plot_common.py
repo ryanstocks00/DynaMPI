@@ -28,6 +28,21 @@ IEEE_FIG_HEIGHT = 3.5
 
 MARKER_SHAPES = ['o', 's', '^', 'v', 'D', 'p', '*', 'h', 'X', '<', '>', 'd']
 
+# Line styles run on the same index as the colors and markers. Left to the
+# axes property cycle they are handed out in plotting order instead, so one
+# series can come out dashed in one figure (or one panel) and dotted in
+# another depending on how that plot happened to sort its legend.
+LINE_STYLES = [
+    '-',
+    '--',
+    ':',
+    '-.',
+    (0, (3, 1, 1, 1)),
+    (0, (5, 1)),
+    (0, (1, 1)),
+    (0, (7, 1, 1, 1, 1, 1)),
+]
+
 # Trailing PBS/Slurm job id in result directory names, e.g. ...-8725895 or
 # ...-8720430.aurora. Used as a recency tie-breaker when git checkouts share
 # identical file mtimes.
@@ -133,10 +148,11 @@ def format_fanout(fanout: int) -> str:
     two layers. The default (negative, auto) inserts a grouping level above
     the node managers once they outnumber ~32, giving root manager -> group
     leaders -> node managers: three layers. Below that threshold auto
-    resolves to the same flat topology as ``0``.
+    resolves to the same flat topology as ``0``, which is why it is named
+    for the setting rather than for a layer count it only sometimes has.
     """
     if fanout < 0:
-        return "three-layer"
+        return "default"
     if fanout == 0:
         return "two-layer"
     return f"fanout={fanout}"
@@ -358,6 +374,10 @@ def series_color(index: int) -> Any:
     return colormaps['tab10'](index % 10)
 
 
+def series_linestyle(index: int) -> Any:
+    return LINE_STYLES[index % len(LINE_STYLES)]
+
+
 def sorted_series_xy(points: Sequence[tuple[int, float]]) -> tuple[list[int], list[float]]:
     """Sort (node, value) points by node count and unzip into parallel lists."""
     points_sorted = sorted(points, key=lambda point: point[0])
@@ -380,6 +400,7 @@ def plot_node_series(
         "fillstyle": "none",
         "markeredgewidth": 1.0,
         "color": series_color(idx),
+        "linestyle": series_linestyle(idx),
     }
     if linewidth is not None:
         kwargs["linewidth"] = linewidth

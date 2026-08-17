@@ -6,7 +6,6 @@
 #pragma once
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <deque>
 #include <functional>
@@ -39,6 +38,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     MPI_Comm comm = MPI_COMM_WORLD;
     int manager_rank = 0;
     bool auto_run_workers = true;
+    // Unused; kept for API compatibility with older Config initializers.
     std::optional<size_t> message_batch_size = std::nullopt;
     std::optional<int> max_workers_per_manager = std::nullopt;
 
@@ -238,9 +238,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         result = m_leader_parent_group->translate_rank(parent_in_group, m_world_group);
       }
     } else {
-      int rank = m_communicator.rank();
-      int virtual_rank = rank == m_config.manager_rank ? 0 : idx_for_worker(rank) + 1;
-      int virtual_parent = (virtual_rank - 1) / max_workers_per_manager();
+      int virtual_parent = (virtual_rank() - 1) / max_workers_per_manager();
       result = virtual_parent == 0 ? m_config.manager_rank : worker_for_idx(virtual_parent - 1);
     }
 
@@ -259,12 +257,10 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       }
       return count;
     } else {
-      int rank = m_communicator.rank();
       int num_children = 0;
       int max_children = max_workers_per_manager();
       for (int i = 0; i < max_children; ++i) {
-        int virtual_rank = rank == m_config.manager_rank ? 0 : idx_for_worker(rank) + 1;
-        int virtual_child = virtual_rank * max_children + i + 1;
+        int virtual_child = virtual_rank() * max_children + i + 1;
         if (virtual_child < m_communicator.size()) {
           num_children++;
         }
@@ -287,11 +283,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
 
       return num_direct_children() == 0;
     } else {
-      int rank = m_communicator.rank();
-      int max_children = max_workers_per_manager();
-      int virtual_rank = rank == m_config.manager_rank ? 0 : idx_for_worker(rank) + 1;
-      int first_child_virtual = virtual_rank * max_children + 1;
-      return first_child_virtual >= m_communicator.size();
+      return virtual_rank() * max_workers_per_manager() + 1 >= m_communicator.size();
     }
   }
 
@@ -397,54 +389,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         receive_from_anyone();
       }
     } else {
-      request_next_batch_if_room();
-
-      while (!m_done) {
-        if constexpr (!prioritize_tasks) {
-          if (!m_prefetched_tasks.empty()) {
-            for (auto& task : m_prefetched_tasks) {
-              m_unallocated_task_queue.push_back(std::move(task));
-            }
-            m_prefetched_tasks.clear();
-          }
-        }
-
-        // Flush results while waiting; the parent may need them to declare
-        // exhaustion before sending DONE.
-        while (!m_done && m_unallocated_task_queue.empty()) {
-          receive_from_anyone();
-          if (!m_results.empty()) {
-            send_results_to_parent();
-          }
-        }
-        if (m_done) break;
-
-        m_round_active = true;
-
-        // Finish tasks already in this round even if DONE arrives.
-        while (!m_unallocated_task_queue.empty()) {
-          if (m_free_worker_indices.empty()) {
-            receive_from_anyone();
-          } else {
-            allocate_task_to_child();
-          }
-        }
-
-        m_round_active = false;
-
-        if (!m_results.empty()) {
-          send_results_to_parent();
-        }
-        if (m_done) break;
-      }
-      send_done_to_children_when_free();
-      // A next-batch request can precede the previous results; drain them.
-      while (m_tasks_sent_to_child > m_results_received_from_child) {
-        receive_from_anyone();  // LCOV_EXCL_LINE -- requires a shutdown/in-flight-result race
-      }
-      if (!m_results.empty()) {
-        send_results_to_parent();  // LCOV_EXCL_LINE -- same race as the drain above
-      }
+      run_intermediate_worker();
     }
   }
 
@@ -538,7 +483,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         m_tasks_sent_to_child += tasks.size();
       } else {
         const TaskT task = get_next_task_to_send();
-        send_to_worker(task, worker_rank, Tag::TASK);
+        m_communicator.send(task, worker_rank, Tag::TASK);
         m_tasks_sent_to_child++;
       }
     } else {
@@ -560,17 +505,9 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     Timer timer;
 
     while (true) {
-      // A. Target reached
-      if (m_results.size() >= config.target_num_tasks) {
-        break;
-      }
+      if (m_results.size() >= config.target_num_tasks) break;
+      if (config.max_seconds && timer.elapsed().count() >= *config.max_seconds) break;
 
-      // B. Time limit
-      if (config.max_seconds && timer.elapsed().count() >= *config.max_seconds) {
-        break;
-      }
-
-      // C. Exhaustion
       size_t active_tasks = m_tasks_sent_to_child - m_results_received_from_child;
       if (m_unallocated_task_queue.empty() && active_tasks == 0) {
         break;
@@ -652,6 +589,62 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
   }
 
  private:
+  void release_prefetched_tasks() {
+    if constexpr (!prioritize_tasks) {
+      if (m_prefetched_tasks.empty()) return;
+      for (auto& task : m_prefetched_tasks) {
+        m_unallocated_task_queue.push_back(std::move(task));
+      }
+      m_prefetched_tasks.clear();
+    }
+  }
+
+  void wait_for_work_or_flush() {
+    // Flush results while waiting; the parent may need them to declare
+    // exhaustion before sending DONE.
+    while (!m_done && m_unallocated_task_queue.empty()) {
+      receive_from_anyone();
+      if (!m_results.empty()) send_results_to_parent();
+    }
+  }
+
+  void distribute_current_round() {
+    m_round_active = true;
+    // Finish tasks already in this round even if DONE arrives.
+    while (!m_unallocated_task_queue.empty()) {
+      if (m_free_worker_indices.empty()) {
+        receive_from_anyone();
+      } else {
+        allocate_task_to_child();
+      }
+    }
+    m_round_active = false;
+  }
+
+  void drain_inflight_results_at_shutdown() {
+    // A next-batch request can precede the previous results; drain them.
+    while (m_tasks_sent_to_child > m_results_received_from_child) {
+      receive_from_anyone();  // LCOV_EXCL_LINE -- requires a shutdown/in-flight-result race
+    }
+    if (!m_results.empty()) {
+      send_results_to_parent();  // LCOV_EXCL_LINE -- same race as the drain above
+    }
+  }
+
+  void run_intermediate_worker() {
+    request_next_batch_if_room();
+    while (!m_done) {
+      release_prefetched_tasks();
+      wait_for_work_or_flush();
+      if (m_done) break;
+      distribute_current_round();
+      if (!m_results.empty()) send_results_to_parent();
+      if (m_done) break;
+    }
+    send_done_to_children_when_free();
+    drain_inflight_results_at_shutdown();
+  }
+
   std::vector<TaskT> take_tasks_from_queue(size_t count) {
     DYNAMPI_ASSERT_LE(count, m_unallocated_task_queue.size(),
                       "Cannot take more tasks than are available");
@@ -681,14 +674,15 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
   int idx_for_worker(int worker_rank) const {
     DYNAMPI_ASSERT_NE(worker_rank, m_config.manager_rank,
                       "Manager rank should not be used as a worker rank");
-    if (worker_rank < m_config.manager_rank) {
-      return worker_rank;
-    } else {
-      return worker_rank - 1;
-    }
+    return (worker_rank < m_config.manager_rank) ? worker_rank : (worker_rank - 1);
   }
 
   int worker_for_idx(int idx) const { return (idx < m_config.manager_rank) ? idx : (idx + 1); }
+
+  int virtual_rank() const {
+    const int rank = m_communicator.rank();
+    return rank == m_config.manager_rank ? 0 : idx_for_worker(rank) + 1;
+  }
 
   template <typename T>
   void send_to_parent(const T& data, Tag tag) {
@@ -696,11 +690,6 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     DYNAMPI_ASSERT_NE(target, -1, "Root cannot send to parent");
 
     m_communicator.send(data, target, tag);
-  }
-
-  template <typename T>
-  void send_to_worker(const T& data, int rank, Tag tag) {
-    m_communicator.send(data, rank, tag);
   }
 
   template <typename T>
@@ -749,7 +738,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       if (notified.contains(request.worker_rank)) {
         continue;  // LCOV_EXCL_LINE -- defensive; see comment above
       }
-      send_to_worker(nullptr, request.worker_rank, Tag::DONE);
+      m_communicator.send(nullptr, request.worker_rank, Tag::DONE);
       notified.insert(request.worker_rank);
     }
   }
@@ -797,9 +786,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
           detail::encode_task_error(TaskError{m_communicator.rank(), std::move(*failure)}),
           world_source, Tag::ERROR);
     }
-    {
-      m_communicator.send(result, world_source, Tag::RESULT);
-    }
+    m_communicator.send(result, world_source, Tag::RESULT);
     m_results_sent_to_parent++;
   }
 

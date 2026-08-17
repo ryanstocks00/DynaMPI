@@ -217,7 +217,11 @@ def main() -> None:
     add_plot_cli_args(parser)
     args = parser.parse_args()
 
-    os.makedirs(args.output_dir, exist_ok=True)
+    # Own subdirectory, as plot_weak_scaling.py does for its modes: one
+    # results tree feeds several benchmarks, and a flat output directory
+    # mixes their figures together.
+    output_dir = os.path.join(args.output_dir, "shutdown")
+    os.makedirs(output_dir, exist_ok=True)
     rows = parse_rows(collect_csv_paths(args.input, "shutdown"))
     rows = filter_systems(rows, args.exclude_system)
     rows = filter_ranks_per_node(rows, args.ranks_per_node)
@@ -225,8 +229,8 @@ def main() -> None:
 
     configs = sorted({(row["system"], row["ranks_per_node"]) for row in rows})
     for system, ranks_per_node in configs:
-        plot_system_rpn(system, ranks_per_node, grouped, args.output_dir, args.format)
-    plot_cross_system_by_distributor(grouped, args.output_dir, args.format)
+        plot_system_rpn(system, ranks_per_node, grouped, output_dir, args.format)
+    plot_cross_system_by_distributor(grouped, output_dir, args.format)
 
 
 if __name__ == "__main__":
