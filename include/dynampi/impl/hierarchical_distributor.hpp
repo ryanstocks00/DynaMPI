@@ -274,6 +274,22 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     return m_config.manager_per_node ? m_subtree_leaf_count : num_direct_children();
   }
 
+  // Manager layers between us and the leaf workers, counting ourselves. Each
+  // one buffers a pipelined batch of its own, so the exposure budget has to
+  // grow with it -- see request_next_batch_if_room().
+  inline int subtree_manager_layers() const {
+    if (m_config.manager_per_node) {
+      return 1 + static_cast<int>(m_owned_leader_levels.size());
+    }
+    const int max_children = max_workers_per_manager();
+    int layers = 0;
+    for (int v = virtual_rank(); v * max_children + 1 < m_communicator.size();
+         v = v * max_children + 1) {
+      ++layers;
+    }
+    return std::max(1, layers);
+  }
+
   bool is_leaf_worker() const {
     if (m_config.manager_per_node) {
       if (is_root_manager()) return false;
@@ -401,17 +417,30 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     }
   }
 
-  // Keep pipeline_depth batches incomplete in this subtree, but only one
-  // request outstanding. The latter prevents unmatched requests at teardown.
+  // One task allocated per leaf, plus one pipelined batch for each manager
+  // layer beneath us, so a leaf worker is never committed to more than
+  // tree-depth tasks and finalization never waits on more than that.
+  //
+  // Counting a flat pipeline_depth batches here instead starves the upper
+  // layers: a group leader fronting 127 leaves got 2 x 127, but its 15 node
+  // managers are each entitled to 2 per leaf (240) and its own 7 leaves take
+  // 7, leaving 7 tasks of headroom where a whole 127-task batch was needed.
+  // It could therefore never hold a pipelined batch, and every round paid the
+  // full request/reply latency up the tree -- 2.97ms per round at 128 nodes
+  // with 1ms tasks, against 1.01ms once the layers are budgeted for. Raising
+  // pipeline_depth globally fixes that but over-provisions the node managers,
+  // whose extra hoarding cannot be handed to an idle sibling.
   void request_next_batch_if_room() {
     if (m_done || m_request_outstanding) return;
     const int prefetch =
         std::max(1, subtree_leaf_count() * std::max(1, m_config.batch_size_multiplier));
     const int pipeline_depth = std::max(1, m_config.pipeline_depth);
+    const size_t pipelined_per_layer = static_cast<size_t>(pipeline_depth - 1);
+    const size_t capacity = static_cast<size_t>(prefetch) *
+                            (1 + pipelined_per_layer * static_cast<size_t>(subtree_manager_layers()));
     const size_t uncompleted =
         m_tasks_received_from_parent - m_results_received_from_child - m_tasks_executed;
-    if (uncompleted + static_cast<size_t>(prefetch) >
-        static_cast<size_t>(pipeline_depth) * static_cast<size_t>(prefetch)) {
+    if (uncompleted + static_cast<size_t>(prefetch) > capacity) {
       return;
     }
     send_to_parent(prefetch, Tag::REQUEST_BATCH);

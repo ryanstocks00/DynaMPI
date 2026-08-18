@@ -986,7 +986,18 @@ class HierarchicalLockFreeRMAWorkDistributor {
     int64_t pending_task_count = 0;
     int64_t total_claimed = 0;
     bool finish_marked = false;
+    // Relay layers from this hop's child down to the leaf workers, inclusive.
+    // Each buffers a pipelined round of its own -- see step_bridge_hop().
+    int layers = 1;
   };
+
+  // Numbers a completed hop chain bottom-up: the hop feeding the local worker
+  // level is layer 1, its feeder layer 2, and so on.
+  static void assign_hop_layers(std::vector<BridgeHop>& hops) {
+    for (size_t i = 0; i < hops.size(); ++i) {
+      hops[i].layers = static_cast<int>(hops.size() - i);
+    }
+  }
 
   // One non-blocking relay step. Progress excludes local child harvesting so
   // callers still back off parent polling.
@@ -999,9 +1010,15 @@ class HierarchicalLockFreeRMAWorkDistributor {
 
     // Pace claims by unordered child completion so an ordering gap does not
     // starve the subtree. Separately cap the unrelayed backlog.
+    // One claimed round in flight plus one pipelined round for every relay
+    // layer beneath this hop, so a leaf worker is never committed to more
+    // than tree-depth tasks. A flat max_pending_rounds instead gives the
+    // upper hops the same budget as the bottom one, where it is already
+    // spoken for by the layers below -- the two-sided hierarchy measured
+    // 2.97ms per round against 1.00ms once layers were budgeted for.
     const int64_t max_pending_rounds = m_config.max_pending_rounds;
-    const int64_t pending_cap =
-        static_cast<int64_t>(hop.parent->claim_width()) * max_pending_rounds;
+    const int64_t pending_cap = static_cast<int64_t>(hop.parent->claim_width()) *
+                                (1 + (max_pending_rounds - 1) * hop.layers);
     const int64_t pending_cap_hard = pending_cap * 4;
     const int64_t uncompleted_claimed =
         hop.total_claimed - hop.child->owner_unordered_completed_estimate();
@@ -1098,6 +1115,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
   void run_node_manager() {
     std::vector<BridgeHop> hops = build_upper_hops();
     hops.push_back(BridgeHop{&last_upper_level(), &*m_local_level});
+    assign_hop_layers(hops);
 
     while (true) {
       bool any_progress = false;
@@ -1143,6 +1161,7 @@ class HierarchicalLockFreeRMAWorkDistributor {
   // Bridge promoted levels, then compute directly against the terminal one.
   void run_leaf_leader_worker() {
     std::vector<BridgeHop> hops = build_upper_hops();
+    assign_hop_layers(hops);
     RMALevel& terminal = last_upper_level();
 
     while (true) {
