@@ -11,6 +11,7 @@
 #include <functional>
 #include <iterator>
 #include <limits>
+#include <queue>
 #include <ranges>
 #include <set>
 #include <span>
@@ -90,9 +91,8 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     std::optional<int> num_tasks_requested = std::nullopt;
   };
   static constexpr int kMaxTasksRequested = 1'000'000;  // guard against pathological reserve()
-  // FIFO prevents new requests repeatedly jumping older ones. A deque rather
-  // than a queue only so it can be scanned -- see pick_servable_request().
-  std::deque<TaskRequest> m_free_worker_indices;
+  // FIFO prevents new requests repeatedly jumping older ones.
+  std::queue<TaskRequest> m_free_worker_indices;
 
   size_t m_tasks_sent_to_child = 0;
   size_t m_results_received_from_child = 0;
@@ -503,13 +503,12 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     insert_tasks(std::span<const TaskT>(tasks));
   }
 
-  void allocate_task_to_child(size_t index = 0) {
+  void allocate_task_to_child() {
     if (m_communicator.size() > 1) {
       DYNAMPI_ASSERT(!m_free_worker_indices.empty(), "Cannot allocate task with no free workers");
 
-      TaskRequest request = m_free_worker_indices[index];
-      m_free_worker_indices.erase(m_free_worker_indices.begin() +
-                                  static_cast<std::ptrdiff_t>(index));
+      TaskRequest request = m_free_worker_indices.front();
+      m_free_worker_indices.pop();
 
       int worker_rank = request.worker_rank;
 
@@ -647,59 +646,15 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     }
   }
 
-  // Oldest queued request we can satisfy *in full*, or npos if none can be.
-  // Leaf workers take a single task, so any non-empty queue satisfies them.
-  size_t pick_servable_request() const {
-    for (size_t i = 0; i < m_free_worker_indices.size(); ++i) {
-      const std::optional<int>& wanted = m_free_worker_indices[i].num_tasks_requested;
-      if (!wanted.has_value()) return i;
-      if (m_unallocated_task_queue.size() >= static_cast<size_t>(*wanted)) return i;
-    }
-    return std::numeric_limits<size_t>::max();
-  }
-
   void distribute_current_round() {
     m_round_active = true;
     // Finish tasks already in this round even if DONE arrives.
     while (!m_unallocated_task_queue.empty()) {
-      const size_t servable = m_free_worker_indices.empty() ? std::numeric_limits<size_t>::max()
-                                                            : pick_servable_request();
-      if (servable != std::numeric_limits<size_t>::max()) {
-        allocate_task_to_child(servable);
-        continue;
-      }
-      // Every queued request wants more than we hold. Serving one a short
-      // batch is what breaks load balance. Requests are always for exactly
-      // one batch (subtree_leaf_count tasks), and the budget is a whole
-      // number of batches per subtree, so uniform batches hand every subtree
-      // precisely its share. Answer one short and that subtree is left under
-      // a batch with no way to make it up -- its own cap refuses a fresh
-      // whole-batch request -- so a sibling runs the tasks it missed and
-      // needs an extra round to do it. Letting children instead ask for the
-      // odd amounts they are short reintroduces the same imbalance from the
-      // other side; measured at 128 nodes, three such variants each cost a
-      // round at nearly every k, while keeping batches whole costs none.
-      //
-      // So wait instead, for whichever comes first: our own next batch, or a
-      // child freeing up (a leaf's request is always servable). Requesting
-      // here matters -- this loop is otherwise the one place that never does,
-      // which is why short fills landed before the next batch was even asked
-      // for. Skipping a request rather than dropping it keeps it first in
-      // line for the batch that does arrive.
-      request_next_batch_if_room();
-      const bool work_inbound = m_request_outstanding && !m_done;
-      const bool children_busy = m_tasks_sent_to_child > m_results_received_from_child;
-      if (work_inbound || children_busy || m_free_worker_indices.empty()) {
+      if (m_free_worker_indices.empty()) {
         receive_from_anyone();
-        // A batch that arrives mid-round lands in the prefetch buffer; take
-        // it, or we would wait on something we are already holding.
-        release_prefetched_tasks();
-        continue;
+      } else {
+        allocate_task_to_child();
       }
-      // Nothing is in flight to change the picture and a request is queued
-      // that we cannot fill in full: a short batch is all there is, and
-      // holding it back now would strand the queue.
-      allocate_task_to_child();
     }
     m_round_active = false;
   }
@@ -816,7 +771,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         continue;
       }
       TaskRequest request = m_free_worker_indices.front();
-      m_free_worker_indices.pop_front();
+      m_free_worker_indices.pop();
 
       if (notified.contains(request.worker_rank)) {
         continue;  // LCOV_EXCL_LINE -- defensive; see comment above
@@ -843,7 +798,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       m_communicator.recv(m_results.back(), world_source, Tag::RESULT);
     }
     m_results_received_from_child++;
-    m_free_worker_indices.push_back(TaskRequest{.worker_rank = world_source});
+    m_free_worker_indices.push(TaskRequest{.worker_rank = world_source});
   }
 
   void receive_result_batch_from(MPI_Status status) {
@@ -907,7 +862,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
   void receive_request_from(MPI_Status status) {
     int world_source = status.MPI_SOURCE;
     m_communicator.recv_empty_message(world_source, Tag::REQUEST);
-    m_free_worker_indices.push_back(TaskRequest{.worker_rank = world_source});
+    m_free_worker_indices.push(TaskRequest{.worker_rank = world_source});
   }
 
   void receive_request_batch_from(MPI_Status status) {
@@ -916,7 +871,7 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     m_communicator.recv(request_count, world_source, Tag::REQUEST_BATCH);
     DYNAMPI_ASSERT_GT(request_count, 0, "Invalid request count");
     DYNAMPI_ASSERT_LE(request_count, kMaxTasksRequested, "Request count exceeds maximum allowed");
-    m_free_worker_indices.push_back(
+    m_free_worker_indices.push(
         TaskRequest{.worker_rank = world_source, .num_tasks_requested = request_count});
   }
 

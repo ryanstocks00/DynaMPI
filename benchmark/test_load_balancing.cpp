@@ -239,24 +239,27 @@ static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t 
   MPI_Comm_rank(comm, &rank);
   const uint64_t num_workers = (size == 1) ? 1 : static_cast<uint64_t>(size - 1);
 
-  // world_size - 1 counts every non-manager rank, but hierarchical's node
-  // managers route/coordinate rather than execute worker_function
-  // themselves (unless their node is single-core, i.e. nodes == world_size)
-  // -- so for that class alone, world_size - 1 overcounts task-executing
-  // ranks by one node manager per node. Computed analytically rather than
-  // queried from the constructed distributor: HierarchicalWorkDistributor's
-  // constructor blocks every non-manager rank inside its own worker loop
-  // (auto_run_workers) until finalize() runs, so a post-construction
-  // collective (e.g. reducing over is_leaf_worker()) only the manager rank
-  // ever reaches deadlocks immediately -- confirmed the hard way, hung for
-  // the full job walltime on the very first hierarchical combo. One
-  // non-leaf rank exists per node PLUS the root manager itself, which gets
-  // its own node manager too (see hierarchical_distributor.hpp's
-  // is_leaf_worker()), so real leaf-worker count is world_size - nodes - 1.
+  // world_size - 1 counts every non-manager rank, but both hierarchies' node
+  // managers route/coordinate rather than execute worker_function themselves
+  // (unless their node is single-core, i.e. nodes == world_size) -- so for
+  // those classes, world_size - 1 overcounts task-executing ranks by one node
+  // manager per node. HierarchicalLockFreeRMA's run_node_manager() likewise
+  // only bridges relay hops and harvests; it never claims a task to execute.
+  // Computed analytically rather than queried from the constructed
+  // distributor: HierarchicalWorkDistributor's constructor blocks every
+  // non-manager rank inside its own worker loop (auto_run_workers) until
+  // finalize() runs, so a post-construction collective (e.g. reducing over
+  // is_leaf_worker()) only the manager rank ever reaches deadlocks
+  // immediately -- confirmed the hard way, hung for the full job walltime on
+  // the very first hierarchical combo. One non-leaf rank exists per node PLUS
+  // the root manager itself, which gets its own node manager too (see
+  // hierarchical_distributor.hpp's is_leaf_worker()), so real leaf-worker
+  // count is world_size - nodes - 1.
+  const bool is_hierarchical =
+      kind == DistributorKind::Hierarchical || kind == DistributorKind::HierarchicalLockFreeRMA;
   const bool nodes_known = opts.nodes > 0 && static_cast<uint64_t>(size) > opts.nodes + 1;
-  const uint64_t real_worker_count = (kind == DistributorKind::Hierarchical && nodes_known)
-                                         ? static_cast<uint64_t>(size) - opts.nodes - 1
-                                         : num_workers;
+  const uint64_t real_worker_count =
+      (is_hierarchical && nodes_known) ? static_cast<uint64_t>(size) - opts.nodes - 1 : num_workers;
   // hierarchical_worker_count (a parameter, not derived from `comm` here) is
   // the shared baseline for how many tasks a combo actually publishes, so
   // tasks_per_worker means the same total batch size across all four
