@@ -311,7 +311,9 @@ def plot_distributor(
             # Worth 0.1% at 128 nodes but an eighth of the ideal at a single
             # node, which is why every curve otherwise appears to start around
             # 85% efficiency rather than tracking its reference line.
-            def ideal_worker_count(nodes: int) -> int:
+            def ideal_worker_count(
+                nodes: int, ideal_workers_per_node: int = ideal_workers_per_node
+            ) -> int:
                 return max(1, nodes * ideal_workers_per_node - 1)
             xlim = ax.get_xlim()
             ylim = ax.get_ylim()

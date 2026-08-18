@@ -436,8 +436,9 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
         std::max(1, subtree_leaf_count() * std::max(1, m_config.batch_size_multiplier));
     const int pipeline_depth = std::max(1, m_config.pipeline_depth);
     const size_t pipelined_per_layer = static_cast<size_t>(pipeline_depth - 1);
-    const size_t capacity = static_cast<size_t>(prefetch) *
-                            (1 + pipelined_per_layer * static_cast<size_t>(subtree_manager_layers()));
+    const size_t capacity =
+        static_cast<size_t>(prefetch) *
+        (1 + pipelined_per_layer * static_cast<size_t>(subtree_manager_layers()));
     const size_t uncompleted =
         m_tasks_received_from_parent - m_results_received_from_child - m_tasks_executed;
     if (uncompleted + static_cast<size_t>(prefetch) > capacity) {
@@ -661,9 +662,8 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     m_round_active = true;
     // Finish tasks already in this round even if DONE arrives.
     while (!m_unallocated_task_queue.empty()) {
-      const size_t servable = m_free_worker_indices.empty()
-                                  ? std::numeric_limits<size_t>::max()
-                                  : pick_servable_request();
+      const size_t servable = m_free_worker_indices.empty() ? std::numeric_limits<size_t>::max()
+                                                            : pick_servable_request();
       if (servable != std::numeric_limits<size_t>::max()) {
         allocate_task_to_child(servable);
         continue;
@@ -689,15 +689,16 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
       request_next_batch_if_room();
       const bool work_inbound = m_request_outstanding && !m_done;
       const bool children_busy = m_tasks_sent_to_child > m_results_received_from_child;
-      if (work_inbound || children_busy) {
+      if (work_inbound || children_busy || m_free_worker_indices.empty()) {
         receive_from_anyone();
         // A batch that arrives mid-round lands in the prefetch buffer; take
         // it, or we would wait on something we are already holding.
         release_prefetched_tasks();
         continue;
       }
-      // Nothing is in flight to change the picture: a short batch is all
-      // there is, and holding it back now would strand the queue.
+      // Nothing is in flight to change the picture and a request is queued
+      // that we cannot fill in full: a short batch is all there is, and
+      // holding it back now would strand the queue.
       allocate_task_to_child();
     }
     m_round_active = false;
