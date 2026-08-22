@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1HierarchicalWorkDistributor_1_1TaskRequest" kind="struct" language="C++" prot="private">
+    <compoundname>dynampi::HierarchicalWorkDistributor::TaskRequest</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalWorkDistributor_1_1TaskRequest_1a757fe089d4b4b7332594870f83f84549" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::HierarchicalWorkDistributor&lt; TaskT, ResultT, Options &gt;::TaskRequest::worker_rank</definition>
+        <argsstring></argsstring>
+        <name>worker_rank</name>
+        <qualifiedname>dynampi::HierarchicalWorkDistributor::TaskRequest::worker_rank</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="90" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="90" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalWorkDistributor_1_1TaskRequest_1a5e166c9663a2e2f7c1886d440a699f9d" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref> &gt;</type>
+        <definition>std::optional&lt;int&gt; dynampi::HierarchicalWorkDistributor&lt; TaskT, ResultT, Options &gt;::TaskRequest::num_tasks_requested</definition>
+        <argsstring></argsstring>
+        <name>num_tasks_requested</name>
+        <qualifiedname>dynampi::HierarchicalWorkDistributor::TaskRequest::num_tasks_requested</qualifiedname>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="91" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="91" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="89" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="89" bodyend="92"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1HierarchicalWorkDistributor_1_1TaskRequest_1a5e166c9663a2e2f7c1886d440a699f9d" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalWorkDistributor::TaskRequest</scope><name>num_tasks_requested</name></member>
+      <member refid="structdynampi_1_1HierarchicalWorkDistributor_1_1TaskRequest_1a757fe089d4b4b7332594870f83f84549" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalWorkDistributor::TaskRequest</scope><name>worker_rank</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

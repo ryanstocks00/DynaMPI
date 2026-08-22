@@ -2,7 +2,7 @@
 
 # Struct dynampi::MPI\_Type&lt; std::vector&lt; T &gt;, std::enable\_if\_t&lt; has\_dynampi\_mpi\_type&lt; T &gt;::value &gt; &gt;
 
-**template &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**T**](structdynampi_1_1MPI__Type.md)&gt;**
+**template &lt;[**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type)&gt;**
 
 
 
@@ -40,8 +40,8 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**const**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**resize\_required**](#variable-resize_required)   = `[**true**](structdynampi_1_1MPI__Type.md)`<br> |
-|  [**const**](structdynampi_1_1MPI__Type.md) [**MPI\_Datatype**](structdynampi_1_1MPI__Type.md) | [**value**](#variable-value)   = `[**MPI\_Type**](structdynampi_1_1MPI__Type.md)&lt;[**T**](structdynampi_1_1MPI__Type.md)&gt;::value`<br> |
+|  [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**bool**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**resize\_required**](#variable-resize_required)   = `[**true**](namespacedynampi.md#function-check_fixed_size_mpi_type)`<br> |
+|  [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPI\_Datatype**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**value**](#variable-value)   = `[**MPI\_Type**](structdynampi_1_1MPI__Type.md)&lt;[**T**](namespacedynampi.md#function-check_fixed_size_mpi_type)&gt;::value`<br> |
 
 
 
@@ -62,10 +62,10 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**count**](#function-count) ([**const**](structdynampi_1_1MPI__Type.md) std::vector&lt; [**T**](structdynampi_1_1MPI__Type.md) &gt; & vec) <br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) \* | [**ptr**](#function-ptr-12) (std::vector&lt; [**T**](structdynampi_1_1MPI__Type.md) &gt; & vec) noexcept<br> |
-|  [**const**](structdynampi_1_1MPI__Type.md) [**void**](structdynampi_1_1MPI__Type.md) \* | [**ptr**](#function-ptr-22) ([**const**](structdynampi_1_1MPI__Type.md) std::vector&lt; [**T**](structdynampi_1_1MPI__Type.md) &gt; & vec) noexcept<br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**resize**](#function-resize) (std::vector&lt; [**T**](structdynampi_1_1MPI__Type.md) &gt; & vec, [**int**](structdynampi_1_1MPI__Type.md) new\_size) <br> |
+|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**count**](#function-count) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) std::vector&lt; [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; & vec) <br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* | [**ptr**](#function-ptr-12) (std::vector&lt; [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; & vec) noexcept<br> |
+|  [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* | [**ptr**](#function-ptr-22) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) std::vector&lt; [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; & vec) noexcept<br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**resize**](#function-resize) (std::vector&lt; [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; & vec, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) new\_size) <br> |
 
 
 

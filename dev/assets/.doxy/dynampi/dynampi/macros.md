@@ -19,9 +19,13 @@
 * **DYNAMPI\_HAS\_BUILTIN** ([**assert.hpp**](assert_8hpp.md))
 * **DYNAMPI\_UNIMPLEMENTED** ([**assert.hpp**](assert_8hpp.md))
 * **DYNAMPI\_UNREACHABLE** ([**assert.hpp**](assert_8hpp.md))
-* **DYNAMPI\_STR** ([**dynampi.hpp**](dynampi_8hpp.md))
-* **DYNAMPI\_STR\_HELPER** ([**dynampi.hpp**](dynampi_8hpp.md))
-* **DYNAMPI\_VERSION\_STRING** ([**dynampi.hpp**](dynampi_8hpp.md))
+* **DYNAMPI\_COMMIT\_HASH** ([**version.hpp**](version_8hpp.md))
+* **DYNAMPI\_STR** ([**version.hpp**](version_8hpp.md))
+* **DYNAMPI\_STR\_HELPER** ([**version.hpp**](version_8hpp.md))
+* **DYNAMPI\_VERSION\_MAJOR** ([**version.hpp**](version_8hpp.md))
+* **DYNAMPI\_VERSION\_MINOR** ([**version.hpp**](version_8hpp.md))
+* **DYNAMPI\_VERSION\_PATCH** ([**version.hpp**](version_8hpp.md))
+* **DYNAMPI\_VERSION\_STRING** ([**version.hpp**](version_8hpp.md))
 
 
 

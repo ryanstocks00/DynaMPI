@@ -3,9 +3,9 @@
 
 
 
-## m
+## d
 
-* **MPIDynamicWorkDistributor** ([**dynampi**](namespacedynampi.md))
+* **DynamicWorkDistributor** ([**dynampi**](namespacedynampi.md))
 
 
 

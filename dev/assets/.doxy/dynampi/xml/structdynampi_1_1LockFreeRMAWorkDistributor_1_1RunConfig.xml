@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::LockFreeRMAWorkDistributor::RunConfig</compoundname>
+    <includes refid="lockfree__rma__distributor_8hpp" local="no">lockfree_rma_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig_1a13797f7eb7015337b7a86c05bbb234cd" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::target_num_tasks</definition>
+        <argsstring></argsstring>
+        <name>target_num_tasks</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::RunConfig::target_num_tasks</qualifiedname>
+        <initializer>= std::numeric_limits&lt;<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref>&gt;<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">::max</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="93" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="93" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig_1a420445de426284366b95bfca2c4f1fc7" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>bool dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::allow_more_than_target_tasks</definition>
+        <argsstring></argsstring>
+        <name>allow_more_than_target_tasks</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::RunConfig::allow_more_than_target_tasks</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="94" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="94" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig_1a3454bc336acdb1b71b580e545cd018c4" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">double</ref> &gt;</type>
+        <definition>std::optional&lt;double&gt; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::RunConfig::max_seconds</definition>
+        <argsstring></argsstring>
+        <name>max_seconds</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::RunConfig::max_seconds</qualifiedname>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="95" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="95" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="92" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="92" bodyend="96"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig_1a420445de426284366b95bfca2c4f1fc7" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor::RunConfig</scope><name>allow_more_than_target_tasks</name></member>
+      <member refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig_1a3454bc336acdb1b71b580e545cd018c4" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor::RunConfig</scope><name>max_seconds</name></member>
+      <member refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig_1a13797f7eb7015337b7a86c05bbb234cd" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor::RunConfig</scope><name>target_num_tasks</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

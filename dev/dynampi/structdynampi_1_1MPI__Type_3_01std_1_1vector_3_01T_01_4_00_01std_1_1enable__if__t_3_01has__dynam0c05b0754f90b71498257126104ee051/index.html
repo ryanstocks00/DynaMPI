@@ -417,14 +417,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mpi_compare_and_swap_design/" class="md-nav__link">
+      <a href="../../lockfree_rma_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Lock-Free Design
+    Lock-Free RMA Design
   
 
     
@@ -614,7 +614,7 @@
 
 
 <h1 id="struct-dynampimpi_type-stdvector-t-stdenable_if_t-has_dynampi_mpi_type-t-value">Struct dynampi::MPI_Type&lt; std::vector&lt; T &gt;, std::enable_if_t&lt; has_dynampi_mpi_type&lt; T &gt;::value &gt; &gt;</h1>
-<p><strong>template &lt;<a href="../structdynampi_1_1MPI__Type/"><strong>typename</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>T</strong></a>&gt;</strong></p>
+<p><strong>template &lt;<a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>typename</strong></a> <a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>T</strong></a>&gt;</strong></p>
 <p><a href="../annotated/"><strong>ClassList</strong></a> <strong>&gt;</strong> <a href="../namespacedynampi/"><strong>dynampi</strong></a> <strong>&gt;</strong> <a href="./"><strong>MPI_Type&lt; std::vector&lt; T &gt;, std::enable_if_t&lt; has_dynampi_mpi_type&lt; T &gt;::value &gt; &gt;</strong></a></p>
 <ul>
 <li><code>#include &lt;mpi_types.hpp&gt;</code></li>
@@ -629,12 +629,12 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>bool</strong></a></td>
-<td style="text-align: left;"><a href="#variable-resize_required"><strong>resize_required</strong></a>   = <code>[**true**](structdynampi_1_1MPI__Type.md)</code><br></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>const</strong></a> <a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>bool</strong></a></td>
+<td style="text-align: left;"><a href="#variable-resize_required"><strong>resize_required</strong></a>   = <code>[**true**](namespacedynampi.md#function-check_fixed_size_mpi_type)</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>MPI_Datatype</strong></a></td>
-<td style="text-align: left;"><a href="#variable-value"><strong>value</strong></a>   = <code>[**MPI\_Type**](structdynampi_1_1MPI__Type.md)&amp;lt;[**T**](structdynampi_1_1MPI__Type.md)&amp;gt;::value</code><br></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>const</strong></a> <a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>MPI_Datatype</strong></a></td>
+<td style="text-align: left;"><a href="#variable-value"><strong>value</strong></a>   = <code>[**MPI\_Type**](structdynampi_1_1MPI__Type.md)&amp;lt;[**T**](namespacedynampi.md#function-check_fixed_size_mpi_type)&amp;gt;::value</code><br></td>
 </tr>
 </tbody>
 </table>
@@ -648,20 +648,20 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a></td>
-<td style="text-align: left;"><a href="#function-count"><strong>count</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> std::vector&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>T</strong></a> &gt; &amp; vec) <br></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>int</strong></a></td>
+<td style="text-align: left;"><a href="#function-count"><strong>count</strong></a> (<a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>const</strong></a> std::vector&lt; <a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>T</strong></a> &gt; &amp; vec) <br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a> *</td>
-<td style="text-align: left;"><a href="#function-ptr-12"><strong>ptr</strong></a> (std::vector&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>T</strong></a> &gt; &amp; vec) noexcept<br></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>void</strong></a> *</td>
+<td style="text-align: left;"><a href="#function-ptr-12"><strong>ptr</strong></a> (std::vector&lt; <a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>T</strong></a> &gt; &amp; vec) noexcept<br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a> *</td>
-<td style="text-align: left;"><a href="#function-ptr-22"><strong>ptr</strong></a> (<a href="../structdynampi_1_1MPI__Type/"><strong>const</strong></a> std::vector&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>T</strong></a> &gt; &amp; vec) noexcept<br></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>const</strong></a> <a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>void</strong></a> *</td>
+<td style="text-align: left;"><a href="#function-ptr-22"><strong>ptr</strong></a> (<a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>const</strong></a> std::vector&lt; <a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>T</strong></a> &gt; &amp; vec) noexcept<br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
-<td style="text-align: left;"><a href="#function-resize"><strong>resize</strong></a> (std::vector&lt; <a href="../structdynampi_1_1MPI__Type/"><strong>T</strong></a> &gt; &amp; vec, <a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a> new_size) <br></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>void</strong></a></td>
+<td style="text-align: left;"><a href="#function-resize"><strong>resize</strong></a> (std::vector&lt; <a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>T</strong></a> &gt; &amp; vec, <a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>int</strong></a> new_size) <br></td>
 </tr>
 </tbody>
 </table>

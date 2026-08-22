@@ -14,19 +14,19 @@
     </templateparamlist>
     <sectiondef kind="public-static-attrib">
       <memberdef kind="variable" id="structdynampi_1_1track__statistics_1a97b405ebe28f951a671e89db3eeb310f" prot="public" static="yes" constexpr="yes" mutable="no">
-        <type><ref refid="structdynampi_1_1MPI__Type" kindref="compound">constexpr</ref> <ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
         <definition>constexpr StatisticsMode dynampi::track_statistics&lt; Mode &gt;::value</definition>
         <argsstring></argsstring>
         <name>value</name>
         <qualifiedname>dynampi::track_statistics::value</qualifiedname>
-        <initializer>= <ref refid="structdynampi_1_1MPI__Type" kindref="compound">Mode</ref></initializer>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">Mode</ref></initializer>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="33" column="35" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="33" bodyend="-1"/>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="36" column="35" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="36" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -57,7 +57,7 @@
         <link refid="structdynampi_1_1track__statistics__t"/>
       </node>
     </collaborationgraph>
-    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="32" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="32" bodyend="34"/>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" line="35" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/mpi/mpi_communicator.hpp" bodystart="35" bodyend="37"/>
     <listofallmembers>
       <member refid="structdynampi_1_1track__statistics_1a97b405ebe28f951a671e89db3eeb310f" prot="public" virt="non-virtual"><scope>dynampi::track_statistics</scope><name>value</name></member>
     </listofallmembers>

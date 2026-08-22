@@ -45,7 +45,7 @@ Inherits the following classes: [dynampi::prioritize\_tasks\_t](structdynampi_1_
 
 | Type | Name |
 | ---: | :--- |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**value**](#variable-value)   = `[**true**](structdynampi_1_1MPI__Type.md)`<br> |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**bool**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**value**](#variable-value)   = `[**true**](namespacedynampi.md#function-check_fixed_size_mpi_type)`<br> |
 
 
 ## Public Static Attributes inherited from dynampi::prioritize_tasks_t
@@ -54,7 +54,7 @@ See [dynampi::prioritize\_tasks\_t](structdynampi_1_1prioritize__tasks__t.md)
 
 | Type | Name |
 | ---: | :--- |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**value**](structdynampi_1_1prioritize__tasks__t.md#variable-value)   = `[**false**](structdynampi_1_1MPI__Type.md)`<br> |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**bool**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**value**](structdynampi_1_1prioritize__tasks__t.md#variable-value)   = `[**false**](namespacedynampi.md#function-check_fixed_size_mpi_type)`<br> |
 
 
 

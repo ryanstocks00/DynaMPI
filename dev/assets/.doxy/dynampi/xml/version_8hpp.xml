@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="version_8hpp" kind="file" language="C++">
+    <compoundname>version.hpp</compoundname>
+    <includes local="no">string_view</includes>
+    <includes local="no">tuple</includes>
+    <includedby refid="dynampi_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp</includedby>
+    <incdepgraph>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp</label>
+        <link refid="version_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>string_view</label>
+      </node>
+      <node id="3">
+        <label>tuple</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="2">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp</label>
+        <link refid="dynampi_8hpp"/>
+      </node>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp</label>
+        <link refid="version_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innernamespace refid="namespacedynampi">dynampi</innernamespace>
+    <innernamespace refid="namespacedynampi_1_1version">dynampi::version</innernamespace>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="version_8hpp_1aa19d64d238d07c42d0d24a869b93a76c" prot="public" static="no">
+        <name>DYNAMPI_VERSION_MAJOR</name>
+        <initializer>0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" line="18" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" bodystart="18" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="version_8hpp_1ab1538e455d9201498980f83aeb50361c" prot="public" static="no">
+        <name>DYNAMPI_VERSION_MINOR</name>
+        <initializer>0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" line="21" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="version_8hpp_1a446a20bb21e0f941b369e8c9a48038eb" prot="public" static="no">
+        <name>DYNAMPI_VERSION_PATCH</name>
+        <initializer>1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" line="24" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="version_8hpp_1a037a3bd8171fd5718f063fc0ff590bff" prot="public" static="no">
+        <name>DYNAMPI_COMMIT_HASH</name>
+        <initializer>&quot;unknown&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" line="30" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="version_8hpp_1ab52585869cefd5930f2afc5beed2e0ec" prot="public" static="no">
+        <name>DYNAMPI_STR_HELPER</name>
+        <param><defname>x</defname></param>
+        <initializer>#x</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" line="42" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="version_8hpp_1a9af522ad1f7873670e7f78b44b5edbeb" prot="public" static="no">
+        <name>DYNAMPI_STR</name>
+        <param><defname>x</defname></param>
+        <initializer><ref refid="version_8hpp_1ab52585869cefd5930f2afc5beed2e0ec" kindref="member">DYNAMPI_STR_HELPER</ref>(x)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" line="43" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="version_8hpp_1a4bfff23c065ba8372b4d35dcd79cf2d2" prot="public" static="no">
+        <name>DYNAMPI_VERSION_STRING</name>
+        <initializer>  &quot;v&quot; <ref refid="version_8hpp_1a9af522ad1f7873670e7f78b44b5edbeb" kindref="member">DYNAMPI_STR</ref>(<ref refid="version_8hpp_1aa19d64d238d07c42d0d24a869b93a76c" kindref="member">DYNAMPI_VERSION_MAJOR</ref>) &quot;.&quot; <ref refid="version_8hpp_1a9af522ad1f7873670e7f78b44b5edbeb" kindref="member">DYNAMPI_STR</ref>(<ref refid="version_8hpp_1ab1538e455d9201498980f83aeb50361c" kindref="member">DYNAMPI_VERSION_MINOR</ref>) &quot;.&quot; <ref refid="version_8hpp_1a9af522ad1f7873670e7f78b44b5edbeb" kindref="member">DYNAMPI_STR</ref>( \
+      <ref refid="version_8hpp_1a446a20bb21e0f941b369e8c9a48038eb" kindref="member">DYNAMPI_VERSION_PATCH</ref>)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" line="44" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp" bodystart="44" bodyend="46"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>SPDX-FileCopyrightText:<sp/>2026<sp/>Ryan<sp/>Stocks</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>Apache-2.0</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string_view&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;tuple&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Version<sp/>macros<sp/>are<sp/>normally<sp/>supplied<sp/>by<sp/>the<sp/>`dynampi`<sp/>CMake<sp/>target.<sp/>The</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="comment">//<sp/>fallbacks<sp/>below<sp/>keep<sp/>every<sp/>header<sp/>usable<sp/>with<sp/>a<sp/>plain<sp/>`-I<sp/>include`<sp/>build<sp/>(no</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="comment">//<sp/>CMake,<sp/>no<sp/>-D<sp/>flags).<sp/>The<sp/>top-level<sp/>CMakeLists.txt<sp/>parses<sp/>these<sp/>three<sp/>#define</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="comment">//<sp/>lines<sp/>to<sp/>derive<sp/>project(DynaMPI<sp/>VERSION<sp/>...),<sp/>so<sp/>the<sp/>fallbacks<sp/>are<sp/>the<sp/>single</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="comment">//<sp/>source<sp/>of<sp/>truth<sp/>and<sp/>cannot<sp/>drift<sp/>from<sp/>the<sp/>CMake<sp/>version<sp/>--<sp/>keep<sp/>the<sp/>literal</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="comment">//<sp/>`#define<sp/>DYNAMPI_VERSION_&lt;part&gt;<sp/>&lt;integer&gt;`<sp/>shape<sp/>when<sp/>bumping<sp/>them.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>DYNAMPI_VERSION_MAJOR</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18" refid="version_8hpp_1aa19d64d238d07c42d0d24a869b93a76c" refkind="member"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>DYNAMPI_VERSION_MAJOR<sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>DYNAMPI_VERSION_MINOR</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21" refid="version_8hpp_1ab1538e455d9201498980f83aeb50361c" refkind="member"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>DYNAMPI_VERSION_MINOR<sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>DYNAMPI_VERSION_PATCH</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24" refid="version_8hpp_1a446a20bb21e0f941b369e8c9a48038eb" refkind="member"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>DYNAMPI_VERSION_PATCH<sp/>1</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Set<sp/>by<sp/>CMake<sp/>from<sp/>`git<sp/>rev-parse<sp/>HEAD`<sp/>(with<sp/>a<sp/>`-dirty`<sp/>suffix<sp/>when<sp/>the<sp/>tree</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="comment">//<sp/>has<sp/>uncommitted<sp/>changes).<sp/>Builds<sp/>without<sp/>CMake<sp/>have<sp/>no<sp/>way<sp/>to<sp/>know<sp/>it.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>DYNAMPI_COMMIT_HASH</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30" refid="version_8hpp_1a037a3bd8171fd5718f063fc0ff590bff" refkind="member"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>DYNAMPI_COMMIT_HASH<sp/>&quot;unknown&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespacedynampi" kindref="compound">dynampi</ref><sp/>{</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight></codeline>
+<codeline lineno="35" refid="namespacedynampi_1_1version" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">version<sp/>{</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight></codeline>
+<codeline lineno="37" refid="namespacedynampi_1_1version_1a6bc0be0e262bac9bf3396ca2faad7e9f" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1_1version_1a6bc0be0e262bac9bf3396ca2faad7e9f" kindref="member">major</ref><sp/>=<sp/><ref refid="version_8hpp_1aa19d64d238d07c42d0d24a869b93a76c" kindref="member">DYNAMPI_VERSION_MAJOR</ref>;</highlight></codeline>
+<codeline lineno="38" refid="namespacedynampi_1_1version_1a96fba606cba8678a6bcceef4ba3c8111" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1_1version_1a96fba606cba8678a6bcceef4ba3c8111" kindref="member">minor</ref><sp/>=<sp/><ref refid="version_8hpp_1ab1538e455d9201498980f83aeb50361c" kindref="member">DYNAMPI_VERSION_MINOR</ref>;</highlight></codeline>
+<codeline lineno="39" refid="namespacedynampi_1_1version_1a23be4013e62698563d03303ab3550ee0" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1_1version_1a23be4013e62698563d03303ab3550ee0" kindref="member">patch</ref><sp/>=<sp/><ref refid="version_8hpp_1a446a20bb21e0f941b369e8c9a48038eb" kindref="member">DYNAMPI_VERSION_PATCH</ref>;</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"></highlight></codeline>
+<codeline lineno="41"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Macros<sp/>for<sp/>compile-time<sp/>version<sp/>string</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="42" refid="version_8hpp_1ab52585869cefd5930f2afc5beed2e0ec" refkind="member"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>DYNAMPI_STR_HELPER(x)<sp/>#x</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="43" refid="version_8hpp_1a9af522ad1f7873670e7f78b44b5edbeb" refkind="member"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>DYNAMPI_STR(x)<sp/>DYNAMPI_STR_HELPER(x)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="44" refid="version_8hpp_1a4bfff23c065ba8372b4d35dcd79cf2d2" refkind="member"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>DYNAMPI_VERSION_STRING<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>\</highlight></codeline>
+<codeline lineno="45"><highlight class="preprocessor"><sp/><sp/>&quot;v&quot;<sp/>DYNAMPI_STR(DYNAMPI_VERSION_MAJOR)<sp/>&quot;.&quot;<sp/>DYNAMPI_STR(DYNAMPI_VERSION_MINOR)<sp/>&quot;.&quot;<sp/>DYNAMPI_STR(<sp/>\</highlight></codeline>
+<codeline lineno="46"><highlight class="preprocessor"><sp/><sp/><sp/><sp/><sp/><sp/>DYNAMPI_VERSION_PATCH)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="47"><highlight class="normal"></highlight></codeline>
+<codeline lineno="48" refid="namespacedynampi_1_1version_1aee9460a2a8eb2d1e646d8f65f8918bf1" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/>std::string_view<sp/></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/>=<sp/><ref refid="version_8hpp_1a4bfff23c065ba8372b4d35dcd79cf2d2" kindref="member">DYNAMPI_VERSION_STRING</ref>;</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight></codeline>
+<codeline lineno="50" refid="namespacedynampi_1_1version_1a97ebeb88cb74b845e9061e51ef2b08c8" refkind="member"><highlight class="normal">[[<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">nodiscard</ref>]]<sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1_1version_1a97ebeb88cb74b845e9061e51ef2b08c8" kindref="member">is_at_least</ref>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">v_major</ref>,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">v_minor</ref>,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">v_patch</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>std::tie(<ref refid="namespacedynampi_1_1version_1a6bc0be0e262bac9bf3396ca2faad7e9f" kindref="member">major</ref>,<sp/><ref refid="namespacedynampi_1_1version_1a96fba606cba8678a6bcceef4ba3c8111" kindref="member">minor</ref>,<sp/><ref refid="namespacedynampi_1_1version_1a23be4013e62698563d03303ab3550ee0" kindref="member">patch</ref>)<sp/>&gt;=<sp/>std::tie(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">v_major</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">v_minor</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">v_patch</ref>);</highlight></codeline>
+<codeline lineno="52"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"></highlight></codeline>
+<codeline lineno="54" refid="namespacedynampi_1_1version_1adcad9661257f4dfe00d23817a032644f" refkind="member"><highlight class="normal">[[<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">nodiscard</ref>]]<sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/>std::string_view<sp/><ref refid="namespacedynampi_1_1version_1adcad9661257f4dfe00d23817a032644f" kindref="member">compile_date</ref>()<sp/>{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">__DATE__</ref><sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">__TIME__</ref>;<sp/>}</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"></highlight></codeline>
+<codeline lineno="56" refid="namespacedynampi_1_1version_1a6f74ef38beb6132301fb791c009d0864" refkind="member"><highlight class="normal">[[<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">nodiscard</ref>]]<sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/>std::string_view<sp/><ref refid="namespacedynampi_1_1version_1a6f74ef38beb6132301fb791c009d0864" kindref="member">commit_hash</ref>()<sp/>{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="version_8hpp_1a037a3bd8171fd5718f063fc0ff590bff" kindref="member">DYNAMPI_COMMIT_HASH</ref>;<sp/>}</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"></highlight></codeline>
+<codeline lineno="58"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>version</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="59"><highlight class="normal"></highlight></codeline>
+<codeline lineno="60"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>dynampi</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp"/>
+  </compounddef>
+</doxygen>

@@ -39,7 +39,7 @@ Inherited by the following classes: [dynampi::track\_statistics](structdynampi_1
 
 | Type | Name |
 | ---: | :--- |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**StatisticsMode**](namespacedynampi.md#enum-statisticsmode) | [**value**](#variable-value)   = `StatisticsMode::None`<br> |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**StatisticsMode**](namespacedynampi.md#enum-statisticsmode) | [**value**](#variable-value)   = `StatisticsMode::None`<br> |
 
 
 

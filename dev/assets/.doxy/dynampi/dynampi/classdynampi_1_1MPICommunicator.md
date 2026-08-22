@@ -41,6 +41,11 @@
 
 
 
+## Public Static Attributes
+
+| Type | Name |
+| ---: | :--- |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**kMaxRmaChunkBytes**](#variable-kmaxrmachunkbytes)   = `[**static\_cast**](namespacedynampi.md#function-check_fixed_size_mpi_type)&lt;[**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type)&gt;(std::numeric\_limits&lt;[**int**](namespacedynampi.md#function-check_fixed_size_mpi_type)&gt;[**::max**](namespacedynampi.md#function-check_fixed_size_mpi_type)())`<br> |
 
 
 
@@ -59,28 +64,33 @@
 
 | Type | Name |
 | ---: | :--- |
-|   | [**MPICommunicator**](#function-mpicommunicator-13) ([**MPI\_Comm**](structdynampi_1_1MPI__Type.md) comm, [**Ownership**](classdynampi_1_1MPICommunicator.md#enum-ownership) ownership=Duplicate) <br> |
-|   | [**MPICommunicator**](#function-mpicommunicator-23) ([**const**](structdynampi_1_1MPI__Type.md) [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & other) = delete<br> |
+|   | [**MPICommunicator**](#function-mpicommunicator-13) ([**MPI\_Comm**](namespacedynampi.md#function-check_fixed_size_mpi_type) comm, [**Ownership**](classdynampi_1_1MPICommunicator.md#enum-ownership) ownership=Duplicate) <br> |
+|   | [**MPICommunicator**](#function-mpicommunicator-23) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & other) = delete<br> |
 |   | [**MPICommunicator**](#function-mpicommunicator-33) ([**MPICommunicator**](classdynampi_1_1MPICommunicator.md) && other) noexcept<br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**broadcast**](#function-broadcast) ([**T**](structdynampi_1_1MPI__Type.md) & data, [**int**](structdynampi_1_1MPI__Type.md) root=0) <br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**gather**](#function-gather) ([**const**](structdynampi_1_1MPI__Type.md) [**T**](structdynampi_1_1MPI__Type.md) & data, std::vector&lt; [**T**](structdynampi_1_1MPI__Type.md) &gt; \* result, [**int**](structdynampi_1_1MPI__Type.md) root=0) <br> |
-|  [**MPI\_Comm**](structdynampi_1_1MPI__Type.md) | [**get**](#function-get) () const<br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**broadcast**](#function-broadcast) ([**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) & data, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) root=0) <br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**fetch\_and\_op**](#function-fetch_and_op) ([**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) & origin, [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) & result, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) target\_rank, [**MPI\_Aint**](namespacedynampi.md#function-check_fixed_size_mpi_type) target\_disp, [**MPI\_Op**](namespacedynampi.md#function-check_fixed_size_mpi_type) op, [**MPI\_Win**](namespacedynampi.md#function-check_fixed_size_mpi_type) win) <br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**gather**](#function-gather) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) & data, std::vector&lt; [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; \* result, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) root=0) <br> |
+|  [**MPI\_Comm**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**get**](#function-get) () const<br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**get\_bytes**](#function-get_bytes) ([**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* dst, [**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) n, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) target\_rank, [**MPI\_Aint**](namespacedynampi.md#function-check_fixed_size_mpi_type) target\_disp, [**MPI\_Win**](namespacedynampi.md#function-check_fixed_size_mpi_type) win) <br> |
 |  [**MPIGroup**](classdynampi_1_1MPIGroup.md) | [**get\_group**](#function-get_group) () const<br> |
-|  [**const**](structdynampi_1_1MPI__Type.md) [**CommStatistics**](structdynampi_1_1CommStatistics.md) & | [**get\_statistics**](#function-get_statistics) () const<br> |
-|  std::optional&lt; [**MPI\_Status**](structdynampi_1_1MPI__Type.md) &gt; | [**iprobe**](#function-iprobe) ([**int**](structdynampi_1_1MPI__Type.md) source=[**MPI\_ANY\_SOURCE**](structdynampi_1_1MPI__Type.md), [**int**](structdynampi_1_1MPI__Type.md) tag=[**MPI\_ANY\_TAG**](structdynampi_1_1MPI__Type.md)) <br> |
+|  [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**CommStatistics**](structdynampi_1_1CommStatistics.md) & | [**get\_statistics**](#function-get_statistics) () const<br> |
+|  std::optional&lt; [**MPI\_Status**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; | [**iprobe**](#function-iprobe) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) source=[**MPI\_ANY\_SOURCE**](namespacedynampi.md#function-check_fixed_size_mpi_type), [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag=[**MPI\_ANY\_TAG**](namespacedynampi.md#function-check_fixed_size_mpi_type)) <br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**isend**](#function-isend) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) & data, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) dest, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag, [**MPI\_Request**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* request) <br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**isend\_empty**](#function-isend_empty) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) dest, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag, [**MPI\_Request**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* request) <br> |
 |   | [**operator MPI\_Comm**](#function-operator-mpi_comm) () const<br> |
-|  [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & | [**operator=**](#function-operator) ([**const**](structdynampi_1_1MPI__Type.md) [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & other) = delete<br> |
+|  [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & | [**operator=**](#function-operator) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & other) = delete<br> |
 |  [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & | [**operator=**](#function-operator_1) ([**MPICommunicator**](classdynampi_1_1MPICommunicator.md) && other) = delete<br> |
-|  [**MPI\_Status**](structdynampi_1_1MPI__Type.md) | [**probe**](#function-probe) ([**int**](structdynampi_1_1MPI__Type.md) source=[**MPI\_ANY\_SOURCE**](structdynampi_1_1MPI__Type.md), [**int**](structdynampi_1_1MPI__Type.md) tag=[**MPI\_ANY\_TAG**](structdynampi_1_1MPI__Type.md)) <br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**rank**](#function-rank) () const<br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**recv**](#function-recv) ([**T**](structdynampi_1_1MPI__Type.md) & data, [**int**](structdynampi_1_1MPI__Type.md) source, [**int**](structdynampi_1_1MPI__Type.md) tag=0) <br> |
-|  [**MPI\_Status**](structdynampi_1_1MPI__Type.md) | [**recv\_any**](#function-recv_any) ([**T**](structdynampi_1_1MPI__Type.md) & data, [**int**](structdynampi_1_1MPI__Type.md) source=[**MPI\_ANY\_SOURCE**](structdynampi_1_1MPI__Type.md), [**int**](structdynampi_1_1MPI__Type.md) tag=[**MPI\_ANY\_TAG**](structdynampi_1_1MPI__Type.md)) <br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**recv\_empty**](#function-recv_empty) ([**int**](structdynampi_1_1MPI__Type.md) source, [**int**](structdynampi_1_1MPI__Type.md) tag=0) <br>_Receives 0 elements of type T. Use when the sender used send\_empty&lt;T&gt;._  |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**recv\_empty\_message**](#function-recv_empty_message) ([**int**](structdynampi_1_1MPI__Type.md) source, [**int**](structdynampi_1_1MPI__Type.md) tag=0) <br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**send**](#function-send) ([**const**](structdynampi_1_1MPI__Type.md) [**T**](structdynampi_1_1MPI__Type.md) & data, [**int**](structdynampi_1_1MPI__Type.md) dest, [**int**](structdynampi_1_1MPI__Type.md) tag=0) <br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**send\_empty**](#function-send_empty) ([**int**](structdynampi_1_1MPI__Type.md) dest, [**int**](structdynampi_1_1MPI__Type.md) tag=0) <br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**size**](#function-size) () const<br> |
-|  std::optional&lt; [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) &gt; | [**split**](#function-split) ([**int**](structdynampi_1_1MPI__Type.md) color, [**int**](structdynampi_1_1MPI__Type.md) key=0) const<br> |
+|  [**MPI\_Status**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**probe**](#function-probe) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) source=[**MPI\_ANY\_SOURCE**](namespacedynampi.md#function-check_fixed_size_mpi_type), [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag=[**MPI\_ANY\_TAG**](namespacedynampi.md#function-check_fixed_size_mpi_type)) <br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**put\_bytes**](#function-put_bytes) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* src, [**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) n, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) target\_rank, [**MPI\_Aint**](namespacedynampi.md#function-check_fixed_size_mpi_type) target\_disp, [**MPI\_Win**](namespacedynampi.md#function-check_fixed_size_mpi_type) win) <br> |
+|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**rank**](#function-rank) () const<br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**recv**](#function-recv) ([**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) & data, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) source, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag=0) <br> |
+|  [**MPI\_Status**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**recv\_any**](#function-recv_any) ([**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) & data, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) source=[**MPI\_ANY\_SOURCE**](namespacedynampi.md#function-check_fixed_size_mpi_type), [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag=[**MPI\_ANY\_TAG**](namespacedynampi.md#function-check_fixed_size_mpi_type)) <br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**recv\_empty**](#function-recv_empty) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) source, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag=0) <br>_Receives 0 elements of type T. Use when the sender used send\_empty&lt;T&gt;._  |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**recv\_empty\_message**](#function-recv_empty_message) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) source, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag=0) <br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**send**](#function-send) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) & data, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) dest, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag=0) <br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**send\_empty**](#function-send_empty) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) dest, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag=0) <br> |
+|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**size**](#function-size) () const<br> |
+|  std::optional&lt; [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) &gt; | [**split**](#function-split) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) color, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) key=0) const<br> |
 |  [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) | [**split\_by\_node**](#function-split_by_node) () const<br> |
 |   | [**~MPICommunicator**](#function-mpicommunicator) () <br> |
 
@@ -130,6 +140,21 @@ enum dynampi::MPICommunicator::Ownership {
 
 
 <hr>
+## Public Static Attributes Documentation
+
+
+
+
+### variable kMaxRmaChunkBytes 
+
+```C++
+constexpr size_t dynampi::MPICommunicator< Options >::kMaxRmaChunkBytes;
+```
+
+
+
+
+<hr>
 ## Public Functions Documentation
 
 
@@ -138,7 +163,7 @@ enum dynampi::MPICommunicator::Ownership {
 ### function MPICommunicator [1/3]
 
 ```C++
-inline dynampi::MPICommunicator::MPICommunicator (
+inline explicit dynampi::MPICommunicator::MPICommunicator (
     MPI_Comm comm,
     Ownership ownership=Duplicate
 ) 
@@ -198,6 +223,27 @@ inline void dynampi::MPICommunicator::broadcast (
 
 
 
+### function fetch\_and\_op 
+
+```C++
+template<typename  T>
+inline void dynampi::MPICommunicator::fetch_and_op (
+    T & origin,
+    T & result,
+    int target_rank,
+    MPI_Aint target_disp,
+    MPI_Op op,
+    MPI_Win win
+) 
+```
+
+
+
+
+<hr>
+
+
+
 ### function gather 
 
 ```C++
@@ -220,6 +266,25 @@ inline void dynampi::MPICommunicator::gather (
 
 ```C++
 inline MPI_Comm dynampi::MPICommunicator::get () const
+```
+
+
+
+
+<hr>
+
+
+
+### function get\_bytes 
+
+```C++
+inline void dynampi::MPICommunicator::get_bytes (
+    void * dst,
+    size_t n,
+    int target_rank,
+    MPI_Aint target_disp,
+    MPI_Win win
+) 
 ```
 
 
@@ -266,6 +331,46 @@ inline std::optional< MPI_Status > dynampi::MPICommunicator::iprobe (
 
 
 
+
+<hr>
+
+
+
+### function isend 
+
+```C++
+template<typename  T>
+inline void dynampi::MPICommunicator::isend (
+    const  T & data,
+    int dest,
+    int tag,
+    MPI_Request * request
+) 
+```
+
+
+
+
+<hr>
+
+
+
+### function isend\_empty 
+
+```C++
+inline void dynampi::MPICommunicator::isend_empty (
+    int dest,
+    int tag,
+    MPI_Request * request
+) 
+```
+
+
+
+Non-blocking 0-byte send (Tag::DONE / Tag::REQUEST). Same statistics as send\_empty; caller owns the request (may MPI\_Request\_free immediately). 
+
+
+        
 
 <hr>
 
@@ -320,6 +425,25 @@ MPICommunicator & dynampi::MPICommunicator::operator= (
 inline MPI_Status dynampi::MPICommunicator::probe (
     int source=MPI_ANY_SOURCE,
     int tag=MPI_ANY_TAG
+) 
+```
+
+
+
+
+<hr>
+
+
+
+### function put\_bytes 
+
+```C++
+inline void dynampi::MPICommunicator::put_bytes (
+    const  void * src,
+    size_t n,
+    int target_rank,
+    MPI_Aint target_disp,
+    MPI_Win win
 ) 
 ```
 

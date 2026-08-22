@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1HierarchicalWorkDistributor_1_1Statistics" kind="struct" language="C++" prot="private">
+    <compoundname>dynampi::HierarchicalWorkDistributor::Statistics</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalWorkDistributor_1_1Statistics_1a5972a38f1c770aa8f196578e915ada2d" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref> <ref refid="structdynampi_1_1CommStatistics" kindref="compound">CommStatistics</ref> &amp;</type>
+        <definition>const CommStatistics&amp; dynampi::HierarchicalWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics::comm_statistics</definition>
+        <argsstring></argsstring>
+        <name>comm_statistics</name>
+        <qualifiedname>dynampi::HierarchicalWorkDistributor::Statistics::comm_statistics</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="318" column="26" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="318" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalWorkDistributor_1_1Statistics_1aa522b72d13d4c5fa598d6ba4b8fdfd19" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; std::vector&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref> &gt; &gt;</type>
+        <definition>std::optional&lt;std::vector&lt;size_t&gt; &gt; dynampi::HierarchicalWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics::worker_task_counts</definition>
+        <argsstring></argsstring>
+        <name>worker_task_counts</name>
+        <qualifiedname>dynampi::HierarchicalWorkDistributor::Statistics::worker_task_counts</qualifiedname>
+        <initializer>= {}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="319" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="319" bodyend="319"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="2">
+        <label>dynampi::CommStatistics</label>
+        <link refid="structdynampi_1_1CommStatistics"/>
+      </node>
+      <node id="1">
+        <label>dynampi::HierarchicalWorkDistributor&lt; TaskT, ResultT, Options &gt;::Statistics</label>
+        <childnode refid="2" relation="usage">
+          <edgelabel>comm_statistics</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" line="317" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp" bodystart="317" bodyend="320"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1HierarchicalWorkDistributor_1_1Statistics_1a5972a38f1c770aa8f196578e915ada2d" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalWorkDistributor::Statistics</scope><name>comm_statistics</name></member>
+      <member refid="structdynampi_1_1HierarchicalWorkDistributor_1_1Statistics_1aa522b72d13d4c5fa598d6ba4b8fdfd19" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalWorkDistributor::Statistics</scope><name>worker_task_counts</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

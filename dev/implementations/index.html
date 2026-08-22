@@ -14,7 +14,7 @@
         <link rel="prev" href="../api/">
       
       
-        <link rel="next" href="../mpi_compare_and_swap_design/">
+        <link rel="next" href="../lockfree_rma_design/">
       
       
         
@@ -403,22 +403,55 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#naivempiworkdistributor" class="md-nav__link">
+  <a href="#shared-behaviour" class="md-nav__link">
     <span class="md-ellipsis">
       
-        NaiveMPIWorkDistributor
+        Shared behaviour
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="NaiveMPIWorkDistributor">
+    <nav class="md-nav" aria-label="Shared behaviour">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#protocol" class="md-nav__link">
+  <a href="#result-ordering" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Protocol
+        Result ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failing-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failing tasks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#single-rank-runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Single-rank runs
       
     </span>
   </a>
@@ -431,61 +464,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mpidynamicworkdistributor" class="md-nav__link">
+  <a href="#naiveworkdistributor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MPIDynamicWorkDistributor
+        NaiveWorkDistributor
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="MPIDynamicWorkDistributor">
+    <nav class="md-nav" aria-label="NaiveWorkDistributor">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#topology" class="md-nav__link">
+  <a href="#cost-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Topology
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Topology">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#coordinator_per_node-true-default" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        coordinator_per_node = true (default)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#coordinator_per_node-false" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        coordinator_per_node = false
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#protocol-node-coordinator" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Protocol (node coordinator)
+        Cost model
       
     </span>
   </a>
@@ -509,22 +503,44 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#lockfreempiworkdistributor" class="md-nav__link">
+  <a href="#hierarchicalworkdistributor-dynamicworkdistributor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LockFreeMPIWorkDistributor
+        HierarchicalWorkDistributor (DynamicWorkDistributor)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="LockFreeMPIWorkDistributor">
+    <nav class="md-nav" aria-label="HierarchicalWorkDistributor (DynamicWorkDistributor)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#protocol-sketch" class="md-nav__link">
+  <a href="#topology" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Protocol (sketch)
+        Topology
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constraints
       
     </span>
   </a>
@@ -548,10 +564,77 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#choosing-a-distributor" class="md-nav__link">
+  <a href="#lockfreermaworkdistributor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Choosing a Distributor
+        LockFreeRMAWorkDistributor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LockFreeRMAWorkDistributor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#capacity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capacity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batching-guidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batching guidance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hierarchicallockfreermaworkdistributor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HierarchicalLockFreeRMAWorkDistributor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="HierarchicalLockFreeRMAWorkDistributor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature matrix
       
     </span>
   </a>
@@ -559,10 +642,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparison" class="md-nav__link">
+  <a href="#benchmarking" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Comparison
+        Benchmarking
       
     </span>
   </a>
@@ -635,14 +718,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../mpi_compare_and_swap_design/" class="md-nav__link">
+      <a href="../lockfree_rma_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Lock-Free Design
+    Lock-Free RMA Design
   
 
     
@@ -690,22 +773,55 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#naivempiworkdistributor" class="md-nav__link">
+  <a href="#shared-behaviour" class="md-nav__link">
     <span class="md-ellipsis">
       
-        NaiveMPIWorkDistributor
+        Shared behaviour
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="NaiveMPIWorkDistributor">
+    <nav class="md-nav" aria-label="Shared behaviour">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#protocol" class="md-nav__link">
+  <a href="#result-ordering" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Protocol
+        Result ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failing-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failing tasks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#single-rank-runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Single-rank runs
       
     </span>
   </a>
@@ -718,61 +834,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mpidynamicworkdistributor" class="md-nav__link">
+  <a href="#naiveworkdistributor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MPIDynamicWorkDistributor
+        NaiveWorkDistributor
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="MPIDynamicWorkDistributor">
+    <nav class="md-nav" aria-label="NaiveWorkDistributor">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#topology" class="md-nav__link">
+  <a href="#cost-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Topology
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Topology">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#coordinator_per_node-true-default" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        coordinator_per_node = true (default)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#coordinator_per_node-false" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        coordinator_per_node = false
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#protocol-node-coordinator" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Protocol (node coordinator)
+        Cost model
       
     </span>
   </a>
@@ -796,22 +873,44 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#lockfreempiworkdistributor" class="md-nav__link">
+  <a href="#hierarchicalworkdistributor-dynamicworkdistributor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LockFreeMPIWorkDistributor
+        HierarchicalWorkDistributor (DynamicWorkDistributor)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="LockFreeMPIWorkDistributor">
+    <nav class="md-nav" aria-label="HierarchicalWorkDistributor (DynamicWorkDistributor)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#protocol-sketch" class="md-nav__link">
+  <a href="#topology" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Protocol (sketch)
+        Topology
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constraints
       
     </span>
   </a>
@@ -835,10 +934,77 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#choosing-a-distributor" class="md-nav__link">
+  <a href="#lockfreermaworkdistributor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Choosing a Distributor
+        LockFreeRMAWorkDistributor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LockFreeRMAWorkDistributor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#capacity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capacity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batching-guidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batching guidance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hierarchicallockfreermaworkdistributor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HierarchicalLockFreeRMAWorkDistributor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="HierarchicalLockFreeRMAWorkDistributor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature matrix
       
     </span>
   </a>
@@ -846,10 +1012,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparison" class="md-nav__link">
+  <a href="#benchmarking" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Comparison
+        Benchmarking
       
     </span>
   </a>
@@ -882,143 +1048,252 @@
 -->
 
 <h1 id="distributor-implementations">Distributor Implementations</h1>
-<p>DynaMPI provides three full-featured distributors plus a minimal lock-free
-parallel-for helper.</p>
-<hr />
-<h2 id="naivempiworkdistributor">NaiveMPIWorkDistributor</h2>
-<p><strong>Best for:</strong> small-to-medium process counts, simplicity, ordered results.</p>
-<p>Two-sided <code>MPI_Send</code> / <code>MPI_Recv</code> between the manager and each worker.
-Workers send an initial REQUEST, then the manager assigns one task at a time.
-Each incoming RESULT signals that the worker is ready for the next task.</p>
-<h3 id="protocol">Protocol</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Worker:                              Manager:
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  send REQUEST ───────────────────→   (worker queued as free)
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  probe() ←───────────────────────   send TASK
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  recv TASK
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  execute task
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  send RESULT ───────────────────→   recv RESULT
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>                                     store result
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                                     (worker queued as free again)
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  probe() ←───────────────────────   send TASK
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  ...repeat...
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>  probe() ←───────────────────────   send DONE (no more tasks)
-</code></pre></div>
-<ul>
-<li><strong>Communication:</strong> Two-sided <code>MPI_Send</code> / <code>MPI_Recv</code></li>
-<li><strong>Ordering:</strong> Strictly ordered by task ID (<code>ordered = true</code>)</li>
-<li><strong>Prioritization:</strong> Supported with <code>enable_prioritization</code></li>
-</ul>
-<hr />
-<h2 id="mpidynamicworkdistributor">MPIDynamicWorkDistributor</h2>
-<p><strong>Best for:</strong> large process counts (100+ ranks), multi-node clusters.  This is
-the default distributor (<code>mpi_manager_worker_distribution</code> and the type to
-construct for dynamic workloads).</p>
-<p>Implemented by <code>HierarchicalMPIWorkDistributor</code> (same type).</p>
-<p>Organises ranks into a tree.  Leaf workers communicate only with their local
-<em>node coordinator</em>; coordinators batch requests and results to/from the
-manager.  Two topology modes:</p>
-<h3 id="topology">Topology</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>  Manager ──┬── Coordinator 0 ──┬── Worker₀
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>            │                   ├── Worker₁
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>            │                   └── Worker₂
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>            ├── Coordinator 1 ──┬── Worker₃
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>            │                   └── Worker₄
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>            └── Coordinator 2 ──┬── Worker₅
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>                                └── Worker₆
-</code></pre></div>
-<h4 id="coordinator_per_node-true-default"><code>coordinator_per_node = true</code> (default)</h4>
-<p>Uses <code>MPI_Comm_split_type(MPI_COMM_TYPE_SHARED)</code> to discover physical nodes.
-One <em>node coordinator</em> per node (local rank 0).  Manager + coordinators form
-a <em>leader group</em>.  Workers talk to their coordinator via shared memory; the
-manager is excluded from its own node's local group.</p>
-<h4 id="coordinator_per_node-false"><code>coordinator_per_node = false</code></h4>
-<p>Virtual tree built from rank ordering.  Fan-out defaults to <code>max(2, √N)</code>.</p>
-<h3 id="protocol-node-coordinator">Protocol (node coordinator)</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>while not done:
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    send REQUEST_BATCH(n) to parent   // n = children × multiplier
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    while task_queue not empty:
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>        if free children available:
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>            dequeue child, send TASK_BATCH
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        else:
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>            recv from anyone:
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>                REQUEST  → push child to free stack
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>                RESULT   → return batch to parent, request more
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>                TASK     → execute locally, send RESULT up
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>                DONE     → propagate to children, exit
-</code></pre></div>
-<ul>
-<li><strong>Communication:</strong> Two-sided <code>MPI_Send</code> / <code>MPI_Recv</code> with batching</li>
-<li><strong>Ordering:</strong> Not guaranteed (<code>ordered = false</code>)</li>
-<li><strong>Prioritization:</strong> Not yet implemented</li>
-<li><strong>Batching:</strong> Coordinators batch requests and results to amortise overhead</li>
-</ul>
-<h3 id="configuration">Configuration</h3>
+<p>DynaMPI ships six distributors.  Five share the full manager–worker interface
+(<code>insert_task*</code> / <code>run_tasks</code> / <code>run_worker</code> / <code>finalize</code>); the sixth is a
+deliberately minimal parallel-for helper with its own small API.</p>
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
+<th>Class</th>
+<th>Header</th>
+<th>Communication</th>
+<th>Topology</th>
+<th>Ordered</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>message_batch_size</code></td>
-<td><code>optional&lt;size_t&gt;</code></td>
-<td>auto</td>
-<td>Tasks per batch</td>
+<td><a href="#naiveworkdistributor"><code>NaiveWorkDistributor</code></a></td>
+<td><code>impl/naive_distributor.hpp</code></td>
+<td>Two-sided <code>Send</code>/<code>Recv</code></td>
+<td>Flat</td>
+<td><strong>Yes</strong></td>
 </tr>
 <tr>
-<td><code>max_workers_per_coordinator</code></td>
-<td><code>optional&lt;int&gt;</code></td>
-<td><code>max(2, √N)</code></td>
-<td>Children per node</td>
+<td><a href="#hierarchicalworkdistributor-dynamicworkdistributor"><code>HierarchicalWorkDistributor</code></a></td>
+<td><code>impl/hierarchical_distributor.hpp</code></td>
+<td>Two-sided, batched</td>
+<td>Tree</td>
+<td>No</td>
 </tr>
 <tr>
-<td><code>batch_size_multiplier</code></td>
-<td><code>int</code></td>
-<td><code>2</code></td>
-<td>Prefetch = children × multiplier</td>
+<td><a href="#lockfreermaworkdistributor"><code>LockFreeRMAWorkDistributor</code></a></td>
+<td><code>impl/lockfree_rma_distributor.hpp</code></td>
+<td>Passive-target RMA</td>
+<td>Flat</td>
+<td><strong>Yes</strong></td>
 </tr>
 <tr>
-<td><code>coordinator_per_node</code></td>
-<td><code>bool</code></td>
-<td><code>true</code></td>
-<td>Physical-node topology</td>
+<td><a href="#hierarchicallockfreermaworkdistributor"><code>HierarchicalLockFreeRMAWorkDistributor</code></a></td>
+<td><code>impl/hierarchical_lockfree_rma_distributor.hpp</code></td>
+<td>Passive-target RMA</td>
+<td>Tree</td>
+<td><strong>Yes</strong></td>
 </tr>
 </tbody>
 </table>
+<p>Only <code>NaiveWorkDistributor</code>, <code>HierarchicalWorkDistributor</code> are pulled in by <code>&lt;dynampi/dynampi.hpp&gt;</code>.
+The other three need their own <code>#include</code> — see <a href="../api/#headers">Headers</a>.</p>
 <hr />
-<h2 id="lockfreempiworkdistributor">LockFreeMPIWorkDistributor</h2>
-<p><strong>Best for:</strong> fine-grained tasks where passive-target RMA progress is strong,
-and you want to avoid a two-sided request/response handshake per task.</p>
-<p>Workers claim work by atomically advancing a shared counter on the manager's
-MPI window (<code>MPI_Fetch_and_op</code>) and deposit results with <code>MPI_Put</code> under
-<code>MPI_Win_lock_all</code>.  Supports arbitrary <code>TaskT</code> / <code>ResultT</code> (with fixed
-capacity limits), incremental <code>insert_task(s)</code> / <code>run_tasks</code>, and ordered
-results.</p>
-<p>There is also <strong><code>MinimalLockFreeMPIWorkDistributor&lt;ResultT&gt;</code></strong>: a smaller
-API for embarrassingly parallel index loops (<code>size_t → ResultT</code>) that claims
-indices with one atomic counter and gathers results once at the end.</p>
-<h3 id="protocol-sketch">Protocol (sketch)</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Workers (lock_all once):
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  while true:
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    idx ← Fetch_and_op(+1, head)
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    if idx &gt;= total_tasks: exit (or wait for more / shutdown)
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    result = worker_function(task[idx])
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    Put(result) → manager; signal completion
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>Manager:
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>  insert_task(s) bumps total_tasks / publishes payloads in the window
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>  poll / gather completed results into run_tasks() return value
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>  finalize() sets finished flag and drains remaining work
+<h2 id="shared-behaviour">Shared behaviour</h2>
+<h3 id="result-ordering">Result ordering</h3>
+<p>Ordering is exposed as a compile-time constant, <code>Distributor::ordered</code>:</p>
+<ul>
+<li><strong><code>NaiveWorkDistributor</code>, <code>LockFreeRMAWorkDistributor</code>,
+  <code>HierarchicalLockFreeRMAWorkDistributor</code> (<code>ordered == true</code>)</strong> — the manager
+  buffers results by task ID (a result table slot for the RMA distributors,
+  keyed the same way as the task it answers) and only releases a contiguous
+  prefix, so returned results are always in insertion order.  A slow task
+  therefore holds back every result behind it, all the way up the tree for the
+  hierarchical variant.</li>
+<li><strong><code>HierarchicalWorkDistributor</code> (<code>ordered == false</code>)</strong> — results are
+  returned as they are confirmed complete, roughly submission order but not
+  guaranteed.</li>
+</ul>
+<p>If you need to know which task a result came from and the distributor is
+unordered, carry the identity in the result type (e.g. <code>std::pair&lt;size_t, T&gt;</code>).</p>
+<h3 id="lifecycle">Lifecycle</h3>
+<ol>
+<li><strong>Construction is collective</strong> over <code>Config::comm</code>.  The communicator is
+   duplicated, so DynaMPI traffic never collides with the caller's.</li>
+<li>With <code>auto_run_workers = true</code> (the default), every non-manager rank enters
+   <code>run_worker()</code> inside the constructor and does not return until shutdown is
+   signalled.  Set it to <code>false</code> if you want to call <code>run_worker()</code> yourself.</li>
+<li>The manager drives distribution with <code>run_tasks()</code> /
+   <code>finish_remaining_tasks()</code>.</li>
+<li><code>finalize()</code> signals shutdown to the workers.  The destructor calls it if you
+   have not.</li>
+<li><strong>Destruction is collective too</strong> — the RMA distributors free windows and
+   barrier inside their destructors.</li>
+</ol>
+<h3 id="failing-tasks">Failing tasks</h3>
+<p>A task that throws does not abort the job.  Every distributor catches whatever
+escapes the worker function, substitutes a default-constructed <code>ResultT</code> so the
+task still occupies its slot in the result set, and carries the message back to
+the manager out of band — a <code>TASK_ERROR</code> message alongside the result for the
+two-sided distributors, a small fixed-size table in the window for the RMA ones.</p>
+<p>What the manager then does is up to <code>Config::rethrow_task_errors</code>:</p>
+<ul>
+<li><strong><code>true</code> (default) — propagate.</strong>  <code>run_tasks()</code> / <code>finish_remaining_tasks()</code>
+  throw <code>dynampi::TaskFailure</code>, carrying the failing rank and message.  It is
+  thrown <em>before</em> results are drained, so whoever catches it can call again and
+  still collect everything gathered so far.  Each failure is thrown once;
+  <code>finalize()</code> and the destructors never throw.</li>
+<li><strong><code>false</code> — recover.</strong>  Distribution runs to completion and the failures come
+  back from <code>take_task_errors()</code> as a <code>std::vector&lt;TaskError&gt;</code>, oldest first.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dynampi</span><span class="o">::</span><span class="n">DynamicWorkDistributor</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="o">&gt;::</span><span class="n">Config</span><span class="w"> </span><span class="n">config</span><span class="p">;</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">config</span><span class="p">.</span><span class="n">rethrow_task_errors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">dynampi</span><span class="o">::</span><span class="n">DynamicWorkDistributor</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">distributor</span><span class="p">(</span><span class="n">work</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">distributor</span><span class="p">.</span><span class="n">is_root_manager</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="n">distributor</span><span class="p">.</span><span class="n">insert_tasks</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">});</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">distributor</span><span class="p">.</span><span class="n">finish_remaining_tasks</span><span class="p">();</span><span class="w">   </span><span class="c1">// one entry per task</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">failure</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">distributor</span><span class="p">.</span><span class="n">take_task_errors</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"rank "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">failure</span><span class="p">.</span><span class="n">worker_rank</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">": "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">failure</span><span class="p">.</span><span class="n">message</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">}</span>
+</code></pre></div>
+<p>Messages are truncated to <code>dynampi::kMaxTaskErrorMessage</code> (240) characters, and
+the RMA distributors keep at most 16 records per window — beyond that the
+failures still happen and the run still completes, but the extra messages are
+dropped.  Anything not thrown or taken by the time the distributor is destroyed
+is reported to <code>stderr</code> rather than vanishing.</p>
+<h3 id="single-rank-runs">Single-rank runs</h3>
+<p>Every distributor handles a communicator of size 1 by executing tasks inline on
+the manager, with no MPI window or message traffic.  Tests and serial debugging
+therefore work unchanged.</p>
+<hr />
+<h2 id="naiveworkdistributor">NaiveWorkDistributor</h2>
+<p><strong>Best for:</strong> small communicators, ordered results, task priorities, and as a
+reference implementation when debugging a workload.</p>
+<p>The manager talks to every worker directly.  Workers announce themselves with an
+empty <code>REQUEST</code>, then receive one task at a time; each <code>RESULT</code> doubles as the
+signal that the worker is free again.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Worker                                Manager
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  send REQUEST ───────────────────►   push worker onto free stack
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  probe / recv TASK  ◄────────────    send TASK (pop free worker)
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  execute
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  send RESULT ────────────────────►   recv RESULT, store by task ID
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>                                      push worker onto free stack
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  probe / recv TASK  ◄────────────    send TASK
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  ...
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  probe / recv DONE  ◄────────────    finalize(): send DONE to every worker
 </code></pre></div>
 <ul>
-<li><strong>Communication:</strong> Passive-target RMA (<code>MPI_Win_lock_all</code>, <code>Fetch_and_op</code>, <code>Put</code>)</li>
-<li><strong>Ordering:</strong> Ordered by task ID (<code>ordered = true</code>)</li>
-<li><strong>Prioritization:</strong> Not supported (priority argument is ignored if enabled)</li>
+<li><strong>Ordering:</strong> strict — results are buffered by task ID and released as a
+  contiguous prefix.</li>
+<li><strong>Prioritization:</strong> supported, and this is the <em>only</em> distributor where it
+  works.  With <code>dynampi::enable_prioritization</code>, <code>insert_task(task, priority)</code>
+  feeds a <code>std::priority_queue</code> and higher priorities are dispatched first.
+  Note that <code>insert_tasks(vector)</code> is disabled in this mode.</li>
+<li><strong>Variable-length payloads:</strong> supported for both <code>TaskT</code> and <code>ResultT</code>
+  (<code>std::vector&lt;T&gt;</code>, <code>std::string</code>, …).</li>
+<li><strong>Statistics:</strong> <code>Aggregated</code> and <code>Detailed</code> both supported (see
+  <a href="../api/#statistics">Statistics</a>).  <code>worker_task_counts</code> is indexed by worker
+  index — the rank with the manager removed.</li>
 </ul>
+<h3 id="cost-model">Cost model</h3>
+<p>The manager handles two messages per task and is the only rank doing so, which
+makes it the bottleneck at a few hundred ranks.  There is no batching and no
+prefetching: a worker is idle for one manager round trip between finishing a
+task and receiving the next.</p>
+<h3 id="configuration">Configuration</h3>
+<p>Beyond the <a href="../api/#common-config-fields">common fields</a> there are none that take
+effect.  <code>use_immediate_recv</code> and <code>max_result_size</code> exist on <code>Config</code> but are
+currently unused by the implementation.</p>
+<hr />
+<h2 id="hierarchicalworkdistributor-dynamicworkdistributor">HierarchicalWorkDistributor (<code>DynamicWorkDistributor</code>)</h2>
+<p><strong>Best for:</strong> the general multi-node case.  This is the default used by
+<code>mpi_manager_worker_distribution</code>, and <code>dynampi::DynamicWorkDistributor</code> is an
+alias for it.</p>
+<p>Ranks are arranged in a tree.  Leaf workers only ever talk to their node
+manager; node managers exchange <em>batches</em> with their own parent, so the root
+manager's message count scales with the number of node managers rather than the
+number of ranks.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>  Root manager ──┬── Node manager 0 ──┬── Worker 0
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>                 │       (node 0)     ├── Worker 1
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>                 │                    └── Worker 2
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>                 ├── Node manager 1 ──┬── Worker 3
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>                 │       (node 1)     └── Worker 4
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>                 └── Node manager 2 ──┬── Worker 5
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>                         (node 2)     └── Worker 6
+</code></pre></div>
+<h3 id="topology">Topology</h3>
+<p><strong><code>manager_per_node = true</code> (default).</strong>
+<code>MPI_Comm_split_type(MPI_COMM_TYPE_SHARED)</code> discovers physical nodes.  Local rank
+0 of each node becomes that node's manager; the root manager is excluded from its
+own node's local group so it is never also a node manager.  The root manager plus
+the node managers form the <em>leader layer</em>.</p>
+<p>Two knobs reshape this:</p>
+<ul>
+<li><code>max_local_group_size &gt; 0</code> splits large nodes into several contiguous local
+  groups, producing more (smaller) node managers.  This reduces per-manager
+  contention, and lets a single-node job exercise the multi-manager paths.</li>
+<li><code>max_upper_fanout</code> caps how many direct children any leader-layer rank may
+  have.  If there are more managers than that, they are recursively grouped
+  into a k-ary tree of intermediate leaders, so not even the manager exceeds the
+  cap.  <code>-1</code> (default) is auto: stay flat at ≤ 32 managers, otherwise use the
+  smallest power of two ≥ <code>sqrt(manager_count)</code>.  <code>0</code> disables grouping
+  entirely (one flat leader layer).</li>
+</ul>
+<p><strong><code>manager_per_node = false</code>.</strong>  A virtual tree derived purely from rank
+order, with fan-out <code>max_workers_per_manager</code> (default <code>max(2, sqrt(N))</code>).
+Useful when shared-memory splitting is unavailable or misleading (e.g. under
+simulators).</p>
+<h3 id="protocol">Protocol</h3>
+<p>Leaf workers use the unbatched <code>REQUEST</code> / <code>TASK</code> / <code>RESULT</code> exchange.
+Managers use the batched one:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>manager:
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  top_up_pipeline(1)                       # one REQUEST_BATCH(n) to parent
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  loop until DONE:
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    release any prefetched batch into the work queue
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    wait for TASK_BATCH if the queue is empty (flushing results while waiting)
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    mark round active                      # later replies are quarantined
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    top_up_pipeline(pipeline_depth - 1)    # ask for the next batches now
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    while queue non-empty:
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>      pop a free child, send it TASK_BATCH (or TASK for a leaf)
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>      otherwise block until a child reports in
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    end round; send whatever results have accumulated up as RESULT_BATCH
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>  propagate DONE to children, drain in-flight results, flush
+</code></pre></div>
+<p>Two details matter for throughput:</p>
+<ul>
+<li><strong>Pipelining.</strong> A manager keeps <code>pipeline_depth</code> batch requests in flight
+  (default 2 = double buffering) so children never wait a full parent round trip
+  between batches.  Replies that arrive mid-round are quarantined until the round
+  boundary, so a round can never overshoot into the next round's tasks.  Deeper
+  pipelines hide more latency but commit tasks further ahead, which coarsens load
+  balancing — tasks already handed to one manager cannot be reassigned to an
+  idle sibling.</li>
+<li><strong>Partial result flushing.</strong> Results are forwarded upward at every round
+  boundary, whether or not that round is complete.  Waiting for a round's slowest
+  straggler would otherwise stall results from children that finished long ago.</li>
+</ul>
+<p>Batch size is <code>subtree_leaf_count × batch_size_multiplier</code> — the number of leaf
+workers a manager is responsible for feeding, including its own node's, not
+the number of children it sends to.  The two differ at every level above the
+node managers, since a leader's leader-layer children are themselves
+managers fronting whole nodes: at 2048 nodes with 7 ranks per node a leader
+has 69 direct children but 384 leaf workers beneath it, and the gap grows by a
+factor of the fanout per level.  <code>HierarchicalLockFreeRMAWorkDistributor</code> sizes
+its claims the same way (<code>setup_upper_chain()</code>'s <code>feed_width</code>).</p>
+<h3 id="constraints">Constraints</h3>
+<div class="admonition note">
+<p class="admonition-title">Variable-length payloads are supported</p>
+<p><code>TaskT</code> and <code>ResultT</code> may be <code>std::vector&lt;T&gt;</code>, <code>std::string</code>, or any other
+type with <code>MPI_Type&lt;T&gt;::resize_required == true</code>.  Single tasks and results
+are sent with a probed count; batches are packed into a length-prefixed flat
+buffer (<code>detail::pack_variable_batch</code>), so no separate code path is needed
+and there is no per-element cap of the kind the RMA distributors impose.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Prioritization is not supported here</p>
+<p>The <code>enable_prioritization</code> option compiles and <code>insert_task(task, priority)</code>
+exists, but any manager that receives a <code>TASK_BATCH</code> hits
+<code>DYNAMPI_UNIMPLEMENTED</code> (undefined behaviour under <code>NDEBUG</code>).  It happens to
+work only in degenerate topologies where no manager has children.</p>
+</div>
 <h3 id="configuration_1">Configuration</h3>
 <table>
 <thead>
@@ -1031,110 +1306,372 @@ indices with one atomic counter and gathers results once at the end.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>max_tasks</code></td>
-<td><code>int</code></td>
-<td><code>8192</code></td>
-<td>Lifetime capacity of task/result tables</td>
+<td><code>max_workers_per_manager</code></td>
+<td><code>optional&lt;int&gt;</code></td>
+<td><code>max(2, sqrt(N))</code></td>
+<td>Fan-out of the virtual tree. Only used when <code>manager_per_node == false</code>.</td>
 </tr>
 <tr>
-<td><code>max_task_count</code></td>
+<td><code>batch_size_multiplier</code></td>
 <td><code>int</code></td>
-<td><code>256</code></td>
-<td>Max elements per resizable <code>TaskT</code></td>
+<td><code>1</code></td>
+<td>Batch request size = subtree leaf workers × this.</td>
 </tr>
 <tr>
-<td><code>max_result_count</code></td>
+<td><code>pipeline_depth</code></td>
 <td><code>int</code></td>
-<td><code>256</code></td>
-<td>Max elements per resizable <code>ResultT</code></td>
+<td><code>2</code></td>
+<td>Batch requests kept outstanding, including the active round. <code>1</code> disables prefetching.</td>
+</tr>
+<tr>
+<td><code>manager_per_node</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Use shared-memory node discovery instead of a rank-order virtual tree.</td>
+</tr>
+<tr>
+<td><code>max_local_group_size</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td><code>&gt; 0</code> splits nodes into local groups of at most this size. <code>manager_per_node</code> only.</td>
+</tr>
+<tr>
+<td><code>max_upper_fanout</code></td>
+<td><code>int</code></td>
+<td><code>-1</code></td>
+<td>Max direct leader-layer children. <code>-1</code> auto, <code>0</code> disabled, <code>&gt; 0</code> explicit. <code>manager_per_node</code> only.</td>
 </tr>
 </tbody>
 </table>
-<p>Design background (historical fence-based prototype and MPICH notes): see
-<a href="../mpi_compare_and_swap_design/">Lock-Free Design</a>.</p>
+<p><code>message_batch_size</code> is present on <code>Config</code> but currently unused.</p>
+<p><strong>Statistics:</strong> <code>track_statistics&lt;Aggregated&gt;</code> and <code>&lt;Detailed&gt;</code> are both
+supported.  <code>Statistics::worker_task_counts</code> is populated by an <code>MPI_Gather</code>
+inside <code>finalize()</code>, so it is <code>std::nullopt</code> until then.</p>
 <hr />
-<h2 id="choosing-a-distributor">Choosing a Distributor</h2>
+<h2 id="lockfreermaworkdistributor">LockFreeRMAWorkDistributor</h2>
+<p><strong>Best for:</strong> fine-grained tasks where two-sided hand-off latency dominates.  No
+collective calls anywhere in the hot path.</p>
+<p>The manager exposes one RMA window containing a control block, a task table, a
+result table and a completion log.  Everything is passive-target
+(<code>MPI_Win_lock_all(MPI_MODE_NOCHECK)</code> once at construction) — workers never wait
+on the manager to make progress.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>manager publish (insert_tasks):
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  Put[task slots]  →  atomic REPLACE(total)  →  flush          # 2 round trips per batch
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>worker (per claim, claim width 1):
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>  fetch_and_add(head, 1) + flush_local        # claim an index
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>  Get(task slot)         + flush_local        # read the payload
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  compute
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>  Put(result slot)       + flush              # data durable at the manager
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>  Put(log[start] = count)+ flush              # publishes the result, after data
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>manager harvest (run_tasks):
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>  atomic read(head)                           # how far claiming got
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>  Get(log[frontier .. head))                  # one bulk read
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>  scan the contiguous prefix; Get(result[frontier .. confirmed))
+</code></pre></div>
+<p>The completion log is what makes the result path correct without atomics on the
+data: <code>fetch_and_add</code> already gives a worker exclusive ownership of its start
+index, so the log entry is a plain <code>Put</code>, and the intervening flush is what
+portably orders "data written" before "flag published".  The manager only
+advances past a contiguous prefix, so a straggling batch stops that harvest and
+is picked up on a later pass.</p>
+<p>Harvesting reads the manager's <em>own</em> window through the RMA API rather than
+plain loads: under <code>MPI_WIN_SEPARATE</code> (always the case on MS-MPI) local loads are
+not guaranteed to observe remote writes at all.</p>
+<ul>
+<li><strong>Ordering:</strong> guaranteed, via the contiguous-prefix harvest above -- same
+  cost as <code>NaiveWorkDistributor</code>'s ordering, a straggler holds back every
+  result behind it.</li>
+<li><strong>Prioritization:</strong> not supported.  <code>insert_task(task, priority)</code> exists for
+  interface compatibility and ignores the priority.</li>
+<li><strong>Variable-length payloads:</strong> supported, within the per-slot capacity below.</li>
+<li><strong>Statistics:</strong> <code>track_statistics&lt;Detailed&gt;</code> supported; <code>Statistics</code> carries
+  <code>comm_statistics</code> only (no per-worker task counts).</li>
+<li><strong>Extra API:</strong> <code>gather_once()</code> performs exactly one harvest pass and returns
+  whatever is ready, instead of looping until everything is collected.</li>
+</ul>
+<h3 id="capacity">Capacity</h3>
+<p>The window is preallocated, so capacities are hard limits, not hints.</p>
 <table>
 <thead>
 <tr>
-<th>Scenario</th>
-<th>Use</th>
+<th>Field</th>
+<th>Default</th>
+<th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>&lt; ~64 ranks, need ordered results / prioritization</td>
-<td><code>NaiveMPIWorkDistributor</code></td>
+<td><code>max_tasks</code></td>
+<td><code>8192</code></td>
+<td><strong>Lifetime</strong> total of published tasks, not a concurrent depth. Exceeding it throws <code>std::length_error</code>.</td>
 </tr>
 <tr>
-<td>100+ ranks, multi-node (default)</td>
-<td><code>MPIDynamicWorkDistributor</code></td>
+<td><code>max_task_count</code></td>
+<td><code>256</code></td>
+<td>Max element count of a single task, for variable-length <code>TaskT</code>. Ignored for fixed-size types.</td>
 </tr>
 <tr>
-<td>Fine-grained tasks, good RMA progress</td>
-<td><code>LockFreeMPIWorkDistributor</code></td>
-</tr>
-<tr>
-<td>Static index parallel-for only</td>
-<td><code>MinimalLockFreeMPIWorkDistributor</code></td>
+<td><code>max_result_count</code></td>
+<td><code>256</code></td>
+<td>Same, for <code>ResultT</code>.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="comparison">Comparison</h2>
+<p>Exceeding <code>max_task_count</code> / <code>max_result_count</code> trips an assertion in debug
+builds and corrupts the window in release builds — size them for your worst case.</p>
+<p>Manager window bytes are</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>24 + max_tasks × (task_stride + result_stride + 8)
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>task_stride   = round_up_8(8 + max_task_count   × sizeof(task element))
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>result_stride = round_up_8(8 + max_result_count × sizeof(result element))
+</code></pre></div>
+<p>(For fixed-size types the count factor is 1.)  With <code>int</code> tasks and <code>double</code>
+results at the defaults that is ~320 KiB; with <code>std::vector&lt;int&gt;</code> payloads at
+<code>max_task_count = max_result_count = 256</code> it is ~16 MiB.</p>
+<h3 id="batching-guidance">Batching guidance</h3>
+<p><code>insert_task()</code> publishes immediately — two RMA round trips for one task.
+<code>insert_tasks(vector)</code> publishes the whole span in two round trips regardless of
+size.  Always prefer the batch form; per-task publishing is the measured
+bottleneck otherwise.</p>
+<hr />
+<h2 id="hierarchicallockfreermaworkdistributor">HierarchicalLockFreeRMAWorkDistributor</h2>
+<p><strong>Best for:</strong> large node counts where a single manager-owned window becomes the
+ceiling.</p>
+<p>Takes the lock-free RMA protocol above and instantiates it once <em>per level</em> of the
+node-aware tree: one window at the leader level (root manager ↔ node managers), plus an
+independent window per node (manager ↔ its local workers).  Each level is an
+independent <code>detail::LockFreeRMALevel</code>, so claiming, publishing and harvesting stay
+purely one-sided — composing hierarchically reintroduces no collectives.</p>
+<p>A node manager plays two roles simultaneously: <strong>owner</strong> of its local level
+and <strong>claimant</strong> of the level above.  It does not compute tasks itself.  Instead
+each <code>BridgeHop</code> runs, non-blocking, per iteration:</p>
+<ol>
+<li>Claim a range from the parent level (subject to backpressure) and republish it
+   into the child level, queueing a <code>{parent_start, child_len}</code> relay entry.</li>
+<li>Harvest whatever the child level has confirmed and append it to a relay buffer.</li>
+<li>Write the available prefix of the front relay entry back to the parent, in as
+   many partial <code>write_result_range</code> calls as it takes.</li>
+</ol>
+<p>Two properties are load-bearing:</p>
+<ul>
+<li><strong>Backpressure.</strong> Outstanding relayed tasks are capped at
+  <code>8 × parent claim width</code>.  Because the parent's harvest is a contiguous-prefix
+  scan, relays flush strictly FIFO — claiming far ahead adds <em>ordering</em> latency,
+  not just buffering, since a caught-up entry near the back of the queue cannot
+  flush until everything ahead of it does.</li>
+<li><strong>Partial flushing.</strong> A relay entry is written back incrementally rather than
+  all-or-nothing.  Since claim width scales with the local worker count, an
+  all-or-nothing flush would relay nothing until every task of a wide claim
+  finished — an artificial barrier whose cost grows with task duration.</li>
+</ul>
+<p>Ranks alone on a node skip the local level and claim/compute directly against the
+level above (<code>run_leaf_leader_worker</code>).  Under <code>max_upper_fanout</code> grouping, a
+promoted group leader both owns its group's window and claims from it via
+self-targeted RMA.</p>
+<p>The constructor ends with an <code>MPI_Barrier</code>: level setup runs a chain of
+<code>MPI_Comm_split</code> calls whose cost grows with rank count, and without the barrier
+a caller that starts timing when the manager's constructor returns would measure
+other ranks still finishing setup.</p>
+<ul>
+<li><strong>Ordering:</strong> guaranteed, recursively at every level of the relay chain --
+  see <a href="#result-ordering">Result ordering</a>.</li>
+<li><strong>Prioritization:</strong> not supported (no priority overload at all).</li>
+<li><strong>Statistics:</strong> <strong>not supported.</strong>  The <code>Options...</code> pack is accepted and
+  ignored, and there is no <code>get_statistics()</code>.</li>
+<li><strong>Extra API:</strong> <code>gather_once()</code>, as above.</li>
+</ul>
+<h3 id="configuration_2">Configuration</h3>
 <table>
 <thead>
 <tr>
-<th>Feature</th>
+<th>Field</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>max_tasks</code></td>
+<td><code>8192</code></td>
+<td>Lifetime task capacity of each <strong>upper-level</strong> window.</td>
+</tr>
+<tr>
+<td><code>max_local_tasks</code></td>
+<td><code>8192</code></td>
+<td>Lifetime task capacity of each <strong>node-local</strong> window.</td>
+</tr>
+<tr>
+<td><code>max_task_count</code> / <code>max_result_count</code></td>
+<td><code>256</code></td>
+<td>Per-slot element caps, as for the flat variant.</td>
+</tr>
+<tr>
+<td><code>max_local_group_size</code></td>
+<td><code>0</code></td>
+<td><code>&gt; 0</code> splits nodes into smaller local groups.</td>
+</tr>
+<tr>
+<td><code>max_upper_fanout</code></td>
+<td><code>-1</code></td>
+<td><code>-1</code> auto (flat at ≤ 32 managers, else smallest power of two ≥ <code>sqrt(manager_count)</code>), <code>0</code> disabled, <code>&gt; 0</code> explicit.</td>
+</tr>
+</tbody>
+</table>
+<p>Memory is the flat formula applied per window, so a manager pays for its
+local window <em>and</em> its share of the upper ones.</p>
+<hr />
+<h2 id="feature-matrix">Feature matrix</h2>
+<table>
+<thead>
+<tr>
+<th></th>
 <th>Naive</th>
-<th>MPIDynamic (hierarchical)</th>
-<th>LockFree</th>
+<th>Hierarchical</th>
+<th>LockFreeRMA</th>
+<th>Hier. LockFreeRMA</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Communication</td>
 <td>Two-sided</td>
-<td>Two-sided + batching</td>
+<td>Two-sided, batched</td>
 <td>Passive RMA</td>
+<td>Passive RMA, per level</td>
+</tr>
+<tr>
+<td>Collectives on the hot path</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
 </tr>
 <tr>
 <td>Ordered results</td>
-<td>Yes</td>
+<td><strong>Yes</strong></td>
 <td>No</td>
+<td><strong>Yes</strong></td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>Arbitrary <code>TaskT</code> / <code>ResultT</code></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
 <td>Yes</td>
 </tr>
 <tr>
-<td>Task prioritisation</td>
+<td>Variable-length payloads</td>
 <td>Yes</td>
+<td>Yes</td>
+<td>Yes (capped)</td>
+<td>Yes (capped)</td>
+</tr>
+<tr>
+<td><a href="../api/#custom-types">Custom structs</a></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Prioritization</td>
+<td><strong>Yes</strong></td>
 <td>No</td>
+<td>No (ignored)</td>
 <td>No</td>
 </tr>
 <tr>
 <td>Statistics</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
+<td><code>Aggregated</code>, <code>Detailed</code></td>
+<td><code>Aggregated</code>, <code>Detailed</code></td>
+<td><code>Aggregated</code>, <code>Detailed</code></td>
+<td><strong>None</strong></td>
 </tr>
 <tr>
 <td>Node-aware topology</td>
 <td>No</td>
 <td>Yes</td>
 <td>No</td>
+<td>Yes</td>
 </tr>
 <tr>
-<td>Manager bottleneck</td>
-<td>O(W) messages</td>
-<td>O(coordinators)</td>
-<td>Atomic claim + Put</td>
+<td>Incremental insertion</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
 </tr>
 <tr>
-<td>Max practical ranks</td>
-<td>~64</td>
-<td>~1000+</td>
-<td>MPI-RMA dependent</td>
+<td>Preallocated capacity limit</td>
+<td>No</td>
+<td>No</td>
+<td><code>max_tasks</code></td>
+<td><code>max_tasks</code>, <code>max_local_tasks</code></td>
+</tr>
+<tr>
+<td>Manager load per task</td>
+<td>2 messages</td>
+<td>O(1/batch), per manager</td>
+<td>O(1/batch), per manager</td>
+<td>~3 RMA ops</td>
 </tr>
 </tbody>
 </table>
+<hr />
+<h2 id="benchmarking">Benchmarking</h2>
+<p>Measured throughput depends heavily on the machine, the MPI stack and the task
+duration, so pick a distributor by measuring rather than from a table.  The
+repository ships drivers for exactly that (build with
+<code>-DDYNAMPI_BUILD_BENCHMARKS=ON</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Measures</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>strong_scaling_distribution_rate</code></td>
+<td>Task hand-off rate at fixed rank count, across all four full distributors</td>
+</tr>
+<tr>
+<td><code>asymptotic_distribution_throughput</code></td>
+<td>Throughput vs. task count</td>
+</tr>
+<tr>
+<td><code>shutdown_time</code></td>
+<td>Cost of finalisation at scale</td>
+</tr>
+<tr>
+<td><code>rma_atomic_microbench</code></td>
+<td>Raw <code>MPI_Fetch_and_op</code> ceiling for the RMA path</td>
+</tr>
+<tr>
+<td><code>pingpong</code>, <code>timer_resolution</code></td>
+<td>Baseline latency and clock granularity</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>mpirun<span class="w"> </span>-n<span class="w"> </span><span class="m">64</span><span class="w"> </span>./build/benchmark/strong_scaling_distribution_rate<span class="w"> </span>-D<span class="w"> </span>lockfree_rma<span class="w"> </span>-t<span class="w"> </span><span class="m">100</span><span class="w"> </span>-d<span class="w"> </span><span class="m">10</span>
+</code></pre></div>
+<p><code>-D</code> selects <code>naive</code>, <code>hierarchical</code>, <code>lockfree_rma</code> or
+<code>hierarchical_lockfree_rma</code>; <code>-t</code> is the expected task duration in
+microseconds and <code>-d</code> the measurement window in seconds.  The two RMA
+distributors preallocate their windows for <code>--max_tasks</code> tasks (default 500M,
+roughly 19 GiB on the owning rank), so lower it to run them anywhere with less
+memory than a compute node — the run warns and stops early if it exhausts the
+table before <code>-d</code> elapses.  Launch scripts for Frontier and Aurora (which take
+the same value as <code>MAX_TASKS</code>), plus plotting helpers, live under
+<code>benchmark/scripts/</code>.</p>
+<p>For orientation, the design work behind these classes found the flat lock-free RMA
+distributor plateauing once a single manager window saturated, while the
+hierarchical topologies kept climbing with node count — which is the entire
+motivation for <code>HierarchicalLockFreeRMAWorkDistributor</code>.  Reproduce on
+your own target before committing to a choice.</p>
 
 
 

@@ -1,0 +1,240 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="variable__batch_8hpp" kind="file" language="C++">
+    <compoundname>variable_batch.hpp</compoundname>
+    <includes local="no">algorithm</includes>
+    <includes local="no">cstdint</includes>
+    <includes local="no">stdexcept</includes>
+    <includes local="no">vector</includes>
+    <includes refid="mpi__types_8hpp" local="yes">dynampi/mpi/mpi_types.hpp</includes>
+    <includedby refid="hierarchical__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</includedby>
+    <incdepgraph>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/variable_batch.hpp</label>
+        <link refid="variable__batch_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>dynampi/mpi/mpi_types.hpp</label>
+        <link refid="mpi__types_8hpp"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>algorithm</label>
+      </node>
+      <node id="8">
+        <label>cassert</label>
+      </node>
+      <node id="9">
+        <label>cstddef</label>
+      </node>
+      <node id="3">
+        <label>cstdint</label>
+      </node>
+      <node id="7">
+        <label>mpi.h</label>
+      </node>
+      <node id="4">
+        <label>stdexcept</label>
+      </node>
+      <node id="10">
+        <label>string</label>
+      </node>
+      <node id="11">
+        <label>type_traits</label>
+      </node>
+      <node id="5">
+        <label>vector</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="3">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp</label>
+        <link refid="dynampi_8hpp"/>
+      </node>
+      <node id="2">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</label>
+        <link refid="hierarchical__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/variable_batch.hpp</label>
+        <link refid="variable__batch_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innernamespace refid="namespacedynampi">dynampi</innernamespace>
+    <innernamespace refid="namespacedynampi_1_1detail">dynampi::detail</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>SPDX-FileCopyrightText:<sp/>2026<sp/>Ryan<sp/>Stocks</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>Apache-2.0</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;algorithm&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cstdint&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdexcept&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="mpi__types_8hpp" kindref="compound">dynampi/mpi/mpi_types.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespacedynampi_1_1detail" kindref="compound">dynampi::detail</ref><sp/>{</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="comment">//<sp/>MPI_Type&lt;std::vector&lt;T&gt;&gt;<sp/>(see<sp/>mpi_types.hpp)<sp/>assumes<sp/>T<sp/>is<sp/>a<sp/>fixed-size</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="comment">//<sp/>value:<sp/>it<sp/>ships<sp/>the<sp/>outer<sp/>vector<sp/>as<sp/>`count()<sp/>=<sp/>size()<sp/>*<sp/>elements_per_T`</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="comment">//<sp/>contiguous<sp/>datatype<sp/>elements,<sp/>with<sp/>elements_per_T<sp/>a<sp/>single<sp/>compile-time</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="comment">//<sp/>constant.<sp/>That<sp/>model<sp/>has<sp/>no<sp/>way<sp/>to<sp/>describe<sp/>a<sp/>*batch<sp/>of<sp/>variable-length<sp/>T*</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="comment">//<sp/>(e.g.<sp/>TaskT/ResultT<sp/>=<sp/>std::vector&lt;std::byte&gt;,<sp/>one<sp/>serialized<sp/>message<sp/>per</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="comment">//<sp/>task):<sp/>each<sp/>element<sp/>can<sp/>have<sp/>a<sp/>different<sp/>byte<sp/>length,<sp/>and<sp/>MPI_Type&lt;T&gt;::ptr</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="comment">//<sp/>for<sp/>such<sp/>a<sp/>T<sp/>doesn&apos;t<sp/>even<sp/>point<sp/>at<sp/>contiguous<sp/>element<sp/>storage<sp/>across<sp/>the</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="comment">//<sp/>batch<sp/>(it&apos;s<sp/>a<sp/>vector<sp/>of<sp/>separately<sp/>heap-allocated<sp/>std::vectors).<sp/>Using<sp/>the</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="comment">//<sp/>generic<sp/>path<sp/>for<sp/>that<sp/>case<sp/>silently<sp/>sends/receives<sp/>raw<sp/>std::vector<sp/>control</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="comment">//<sp/>blocks<sp/>(pointer/size/capacity)<sp/>as<sp/>if<sp/>they<sp/>were<sp/>payload<sp/>bytes<sp/>--<sp/>garbage</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight><highlight class="comment">//<sp/>across<sp/>process<sp/>boundaries,<sp/>and<sp/>exactly<sp/>the<sp/>kind<sp/>of<sp/>corruption<sp/>that<sp/>shows</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="comment">//<sp/>up<sp/>later<sp/>as<sp/>a<sp/>bad-free<sp/>when<sp/>the<sp/>receiving<sp/>vector&apos;s<sp/>destructor<sp/>runs<sp/>on</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight><highlight class="comment">//<sp/>those<sp/>bogus<sp/>pointers.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight><highlight class="comment">//<sp/>So<sp/>the<sp/>hierarchical<sp/>distributors&apos;<sp/>TASK_BATCH/RESULT_BATCH<sp/>transfer<sp/>(see</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight><highlight class="comment">//<sp/>hierarchical_distributor.hpp)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight><highlight class="comment">//<sp/>packs<sp/>such<sp/>batches<sp/>manually<sp/>instead,<sp/>as<sp/>a<sp/>flat<sp/>std::vector&lt;std::byte&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight><highlight class="comment">//<sp/>(which<sp/>*is*<sp/>representable<sp/>via<sp/>the<sp/>fixed-size<sp/>path)<sp/>with<sp/>a<sp/>length-prefixed</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight><highlight class="comment">//<sp/>layout:</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/>[uint64_t<sp/>n_items]</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/>[uint64_t<sp/>byte_len_0]<sp/>..<sp/>[uint64_t<sp/>byte_len_{n-1}]</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="38"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/>[bytes<sp/>of<sp/>item<sp/>0]<sp/>..<sp/>[bytes<sp/>of<sp/>item<sp/>{n-1}]</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="39"><highlight class="normal"></highlight></codeline>
+<codeline lineno="40"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="41" refid="namespacedynampi_1_1detail_1a9fa75e7861a45142a6dab89168ce9310" refkind="member"><highlight class="normal">std::vector&lt;std::byte&gt;<sp/><ref refid="namespacedynampi_1_1detail_1a9fa75e7861a45142a6dab89168ce9310" kindref="member">pack_variable_batch</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;T&gt;&amp;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">items</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ItemType</ref><sp/>=<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Type&lt;T&gt;</ref>;</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">elem_bytes</ref><sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Type_size</ref>(ItemType::value,<sp/>&amp;<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">elem_bytes</ref>);</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"></highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref><sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">items</ref>.size();</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/>std::vector&lt;uint64_t&gt;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">byte_lens</ref>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>);</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">total_bytes</ref><sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref><sp/>=<sp/>0;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref><sp/>&lt;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>;<sp/>++<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">len</ref><sp/>=</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal"><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref></highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(ItemType::count(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">items</ref>[<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref>]))<sp/>*<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal"><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref></highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">elem_bytes</ref>);</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">byte_lens</ref>[<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref>]<sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">len</ref>;</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">total_bytes</ref><sp/>+=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">len</ref>;</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"></highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/>std::vector&lt;std::byte&gt;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf</ref>(</highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref>)<sp/>*<sp/>(1<sp/>+<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>)<sp/>+<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">total_bytes</ref>);</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref><sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>std::copy_n<sp/>rather<sp/>than<sp/>memcpy<sp/>throughout<sp/>this<sp/>file:<sp/>Codacy/Flawfinder</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>flags<sp/>every<sp/>memcpy<sp/>as<sp/>CWE-120<sp/>regardless<sp/>of<sp/>prior<sp/>range<sp/>checks<sp/>or<sp/>a</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>destination<sp/>sized<sp/>immediately<sp/>above<sp/>it<sp/>(see<sp/>rma_detail.hpp&apos;s</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>write_bytes()/read_bytes()<sp/>for<sp/>the<sp/>same<sp/>convention).</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/>std::copy_n(</highlight><highlight class="keyword">reinterpret_cast&lt;</highlight><highlight class="keyword">const<sp/></highlight><highlight class="normal">std::byte*</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(&amp;<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>),<sp/></highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref>),<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf</ref>.data()<sp/>+<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref>);</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref><sp/>+=<sp/></highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref>);</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref><sp/>&gt;<sp/>0)<sp/>{</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/>std::copy_n(</highlight><highlight class="keyword">reinterpret_cast&lt;</highlight><highlight class="keyword">const<sp/></highlight><highlight class="normal">std::byte*</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">byte_lens</ref>.data()),<sp/></highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref>)<sp/>*<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>,</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf</ref>.data()<sp/>+<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref>);</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref><sp/>+=<sp/></highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref>)<sp/>*<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>;</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref><sp/>=<sp/>0;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref><sp/>&lt;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>;<sp/>++<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">byte_lens</ref>[<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref>]<sp/>&gt;<sp/>0)<sp/>{</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">*<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">src</ref><sp/>=<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keyword">const<sp/></highlight><highlight class="normal">std::byte*</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(ItemType::ptr(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">items</ref>[<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref>]));</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::copy_n(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">src</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">byte_lens</ref>[<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref>],<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf</ref>.data()<sp/>+<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref>);</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref><sp/>+=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">byte_lens</ref>[<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref>];</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf</ref>;</highlight></codeline>
+<codeline lineno="77"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"></highlight></codeline>
+<codeline lineno="79"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Bounds-checks<sp/>a<sp/>read<sp/>of<sp/>`nbytes`<sp/>at<sp/>`offset`<sp/>against<sp/>`buf_size`<sp/>before<sp/>the</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="80"><highlight class="normal"></highlight><highlight class="comment">//<sp/>caller&apos;s<sp/>copy<sp/>touches<sp/>it.<sp/>`buf`<sp/>is<sp/>wire<sp/>data<sp/>from<sp/>another<sp/>rank<sp/>(a</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="81"><highlight class="normal"></highlight><highlight class="comment">//<sp/>version-skewed<sp/>peer,<sp/>a<sp/>TaskT/ResultT<sp/>mismatch<sp/>between<sp/>the<sp/>two<sp/>sides,<sp/>or</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="82"><highlight class="normal"></highlight><highlight class="comment">//<sp/>plain<sp/>corruption<sp/>could<sp/>all<sp/>hand<sp/>this<sp/>function<sp/>a<sp/>header<sp/>that<sp/>overstates</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="83"><highlight class="normal"></highlight><highlight class="comment">//<sp/>what&apos;s<sp/>actually<sp/>there),<sp/>so<sp/>unlike<sp/>pack_variable_batch&apos;s<sp/>writes<sp/>--<sp/>into<sp/>a</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="84"><highlight class="normal"></highlight><highlight class="comment">//<sp/>buffer<sp/>this<sp/>function<sp/>sizes<sp/>itself,<sp/>right<sp/>above<sp/>each<sp/>copy,<sp/>and<sp/>so<sp/>is</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="85"><highlight class="normal"></highlight><highlight class="comment">//<sp/>provably<sp/>big<sp/>enough<sp/>--<sp/>every<sp/>read<sp/>length<sp/>here<sp/>has<sp/>to<sp/>be<sp/>checked<sp/>against</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="86"><highlight class="normal"></highlight><highlight class="comment">//<sp/>what<sp/>was<sp/>actually<sp/>received<sp/>before<sp/>touching<sp/>it.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="87" refid="namespacedynampi_1_1detail_1aedb2d4879a0a822568ee0b863280a911" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1_1detail_1aedb2d4879a0a822568ee0b863280a911" kindref="member">check_variable_batch_read</ref>(</highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">nbytes</ref>,<sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf_size</ref>,</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">what</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref><sp/>&gt;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf_size</ref><sp/>||<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">nbytes</ref><sp/>&gt;<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal"><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref></highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf_size</ref><sp/>-<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref>))<sp/>{</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>std::runtime_error(std::string(</highlight><highlight class="stringliteral">&quot;dynampi:<sp/>truncated<sp/>variable-batch<sp/>buffer<sp/>reading<sp/>&quot;</highlight><highlight class="normal">)<sp/>+</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">what</ref>);</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="93"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"></highlight></codeline>
+<codeline lineno="95"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="96" refid="namespacedynampi_1_1detail_1a2dd3d1dc00fb2b00060971f2b77adb6f" refkind="member"><highlight class="normal">std::vector&lt;T&gt;<sp/><ref refid="namespacedynampi_1_1detail_1a2dd3d1dc00fb2b00060971f2b77adb6f" kindref="member">unpack_variable_batch</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;std::byte&gt;&amp;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ItemType</ref><sp/>=<sp/><ref refid="structdynampi_1_1MPI__Type" kindref="compound">MPI_Type&lt;T&gt;</ref>;</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">elem_bytes</ref><sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Type_size</ref>(ItemType::value,<sp/>&amp;<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">elem_bytes</ref>);</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"></highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf_size</ref><sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf</ref>.size();</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref><sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref><sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><sp/><sp/><ref refid="namespacedynampi_1_1detail_1aedb2d4879a0a822568ee0b863280a911" kindref="member">check_variable_batch_read</ref>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref>,<sp/></highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref>),<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf_size</ref>,<sp/></highlight><highlight class="stringliteral">&quot;item<sp/>count&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/>std::copy_n(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf</ref>.data()<sp/>+<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref>,<sp/></highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref>),<sp/></highlight><highlight class="keyword">reinterpret_cast&lt;</highlight><highlight class="normal">std::byte*</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(&amp;<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>));</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref><sp/>+=<sp/></highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref>);</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"></highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Bound<sp/>n_items<sp/>against<sp/>the<sp/>remaining<sp/>buffer<sp/>(each<sp/>item<sp/>needs<sp/>at<sp/>least<sp/>one</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>8-byte<sp/>length-table<sp/>slot)<sp/>via<sp/>division,<sp/>not<sp/>multiplication,<sp/>and<sp/>before</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>allocating<sp/>anything<sp/>sized<sp/>by<sp/>it:<sp/>a<sp/>corrupted<sp/>or<sp/>truncated<sp/>header<sp/>could</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>otherwise<sp/>claim<sp/>an<sp/>enormous<sp/>count,<sp/>overflowing<sp/>sizeof(uint64_t)<sp/>*<sp/>n_items</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>itself<sp/>or<sp/>driving<sp/>an<sp/>allocation<sp/>far<sp/>larger<sp/>than<sp/>the<sp/>actual<sp/>message.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="113"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref><sp/>&gt;<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal"><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref></highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf_size</ref><sp/>-<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref>)<sp/>/<sp/></highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref>))<sp/>{</highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>std::runtime_error(</highlight><highlight class="stringliteral">&quot;dynampi:<sp/>truncated<sp/>variable-batch<sp/>buffer<sp/>reading<sp/>length<sp/>table&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="115"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"></highlight></codeline>
+<codeline lineno="117"><highlight class="normal"><sp/><sp/>std::vector&lt;uint64_t&gt;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">byte_lens</ref>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>);</highlight></codeline>
+<codeline lineno="118"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref><sp/>&gt;<sp/>0)<sp/>{</highlight></codeline>
+<codeline lineno="119"><highlight class="normal"><sp/><sp/><sp/><sp/>std::copy_n(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf</ref>.data()<sp/>+<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref>,<sp/></highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref>)<sp/>*<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>,</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">reinterpret_cast&lt;</highlight><highlight class="normal">std::byte*</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">byte_lens</ref>.data()));</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="122"><highlight class="normal"><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref><sp/>+=<sp/></highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref>)<sp/>*<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>;</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"></highlight></codeline>
+<codeline lineno="124"><highlight class="normal"><sp/><sp/>std::vector&lt;T&gt;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">items</ref>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>);</highlight></codeline>
+<codeline lineno="125"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref><sp/>=<sp/>0;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref><sp/>&lt;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">n_items</ref>;<sp/>++<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">len</ref><sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">byte_lens</ref>[<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref>];</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">count_in_elements</ref><sp/>=</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">elem_bytes</ref><sp/>&gt;<sp/>0<sp/>?<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">len</ref><sp/>/<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal"><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">uint64_t</ref></highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">elem_bytes</ref>))<sp/>:<sp/>0;</highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/><sp/><sp/>ItemType::resize(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">items</ref>[<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref>],<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">count_in_elements</ref>);</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">len</ref><sp/>&gt;<sp/>0)<sp/>{</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1_1detail_1aedb2d4879a0a822568ee0b863280a911" kindref="member">check_variable_batch_read</ref>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">len</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf_size</ref>,<sp/></highlight><highlight class="stringliteral">&quot;item<sp/>payload&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">*<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">dst</ref><sp/>=<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal">std::byte*</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(ItemType::ptr(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">items</ref>[<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">i</ref>]));</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::copy_n(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">buf</ref>.data()<sp/>+<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">len</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">dst</ref>);</highlight></codeline>
+<codeline lineno="134"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="135"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">offset</ref><sp/>+=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">len</ref>;</highlight></codeline>
+<codeline lineno="136"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="137"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">items</ref>;</highlight></codeline>
+<codeline lineno="138"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="139"><highlight class="normal"></highlight></codeline>
+<codeline lineno="140"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>dynampi::detail</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/variable_batch.hpp"/>
+  </compounddef>
+</doxygen>

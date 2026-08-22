@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::LockFreeRMAWorkDistributor::Config</compoundname>
+    <includes refid="lockfree__rma__distributor_8hpp" local="no">lockfree_rma_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1a1f79abb113a3c87f67f2eb70a59b6638" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Comm</ref></type>
+        <definition>MPI_Comm dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::comm</definition>
+        <argsstring></argsstring>
+        <name>comm</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::Config::comm</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_COMM_WORLD</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="71" column="14" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="71" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1acc8ba2cf12e39a294476829de0ce98d2" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::manager_rank</definition>
+        <argsstring></argsstring>
+        <name>manager_rank</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::Config::manager_rank</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="72" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="72" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1a2e2ceff40f2ce08d4da56286644f9802" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>bool dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::auto_run_workers</definition>
+        <argsstring></argsstring>
+        <name>auto_run_workers</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::Config::auto_run_workers</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="73" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="73" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1a168e59635512f3d565e39bc205af9814" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::max_tasks</definition>
+        <argsstring></argsstring>
+        <name>max_tasks</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::Config::max_tasks</qualifiedname>
+        <initializer>= 8192</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="81" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="81" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1a763a12b613ddc9441be2fc08dfc56971" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::max_task_count</definition>
+        <argsstring></argsstring>
+        <name>max_task_count</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::Config::max_task_count</qualifiedname>
+        <initializer>= 256</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="82" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="82" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1a2daf51f607818b036333ce332bda01b0" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::max_result_count</definition>
+        <argsstring></argsstring>
+        <name>max_result_count</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::Config::max_result_count</qualifiedname>
+        <initializer>= 256</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="83" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="83" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1a4869dab47b0eca1c7c5445d748c85fc5" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>bool dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::rethrow_task_errors</definition>
+        <argsstring></argsstring>
+        <name>rethrow_task_errors</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::Config::rethrow_task_errors</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="89" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="89" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="70" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="70" bodyend="90"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1a2e2ceff40f2ce08d4da56286644f9802" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor::Config</scope><name>auto_run_workers</name></member>
+      <member refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1a1f79abb113a3c87f67f2eb70a59b6638" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor::Config</scope><name>comm</name></member>
+      <member refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1acc8ba2cf12e39a294476829de0ce98d2" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor::Config</scope><name>manager_rank</name></member>
+      <member refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1a2daf51f607818b036333ce332bda01b0" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor::Config</scope><name>max_result_count</name></member>
+      <member refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1a763a12b613ddc9441be2fc08dfc56971" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor::Config</scope><name>max_task_count</name></member>
+      <member refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1a168e59635512f3d565e39bc205af9814" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor::Config</scope><name>max_tasks</name></member>
+      <member refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config_1a4869dab47b0eca1c7c5445d748c85fc5" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor::Config</scope><name>rethrow_task_errors</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

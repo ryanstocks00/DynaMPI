@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1detail_1_1LockFreeRMALevel_1_1ClaimedRange" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::detail::LockFreeRMALevel::ClaimedRange</compoundname>
+    <includes refid="hierarchical__lockfree__rma__distributor_8hpp" local="no">hierarchical_lockfree_rma_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1detail_1_1LockFreeRMALevel_1_1ClaimedRange_1a662d91a4c34fbc8e39d401b7ceadb634" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+        <definition>int64_t dynampi::detail::LockFreeRMALevel&lt; TaskT, ResultT &gt;::ClaimedRange::start</definition>
+        <argsstring></argsstring>
+        <name>start</name>
+        <qualifiedname>dynampi::detail::LockFreeRMALevel::ClaimedRange::start</qualifiedname>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="49" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="49" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1detail_1_1LockFreeRMALevel_1_1ClaimedRange_1a51fd109c45cb4346a69875ad842f0977" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">TaskT</ref> &gt;</type>
+        <definition>std::vector&lt;TaskT&gt; dynampi::detail::LockFreeRMALevel&lt; TaskT, ResultT &gt;::ClaimedRange::tasks</definition>
+        <argsstring></argsstring>
+        <name>tasks</name>
+        <qualifiedname>dynampi::detail::LockFreeRMALevel::ClaimedRange::tasks</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="50" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="48" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="48" bodyend="51"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1detail_1_1LockFreeRMALevel_1_1ClaimedRange_1a662d91a4c34fbc8e39d401b7ceadb634" prot="public" virt="non-virtual"><scope>dynampi::detail::LockFreeRMALevel::ClaimedRange</scope><name>start</name></member>
+      <member refid="structdynampi_1_1detail_1_1LockFreeRMALevel_1_1ClaimedRange_1a51fd109c45cb4346a69875ad842f0977" prot="public" virt="non-virtual"><scope>dynampi::detail::LockFreeRMALevel::ClaimedRange</scope><name>tasks</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

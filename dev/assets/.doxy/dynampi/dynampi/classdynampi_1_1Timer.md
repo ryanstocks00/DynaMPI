@@ -58,10 +58,10 @@
 | Type | Name |
 | ---: | :--- |
 |   | [**Timer**](#function-timer) ([**AutoStart**](classdynampi_1_1Timer.md#enum-autostart) auto\_start=AutoStart::Yes) <br> |
-|  std::chrono::duration&lt; [**double**](structdynampi_1_1MPI__Type.md) &gt; | [**elapsed**](#function-elapsed) () const<br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**reset**](#function-reset) ([**AutoStart**](classdynampi_1_1Timer.md#enum-autostart) auto\_start=AutoStart::Yes) <br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**start**](#function-start) () <br> |
-|  std::chrono::duration&lt; [**double**](structdynampi_1_1MPI__Type.md) &gt; | [**stop**](#function-stop) () <br> |
+|  std::chrono::duration&lt; [**double**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; | [**elapsed**](#function-elapsed) () const<br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**reset**](#function-reset) ([**AutoStart**](classdynampi_1_1Timer.md#enum-autostart) auto\_start=AutoStart::Yes) <br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**start**](#function-start) () <br> |
+|  std::chrono::duration&lt; [**double**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; | [**stop**](#function-stop) () <br> |
 
 
 
@@ -116,7 +116,7 @@ enum dynampi::Timer::AutoStart {
 ### function Timer 
 
 ```C++
-inline dynampi::Timer::Timer (
+inline explicit dynampi::Timer::Timer (
     AutoStart auto_start=AutoStart::Yes
 ) 
 ```

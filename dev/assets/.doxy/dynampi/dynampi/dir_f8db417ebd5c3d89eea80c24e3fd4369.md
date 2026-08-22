@@ -22,6 +22,8 @@
 | Type | Name |
 | ---: | :--- |
 | file | [**dynampi.hpp**](dynampi_8hpp.md) <br> |
+| file | [**task\_error.hpp**](task__error_8hpp.md) <br> |
+| file | [**version.hpp**](version_8hpp.md) <br> |
 
 
 ## Directories

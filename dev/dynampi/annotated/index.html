@@ -417,14 +417,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mpi_compare_and_swap_design/" class="md-nav__link">
+      <a href="../../lockfree_rma_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Lock-Free Design
+    Lock-Free RMA Design
   
 
     
@@ -487,20 +487,25 @@
 <p>Here are the classes, structs, unions and interfaces with brief descriptions:</p>
 <ul>
 <li><strong>namespace</strong> <a href="../namespacedynampi/"><strong>dynampi</strong></a>     <ul>
-<li><strong>class</strong> <a href="../classdynampi_1_1BaseMPIWorkDistributor/"><strong>BaseMPIWorkDistributor</strong></a>     <ul>
-<li><strong>struct</strong> <a href="../structdynampi_1_1BaseMPIWorkDistributor_1_1Config/"><strong>Config</strong></a>     </li>
+<li><strong>class</strong> <a href="../classdynampi_1_1BaseWorkDistributor/"><strong>BaseWorkDistributor</strong></a>     <ul>
+<li><strong>struct</strong> <a href="../structdynampi_1_1BaseWorkDistributor_1_1Config/"><strong>Config</strong></a>     </li>
 </ul>
 </li>
 <li><strong>struct</strong> <a href="../structdynampi_1_1CommStatistics/"><strong>CommStatistics</strong></a>     </li>
-<li><strong>class</strong> <a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>HierarchicalMPIWorkDistributor</strong></a>     <ul>
-<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config/"><strong>Config</strong></a>     </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig/"><strong>RunConfig</strong></a>     </li>
+<li><strong>class</strong> <a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>HierarchicalLockFreeRMAWorkDistributor</strong></a>     <ul>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>Config</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1RunConfig/"><strong>RunConfig</strong></a>     </li>
 </ul>
 </li>
-<li><strong>class</strong> <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>LockFreeMPIWorkDistributor</strong></a>     <ul>
-<li><strong>struct</strong> <a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config/"><strong>Config</strong></a>     </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig/"><strong>RunConfig</strong></a>     </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics/"><strong>Statistics</strong></a>     </li>
+<li><strong>class</strong> <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>HierarchicalWorkDistributor</strong></a>     <ul>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>Config</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1RunConfig/"><strong>RunConfig</strong></a>     </li>
+</ul>
+</li>
+<li><strong>class</strong> <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>LockFreeRMAWorkDistributor</strong></a>     <ul>
+<li><strong>struct</strong> <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config/"><strong>Config</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig/"><strong>RunConfig</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1Statistics/"><strong>Statistics</strong></a>     </li>
 </ul>
 </li>
 <li><strong>class</strong> <a href="../classdynampi_1_1MPICommunicator/"><strong>MPICommunicator</strong></a>     </li>
@@ -509,18 +514,23 @@
 <li><strong>struct</strong> <a href="../structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4/"><strong>MPI_Type&lt; std::nullptr_t &gt;</strong></a>     </li>
 <li><strong>struct</strong> <a href="../structdynampi_1_1MPI__Type_3_01std_1_1string_01_4/"><strong>MPI_Type&lt; std::string &gt;</strong></a>     </li>
 <li><strong>struct</strong> <a href="../structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051/"><strong>MPI_Type&lt; std::vector&lt; T &gt;, std::enable_if_t&lt; has_dynampi_mpi_type&lt; T &gt;::value &gt; &gt;</strong></a>     </li>
-<li><strong>class</strong> <a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>MinimalLockFreeMPIWorkDistributor</strong></a>     <ul>
-<li><strong>struct</strong> <a href="../structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config/"><strong>Config</strong></a>     </li>
+<li><strong>class</strong> <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>NaiveWorkDistributor</strong></a>     <ul>
+<li><strong>struct</strong> <a href="../structdynampi_1_1NaiveWorkDistributor_1_1Config/"><strong>Config</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1NaiveWorkDistributor_1_1RunConfig/"><strong>RunConfig</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1NaiveWorkDistributor_1_1Statistics/"><strong>Statistics</strong></a>     </li>
 </ul>
 </li>
-<li><strong>class</strong> <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>NaiveMPIWorkDistributor</strong></a>     <ul>
-<li><strong>struct</strong> <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Config/"><strong>Config</strong></a>     </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig/"><strong>RunConfig</strong></a>     </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics/"><strong>Statistics</strong></a>     </li>
-</ul>
-</li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1TaskError/"><strong>TaskError</strong></a>     </li>
+<li><strong>class</strong> <a href="../classdynampi_1_1TaskFailure/"><strong>TaskFailure</strong></a>     </li>
 <li><strong>class</strong> <a href="../classdynampi_1_1Timer/"><strong>Timer</strong></a>     </li>
-<li><strong>namespace</strong> <a href="../namespacedynampi_1_1detail/"><strong>detail</strong></a>     </li>
+<li><strong>namespace</strong> <a href="../namespacedynampi_1_1detail/"><strong>detail</strong></a>     <ul>
+<li><strong>class</strong> <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>LockFreeRMALevel</strong></a>     <ul>
+<li><strong>struct</strong> <a href="../structdynampi_1_1detail_1_1LockFreeRMALevel_1_1ClaimedRange/"><strong>ClaimedRange</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1detail_1_1LockFreeRMALevel_1_1Config/"><strong>Config</strong></a>     </li>
+</ul>
+</li>
+</ul>
+</li>
 <li><strong>struct</strong> <a href="../structdynampi_1_1enable__prioritization/"><strong>enable_prioritization</strong></a>     </li>
 <li><strong>struct</strong> <a href="../structdynampi_1_1has__dynampi__mpi__type/"><strong>has_dynampi_mpi_type</strong></a> </li>
 <li><strong>struct</strong> <a href="../structdynampi_1_1has__dynampi__mpi__type_3_01U_00_01std_1_1void__t_3_01decltype_07MPI__Type_3_01U_01_4_1_1value_08_4_01_4/"><strong>has_dynampi_mpi_type&lt; U, std::void_t&lt; decltype(MPI_Type&lt; U &gt;::value)&gt; &gt;</strong></a> </li>
@@ -530,8 +540,11 @@
 <li><strong>namespace</strong> <a href="../namespacedynampi_1_1version/"><strong>version</strong></a>     </li>
 </ul>
 </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Statistics/"><strong>Statistics</strong></a>     </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1TaskRequest/"><strong>TaskRequest</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop/"><strong>BridgeHop</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1PendingRelay/"><strong>PendingRelay</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Statistics/"><strong>Statistics</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1TaskRequest/"><strong>TaskRequest</strong></a>     </li>
+<li><strong>class</strong> <a href="../classdynampi_1_1detail_1_1TaskErrorLog/"><strong>TaskErrorLog</strong></a>     </li>
 <li><strong>struct</strong> <a href="../structoption__value/"><strong>option_value</strong></a>     </li>
 <li><strong>struct</strong> <a href="../structoption__value_3_01Option_00_01Head_00_01Tail_8_8_8_01_4/"><strong>option_value&lt; Option, Head, Tail... &gt;</strong></a>     </li>
 <li><strong>namespace</strong> <a href="../namespacestd/"><strong>std</strong></a> </li>

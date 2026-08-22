@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1PendingRelay" kind="struct" language="C++" prot="private">
+    <compoundname>dynampi::HierarchicalLockFreeRMAWorkDistributor::PendingRelay</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1PendingRelay_1aee8380ec585002bd776e65390400bb1c" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+        <definition>int64_t dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::PendingRelay::parent_start</definition>
+        <argsstring></argsstring>
+        <name>parent_start</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::PendingRelay::parent_start</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="973" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="973" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1PendingRelay_1a59170ea6dd5f72ac3a50da2a445c4979" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+        <definition>int64_t dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::PendingRelay::child_len</definition>
+        <argsstring></argsstring>
+        <name>child_len</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::PendingRelay::child_len</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="974" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="974" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="972" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="972" bodyend="975"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1PendingRelay_1a59170ea6dd5f72ac3a50da2a445c4979" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::PendingRelay</scope><name>child_len</name></member>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1PendingRelay_1aee8380ec585002bd776e65390400bb1c" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::PendingRelay</scope><name>parent_start</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

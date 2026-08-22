@@ -27,15 +27,33 @@
         </childnode>
       </node>
       <node id="5">
-        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_distributor.hpp</label>
-        <link refid="lockfree__distributor_8hpp"/>
-        <childnode refid="4" relation="include">
-        </childnode>
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp</label>
+        <link refid="hierarchical__lockfree__rma__distributor_8hpp"/>
       </node>
       <node id="6">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_topology_detail.hpp</label>
+        <link refid="hierarchical__topology__detail_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp</label>
+        <link refid="lockfree__rma__distributor_8hpp"/>
+      </node>
+      <node id="8">
         <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp</label>
         <link refid="naive__distributor_8hpp"/>
         <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/rma_detail.hpp</label>
+        <link refid="rma__detail_8hpp"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
         </childnode>
       </node>
       <node id="2">
@@ -46,6 +64,12 @@
         <childnode refid="5" relation="include">
         </childnode>
         <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
         </childnode>
       </node>
       <node id="1">

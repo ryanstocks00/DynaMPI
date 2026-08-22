@@ -417,14 +417,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mpi_compare_and_swap_design/" class="md-nav__link">
+      <a href="../../lockfree_rma_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Lock-Free Design
+    Lock-Free RMA Design
   
 
     
@@ -504,6 +504,28 @@
   
     <nav class="md-nav" aria-label="Public Attributes Documentation">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variable-atomic_bytes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        variable atomic_bytes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-atomic_count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        variable atomic_count
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#variable-bytes_received" class="md-nav__link">
@@ -672,31 +694,39 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>size_t</strong></a></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>size_t</strong></a></td>
+<td style="text-align: left;"><a href="#variable-atomic_bytes"><strong>atomic_bytes</strong></a>   = <code>0</code><br></td>
+</tr>
+<tr>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>int</strong></a></td>
+<td style="text-align: left;"><a href="#variable-atomic_count"><strong>atomic_count</strong></a>   = <code>0</code><br></td>
+</tr>
+<tr>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>size_t</strong></a></td>
 <td style="text-align: left;"><a href="#variable-bytes_received"><strong>bytes_received</strong></a>   = <code>0</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>size_t</strong></a></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>size_t</strong></a></td>
 <td style="text-align: left;"><a href="#variable-bytes_sent"><strong>bytes_sent</strong></a>   = <code>0</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>int</strong></a></td>
 <td style="text-align: left;"><a href="#variable-collective_count"><strong>collective_count</strong></a>   = <code>0</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>int</strong></a></td>
 <td style="text-align: left;"><a href="#variable-recv_count"><strong>recv_count</strong></a>   = <code>0</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>double</strong></a></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>double</strong></a></td>
 <td style="text-align: left;"><a href="#variable-recv_time"><strong>recv_time</strong></a>   = <code>0.0</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>int</strong></a></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>int</strong></a></td>
 <td style="text-align: left;"><a href="#variable-send_count"><strong>send_count</strong></a>   = <code>0</code><br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>double</strong></a></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>double</strong></a></td>
 <td style="text-align: left;"><a href="#variable-send_time"><strong>send_time</strong></a>   = <code>0.0</code><br></td>
 </tr>
 </tbody>
@@ -711,67 +741,77 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>double</strong></a></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>double</strong></a></td>
 <td style="text-align: left;"><a href="#function-average_receive_size"><strong>average_receive_size</strong></a> () const<br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>double</strong></a></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>double</strong></a></td>
 <td style="text-align: left;"><a href="#function-average_send_size"><strong>average_send_size</strong></a> () const<br></td>
 </tr>
 <tr>
-<td style="text-align: right;"><a href="../structdynampi_1_1MPI__Type/"><strong>void</strong></a></td>
+<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>void</strong></a></td>
 <td style="text-align: left;"><a href="#function-reset"><strong>reset</strong></a> () <br></td>
 </tr>
 </tbody>
 </table>
 <h2 id="public-attributes-documentation">Public Attributes Documentation</h2>
+<h3 id="variable-atomic_bytes">variable atomic_bytes</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kt">size_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">atomic_bytes</span><span class="p">;</span>
+</code></pre></div>
+<hr>
+
+<h3 id="variable-atomic_count">variable atomic_count</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">atomic_count</span><span class="p">;</span>
+</code></pre></div>
+<hr>
+
 <h3 id="variable-bytes_received">variable bytes_received</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kt">size_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">bytes_received</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">size_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">bytes_received</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 
 <h3 id="variable-bytes_sent">variable bytes_sent</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">size_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">bytes_sent</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">size_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">bytes_sent</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 
 <h3 id="variable-collective_count">variable collective_count</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">collective_count</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">collective_count</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 
 <h3 id="variable-recv_count">variable recv_count</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">recv_count</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">recv_count</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 
 <h3 id="variable-recv_time">variable recv_time</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">double</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">recv_time</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kt">double</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">recv_time</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 
 <h3 id="variable-send_count">variable send_count</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">send_count</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">send_count</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 
 <h3 id="variable-send_time">variable send_time</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kt">double</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">send_time</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kt">double</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">send_time</span><span class="p">;</span>
 </code></pre></div>
 <hr>
 <h2 id="public-functions-documentation">Public Functions Documentation</h2>
 <h3 id="function-average_receive_size">function average_receive_size</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">average_receive_size</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">average_receive_size</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-average_send_size">function average_send_size</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">average_send_size</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">average_send_size</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-reset">function reset</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">reset</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">CommStatistics</span><span class="o">::</span><span class="n">reset</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
 </code></pre></div>
 <hr>
 

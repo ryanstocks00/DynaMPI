@@ -371,10 +371,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#manual-header-only" class="md-nav__link">
+  <a href="#without-cmake" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Manual (header-only)
+        Without CMake
       
     </span>
   </a>
@@ -382,10 +382,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#building-tests" class="md-nav__link">
+  <a href="#building-the-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Building Tests
+        Building the examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-the-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building the tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-the-benchmarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building the benchmarks
       
     </span>
   </a>
@@ -512,14 +534,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../mpi_compare_and_swap_design/" class="md-nav__link">
+      <a href="../lockfree_rma_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Lock-Free Design
+    Lock-Free RMA Design
   
 
     
@@ -589,10 +611,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#manual-header-only" class="md-nav__link">
+  <a href="#without-cmake" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Manual (header-only)
+        Without CMake
       
     </span>
   </a>
@@ -600,10 +622,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#building-tests" class="md-nav__link">
+  <a href="#building-the-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Building Tests
+        Building the examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-the-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building the tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-the-benchmarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building the benchmarks
       
     </span>
   </a>
@@ -636,20 +680,20 @@
 -->
 
 <h1 id="installation">Installation</h1>
-<p>DynaMPI is a <strong>header-only</strong> C++20 library.  It requires an MPI
-implementation (MPICH, Open MPI, Intel MPI, or MS-MPI) and a C++20 compiler.</p>
+<p>DynaMPI is <strong>header-only</strong>.  Its only dependency is MPI — there is nothing to
+build or link beyond your MPI implementation.</p>
 <h2 id="requirements">Requirements</h2>
 <table>
 <thead>
 <tr>
 <th>Dependency</th>
-<th>Minimum Version</th>
+<th>Minimum</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>C++ compiler</td>
-<td>GCC 11+, Clang 14+, MSVC 2022+</td>
+<td>C++20: GCC 11+, Clang 14+, MSVC 2022+, Intel oneAPI (IntelLLVM)</td>
 </tr>
 <tr>
 <td>MPI</td>
@@ -657,42 +701,84 @@ implementation (MPICH, Open MPI, Intel MPI, or MS-MPI) and a C++20 compiler.</p>
 </tr>
 <tr>
 <td>CMake</td>
-<td>3.14+ (for building tests)</td>
+<td>3.14+ (only to consume the package or build tests/benchmarks)</td>
 </tr>
 </tbody>
 </table>
+<p>CI covers Linux (GCC, Clang, Intel), macOS, Windows (MS-MPI), SimGrid/SMPI, and
+sanitizer builds.</p>
+<div class="admonition note">
+<p class="admonition-title">RMA distributors and MPI progress</p>
+<p>The lock-free distributors use passive-target RMA
+(<code>MPI_Win_lock_all</code> + <code>MPI_Fetch_and_op</code> / <code>MPI_Put</code> / <code>MPI_Get</code>).  Some MPI
+builds make remote RMA progress only when the two-sided engine is driven;
+DynaMPI handles this internally, but validate your target stack at scale
+before relying on them for production runs.</p>
+</div>
 <h2 id="cmake">CMake</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c"># From a subdirectory</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c"># As a subdirectory</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">add_subdirectory</span><span class="p">(</span><span class="s">path/to/DynaMPI</span><span class="p">)</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">my_target</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">dynampi</span><span class="p">)</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c"># Or via FetchContent</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nb">include</span><span class="p">(</span><span class="s">FetchContent</span><span class="p">)</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nb">FetchContent_Declare</span><span class="p">(</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="s">DynaMPI</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="s">GIT_REPOSITORY</span><span class="w"> </span><span class="s">https://github.com/ryanstocks00/DynaMPI.git</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="s">GIT_TAG</span><span class="w"> </span><span class="s">main</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">)</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="nb">FetchContent_MakeAvailable</span><span class="p">(</span><span class="s">DynaMPI</span><span class="p">)</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">my_target</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">dynampi</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="manual-header-only">Manual (header-only)</h2>
-<p>DynaMPI can be used without CMake — add the <code>include/</code> directory to your
-compiler's include path and link against MPI:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>g++<span class="w"> </span>-std<span class="o">=</span>c++20<span class="w"> </span>-I/path/to/DynaMPI/include<span class="w"> </span>my_program.cpp<span class="w"> </span>-lmpi
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c"># Or via FetchContent</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">include</span><span class="p">(</span><span class="s">FetchContent</span><span class="p">)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nb">FetchContent_Declare</span><span class="p">(</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="s">DynaMPI</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="s">GIT_REPOSITORY</span><span class="w"> </span><span class="s">https://github.com/ryanstocks00/DynaMPI.git</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="s">GIT_TAG</span><span class="w"> </span><span class="s">main</span><span class="w">            </span><span class="c"># pin a tag or commit for reproducible builds</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nb">FetchContent_MakeAvailable</span><span class="p">(</span><span class="s">DynaMPI</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">my_target</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">dynampi</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="building-tests">Building Tests</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ryanstocks00/DynaMPI.git
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">cd</span><span class="w"> </span>DynaMPI
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>cmake<span class="w"> </span>-B<span class="w"> </span>build<span class="w"> </span>-DDYNAMPI_BUILD_TESTS<span class="o">=</span>ON
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>cmake<span class="w"> </span>--build<span class="w"> </span>build
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Run unit tests</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>./build/test/unit_test
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># Run MPI tests with 4 ranks</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>mpirun<span class="w"> </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span>./build/test/mpi_test
+<p>The <code>dynampi</code> INTERFACE target adds the include directory, links <code>MPI::MPI_CXX</code>,
+requires C++20 (<code>cxx_std_20</code>), and defines <code>DYNAMPI_COMMIT_HASH</code> plus the
+<code>DYNAMPI_VERSION_*</code> macros.</p>
+<p>When DynaMPI is consumed as a subproject, <code>DYNAMPI_BUILD_TESTS</code>,
+<code>DYNAMPI_BUILD_BENCHMARKS</code> and <code>DYNAMPI_BUILD_EXAMPLES</code> all default to <code>OFF</code>, so
+it costs you no extra build time.</p>
+<h2 id="without-cmake">Without CMake</h2>
+<p>Copy <code>include/</code> into your project and add it to the include path.  No macros to
+define, nothing to link beyond MPI:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>mpic++<span class="w"> </span>-std<span class="o">=</span>c++20<span class="w"> </span>-I/path/to/DynaMPI/include<span class="w"> </span>my_program.cpp
 </code></pre></div>
+<p>The only thing you lose is <code>dynampi::version::commit_hash()</code>, which reports
+<code>"unknown"</code> outside a CMake build since nothing else can determine it.</p>
+<h2 id="building-the-examples">Building the examples</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>cmake<span class="w"> </span>-B<span class="w"> </span>build<span class="w"> </span>-DDYNAMPI_BUILD_EXAMPLES<span class="o">=</span>ON
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>cmake<span class="w"> </span>--build<span class="w"> </span>build<span class="w"> </span>-j
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>mpirun<span class="w"> </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span>./build/examples/01_index_tasks
+</code></pre></div>
+<p>Seven short standalone programs covering the entry point, incremental task
+insertion, ordering and priorities, custom payload types, the RMA distributors,
+statistics, and the index parallel-for.  See
+<a href="https://github.com/ryanstocks00/DynaMPI/tree/main/examples">examples/README.md</a>
+for what each one demonstrates.  They all run correctly at any rank count,
+including <code>-n 1</code>.</p>
+<h2 id="building-the-tests">Building the tests</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ryanstocks00/DynaMPI.git
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">cd</span><span class="w"> </span>DynaMPI
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>cmake<span class="w"> </span>-B<span class="w"> </span>build<span class="w"> </span>-DDYNAMPI_BUILD_TESTS<span class="o">=</span>ON
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>cmake<span class="w"> </span>--build<span class="w"> </span>build<span class="w"> </span>-j
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>./build/test/unit_test<span class="w">              </span><span class="c1"># serial unit tests</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>mpirun<span class="w"> </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span>./build/test/mpi_test<span class="w">   </span><span class="c1"># MPI distributor tests</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>ctest<span class="w"> </span>--test-dir<span class="w"> </span>build<span class="w">              </span><span class="c1"># everything, as registered</span>
+</code></pre></div>
+<p><code>ctest</code> registers the MPI suite at 1, 2, 3, 4, 8, 16 and 64 ranks, since several
+topology paths only appear at particular rank counts.  Cap that on a small
+machine with <code>-DDYNAMPI_MAX_MPI_RANK=8</code> (or the <code>DYNAMPI_MAX_MPI_RANK</code>
+environment variable).</p>
+<h2 id="building-the-benchmarks">Building the benchmarks</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>cmake<span class="w"> </span>-B<span class="w"> </span>build<span class="w"> </span>-DDYNAMPI_BUILD_BENCHMARKS<span class="o">=</span>ON
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>cmake<span class="w"> </span>--build<span class="w"> </span>build<span class="w"> </span>-j
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>mpirun<span class="w"> </span>-n<span class="w"> </span><span class="m">64</span><span class="w"> </span>./build/benchmark/strong_scaling_distribution_rate<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span>-D<span class="w"> </span>hierarchical<span class="w"> </span>-t<span class="w"> </span><span class="m">100</span><span class="w"> </span>-d<span class="w"> </span><span class="m">10</span>
+</code></pre></div>
+<p>Benchmarks fetch <code>cxxopts</code> at configure time for argument parsing.  See
+<a href="../implementations/#benchmarking">Benchmarking</a> for what each driver measures, and
+<code>benchmark/scripts/</code> for Frontier and Aurora launch scripts plus plotting
+helpers (<code>pip install -r benchmark/scripts/requirements.txt</code>).</p>
 
 
 

@@ -5,37 +5,38 @@
 
 ## b
 
-* **Base** ([**dynampi::HierarchicalMPIWorkDistributor**](classdynampi_1_1HierarchicalMPIWorkDistributor.md))
+* **Base** ([**dynampi::HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md))
 
 
 ## c
 
-* **Comm** ([**dynampi::LockFreeMPIWorkDistributor**](classdynampi_1_1LockFreeMPIWorkDistributor.md))
+* **Comm** ([**dynampi::LockFreeRMAWorkDistributor**](classdynampi_1_1LockFreeRMAWorkDistributor.md))
 
 
 ## m
 
-* **MPICommunicator** ([**dynampi::HierarchicalMPIWorkDistributor**](classdynampi_1_1HierarchicalMPIWorkDistributor.md), [**dynampi::NaiveMPIWorkDistributor**](classdynampi_1_1NaiveMPIWorkDistributor.md))
+* **MPICommunicator** ([**dynampi::HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md), [**dynampi::NaiveWorkDistributor**](classdynampi_1_1NaiveWorkDistributor.md))
 
 
 ## q
 
-* **QueueT** ([**dynampi::BaseMPIWorkDistributor**](classdynampi_1_1BaseMPIWorkDistributor.md), [**dynampi::NaiveMPIWorkDistributor**](classdynampi_1_1NaiveMPIWorkDistributor.md))
+* **QueueT** ([**dynampi::BaseWorkDistributor**](classdynampi_1_1BaseWorkDistributor.md), [**dynampi::NaiveWorkDistributor**](classdynampi_1_1NaiveWorkDistributor.md))
 
 
 ## r
 
-* **result\_mpi\_type** ([**dynampi::HierarchicalMPIWorkDistributor**](classdynampi_1_1HierarchicalMPIWorkDistributor.md))
+* **RMALevel** ([**dynampi::HierarchicalLockFreeRMAWorkDistributor**](classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor.md))
+* **result\_mpi\_type** ([**dynampi::HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md))
 
 
 ## s
 
-* **StatisticsT** ([**dynampi::HierarchicalMPIWorkDistributor**](classdynampi_1_1HierarchicalMPIWorkDistributor.md), [**dynampi::LockFreeMPIWorkDistributor**](classdynampi_1_1LockFreeMPIWorkDistributor.md), [**dynampi::MPICommunicator**](classdynampi_1_1MPICommunicator.md), [**dynampi::NaiveMPIWorkDistributor**](classdynampi_1_1NaiveMPIWorkDistributor.md))
+* **StatisticsT** ([**dynampi::HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md), [**dynampi::LockFreeRMAWorkDistributor**](classdynampi_1_1LockFreeRMAWorkDistributor.md), [**dynampi::MPICommunicator**](classdynampi_1_1MPICommunicator.md), [**dynampi::NaiveWorkDistributor**](classdynampi_1_1NaiveWorkDistributor.md))
 
 
 ## t
 
-* **task\_mpi\_type** ([**dynampi::HierarchicalMPIWorkDistributor**](classdynampi_1_1HierarchicalMPIWorkDistributor.md))
+* **task\_mpi\_type** ([**dynampi::HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md))
 
 
 

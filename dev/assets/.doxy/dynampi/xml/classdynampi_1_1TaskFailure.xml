@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classdynampi_1_1TaskFailure" kind="class" language="C++" prot="public">
+    <compoundname>dynampi::TaskFailure</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">std::runtime_error</basecompoundref>
+    <includes refid="task__error_8hpp" local="no">task_error.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1TaskFailure_1a5890a8cdcad6bc6fbb2399d29d79da88" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1TaskError" kindref="compound">TaskError</ref></type>
+        <definition>TaskError dynampi::TaskFailure::m_error</definition>
+        <argsstring></argsstring>
+        <name>m_error</name>
+        <qualifiedname>dynampi::TaskFailure::m_error</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" line="46" column="13" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" bodystart="46" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdynampi_1_1TaskFailure_1a4dd81dee556f63fa20060d8ed075e9bb" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::TaskFailure::TaskFailure</definition>
+        <argsstring>(TaskError error)</argsstring>
+        <name>TaskFailure</name>
+        <qualifiedname>dynampi::TaskFailure::TaskFailure</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1TaskError" kindref="compound">TaskError</ref></type>
+          <declname>error</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" line="38" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" bodystart="38" bodyend="41"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1TaskFailure_1a12ba58ed652f6a69231b893d949253be" prot="public" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref> <ref refid="structdynampi_1_1TaskError" kindref="compound">TaskError</ref> &amp;</type>
+        <definition>const TaskError &amp; dynampi::TaskFailure::error</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>error</name>
+        <qualifiedname>dynampi::TaskFailure::error</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" line="43" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" bodystart="43" bodyend="43"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>dynampi::TaskFailure</label>
+        <link refid="classdynampi_1_1TaskFailure"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>std::runtime_error</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>dynampi::TaskFailure</label>
+        <link refid="classdynampi_1_1TaskFailure"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>std::runtime_error</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" line="36" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" bodystart="36" bodyend="47"/>
+    <listofallmembers>
+      <member refid="classdynampi_1_1TaskFailure_1a12ba58ed652f6a69231b893d949253be" prot="public" virt="non-virtual"><scope>dynampi::TaskFailure</scope><name>error</name></member>
+      <member refid="classdynampi_1_1TaskFailure_1a5890a8cdcad6bc6fbb2399d29d79da88" prot="private" virt="non-virtual"><scope>dynampi::TaskFailure</scope><name>m_error</name></member>
+      <member refid="classdynampi_1_1TaskFailure_1a4dd81dee556f63fa20060d8ed075e9bb" prot="public" virt="non-virtual"><scope>dynampi::TaskFailure</scope><name>TaskFailure</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

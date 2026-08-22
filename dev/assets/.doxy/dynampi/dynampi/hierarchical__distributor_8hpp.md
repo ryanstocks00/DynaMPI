@@ -11,20 +11,23 @@
 
 
 * `#include <algorithm>`
-* `#include <cassert>`
 * `#include <cmath>`
+* `#include <deque>`
 * `#include <functional>`
-* `#include <iostream>`
 * `#include <iterator>`
 * `#include <limits>`
+* `#include <queue>`
 * `#include <ranges>`
+* `#include <set>`
 * `#include <span>`
-* `#include <stack>`
 * `#include <type_traits>`
 * `#include <vector>`
 * `#include "../mpi/mpi_communicator.hpp"`
 * `#include "../mpi/mpi_types.hpp"`
 * `#include "dynampi/impl/base_distributor.hpp"`
+* `#include "dynampi/impl/hierarchical_topology_detail.hpp"`
+* `#include "dynampi/impl/variable_batch.hpp"`
+* `#include "dynampi/task_error.hpp"`
 * `#include "dynampi/utilities/assert.hpp"`
 * `#include "dynampi/utilities/timer.hpp"`
 
@@ -51,9 +54,9 @@
 
 | Type | Name |
 | ---: | :--- |
-| class | [**HierarchicalMPIWorkDistributor**](classdynampi_1_1HierarchicalMPIWorkDistributor.md) &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**TaskT**](structdynampi_1_1MPI__Type.md), [**typename**](structdynampi_1_1MPI__Type.md) [**ResultT**](structdynampi_1_1MPI__Type.md), Options&gt;<br> |
-| struct | [**Config**](structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config.md) <br> |
-| struct | [**RunConfig**](structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig.md) <br> |
+| class | [**HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md) &lt;[**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**TaskT**](namespacedynampi.md#function-check_fixed_size_mpi_type), [**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**ResultT**](namespacedynampi.md#function-check_fixed_size_mpi_type), Options&gt;<br> |
+| struct | [**Config**](structdynampi_1_1HierarchicalWorkDistributor_1_1Config.md) <br> |
+| struct | [**RunConfig**](structdynampi_1_1HierarchicalWorkDistributor_1_1RunConfig.md) <br> |
 
 
 

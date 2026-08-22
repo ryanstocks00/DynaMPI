@@ -417,14 +417,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mpi_compare_and_swap_design/" class="md-nav__link">
+      <a href="../../lockfree_rma_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Lock-Free Design
+    Lock-Free RMA Design
   
 
     
@@ -494,6 +494,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#e" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        e
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#i" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -527,10 +538,54 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#p" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        p
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#r" class="md-nav__link">
     <span class="md-ellipsis">
       
         r
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        s
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#t" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        t
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#u" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        u
       
     </span>
   </a>
@@ -582,12 +637,20 @@
 <h1 id="namespace-member-functions">Namespace Member Functions</h1>
 <h2 id="c">c</h2>
 <ul>
+<li><strong>check_fixed_size_mpi_type</strong> (<a href="../namespacedynampi/"><strong>dynampi</strong></a>)</li>
+<li><strong>check_task_capacity</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
+<li><strong>check_variable_batch_read</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
 <li><strong>commit_hash</strong> (<a href="../namespacedynampi_1_1version/"><strong>dynampi::version</strong></a>)</li>
 <li><strong>compile_date</strong> (<a href="../namespacedynampi_1_1version/"><strong>dynampi::version</strong></a>)</li>
 </ul>
 <h2 id="d">d</h2>
 <ul>
 <li><strong>DYNAMPI_DEFINE_PRIMITIVE_MPI_TYPE</strong> (<a href="../namespacedynampi/"><strong>dynampi</strong></a>)</li>
+<li><strong>decode_task_error</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
+</ul>
+<h2 id="e">e</h2>
+<ul>
+<li><strong>encode_task_error</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
 </ul>
 <h2 id="i">i</h2>
 <ul>
@@ -596,6 +659,7 @@
 <h2 id="m">m</h2>
 <ul>
 <li><strong>mpi_type_size_bytes</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
+<li><strong>mpi_elements_per_value</strong> (<a href="../namespacedynampi/"><strong>dynampi</strong></a>)</li>
 <li><strong>mpi_fail</strong> (<a href="../namespacedynampi/"><strong>dynampi</strong></a>)</li>
 <li><strong>mpi_manager_worker_distribution</strong> (<a href="../namespacedynampi/"><strong>dynampi</strong></a>)</li>
 </ul>
@@ -604,12 +668,32 @@
 <li><strong>OptionalString</strong> (<a href="../namespacedynampi/"><strong>dynampi</strong></a>)</li>
 <li><strong>operator&lt;&lt;</strong> (<a href="../namespacedynampi/"><strong>dynampi</strong></a>)</li>
 </ul>
+<h2 id="p">p</h2>
+<ul>
+<li><strong>pack_variable_batch</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
+</ul>
 <h2 id="r">r</h2>
 <ul>
+<li><strong>read_bytes</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
 <li><strong>read_i64</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
 <li><strong>read_result_bytes</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
+<li><strong>resolve_upper_fanout</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
 <li><strong>rma_wait_idle</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
 <li><strong>round_up_8</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
+<li><strong>run_task_guarded</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
+</ul>
+<h2 id="s">s</h2>
+<ul>
+<li><strong>split_local_worker_communicator</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
+<li><strong>sum_subtree_widths_to_group_leader</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
+</ul>
+<h2 id="t">t</h2>
+<ul>
+<li><strong>truncate_task_error_message</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
+</ul>
+<h2 id="u">u</h2>
+<ul>
+<li><strong>unpack_variable_batch</strong> (<a href="../namespacedynampi_1_1detail/"><strong>dynampi::detail</strong></a>)</li>
 </ul>
 <h2 id="w">w</h2>
 <ul>

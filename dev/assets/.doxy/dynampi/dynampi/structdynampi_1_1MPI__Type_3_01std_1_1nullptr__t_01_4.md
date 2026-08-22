@@ -40,8 +40,8 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**const**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**resize\_required**](#variable-resize_required)   = `[**false**](structdynampi_1_1MPI__Type.md)`<br> |
-|  [**const**](structdynampi_1_1MPI__Type.md) [**MPI\_Datatype**](structdynampi_1_1MPI__Type.md) | [**value**](#variable-value)   = `[**MPI\_PACKED**](structdynampi_1_1MPI__Type.md)`<br> |
+|  [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**bool**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**resize\_required**](#variable-resize_required)   = `[**false**](namespacedynampi.md#function-check_fixed_size_mpi_type)`<br> |
+|  [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPI\_Datatype**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**value**](#variable-value)   = `[**MPI\_PACKED**](namespacedynampi.md#function-check_fixed_size_mpi_type)`<br> |
 
 
 
@@ -62,10 +62,10 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**count**](#function-count) ([**const**](structdynampi_1_1MPI__Type.md) std::nullptr\_t &) noexcept<br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) \* | [**ptr**](#function-ptr-12) (std::nullptr\_t &) noexcept<br> |
-|  [**const**](structdynampi_1_1MPI__Type.md) [**void**](structdynampi_1_1MPI__Type.md) \* | [**ptr**](#function-ptr-22) ([**const**](structdynampi_1_1MPI__Type.md) std::nullptr\_t &) noexcept<br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**resize**](#function-resize) (std::nullptr\_t &, [**int**](structdynampi_1_1MPI__Type.md) new\_size) noexcept<br> |
+|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**count**](#function-count) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) std::nullptr\_t &) noexcept<br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* | [**ptr**](#function-ptr-12) (std::nullptr\_t &) noexcept<br> |
+|  [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* | [**ptr**](#function-ptr-22) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) std::nullptr\_t &) noexcept<br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**resize**](#function-resize) (std::nullptr\_t &, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) new\_size) noexcept<br> |
 
 
 

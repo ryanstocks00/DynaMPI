@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1NaiveWorkDistributor_1_1Config" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::NaiveWorkDistributor::Config</compoundname>
+    <includes refid="naive__distributor_8hpp" local="no">naive_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1NaiveWorkDistributor_1_1Config_1afc2d124a7e956c910726dadae42f8c8d" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Comm</ref></type>
+        <definition>MPI_Comm dynampi::NaiveWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::comm</definition>
+        <argsstring></argsstring>
+        <name>comm</name>
+        <qualifiedname>dynampi::NaiveWorkDistributor::Config::comm</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_COMM_WORLD</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="33" column="14" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1NaiveWorkDistributor_1_1Config_1aad8d600b8c89d115ade13470cf6b6d92" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::NaiveWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::manager_rank</definition>
+        <argsstring></argsstring>
+        <name>manager_rank</name>
+        <qualifiedname>dynampi::NaiveWorkDistributor::Config::manager_rank</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="34" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1NaiveWorkDistributor_1_1Config_1a6e1f297c3981c57ae9bc5f3ac7606551" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>bool dynampi::NaiveWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::auto_run_workers</definition>
+        <argsstring></argsstring>
+        <name>auto_run_workers</name>
+        <qualifiedname>dynampi::NaiveWorkDistributor::Config::auto_run_workers</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="35" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1NaiveWorkDistributor_1_1Config_1a75316d8993255f22f6cfc4d7b066b0d8" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>bool dynampi::NaiveWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::use_immediate_recv</definition>
+        <argsstring></argsstring>
+        <name>use_immediate_recv</name>
+        <qualifiedname>dynampi::NaiveWorkDistributor::Config::use_immediate_recv</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">false</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="36" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1NaiveWorkDistributor_1_1Config_1a40b3c416b9fb945312511150403a8309" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::NaiveWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::max_result_size</definition>
+        <argsstring></argsstring>
+        <name>max_result_size</name>
+        <qualifiedname>dynampi::NaiveWorkDistributor::Config::max_result_size</qualifiedname>
+        <initializer>= 1024</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="37" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1NaiveWorkDistributor_1_1Config_1a768ff51cc17cb9f3e20e336c6a6a40fe" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>bool dynampi::NaiveWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::rethrow_task_errors</definition>
+        <argsstring></argsstring>
+        <name>rethrow_task_errors</name>
+        <qualifiedname>dynampi::NaiveWorkDistributor::Config::rethrow_task_errors</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="45" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="32" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="32" bodyend="46"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1NaiveWorkDistributor_1_1Config_1a6e1f297c3981c57ae9bc5f3ac7606551" prot="public" virt="non-virtual"><scope>dynampi::NaiveWorkDistributor::Config</scope><name>auto_run_workers</name></member>
+      <member refid="structdynampi_1_1NaiveWorkDistributor_1_1Config_1afc2d124a7e956c910726dadae42f8c8d" prot="public" virt="non-virtual"><scope>dynampi::NaiveWorkDistributor::Config</scope><name>comm</name></member>
+      <member refid="structdynampi_1_1NaiveWorkDistributor_1_1Config_1aad8d600b8c89d115ade13470cf6b6d92" prot="public" virt="non-virtual"><scope>dynampi::NaiveWorkDistributor::Config</scope><name>manager_rank</name></member>
+      <member refid="structdynampi_1_1NaiveWorkDistributor_1_1Config_1a40b3c416b9fb945312511150403a8309" prot="public" virt="non-virtual"><scope>dynampi::NaiveWorkDistributor::Config</scope><name>max_result_size</name></member>
+      <member refid="structdynampi_1_1NaiveWorkDistributor_1_1Config_1a768ff51cc17cb9f3e20e336c6a6a40fe" prot="public" virt="non-virtual"><scope>dynampi::NaiveWorkDistributor::Config</scope><name>rethrow_task_errors</name></member>
+      <member refid="structdynampi_1_1NaiveWorkDistributor_1_1Config_1a75316d8993255f22f6cfc4d7b066b0d8" prot="public" virt="non-virtual"><scope>dynampi::NaiveWorkDistributor::Config</scope><name>use_immediate_recv</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

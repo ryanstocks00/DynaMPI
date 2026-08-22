@@ -1,0 +1,309 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="hierarchical__topology__detail_8hpp" kind="file" language="C++">
+    <compoundname>hierarchical_topology_detail.hpp</compoundname>
+    <includes local="no">cmath</includes>
+    <includes local="no">limits</includes>
+    <includes local="no">optional</includes>
+    <includes local="no">utility</includes>
+    <includes refid="mpi__communicator_8hpp" local="yes">../mpi/mpi_communicator.hpp</includes>
+    <includes refid="mpi__error_8hpp" local="yes">dynampi/mpi/mpi_error.hpp</includes>
+    <includedby refid="hierarchical__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</includedby>
+    <includedby refid="hierarchical__lockfree__rma__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp</includedby>
+    <incdepgraph>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_topology_detail.hpp</label>
+        <link refid="hierarchical__topology__detail_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>../mpi/mpi_communicator.hpp</label>
+        <link refid="mpi__communicator_8hpp"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="27" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="30" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+      </node>
+      <node id="26">
+        <label>mpi_error.hpp</label>
+        <link refid="mpi__error_8hpp"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+      </node>
+      <node id="11">
+        <label>dynampi/mpi/mpi_group.hpp</label>
+        <link refid="mpi__group_8hpp"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+      </node>
+      <node id="27">
+        <label>dynampi/mpi/mpi_types.hpp</label>
+        <link refid="mpi__types_8hpp"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="28" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="29" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>dynampi/utilities/assert.hpp</label>
+        <link refid="assert_8hpp"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+      </node>
+      <node id="19">
+        <label>printing.hpp</label>
+        <link refid="printing_8hpp"/>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+      </node>
+      <node id="30">
+        <label>dynampi/utilities/template_options.hpp</label>
+        <link refid="template__options_8hpp"/>
+        <childnode refid="29" relation="include">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>algorithm</label>
+      </node>
+      <node id="20">
+        <label>array</label>
+      </node>
+      <node id="28">
+        <label>cassert</label>
+      </node>
+      <node id="2">
+        <label>cmath</label>
+      </node>
+      <node id="9">
+        <label>cstddef</label>
+      </node>
+      <node id="21">
+        <label>cstdint</label>
+      </node>
+      <node id="13">
+        <label>exception</label>
+      </node>
+      <node id="14">
+        <label>iostream</label>
+      </node>
+      <node id="3">
+        <label>limits</label>
+      </node>
+      <node id="7">
+        <label>mpi.h</label>
+      </node>
+      <node id="4">
+        <label>optional</label>
+      </node>
+      <node id="22">
+        <label>set</label>
+      </node>
+      <node id="23">
+        <label>span</label>
+      </node>
+      <node id="15">
+        <label>sstream</label>
+      </node>
+      <node id="16">
+        <label>stdexcept</label>
+      </node>
+      <node id="17">
+        <label>string</label>
+      </node>
+      <node id="18">
+        <label>string_view</label>
+      </node>
+      <node id="24">
+        <label>tuple</label>
+      </node>
+      <node id="29">
+        <label>type_traits</label>
+      </node>
+      <node id="5">
+        <label>utility</label>
+      </node>
+      <node id="10">
+        <label>variant</label>
+      </node>
+      <node id="25">
+        <label>vector</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="3">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp</label>
+        <link refid="dynampi_8hpp"/>
+      </node>
+      <node id="2">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</label>
+        <link refid="hierarchical__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp</label>
+        <link refid="hierarchical__lockfree__rma__distributor_8hpp"/>
+      </node>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_topology_detail.hpp</label>
+        <link refid="hierarchical__topology__detail_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innernamespace refid="namespacedynampi">dynampi</innernamespace>
+    <innernamespace refid="namespacedynampi_1_1detail">dynampi::detail</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>SPDX-FileCopyrightText:<sp/>2026<sp/>Ryan<sp/>Stocks</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>Apache-2.0</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Topology<sp/>calculations<sp/>shared<sp/>by<sp/>the<sp/>two-sided<sp/>and<sp/>lock-free<sp/>RMA</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="comment">//<sp/>hierarchical<sp/>distributors.<sp/>Transport-specific<sp/>level<sp/>ownership<sp/>and<sp/>task</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="comment">//<sp/>movement<sp/>remain<sp/>in<sp/>their<sp/>respective<sp/>implementations.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cmath&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;limits&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;optional&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;utility&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;../mpi/mpi_communicator.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="mpi__error_8hpp" kindref="compound">dynampi/mpi/mpi_error.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespacedynampi_1_1detail" kindref="compound">dynampi::detail</ref><sp/>{</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22" refid="namespacedynampi_1_1detail_1acd3e3941f7dff85ac5f75d5aca7b4d70" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1_1detail_1acd3e3941f7dff85ac5f75d5aca7b4d70" kindref="member">resolve_upper_fanout</ref>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">manager_count</ref>,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">configured_fanout</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">configured_fanout</ref><sp/>&lt;<sp/>0)<sp/>{</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">manager_count</ref><sp/>&lt;=<sp/>32)<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>std::numeric_limits&lt;int&gt;::max();</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">fanout</ref><sp/>=<sp/>1;</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">target</ref><sp/>=<sp/>std::sqrt(</highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">double</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">manager_count</ref>));</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">fanout</ref><sp/>&lt;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">target</ref>)<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">fanout</ref><sp/>*=<sp/>2;</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">fanout</ref>;</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">configured_fanout</ref><sp/>&gt;<sp/>0<sp/>?<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">configured_fanout</ref><sp/>:<sp/>std::numeric_limits&lt;int&gt;::max();</highlight></codeline>
+<codeline lineno="31"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Communicator&gt;</highlight></codeline>
+<codeline lineno="34" refid="namespacedynampi_1_1detail_1a1e106c6f486f39c676df2d15afc16088" refkind="member"><highlight class="normal">std::optional&lt;Communicator&gt;<sp/><ref refid="namespacedynampi_1_1detail_1a1e106c6f486f39c676df2d15afc16088" kindref="member">split_local_worker_communicator</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">Communicator</ref>&amp;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">world_comm</ref>,</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>manager_rank,</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>max_local_group_size)<sp/>{</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">Communicator</ref><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">node_comm</ref><sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">world_comm</ref>.split_by_node();</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/>std::optional&lt;Communicator&gt;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">local_domain</ref>;</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(max_local_group_size<sp/>&gt;<sp/>0<sp/>&amp;&amp;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">node_comm</ref>.size()<sp/>&gt;<sp/>max_local_group_size)<sp/>{</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">color</ref><sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">node_comm</ref>.rank()<sp/>/<sp/>max_local_group_size;</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">partition</ref><sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">node_comm</ref>.split(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">color</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">node_comm</ref>.rank());</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">local_domain</ref>.emplace(std::move(*<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">partition</ref>));</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">local_domain</ref>.emplace(std::move(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">node_comm</ref>));</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"></highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">local_color</ref><sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">world_comm</ref>.rank()<sp/>==<sp/>manager_rank<sp/>?<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_UNDEFINED</ref><sp/>:<sp/>0;</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">local_domain</ref>-&gt;split(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">local_color</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">world_comm</ref>.rank());</highlight></codeline>
+<codeline lineno="49"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"></highlight></codeline>
+<codeline lineno="51"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Valid<sp/>only<sp/>on<sp/>group<sp/>rank<sp/>0.<sp/>Every<sp/>group<sp/>member<sp/>must<sp/>call<sp/>this<sp/>collectively.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Summing<sp/>the<sp/>actual<sp/>widths<sp/>matters<sp/>because<sp/>the<sp/>root<sp/>manager<sp/>is<sp/>excluded<sp/>from</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="53"><highlight class="normal"></highlight><highlight class="comment">//<sp/>its<sp/>local<sp/>worker<sp/>communicator,<sp/>so<sp/>its<sp/>node<sp/>manager<sp/>fronts<sp/>one<sp/>fewer<sp/>leaf.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="54"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Communicator&gt;</highlight></codeline>
+<codeline lineno="55" refid="namespacedynampi_1_1detail_1a7e1839cef47da6b20030a65c049dea92" refkind="member"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1_1detail_1a7e1839cef47da6b20030a65c049dea92" kindref="member">sum_subtree_widths_to_group_leader</ref>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">local_width</ref>,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">Communicator</ref>&amp;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">group_comm</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">group_width</ref><sp/>=<sp/>0;</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><ref refid="mpi__error_8hpp_1a4dcbe7cc9eb81ae64b53bb69fe3ac422" kindref="member">DYNAMPI_MPI_CHECK</ref>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Reduce</ref>,<sp/>(&amp;<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">local_width</ref>,<sp/>&amp;<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">group_width</ref>,<sp/>1,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_INT</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_SUM</ref>,<sp/>0,</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal"><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Comm</ref></highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">group_comm</ref>)));</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">group_width</ref>;</highlight></codeline>
+<codeline lineno="60"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"></highlight></codeline>
+<codeline lineno="62"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>dynampi::detail</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_topology_detail.hpp"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,1538 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classdynampi_1_1LockFreeRMAWorkDistributor" kind="class" language="C++" prot="public">
+    <compoundname>dynampi::LockFreeRMAWorkDistributor</compoundname>
+    <includes refid="lockfree__rma__distributor_8hpp" local="no">lockfree_rma_distributor.hpp</includes>
+    <innerclass refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config" prot="public">dynampi::LockFreeRMAWorkDistributor::Config</innerclass>
+    <innerclass refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig" prot="public">dynampi::LockFreeRMAWorkDistributor::RunConfig</innerclass>
+    <innerclass refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Statistics" prot="public">dynampi::LockFreeRMAWorkDistributor::Statistics</innerclass>
+    <templateparamlist>
+      <param>
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">typename</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">TaskT</ref></type>
+      </param>
+      <param>
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">typename</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ResultT</ref></type>
+      </param>
+      <param>
+        <type>typename...</type>
+        <declname>Options</declname>
+        <defname>Options</defname>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="private-type">
+      <memberdef kind="typedef" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a7af3c79e362889d8a767d594444b484d" prot="private" static="no">
+        <type><ref refid="classdynampi_1_1MPICommunicator" kindref="compound">dynampi::MPICommunicator</ref>&lt; <ref refid="structdynampi_1_1track__statistics" kindref="compound">track_statistics</ref>&lt; statistics_mode &gt; &gt;</type>
+        <definition>using dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Comm =  dynampi::MPICommunicator&lt;track_statistics&lt;statistics_mode&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>Comm</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::Comm</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="67" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="67" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aa9a72008e64ea4e2977cd8da540f25ea" prot="public" static="no">
+        <type>std::conditional_t&lt; statistics_mode !=<ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082ea6adf97f83acf6453d4a6a4b1070f3754" kindref="member">StatisticsMode::None</ref>, <ref refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Statistics" kindref="compound">Statistics</ref>, std::monostate &gt;</type>
+        <definition>using dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::StatisticsT =  std::conditional_t&lt;statistics_mode != StatisticsMode::None, Statistics, std::monostate&gt;</definition>
+        <argsstring></argsstring>
+        <name>StatisticsT</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::StatisticsT</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="104" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="105" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-static-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a2ba429fe186b3abd9b4aaa001a683d68" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1ad6f572f5dac5c3563b74e69ef654082e" kindref="member">StatisticsMode</ref></type>
+        <definition>constexpr StatisticsMode dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::statistics_mode</definition>
+        <argsstring></argsstring>
+        <name>statistics_mode</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::statistics_mode</qualifiedname>
+        <initializer>=
+      <ref refid="template__options_8hpp_1a6c0b54e9bbf688ea376f50d340c1889f" kindref="member">get_option_value</ref>&lt;<ref refid="structdynampi_1_1track__statistics__t" kindref="compound">track_statistics_t</ref>, Options...&gt;()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="65" column="35" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a2ddd6871e990d8bab108810f026f6ea3" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+        <definition>constexpr MPI_Aint dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::HEAD_OFF</definition>
+        <argsstring></argsstring>
+        <name>HEAD_OFF</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::HEAD_OFF</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="318" column="29" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="318" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1abaadc3f07a0acfc749ed1528fef42086" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+        <definition>constexpr MPI_Aint dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::TOTAL_OFF</definition>
+        <argsstring></argsstring>
+        <name>TOTAL_OFF</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::TOTAL_OFF</qualifiedname>
+        <initializer>= 8</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="319" column="29" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="319" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ada73974ddfbc85cd15b796382c59ad93" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+        <definition>constexpr MPI_Aint dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::FINISHED_OFF</definition>
+        <argsstring></argsstring>
+        <name>FINISHED_OFF</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::FINISHED_OFF</qualifiedname>
+        <initializer>= 16</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="320" column="29" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="320" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ae1c8a8770c05e87c2dae26d93d5f84af" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+        <definition>constexpr MPI_Aint dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::ERROR_COUNT_OFF</definition>
+        <argsstring></argsstring>
+        <name>ERROR_COUNT_OFF</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::ERROR_COUNT_OFF</qualifiedname>
+        <initializer>= 24</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="321" column="29" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="321" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a7c2b071bf147b9de30500de154623928" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>constexpr size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::CONTROL_BYTES</definition>
+        <argsstring></argsstring>
+        <name>CONTROL_BYTES</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::CONTROL_BYTES</qualifiedname>
+        <initializer>= 32</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="322" column="27" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="322" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aa20fd7c1819848e5c7dca538cd02f610" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+        <definition>constexpr int64_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::kMaxRecordedErrors</definition>
+        <argsstring></argsstring>
+        <name>kMaxRecordedErrors</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::kMaxRecordedErrors</qualifiedname>
+        <initializer>= 16</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="329" column="28" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="329" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aad4119e3c952faee3acedbc4da3dce57" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>constexpr size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::E_RANK</definition>
+        <argsstring></argsstring>
+        <name>E_RANK</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::E_RANK</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="330" column="27" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="330" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a5fb2786d6fb4a9cac40485a72425e953" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>constexpr size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::E_DATA</definition>
+        <argsstring></argsstring>
+        <name>E_DATA</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::E_DATA</qualifiedname>
+        <initializer>= 8</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="331" column="27" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="331" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a5f399670d648a68a6b810ac688218770" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>constexpr size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::ERROR_SLOT_BYTES</definition>
+        <argsstring></argsstring>
+        <name>ERROR_SLOT_BYTES</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::ERROR_SLOT_BYTES</qualifiedname>
+        <initializer>= E_DATA + <ref refid="namespacedynampi_1af762be5b1ef329f91ed82de4bbf362d4" kindref="member">kMaxTaskErrorMessage</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="332" column="27" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="332" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1abba69de15f1857c9c84b911ceba15af0" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>constexpr size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::T_COUNT</definition>
+        <argsstring></argsstring>
+        <name>T_COUNT</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::T_COUNT</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="335" column="27" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="335" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a225d1b91af9622c717924cbe597e2308" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>constexpr size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::T_DATA</definition>
+        <argsstring></argsstring>
+        <name>T_DATA</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::T_DATA</qualifiedname>
+        <initializer>= 8</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="336" column="27" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="336" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a9f97e34dab51fa92dc11f64e5125064b" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>constexpr size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::R_COUNT</definition>
+        <argsstring></argsstring>
+        <name>R_COUNT</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::R_COUNT</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="340" column="27" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="340" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ac482d92cfbc88d2b7e668b44ab06bf8b" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>constexpr size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::R_DATA</definition>
+        <argsstring></argsstring>
+        <name>R_DATA</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::R_DATA</qualifiedname>
+        <initializer>= 8</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="341" column="27" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="341" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a6ca916d4a6c224fd1d915a422bca483b" prot="private" static="yes" constexpr="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">constexpr</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>constexpr size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::LOG_ENTRY_BYTES</definition>
+        <argsstring></argsstring>
+        <name>LOG_ENTRY_BYTES</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::LOG_ENTRY_BYTES</qualifiedname>
+        <initializer>= 8</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="347" column="27" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="347" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a0a2640d3ce33c5c1372058e3a8f4bffa" prot="public" static="yes" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>const bool dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::ordered</definition>
+        <argsstring></argsstring>
+        <name>ordered</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::ordered</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="99" column="21" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="99" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ab85b604f60a5105c367da8e237385a06" prot="private" static="no" mutable="no">
+        <type><ref refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config" kindref="compound">Config</ref></type>
+        <definition>Config dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_config</definition>
+        <argsstring></argsstring>
+        <name>m_config</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_config</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="349" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="349" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a8766fdaddec9fb9b557084a974734028" prot="private" static="no" mutable="no">
+        <type><ref refid="classdynampi_1_1MPICommunicator" kindref="compound">Comm</ref></type>
+        <definition>Comm dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_comm</definition>
+        <argsstring></argsstring>
+        <name>m_comm</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_comm</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="350" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="350" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a150bdf5f3d413aa832db319c5bab99fd" prot="private" static="no" mutable="no">
+        <type>std::function&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ResultT</ref>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">TaskT</ref>)&gt;</type>
+        <definition>std::function&lt;ResultT(TaskT)&gt; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_worker_function</definition>
+        <argsstring></argsstring>
+        <name>m_worker_function</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_worker_function</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="351" column="17" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="351" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aabbec4722bb3765ff2863cf28ce8fb03" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Win</ref></type>
+        <definition>MPI_Win dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_window</definition>
+        <argsstring></argsstring>
+        <name>m_window</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_window</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_WIN_NULL</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="353" column="11" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="353" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ace06ebdb22db892db2866849112675ac" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; std::byte &gt;</type>
+        <definition>std::vector&lt;std::byte&gt; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_window_buffer</definition>
+        <argsstring></argsstring>
+        <name>m_window_buffer</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_window_buffer</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="354" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="354" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1af9f030a2ccf06bbed13be9c299f4f41d" prot="private" static="no" mutable="no">
+        <type>std::byte</type>
+        <definition>std::byte dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_worker_window[sizeof(int64_t)]</definition>
+        <argsstring>[sizeof(int64_t)]</argsstring>
+        <name>m_worker_window</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_worker_window</qualifiedname>
+        <initializer>{}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="355" column="21" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="355" bodyend="355"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a7e794e815cadb2efb4dd4432f8eab096" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>bool dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_finalized</definition>
+        <argsstring></argsstring>
+        <name>m_finalized</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_finalized</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">false</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="356" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="356" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a79050f0a7d7c498e3758da0c9ddfaae4" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_task_elem</definition>
+        <argsstring></argsstring>
+        <name>m_task_elem</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_task_elem</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="358" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="358" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a79cbf6f3b4b290b69acbf4e3ab853a4a" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_result_elem</definition>
+        <argsstring></argsstring>
+        <name>m_result_elem</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_result_elem</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="359" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="359" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a7198a9f154ec409e8e4310bee85dba36" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_max_task_count</definition>
+        <argsstring></argsstring>
+        <name>m_max_task_count</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_max_task_count</qualifiedname>
+        <initializer>= 1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="360" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="360" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a277f7326097bf3d4726ed1880e34ae26" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_max_result_count</definition>
+        <argsstring></argsstring>
+        <name>m_max_result_count</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_max_result_count</qualifiedname>
+        <initializer>= 1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="361" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="361" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a166d46e719761b89a62492dd9755e164" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_task_slot_stride</definition>
+        <argsstring></argsstring>
+        <name>m_task_slot_stride</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_task_slot_stride</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="362" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="362" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ad9f7fbd6081ba44f1843c5327ce51d44" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_result_slot_stride</definition>
+        <argsstring></argsstring>
+        <name>m_result_slot_stride</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_result_slot_stride</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="363" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="363" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a56b26b5733459dd5e7fff37ea5f48c06" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_task_base</definition>
+        <argsstring></argsstring>
+        <name>m_task_base</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_task_base</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="364" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="364" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a74f54f98e97093e44b38a9140a4f5d72" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_result_base</definition>
+        <argsstring></argsstring>
+        <name>m_result_base</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_result_base</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="365" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="365" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a89a3286eb4ecf7e638b4c81c83fea666" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_log_base</definition>
+        <argsstring></argsstring>
+        <name>m_log_base</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_log_base</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="366" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="366" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aefef91d58c38f59c0cbe1a016e144b1e" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_error_base</definition>
+        <argsstring></argsstring>
+        <name>m_error_base</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_error_base</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="367" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="367" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a7dccf5aff2d07ae57f0ddb24527a8bc3" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+        <definition>int64_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_total_tasks</definition>
+        <argsstring></argsstring>
+        <name>m_total_tasks</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_total_tasks</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="369" column="11" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="369" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aa6e6688a5c5b2ef1a2b104b36a59442a" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_collected_count</definition>
+        <argsstring></argsstring>
+        <name>m_collected_count</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_collected_count</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="375" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="375" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a1fb692e61995b0fa5a8bc37c18f00d45" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_returned_count</definition>
+        <argsstring></argsstring>
+        <name>m_returned_count</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_returned_count</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="376" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="376" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aaa417e1772897ad4df9c61bfe870064c" prot="private" static="no" mutable="no">
+        <type>detail::TaskErrorLog</type>
+        <definition>detail::TaskErrorLog dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_task_errors</definition>
+        <argsstring></argsstring>
+        <name>m_task_errors</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_task_errors</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="377" column="24" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="377" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ab8009967aa6b57620a9e1780e082933b" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref> &gt;</type>
+        <definition>std::vector&lt;bool&gt; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_errors_seen</definition>
+        <argsstring></argsstring>
+        <name>m_errors_seen</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_errors_seen</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="378" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="378" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a2fbc222fbe2670f09e6914429e99efa7" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ResultT</ref> &gt;</type>
+        <definition>std::vector&lt;ResultT&gt; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_results</definition>
+        <argsstring></argsstring>
+        <name>m_results</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_results</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="379" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="379" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a4622b6aed9ea148933a654f1474c83ae" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">TaskT</ref> &gt;</type>
+        <definition>std::vector&lt;TaskT&gt; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_task_store</definition>
+        <argsstring></argsstring>
+        <name>m_task_store</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_task_store</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="380" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="380" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a385f4f8e8b0719b24527fd4fd5df6d25" prot="private" static="no" mutable="no">
+        <type><ref refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aa9a72008e64ea4e2977cd8da540f25ea" kindref="member">StatisticsT</ref></type>
+        <definition>StatisticsT dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::m_statistics</definition>
+        <argsstring></argsstring>
+        <name>m_statistics</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::m_statistics</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="381" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="381" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a91230c02f43ed9ffd36c6728a21c6190" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref> <ref refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aa9a72008e64ea4e2977cd8da540f25ea" kindref="member">StatisticsT</ref> &amp;</type>
+        <definition>const StatisticsT &amp; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::get_statistics</definition>
+        <argsstring>() const</argsstring>
+        <name>get_statistics</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::get_statistics</qualifiedname>
+    <requiresclause>(statistics_mode != StatisticsMode::None)    </requiresclause>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="107" column="21" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="107" bodyend="112"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a297a1ace985a88b2e02f24d99368594e" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::LockFreeRMAWorkDistributor</definition>
+        <argsstring>(std::function&lt; ResultT(TaskT)&gt; worker_function, Config config={})</argsstring>
+        <name>LockFreeRMAWorkDistributor</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::LockFreeRMAWorkDistributor</qualifiedname>
+        <param>
+          <type>std::function&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ResultT</ref>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">TaskT</ref>)&gt;</type>
+          <declname>worker_function</declname>
+        </param>
+        <param>
+          <type><ref refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config" kindref="compound">Config</ref></type>
+          <declname>config</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="114" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="114" bodyend="123"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a941aa13ca2841aa1f0887eb25c253803" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1TaskError" kindref="compound">TaskError</ref> &gt;</type>
+        <definition>std::vector&lt; TaskError &gt; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::take_task_errors</definition>
+        <argsstring>()</argsstring>
+        <name>take_task_errors</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::take_task_errors</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="127" column="16" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="127" bodyend="130"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a56fb4bbecbaaa3127d13e45c3bb6c48f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>bool dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::has_task_errors</definition>
+        <argsstring>() const</argsstring>
+        <name>has_task_errors</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::has_task_errors</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="132" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="132" bodyend="135"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a34dc095a5fae810bd435adf064bef170" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::~LockFreeRMAWorkDistributor</definition>
+        <argsstring>()</argsstring>
+        <name>~LockFreeRMAWorkDistributor</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::~LockFreeRMAWorkDistributor</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="137" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="137" bodyend="146"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a22dbd10557f99e34ee1a3a5c5e3e2299" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>bool dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::is_root_manager</definition>
+        <argsstring>() const</argsstring>
+        <name>is_root_manager</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::is_root_manager</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="148" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="148" bodyend="148"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aebddfa4d62f183bf6e9a6e950fe2ed58" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::num_workers</definition>
+        <argsstring>() const</argsstring>
+        <name>num_workers</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::num_workers</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="149" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="149" bodyend="149"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a4b5d0d91b91ba3ec511a3c2e45f80238" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::remaining_tasks_count</definition>
+        <argsstring>() const</argsstring>
+        <name>remaining_tasks_count</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::remaining_tasks_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="151" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="151" bodyend="154"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a0fd0da7ddb869b674f175de525ed43b1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::insert_task</definition>
+        <argsstring>(TaskT task)</argsstring>
+        <name>insert_task</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::insert_task</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">TaskT</ref></type>
+          <declname>task</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="156" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="156" bodyend="159"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ad62634e9f88b76bf3947b6ee28844a22" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::insert_task</definition>
+        <argsstring>(const TaskT &amp;task, double)</argsstring>
+        <name>insert_task</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::insert_task</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">TaskT</ref> &amp;</type>
+          <declname>task</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">double</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="164" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="164" bodyend="167"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a196b9d4c2b30a1febc3c7c698c08c597" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::insert_tasks</definition>
+        <argsstring>(const std::vector&lt; TaskT &gt; &amp;tasks)</argsstring>
+        <name>insert_tasks</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::insert_tasks</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref> std::vector&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">TaskT</ref> &gt; &amp;</type>
+          <declname>tasks</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="169" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="169" bodyend="172"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a48a5b587cfae712a72f00f0f1394c62d" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ResultT</ref> &gt;</type>
+        <definition>std::vector&lt; ResultT &gt; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::run_tasks</definition>
+        <argsstring>(RunConfig config={})</argsstring>
+        <name>run_tasks</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::run_tasks</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig" kindref="compound">RunConfig</ref></type>
+          <declname>config</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="174" column="16" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="174" bodyend="202"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ab79fcfb8be309b817a6dd034c55f1519" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ResultT</ref> &gt;</type>
+        <definition>std::vector&lt; ResultT &gt; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::finish_remaining_tasks</definition>
+        <argsstring>()</argsstring>
+        <name>finish_remaining_tasks</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::finish_remaining_tasks</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="204" column="16" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="204" bodyend="204"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ad98d82030b1b2e27f8c2d2f075e7533d" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ResultT</ref> &gt;</type>
+        <definition>std::vector&lt; ResultT &gt; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::gather_once</definition>
+        <argsstring>()</argsstring>
+        <name>gather_once</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::gather_once</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="210" column="16" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="210" bodyend="218"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ad512c7963bda9fe1082c4dc1299b6828" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::finalize</definition>
+        <argsstring>()</argsstring>
+        <name>finalize</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::finalize</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="220" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="220" bodyend="241"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ae17054127a984855dbd051f4e3b1663b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::run_worker</definition>
+        <argsstring>()</argsstring>
+        <name>run_worker</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::run_worker</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="243" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="243" bodyend="309"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a9e9f598c1795da10c7a2a695166daf65" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::initialize_window</definition>
+        <argsstring>()</argsstring>
+        <name>initialize_window</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::initialize_window</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="383" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="383" bodyend="430"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aa9f599430fd7cd00763a90f8f33f15b2" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+        <definition>int64_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::ring_slot</definition>
+        <argsstring>(int64_t index) const</argsstring>
+        <name>ring_slot</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::ring_slot</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="435" column="11" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="435" bodyend="437"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ac4287c9b4552966a0b110d47727264c5" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+        <definition>MPI_Aint dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::task_slot</definition>
+        <argsstring>(int64_t index) const</argsstring>
+        <name>task_slot</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::task_slot</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="438" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="438" bodyend="441"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a01702b63bfe2a9b0202cd455a3819d69" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+        <definition>MPI_Aint dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::result_slot</definition>
+        <argsstring>(int64_t index) const</argsstring>
+        <name>result_slot</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::result_slot</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="442" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="442" bodyend="445"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aaa8be936f8b830a3ad006185cd9145e1" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+        <definition>MPI_Aint dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::log_slot</definition>
+        <argsstring>(int64_t index) const</argsstring>
+        <name>log_slot</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::log_slot</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="446" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="446" bodyend="449"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a140c95a8607906a1a0fa23cf1fb73082" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+        <definition>MPI_Aint dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::error_slot</definition>
+        <argsstring>(int64_t index) const</argsstring>
+        <name>error_slot</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::error_slot</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="450" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="450" bodyend="452"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a5b5ffc729abc85330bdd5620747c1356" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::manager_rank</definition>
+        <argsstring>() const</argsstring>
+        <name>manager_rank</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::manager_rank</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="459" column="7" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="459" bodyend="459"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a7cc8a3f08ce2a7b172ae88a8c24f1474" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::flush_remote</definition>
+        <argsstring>()</argsstring>
+        <name>flush_remote</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::flush_remote</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="461" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="461" bodyend="461"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aa19ce5eedc6660bd8ebcf5b169e4bc51" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::flush_local</definition>
+        <argsstring>()</argsstring>
+        <name>flush_local</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::flush_local</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="462" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="462" bodyend="462"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a0fa3899eb926d49362e31310914e482d" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::post_fetch_and_op</definition>
+        <argsstring>(int64_t in, int64_t &amp;out, MPI_Aint offset, MPI_Op op)</argsstring>
+        <name>post_fetch_and_op</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::post_fetch_and_op</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>in</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref> &amp;</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+          <declname>offset</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Op</ref></type>
+          <declname>op</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="464" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="464" bodyend="466"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a92eea76e14f45f43404df84b5c7bb901" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::post_put_bytes</definition>
+        <argsstring>(const void *src, size_t n, MPI_Aint offset)</argsstring>
+        <name>post_put_bytes</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::post_put_bytes</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref> *</type>
+          <declname>src</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+          <declname>n</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+          <declname>offset</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="467" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="467" bodyend="469"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ada8c7ed9446b1b1f93e6ae463e9b17b8" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::post_get_bytes</definition>
+        <argsstring>(void *dst, size_t n, MPI_Aint offset)</argsstring>
+        <name>post_get_bytes</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::post_get_bytes</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref> *</type>
+          <declname>dst</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+          <declname>n</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+          <declname>offset</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="470" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="470" bodyend="472"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1ae179f800fc24a557157425a264d80122" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+        <definition>int64_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::atomic_read</definition>
+        <argsstring>(MPI_Aint offset)</argsstring>
+        <name>atomic_read</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::atomic_read</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+          <declname>offset</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="474" column="11" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="474" bodyend="479"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a3287b1f8d15653a5414edab979aad065" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::atomic_set</definition>
+        <argsstring>(MPI_Aint offset, int64_t value)</argsstring>
+        <name>atomic_set</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::atomic_set</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+          <declname>offset</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="480" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="480" bodyend="484"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a58827ea353398ba82c530f0cb75ae2a6" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+        <definition>int64_t dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::fetch_add</definition>
+        <argsstring>(MPI_Aint offset, int64_t increment)</argsstring>
+        <name>fetch_add</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::fetch_add</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+          <declname>offset</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>increment</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="485" column="11" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="485" bodyend="490"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aba304dd8c3f37da5e00f81ffd3456812" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::get_bytes_local</definition>
+        <argsstring>(void *dst, size_t n, MPI_Aint offset)</argsstring>
+        <name>get_bytes_local</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::get_bytes_local</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref> *</type>
+          <declname>dst</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+          <declname>n</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Aint</ref></type>
+          <declname>offset</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="492" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="492" bodyend="495"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a0631e6b15681433b20d931f5fdf7e426" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">typename</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">SlotFn</ref></type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::get_ring_bytes_local</definition>
+        <argsstring>(void *dst, int64_t start, int64_t count, size_t stride, SlotFn &amp;&amp;slot_fn)</argsstring>
+        <name>get_ring_bytes_local</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::get_ring_bytes_local</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref> *</type>
+          <declname>dst</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>start</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>count</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+          <declname>stride</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">SlotFn</ref> &amp;&amp;</type>
+          <declname>slot_fn</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="504" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="504" bodyend="514"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a063884ea93db83265312bcfb8414ebe5" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::publish_tasks</definition>
+        <argsstring>(std::span&lt; const TaskT &gt; tasks)</argsstring>
+        <name>publish_tasks</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::publish_tasks</qualifiedname>
+        <param>
+          <type>std::span&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">TaskT</ref> &gt;</type>
+          <declname>tasks</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="525" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="525" bodyend="608"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a867c9574fedbad9ca7f340eb6c04978c" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">TaskT</ref> &gt;</type>
+        <definition>std::vector&lt; TaskT &gt; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::read_task_batch</definition>
+        <argsstring>(int64_t index, int64_t count)</argsstring>
+        <name>read_task_batch</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::read_task_batch</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>index</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="610" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="610" bodyend="628"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1aafe15be0714ee924a52cc378cb38da85" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::report_task_error</definition>
+        <argsstring>(const std::string &amp;message)</argsstring>
+        <name>report_task_error</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::report_task_error</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref> std::string &amp;</type>
+          <declname>message</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="640" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="640" bodyend="658"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a82e076b5f6a9ff2c8fa6c769bd56c2fc" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::harvest_task_errors</definition>
+        <argsstring>()</argsstring>
+        <name>harvest_task_errors</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::harvest_task_errors</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="663" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="663" bodyend="685"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a375756e23505889e379851579e69cc92" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::write_result_range</definition>
+        <argsstring>(int64_t start, const std::vector&lt; ResultT &gt; &amp;results, bool contains_error=false)</argsstring>
+        <name>write_result_range</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::write_result_range</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int64_t</ref></type>
+          <declname>start</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref> std::vector&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ResultT</ref> &gt; &amp;</type>
+          <declname>results</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+          <declname>contains_error</declname>
+          <defval><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">false</ref></defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="687" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="687" bodyend="713"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a317df42cde3965f56192c2d552086553" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::harvest_ready_results</definition>
+        <argsstring>()</argsstring>
+        <name>harvest_ready_results</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::harvest_ready_results</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="725" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="725" bodyend="783"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a5171c682777dc185cd229b19977c7e27" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::run_one_task_locally</definition>
+        <argsstring>()</argsstring>
+        <name>run_one_task_locally</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::run_one_task_locally</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="785" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="785" bodyend="795"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a89301af1245de77ceca3a51445048462" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ResultT</ref> &gt;</type>
+        <definition>std::vector&lt; ResultT &gt; dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::drain_results</definition>
+        <argsstring>(size_t limit)</argsstring>
+        <name>drain_results</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::drain_results</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+          <declname>limit</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="797" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="797" bodyend="805"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-static-func">
+      <memberdef kind="function" id="classdynampi_1_1LockFreeRMAWorkDistributor_1a645d9a2a3850f4768ef1eeadcf03b4c5" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aa9a72008e64ea4e2977cd8da540f25ea" kindref="member">StatisticsT</ref></type>
+        <definition>static StatisticsT dynampi::LockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::make_statistics</definition>
+        <argsstring>(const Comm &amp;comm)</argsstring>
+        <name>make_statistics</name>
+        <qualifiedname>dynampi::LockFreeRMAWorkDistributor::make_statistics</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref> <ref refid="classdynampi_1_1MPICommunicator" kindref="compound">Comm</ref> &amp;</type>
+          <declname>comm</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="807" column="22" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="807" bodyend="813"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" line="63" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp" bodystart="63" bodyend="814"/>
+    <listofallmembers>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ae179f800fc24a557157425a264d80122" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>atomic_read</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a3287b1f8d15653a5414edab979aad065" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>atomic_set</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a7af3c79e362889d8a767d594444b484d" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>Comm</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a7c2b071bf147b9de30500de154623928" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>CONTROL_BYTES</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a89301af1245de77ceca3a51445048462" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>drain_results</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a5fb2786d6fb4a9cac40485a72425e953" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>E_DATA</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aad4119e3c952faee3acedbc4da3dce57" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>E_RANK</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ae1c8a8770c05e87c2dae26d93d5f84af" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>ERROR_COUNT_OFF</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a140c95a8607906a1a0fa23cf1fb73082" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>error_slot</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a5f399670d648a68a6b810ac688218770" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>ERROR_SLOT_BYTES</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a58827ea353398ba82c530f0cb75ae2a6" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>fetch_add</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ad512c7963bda9fe1082c4dc1299b6828" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>finalize</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ab79fcfb8be309b817a6dd034c55f1519" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>finish_remaining_tasks</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ada73974ddfbc85cd15b796382c59ad93" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>FINISHED_OFF</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aa19ce5eedc6660bd8ebcf5b169e4bc51" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>flush_local</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a7cc8a3f08ce2a7b172ae88a8c24f1474" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>flush_remote</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ad98d82030b1b2e27f8c2d2f075e7533d" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>gather_once</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aba304dd8c3f37da5e00f81ffd3456812" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>get_bytes_local</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a0631e6b15681433b20d931f5fdf7e426" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>get_ring_bytes_local</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a91230c02f43ed9ffd36c6728a21c6190" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>get_statistics</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a317df42cde3965f56192c2d552086553" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>harvest_ready_results</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a82e076b5f6a9ff2c8fa6c769bd56c2fc" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>harvest_task_errors</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a56fb4bbecbaaa3127d13e45c3bb6c48f" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>has_task_errors</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a2ddd6871e990d8bab108810f026f6ea3" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>HEAD_OFF</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a9e9f598c1795da10c7a2a695166daf65" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>initialize_window</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a0fd0da7ddb869b674f175de525ed43b1" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>insert_task</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ad62634e9f88b76bf3947b6ee28844a22" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>insert_task</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a196b9d4c2b30a1febc3c7c698c08c597" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>insert_tasks</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a22dbd10557f99e34ee1a3a5c5e3e2299" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>is_root_manager</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aa20fd7c1819848e5c7dca538cd02f610" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>kMaxRecordedErrors</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a297a1ace985a88b2e02f24d99368594e" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>LockFreeRMAWorkDistributor</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a6ca916d4a6c224fd1d915a422bca483b" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>LOG_ENTRY_BYTES</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aaa8be936f8b830a3ad006185cd9145e1" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>log_slot</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aa6e6688a5c5b2ef1a2b104b36a59442a" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_collected_count</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a8766fdaddec9fb9b557084a974734028" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_comm</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ab85b604f60a5105c367da8e237385a06" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_config</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aefef91d58c38f59c0cbe1a016e144b1e" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_error_base</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ab8009967aa6b57620a9e1780e082933b" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_errors_seen</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a7e794e815cadb2efb4dd4432f8eab096" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_finalized</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a89a3286eb4ecf7e638b4c81c83fea666" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_log_base</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a277f7326097bf3d4726ed1880e34ae26" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_max_result_count</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a7198a9f154ec409e8e4310bee85dba36" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_max_task_count</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a74f54f98e97093e44b38a9140a4f5d72" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_result_base</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a79cbf6f3b4b290b69acbf4e3ab853a4a" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_result_elem</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ad9f7fbd6081ba44f1843c5327ce51d44" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_result_slot_stride</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a2fbc222fbe2670f09e6914429e99efa7" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_results</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a1fb692e61995b0fa5a8bc37c18f00d45" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_returned_count</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a385f4f8e8b0719b24527fd4fd5df6d25" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_statistics</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a56b26b5733459dd5e7fff37ea5f48c06" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_task_base</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a79050f0a7d7c498e3758da0c9ddfaae4" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_task_elem</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aaa417e1772897ad4df9c61bfe870064c" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_task_errors</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a166d46e719761b89a62492dd9755e164" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_task_slot_stride</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a4622b6aed9ea148933a654f1474c83ae" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_task_store</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a7dccf5aff2d07ae57f0ddb24527a8bc3" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_total_tasks</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aabbec4722bb3765ff2863cf28ce8fb03" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_window</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ace06ebdb22db892db2866849112675ac" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_window_buffer</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a150bdf5f3d413aa832db319c5bab99fd" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_worker_function</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1af9f030a2ccf06bbed13be9c299f4f41d" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>m_worker_window</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a645d9a2a3850f4768ef1eeadcf03b4c5" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>make_statistics</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a5b5ffc729abc85330bdd5620747c1356" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>manager_rank</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aebddfa4d62f183bf6e9a6e950fe2ed58" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>num_workers</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a0a2640d3ce33c5c1372058e3a8f4bffa" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>ordered</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a0fa3899eb926d49362e31310914e482d" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>post_fetch_and_op</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ada8c7ed9446b1b1f93e6ae463e9b17b8" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>post_get_bytes</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a92eea76e14f45f43404df84b5c7bb901" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>post_put_bytes</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a063884ea93db83265312bcfb8414ebe5" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>publish_tasks</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a9f97e34dab51fa92dc11f64e5125064b" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>R_COUNT</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ac482d92cfbc88d2b7e668b44ab06bf8b" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>R_DATA</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a867c9574fedbad9ca7f340eb6c04978c" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>read_task_batch</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a4b5d0d91b91ba3ec511a3c2e45f80238" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>remaining_tasks_count</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aafe15be0714ee924a52cc378cb38da85" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>report_task_error</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a01702b63bfe2a9b0202cd455a3819d69" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>result_slot</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aa9f599430fd7cd00763a90f8f33f15b2" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>ring_slot</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a5171c682777dc185cd229b19977c7e27" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>run_one_task_locally</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a48a5b587cfae712a72f00f0f1394c62d" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>run_tasks</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ae17054127a984855dbd051f4e3b1663b" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>run_worker</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a2ba429fe186b3abd9b4aaa001a683d68" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>statistics_mode</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1aa9a72008e64ea4e2977cd8da540f25ea" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>StatisticsT</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1abba69de15f1857c9c84b911ceba15af0" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>T_COUNT</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a225d1b91af9622c717924cbe597e2308" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>T_DATA</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a941aa13ca2841aa1f0887eb25c253803" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>take_task_errors</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1ac4287c9b4552966a0b110d47727264c5" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>task_slot</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1abaadc3f07a0acfc749ed1528fef42086" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>TOTAL_OFF</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a375756e23505889e379851579e69cc92" prot="private" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>write_result_range</name></member>
+      <member refid="classdynampi_1_1LockFreeRMAWorkDistributor_1a34dc095a5fae810bd435adf064bef170" prot="public" virt="non-virtual"><scope>dynampi::LockFreeRMAWorkDistributor</scope><name>~LockFreeRMAWorkDistributor</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

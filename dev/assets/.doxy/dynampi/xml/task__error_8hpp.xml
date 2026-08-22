@@ -1,0 +1,271 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="task__error_8hpp" kind="file" language="C++">
+    <compoundname>task_error.hpp</compoundname>
+    <includes local="no">cstdio</includes>
+    <includes local="no">exception</includes>
+    <includes local="no">optional</includes>
+    <includes local="no">stdexcept</includes>
+    <includes local="no">string</includes>
+    <includes local="no">utility</includes>
+    <includes local="no">vector</includes>
+    <includedby refid="hierarchical__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</includedby>
+    <includedby refid="hierarchical__lockfree__rma__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp</includedby>
+    <includedby refid="lockfree__rma__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp</includedby>
+    <includedby refid="naive__distributor_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp</includedby>
+    <includedby refid="rma__detail_8hpp" local="yes">/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/rma_detail.hpp</includedby>
+    <incdepgraph>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp</label>
+        <link refid="task__error_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>cstdio</label>
+      </node>
+      <node id="3">
+        <label>exception</label>
+      </node>
+      <node id="4">
+        <label>optional</label>
+      </node>
+      <node id="5">
+        <label>stdexcept</label>
+      </node>
+      <node id="6">
+        <label>string</label>
+      </node>
+      <node id="7">
+        <label>utility</label>
+      </node>
+      <node id="8">
+        <label>vector</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="3">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp</label>
+        <link refid="dynampi_8hpp"/>
+      </node>
+      <node id="2">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_distributor.hpp</label>
+        <link refid="hierarchical__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp</label>
+        <link refid="hierarchical__lockfree__rma__distributor_8hpp"/>
+      </node>
+      <node id="5">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/lockfree_rma_distributor.hpp</label>
+        <link refid="lockfree__rma__distributor_8hpp"/>
+      </node>
+      <node id="6">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp</label>
+        <link refid="naive__distributor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/rma_detail.hpp</label>
+        <link refid="rma__detail_8hpp"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp</label>
+        <link refid="task__error_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="structdynampi_1_1TaskError" prot="public">dynampi::TaskError</innerclass>
+    <innerclass refid="classdynampi_1_1TaskFailure" prot="public">dynampi::TaskFailure</innerclass>
+    <innerclass refid="classdynampi_1_1detail_1_1TaskErrorLog" prot="private">dynampi::detail::TaskErrorLog</innerclass>
+    <innernamespace refid="namespacedynampi">dynampi</innernamespace>
+    <innernamespace refid="namespacedynampi_1_1detail">dynampi::detail</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>SPDX-FileCopyrightText:<sp/>2026<sp/>Ryan<sp/>Stocks</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>SPDX-License-Identifier:<sp/>Apache-2.0</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cstdio&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;exception&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;optional&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdexcept&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;utility&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespacedynampi" kindref="compound">dynampi</ref><sp/>{</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Longest<sp/>task-error<sp/>message<sp/>carried<sp/>back<sp/>to<sp/>the<sp/>manager.<sp/>The<sp/>RMA<sp/>distributors</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="comment">//<sp/>report<sp/>errors<sp/>through<sp/>fixed-width<sp/>slots<sp/>in<sp/>a<sp/>preallocated<sp/>window,<sp/>so<sp/>the</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="comment">//<sp/>limit<sp/>has<sp/>to<sp/>be<sp/>a<sp/>compile-time<sp/>constant;<sp/>the<sp/>two-sided<sp/>distributors<sp/>truncate</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="comment">//<sp/>to<sp/>the<sp/>same<sp/>length<sp/>so<sp/>a<sp/>failing<sp/>task<sp/>reports<sp/>identically<sp/>whichever</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="comment">//<sp/>distributor<sp/>ran<sp/>it.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23" refid="namespacedynampi_1af762be5b1ef329f91ed82de4bbf362d4" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1af762be5b1ef329f91ed82de4bbf362d4" kindref="member">kMaxTaskErrorMessage</ref><sp/>=<sp/>240;</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="comment">//<sp/>One<sp/>task<sp/>that<sp/>threw,<sp/>as<sp/>reported<sp/>by<sp/>the<sp/>rank<sp/>that<sp/>ran<sp/>it.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26" refid="structdynampi_1_1TaskError" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structdynampi_1_1TaskError" kindref="compound">TaskError</ref><sp/>{</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Rank<sp/>within<sp/>the<sp/>distributor&apos;s<sp/>own<sp/>(duplicated)<sp/>communicator.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28" refid="structdynampi_1_1TaskError_1a4a9a95f8040aa843bfdfc79ce22361c7" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1TaskError_1a4a9a95f8040aa843bfdfc79ce22361c7" kindref="member">worker_rank</ref><sp/>=<sp/>-1;</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>what()<sp/>of<sp/>the<sp/>escaping<sp/>exception,<sp/>truncated<sp/>to<sp/>kMaxTaskErrorMessage.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30" refid="structdynampi_1_1TaskError_1a591c5a4ca7e3b4b1a42afcc5660ef317" refkind="member"><highlight class="normal"><sp/><sp/>std::string<sp/><ref refid="structdynampi_1_1TaskError_1a591c5a4ca7e3b4b1a42afcc5660ef317" kindref="member">message</ref>;</highlight></codeline>
+<codeline lineno="31"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Thrown<sp/>on<sp/>the<sp/>manager<sp/>by<sp/>run_tasks()/finish_remaining_tasks()<sp/>when<sp/>a<sp/>task</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight><highlight class="comment">//<sp/>threw<sp/>and<sp/>Config::rethrow_task_errors<sp/>is<sp/>set.<sp/>Never<sp/>thrown<sp/>by<sp/>finalize()<sp/>or</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight><highlight class="comment">//<sp/>a<sp/>destructor<sp/>--<sp/>see<sp/>BaseWorkDistributor&apos;s<sp/>error<sp/>accessors.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="36" refid="classdynampi_1_1TaskFailure" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classdynampi_1_1TaskFailure" kindref="compound">TaskFailure</ref><sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/>std::runtime_error<sp/>{</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="38" refid="classdynampi_1_1TaskFailure_1a4dd81dee556f63fa20060d8ed075e9bb" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">explicit</highlight><highlight class="normal"><sp/><ref refid="classdynampi_1_1TaskFailure_1a4dd81dee556f63fa20060d8ed075e9bb" kindref="member">TaskFailure</ref>(<ref refid="structdynampi_1_1TaskError" kindref="compound">TaskError</ref><sp/><ref refid="classdynampi_1_1TaskFailure_1a12ba58ed652f6a69231b893d949253be" kindref="member">error</ref>)</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>:<sp/>std::runtime_error(</highlight><highlight class="stringliteral">&quot;dynampi:<sp/>task<sp/>on<sp/>rank<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>std::<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">to_string</ref>(<ref refid="classdynampi_1_1TaskFailure_1a12ba58ed652f6a69231b893d949253be" kindref="member">error</ref>.worker_rank)<sp/>+</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/>threw:<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/><ref refid="classdynampi_1_1TaskFailure_1a12ba58ed652f6a69231b893d949253be" kindref="member">error</ref>.message),</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>m_error(std::<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">move</ref>(<ref refid="classdynampi_1_1TaskFailure_1a12ba58ed652f6a69231b893d949253be" kindref="member">error</ref>))<sp/>{}</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight></codeline>
+<codeline lineno="43" refid="classdynampi_1_1TaskFailure_1a12ba58ed652f6a69231b893d949253be" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="structdynampi_1_1TaskError" kindref="compound">TaskError</ref>&amp;<sp/><ref refid="classdynampi_1_1TaskFailure_1a12ba58ed652f6a69231b893d949253be" kindref="member">error</ref>()<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">noexcept</ref><sp/>{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>m_error;<sp/>}</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"></highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><ref refid="structdynampi_1_1TaskError" kindref="compound">TaskError</ref><sp/>m_error;</highlight></codeline>
+<codeline lineno="47"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"></highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">detail<sp/>{</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"></highlight></codeline>
+<codeline lineno="51"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Manager-side<sp/>record<sp/>of<sp/>the<sp/>tasks<sp/>that<sp/>threw,<sp/>shared<sp/>by<sp/>every<sp/>distributor.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="53"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Each<sp/>error<sp/>surfaces<sp/>exactly<sp/>once:<sp/>rethrow()<sp/>hands<sp/>back<sp/>the<sp/>oldest<sp/>one<sp/>and</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="54"><highlight class="normal"></highlight><highlight class="comment">//<sp/>drops<sp/>it,<sp/>so<sp/>a<sp/>caller<sp/>that<sp/>catches<sp/>and<sp/>calls<sp/>run_tasks()<sp/>again<sp/>sees<sp/>the<sp/>next</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="55"><highlight class="normal"></highlight><highlight class="comment">//<sp/>one<sp/>rather<sp/>than<sp/>the<sp/>same<sp/>one<sp/>forever,<sp/>and<sp/>take()<sp/>returns<sp/>whatever<sp/>has<sp/>not</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="56"><highlight class="normal"></highlight><highlight class="comment">//<sp/>been<sp/>thrown<sp/>yet.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="57"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">TaskErrorLog<sp/>{</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>record(TaskError<sp/>error)<sp/>{<sp/>m_errors.push_back(std::move(error));<sp/>}</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"></highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>empty()</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>m_errors.empty();<sp/>}</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/>size()</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>m_errors.size();<sp/>}</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"></highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/>std::vector&lt;TaskError&gt;<sp/>take()<sp/>{</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;TaskError&gt;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">taken</ref>;</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">taken</ref>.swap(m_errors);</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">taken</ref>;</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"></highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Call<sp/>at<sp/>a<sp/>point<sp/>where<sp/>throwing<sp/>is<sp/>safe<sp/>--<sp/>never<sp/>from<sp/>finalize()<sp/>or<sp/>a</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>destructor.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>rethrow_first_if(</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">enabled</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">enabled</ref><sp/>||<sp/>m_errors.empty())<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/>TaskError<sp/>error<sp/>=<sp/>std::move(m_errors.front());</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/>m_errors.erase(m_errors.begin());</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>TaskFailure(std::move(error));</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"></highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Destructors<sp/>cannot<sp/>throw,<sp/>and<sp/>dropping<sp/>a<sp/>task<sp/>failure<sp/>without<sp/>a<sp/>word<sp/>is</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>exactly<sp/>the<sp/>silent-corruption<sp/>case<sp/>this<sp/>whole<sp/>mechanism<sp/>exists<sp/>to<sp/>avoid.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>warn_if_unreported(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">distributor</ref>)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">noexcept</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"></highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="84"><highlight class="normal"><sp/><sp/>std::vector&lt;TaskError&gt;<sp/>m_errors;</highlight></codeline>
+<codeline lineno="85"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"></highlight></codeline>
+<codeline lineno="87"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Wire<sp/>form<sp/>for<sp/>the<sp/>tree<sp/>distributors:<sp/>&quot;&lt;rank&gt;\n&lt;message&gt;&quot;.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="88"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="89"><highlight class="normal"></highlight><highlight class="comment">//<sp/>A<sp/>leaf&apos;s<sp/>failure<sp/>has<sp/>to<sp/>reach<sp/>the<sp/>root<sp/>through<sp/>however<sp/>many<sp/>managers<sp/>sit</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="90"><highlight class="normal"></highlight><highlight class="comment">//<sp/>in<sp/>between,<sp/>and<sp/>each<sp/>hop<sp/>only<sp/>knows<sp/>the<sp/>child<sp/>it<sp/>received<sp/>from<sp/>--<sp/>so<sp/>the</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="91"><highlight class="normal"></highlight><highlight class="comment">//<sp/>originating<sp/>rank<sp/>travels<sp/>in<sp/>the<sp/>payload<sp/>rather<sp/>than<sp/>being<sp/>read<sp/>off</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="92"><highlight class="normal"></highlight><highlight class="comment">//<sp/>MPI_SOURCE.<sp/>The<sp/>flat<sp/>distributors,<sp/>where<sp/>the<sp/>reporting<sp/>rank<sp/>is<sp/>the</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="93"><highlight class="normal"></highlight><highlight class="comment">//<sp/>originating<sp/>rank,<sp/>send<sp/>the<sp/>bare<sp/>message<sp/>instead.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="94"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/>std::string<sp/>encode_task_error(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>TaskError&amp;<sp/>error)<sp/>{</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>std::to_string(error.worker_rank)<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal"><sp/>+<sp/>error.message;</highlight></codeline>
+<codeline lineno="96"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"></highlight></codeline>
+<codeline lineno="98"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/>TaskError<sp/>decode_task_error(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string&amp;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">payload</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/>split<sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">payload</ref>.find(</highlight><highlight class="charliteral">&apos;\n&apos;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(split<sp/>==<sp/>std::string::npos)<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>TaskError{-1,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">payload</ref>};</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/>TaskError<sp/>error;</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">try</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><sp/><sp/>error.<ref refid="structdynampi_1_1TaskError_1a4a9a95f8040aa843bfdfc79ce22361c7" kindref="member">worker_rank</ref><sp/>=<sp/>std::stoi(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">payload</ref>.substr(0,<sp/>split));</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">catch</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::exception&amp;)<sp/>{</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/><sp/><sp/>error.worker_rank<sp/>=<sp/>-1;</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><sp/><sp/>error.message<sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">payload</ref>.substr(split<sp/>+<sp/>1);</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>error;</highlight></codeline>
+<codeline lineno="109"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"></highlight></codeline>
+<codeline lineno="111"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/>std::string<sp/>truncate_task_error_message(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">what</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/>std::string<sp/>message<sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">what</ref><sp/>==<sp/></highlight><highlight class="keyword">nullptr</highlight><highlight class="normal"><sp/>?<sp/>std::string(</highlight><highlight class="stringliteral">&quot;unknown<sp/>exception&quot;</highlight><highlight class="normal">)<sp/>:<sp/>std::<ref refid="namespacedynampi_1_1version_1aee9460a2a8eb2d1e646d8f65f8918bf1" kindref="member">string</ref>(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">what</ref>);</highlight></codeline>
+<codeline lineno="113"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(message.size()<sp/>&gt;<sp/><ref refid="namespacedynampi_1af762be5b1ef329f91ed82de4bbf362d4" kindref="member">kMaxTaskErrorMessage</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/><sp/><sp/>message.resize(<ref refid="namespacedynampi_1af762be5b1ef329f91ed82de4bbf362d4" kindref="member">kMaxTaskErrorMessage</ref><sp/>-<sp/>3);</highlight></codeline>
+<codeline lineno="115"><highlight class="normal"><sp/><sp/><sp/><sp/>message<sp/>+=<sp/></highlight><highlight class="stringliteral">&quot;...&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>message;</highlight></codeline>
+<codeline lineno="118"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="119"><highlight class="normal"></highlight></codeline>
+<codeline lineno="120"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Runs<sp/>worker_function(task),<sp/>writing<sp/>its<sp/>result<sp/>into<sp/>`out`.<sp/>Returns</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="121"><highlight class="normal"></highlight><highlight class="comment">//<sp/>std::nullopt<sp/>on<sp/>success,<sp/>or<sp/>the<sp/>failure<sp/>message<sp/>if<sp/>the<sp/>task<sp/>threw.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="122"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="123"><highlight class="normal"></highlight><highlight class="comment">//<sp/>A<sp/>throwing<sp/>task<sp/>must<sp/>not<sp/>take<sp/>the<sp/>job<sp/>down<sp/>with<sp/>it,<sp/>and<sp/>it<sp/>must<sp/>not<sp/>leave<sp/>the</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="124"><highlight class="normal"></highlight><highlight class="comment">//<sp/>protocol<sp/>short<sp/>one<sp/>result<sp/>either:<sp/>every<sp/>distributor&apos;s<sp/>completion<sp/>accounting</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="125"><highlight class="normal"></highlight><highlight class="comment">//<sp/>(contiguous<sp/>result<sp/>prefixes,<sp/>sent-vs-received<sp/>counters,<sp/>completion-log</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="126"><highlight class="normal"></highlight><highlight class="comment">//<sp/>ranges)<sp/>assumes<sp/>exactly<sp/>one<sp/>result<sp/>per<sp/>dispatched<sp/>task.<sp/>So<sp/>a<sp/>failed<sp/>task</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="127"><highlight class="normal"></highlight><highlight class="comment">//<sp/>yields<sp/>a<sp/>default-constructed<sp/>ResultT<sp/>as<sp/>a<sp/>placeholder<sp/>and<sp/>the<sp/>message<sp/>travels</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="128"><highlight class="normal"></highlight><highlight class="comment">//<sp/>to<sp/>the<sp/>manager<sp/>out<sp/>of<sp/>band.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="129"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>TaskErrorLog::warn_if_unreported(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">distributor</ref>)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">noexcept</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(m_errors.empty())<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/>std::fprintf(</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">stderr</ref>,<sp/></highlight><highlight class="stringliteral">&quot;dynampi:<sp/>%s<sp/>destroyed<sp/>with<sp/>%zu<sp/>unreported<sp/>task<sp/>error(s);<sp/>first<sp/>was<sp/>on<sp/>rank<sp/>%d:<sp/>%s\n&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">distributor</ref>,<sp/>m_errors.size(),<sp/>m_errors.front().worker_rank,<sp/>m_errors.front().message.c_str());</highlight></codeline>
+<codeline lineno="134"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="135"><highlight class="normal"></highlight></codeline>
+<codeline lineno="136"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>ResultT,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>F,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TaskT&gt;</highlight></codeline>
+<codeline lineno="137"><highlight class="normal">std::optional&lt;std::string&gt;<sp/>run_task_guarded(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">F</ref>&amp;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">worker_function</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">TaskT</ref>&amp;&amp;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">task</ref>,<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ResultT</ref>&amp;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">out</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="138"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">try</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="139"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">out</ref><sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">worker_function</ref>(std::forward&lt;TaskT&gt;(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">task</ref>));</highlight></codeline>
+<codeline lineno="140"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>std::nullopt;</highlight></codeline>
+<codeline lineno="141"><highlight class="normal"><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">catch</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::exception&amp;<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">e</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="142"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">out</ref><sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ResultT</ref>{};</highlight></codeline>
+<codeline lineno="143"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>truncate_task_error_message(<ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">e</ref>.what());</highlight></codeline>
+<codeline lineno="144"><highlight class="normal"><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">catch</highlight><highlight class="normal"><sp/>(...)<sp/>{</highlight></codeline>
+<codeline lineno="145"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">out</ref><sp/>=<sp/><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">ResultT</ref>{};</highlight></codeline>
+<codeline lineno="146"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>std::string(</highlight><highlight class="stringliteral">&quot;unknown<sp/>exception<sp/>(not<sp/>derived<sp/>from<sp/>std::exception)&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="147"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="148"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="149"><highlight class="normal"></highlight></codeline>
+<codeline lineno="150"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>detail</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="151"><highlight class="normal"></highlight></codeline>
+<codeline lineno="152"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>dynampi</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp"/>
+  </compounddef>
+</doxygen>

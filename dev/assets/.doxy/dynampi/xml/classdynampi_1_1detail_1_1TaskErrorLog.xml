@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classdynampi_1_1detail_1_1TaskErrorLog" kind="class" language="C++" prot="private">
+    <compoundname>dynampi::detail::TaskErrorLog</compoundname>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classdynampi_1_1detail_1_1TaskErrorLog_1a9431fc17a75f0c3473727d5b6aef7819" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1TaskError" kindref="compound">TaskError</ref> &gt;</type>
+        <definition>std::vector&lt;TaskError&gt; dynampi::detail::TaskErrorLog::m_errors</definition>
+        <argsstring></argsstring>
+        <name>m_errors</name>
+        <qualifiedname>dynampi::detail::TaskErrorLog::m_errors</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" line="84" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" bodystart="84" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdynampi_1_1detail_1_1TaskErrorLog_1a4c466c1dac47fe3b113b36d1b65aba28" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::detail::TaskErrorLog::record</definition>
+        <argsstring>(TaskError error)</argsstring>
+        <name>record</name>
+        <qualifiedname>dynampi::detail::TaskErrorLog::record</qualifiedname>
+        <param>
+          <type><ref refid="structdynampi_1_1TaskError" kindref="compound">TaskError</ref></type>
+          <declname>error</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" line="59" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" bodystart="59" bodyend="59"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1detail_1_1TaskErrorLog_1adec2ef0ea6ef58ee4ca7c06b1a5fa1c3" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>bool dynampi::detail::TaskErrorLog::empty</definition>
+        <argsstring>() const</argsstring>
+        <name>empty</name>
+        <qualifiedname>dynampi::detail::TaskErrorLog::empty</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" line="61" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" bodystart="61" bodyend="61"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1detail_1_1TaskErrorLog_1ab04877d24d373a15582a639fe120cd6f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">size_t</ref></type>
+        <definition>size_t dynampi::detail::TaskErrorLog::size</definition>
+        <argsstring>() const</argsstring>
+        <name>size</name>
+        <qualifiedname>dynampi::detail::TaskErrorLog::size</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" line="62" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" bodystart="62" bodyend="62"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1detail_1_1TaskErrorLog_1a4fe205d8563a8f82058bef66ff0b2a02" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="structdynampi_1_1TaskError" kindref="compound">TaskError</ref> &gt;</type>
+        <definition>std::vector&lt; TaskError &gt; dynampi::detail::TaskErrorLog::take</definition>
+        <argsstring>()</argsstring>
+        <name>take</name>
+        <qualifiedname>dynampi::detail::TaskErrorLog::take</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" line="64" column="15" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" bodystart="64" bodyend="68"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1detail_1_1TaskErrorLog_1ab4e6f4ccd087d7f663cdd6a15c467ac7" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::detail::TaskErrorLog::rethrow_first_if</definition>
+        <argsstring>(bool enabled)</argsstring>
+        <name>rethrow_first_if</name>
+        <qualifiedname>dynampi::detail::TaskErrorLog::rethrow_first_if</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+          <declname>enabled</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" line="72" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" bodystart="72" bodyend="77"/>
+      </memberdef>
+      <memberdef kind="function" id="classdynampi_1_1detail_1_1TaskErrorLog_1a2e395fe75e20841a81ab8c265d3a276a" prot="public" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">void</ref></type>
+        <definition>void dynampi::detail::TaskErrorLog::warn_if_unreported</definition>
+        <argsstring>(const char *distributor) const noexcept</argsstring>
+        <name>warn_if_unreported</name>
+        <qualifiedname>dynampi::detail::TaskErrorLog::warn_if_unreported</qualifiedname>
+        <param>
+          <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">const</ref> <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">char</ref> *</type>
+          <declname>distributor</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" line="81" column="8" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" bodystart="129" bodyend="134"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" line="57" column="1" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/task_error.hpp" bodystart="57" bodyend="85"/>
+    <listofallmembers>
+      <member refid="classdynampi_1_1detail_1_1TaskErrorLog_1adec2ef0ea6ef58ee4ca7c06b1a5fa1c3" prot="public" virt="non-virtual"><scope>dynampi::detail::TaskErrorLog</scope><name>empty</name></member>
+      <member refid="classdynampi_1_1detail_1_1TaskErrorLog_1a9431fc17a75f0c3473727d5b6aef7819" prot="private" virt="non-virtual"><scope>dynampi::detail::TaskErrorLog</scope><name>m_errors</name></member>
+      <member refid="classdynampi_1_1detail_1_1TaskErrorLog_1a4c466c1dac47fe3b113b36d1b65aba28" prot="public" virt="non-virtual"><scope>dynampi::detail::TaskErrorLog</scope><name>record</name></member>
+      <member refid="classdynampi_1_1detail_1_1TaskErrorLog_1ab4e6f4ccd087d7f663cdd6a15c467ac7" prot="public" virt="non-virtual"><scope>dynampi::detail::TaskErrorLog</scope><name>rethrow_first_if</name></member>
+      <member refid="classdynampi_1_1detail_1_1TaskErrorLog_1ab04877d24d373a15582a639fe120cd6f" prot="public" virt="non-virtual"><scope>dynampi::detail::TaskErrorLog</scope><name>size</name></member>
+      <member refid="classdynampi_1_1detail_1_1TaskErrorLog_1a4fe205d8563a8f82058bef66ff0b2a02" prot="public" virt="non-virtual"><scope>dynampi::detail::TaskErrorLog</scope><name>take</name></member>
+      <member refid="classdynampi_1_1detail_1_1TaskErrorLog_1a2e395fe75e20841a81ab8c265d3a276a" prot="public" virt="non-virtual"><scope>dynampi::detail::TaskErrorLog</scope><name>warn_if_unreported</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

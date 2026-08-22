@@ -36,13 +36,15 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**size\_t**](structdynampi_1_1MPI__Type.md) | [**bytes\_received**](#variable-bytes_received)   = `0`<br> |
-|  [**size\_t**](structdynampi_1_1MPI__Type.md) | [**bytes\_sent**](#variable-bytes_sent)   = `0`<br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**collective\_count**](#variable-collective_count)   = `0`<br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**recv\_count**](#variable-recv_count)   = `0`<br> |
-|  [**double**](structdynampi_1_1MPI__Type.md) | [**recv\_time**](#variable-recv_time)   = `0.0`<br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**send\_count**](#variable-send_count)   = `0`<br> |
-|  [**double**](structdynampi_1_1MPI__Type.md) | [**send\_time**](#variable-send_time)   = `0.0`<br> |
+|  [**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**atomic\_bytes**](#variable-atomic_bytes)   = `0`<br> |
+|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**atomic\_count**](#variable-atomic_count)   = `0`<br> |
+|  [**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**bytes\_received**](#variable-bytes_received)   = `0`<br> |
+|  [**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**bytes\_sent**](#variable-bytes_sent)   = `0`<br> |
+|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**collective\_count**](#variable-collective_count)   = `0`<br> |
+|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**recv\_count**](#variable-recv_count)   = `0`<br> |
+|  [**double**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**recv\_time**](#variable-recv_time)   = `0.0`<br> |
+|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**send\_count**](#variable-send_count)   = `0`<br> |
+|  [**double**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**send\_time**](#variable-send_time)   = `0.0`<br> |
 
 
 
@@ -63,9 +65,9 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**double**](structdynampi_1_1MPI__Type.md) | [**average\_receive\_size**](#function-average_receive_size) () const<br> |
-|  [**double**](structdynampi_1_1MPI__Type.md) | [**average\_send\_size**](#function-average_send_size) () const<br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**reset**](#function-reset) () <br> |
+|  [**double**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**average\_receive\_size**](#function-average_receive_size) () const<br> |
+|  [**double**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**average\_send\_size**](#function-average_send_size) () const<br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**reset**](#function-reset) () <br> |
 
 
 
@@ -96,6 +98,32 @@
 
 ## Public Attributes Documentation
 
+
+
+
+### variable atomic\_bytes 
+
+```C++
+size_t dynampi::CommStatistics::atomic_bytes;
+```
+
+
+
+
+<hr>
+
+
+
+### variable atomic\_count 
+
+```C++
+int dynampi::CommStatistics::atomic_count;
+```
+
+
+
+
+<hr>
 
 
 

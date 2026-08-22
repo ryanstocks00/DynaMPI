@@ -31,12 +31,13 @@
 #include "../mpi/mpi_communicator.hpp"
 #include "../mpi/mpi_types.hpp"
 #include "dynampi/impl/base_distributor.hpp"
+#include "dynampi/task_error.hpp"
 #include "dynampi/utilities/timer.hpp"
 
 namespace dynampi {
 
 template <typename TaskT, typename ResultT, typename... Options>
-class NaiveMPIWorkDistributor {
+class NaiveWorkDistributor {
  public:
   struct Config {
     MPI_Comm comm = MPI_COMM_WORLD;
@@ -46,6 +47,12 @@ class NaiveMPIWorkDistributor {
     int max_result_size = 1024;  // Maximum expected size for RESULT messages when using immediate
                                  // recv. Must be large enough to hold the largest expected RESULT
                                  // message. If a message exceeds this size, behavior is undefined.
+
+    // If true (default), run_tasks()/finish_remaining_tasks() throw
+    // dynampi::TaskFailure on the manager once a task has thrown. Set false to
+    // recover instead: distribution runs to completion and the failures are
+    // available from take_task_errors().
+    bool rethrow_task_errors = true;
   };
 
   struct RunConfig {
@@ -95,23 +102,27 @@ class NaiveMPIWorkDistributor {
       0;  // Number of contiguous valid results starting from m_front_result_idx
   bool m_finalized = false;
 
+  detail::TaskErrorLog m_task_errors;  // manager only
+
   enum Tag : int { TASK = 0, DONE = 1, RESULT = 2, REQUEST = 3, ERROR = 4 };
 
  public:
   struct Statistics {
     const CommStatistics& comm_statistics;
+    // Tasks dispatched to each worker, indexed by worker index (this rank's
+    // communicator rank with the manager removed -- see rank_to_worker_idx).
     std::vector<size_t> worker_task_counts;
   };
 
   using StatisticsT =
-      std::conditional_t<statistics_mode == StatisticsMode::Detailed, Statistics, std::monostate>;
+      std::conditional_t<statistics_mode != StatisticsMode::None, Statistics, std::monostate>;
 
  private:
   StatisticsT m_statistics;
 
  public:
-  explicit NaiveMPIWorkDistributor(std::function<ResultT(TaskT)> worker_function,
-                                   Config runtime_config = Config{})
+  explicit NaiveWorkDistributor(std::function<ResultT(TaskT)> worker_function,
+                                Config runtime_config = Config{})
       : m_config(runtime_config),
         m_communicator(runtime_config.comm, MPICommunicator::Duplicate),
         m_worker_function(worker_function),
@@ -129,8 +140,9 @@ class NaiveMPIWorkDistributor {
     }
   }
 
-  ~NaiveMPIWorkDistributor() {
+  ~NaiveWorkDistributor() {
     if (!m_finalized) finalize();
+    m_task_errors.warn_if_unreported("NaiveWorkDistributor");
   }
 
   // --- Main Interface ---
@@ -178,6 +190,10 @@ class NaiveMPIWorkDistributor {
     }
 
     // --- 3. Return Logic ---
+    // Thrown before draining, so the results collected so far stay buffered for
+    // whoever catches this and calls again.
+    m_task_errors.rethrow_first_if(m_config.rethrow_task_errors);
+
     size_t limit = std::numeric_limits<size_t>::max();
     if (!config.allow_more_than_target_tasks) {
       limit = config.target_num_tasks;
@@ -214,6 +230,20 @@ class NaiveMPIWorkDistributor {
   {
     assert(is_root_manager() && "Only the manager can access statistics");
     return m_statistics;
+  }
+
+  // Tasks that threw, oldest first, removed from the distributor as they are
+  // returned. With Config::rethrow_task_errors left true this only ever holds
+  // failures that arrived after the last throw; with it false it holds all of
+  // them.
+  [[nodiscard]] std::vector<TaskError> take_task_errors() {
+    assert(is_root_manager() && "Only the manager collects task errors");
+    return m_task_errors.take();
+  }
+
+  bool has_task_errors() const {
+    assert(is_root_manager() && "Only the manager collects task errors");
+    return !m_task_errors.empty();
   }
 
   // --- Task Insertion ---
@@ -263,8 +293,18 @@ class NaiveMPIWorkDistributor {
       task_type::resize(message, count);
       m_communicator.recv(message, m_config.manager_rank, Tag::TASK);
 
-      ResultT result = m_worker_function(std::move(message));
+      ResultT result;
+      auto failure = detail::run_task_guarded(m_worker_function, std::move(message), result);
 
+      // ERROR is a pure notification and travels alongside the placeholder
+      // result, never instead of it: the manager marks a worker free when its
+      // RESULT lands, so a failure that skipped the result would have to
+      // duplicate that bookkeeping -- and a failure that sent both while ERROR
+      // also completed the task would push this worker onto the free stack
+      // twice.
+      if (failure) {
+        m_communicator.send(*failure, m_config.manager_rank, Tag::ERROR);
+      }
       m_communicator.send(result, m_config.manager_rank, Tag::RESULT);
     }
   }
@@ -302,7 +342,13 @@ class NaiveMPIWorkDistributor {
     int64_t task_id = static_cast<int64_t>(m_tasks_sent);
     ensure_result_capacity(task_id - m_front_result_idx + 1);
     size_t vector_idx = task_id - m_front_result_idx;
-    m_pending_results[vector_idx] = m_worker_function(std::move(task));
+    // Guarded even here, where the task runs on the manager's own stack: the
+    // single-rank path exists so a workload can be debugged serially, and it
+    // is no use for that if it reports failures differently from the real run.
+    ResultT result;
+    auto failure = detail::run_task_guarded(m_worker_function, std::move(task), result);
+    if (failure) m_task_errors.record(TaskError{m_communicator.rank(), std::move(*failure)});
+    m_pending_results[vector_idx] = std::move(result);
     m_pending_results_valid[vector_idx] = true;
     m_tasks_sent++;
     update_contiguous_results_count(task_id);
@@ -324,6 +370,11 @@ class NaiveMPIWorkDistributor {
   void process_incoming_message() {
     MPI_Status status = m_communicator.probe(MPI_ANY_SOURCE, MPI_ANY_TAG);
     int source = status.MPI_SOURCE;
+    if (status.MPI_TAG == Tag::ERROR) {
+      // Notification only -- the matching RESULT is what frees this worker.
+      handle_error_message(source, status);
+      return;
+    }
     if (status.MPI_TAG == Tag::RESULT) {
       handle_result_message(source, status);
     } else {
@@ -334,10 +385,6 @@ class NaiveMPIWorkDistributor {
   }
 
   void handle_result_message(int source, MPI_Status& probe_status) {
-    int worker_idx = rank_to_worker_idx(source);
-    int64_t task_id = m_worker_current_task_indices[worker_idx];
-    m_worker_current_task_indices[worker_idx] = -1;
-
     using result_type = MPI_Type<ResultT>;
     int count;
     DYNAMPI_MPI_CHECK(MPI_Get_count, (&probe_status, result_type::value, &count));
@@ -346,10 +393,32 @@ class NaiveMPIWorkDistributor {
     result_type::resize(result_data, count);
     m_communicator.recv(result_data, source, Tag::RESULT);
 
+    store_completed_task(source, std::move(result_data));
+  }
+
+  // A worker reporting a failed task. The placeholder result that follows keeps
+  // the ordered result sequence contiguous, so a caller that recovers still
+  // gets one (default-constructed) entry per task and the indices of the
+  // surviving results do not shift.
+  void handle_error_message(int source, MPI_Status& probe_status) {
+    int count;
+    DYNAMPI_MPI_CHECK(MPI_Get_count, (&probe_status, MPI_CHAR, &count));
+    std::string message;
+    MPI_Type<std::string>::resize(message, count);
+    m_communicator.recv(message, source, Tag::ERROR);
+
+    m_task_errors.record(TaskError{source, std::move(message)});
+  }
+
+  void store_completed_task(int source, ResultT result) {
+    int worker_idx = rank_to_worker_idx(source);
+    int64_t task_id = m_worker_current_task_indices[worker_idx];
+    m_worker_current_task_indices[worker_idx] = -1;
+
     // Store in vector (using relative indexing)
     size_t vector_idx = task_id - m_front_result_idx;
     ensure_result_capacity(vector_idx + 1);
-    m_pending_results[vector_idx] = std::move(result_data);
+    m_pending_results[vector_idx] = std::move(result);
     m_pending_results_valid[vector_idx] = true;
     update_contiguous_results_count(task_id);
   }

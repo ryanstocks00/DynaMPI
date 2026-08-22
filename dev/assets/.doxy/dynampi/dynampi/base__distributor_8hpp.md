@@ -39,8 +39,8 @@
 
 | Type | Name |
 | ---: | :--- |
-| class | [**BaseMPIWorkDistributor**](classdynampi_1_1BaseMPIWorkDistributor.md) &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**TaskT**](structdynampi_1_1MPI__Type.md), [**typename**](structdynampi_1_1MPI__Type.md) [**ResultT**](structdynampi_1_1MPI__Type.md), Options&gt;<br> |
-| struct | [**Config**](structdynampi_1_1BaseMPIWorkDistributor_1_1Config.md) <br> |
+| class | [**BaseWorkDistributor**](classdynampi_1_1BaseWorkDistributor.md) &lt;[**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**TaskT**](namespacedynampi.md#function-check_fixed_size_mpi_type), [**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**ResultT**](namespacedynampi.md#function-check_fixed_size_mpi_type), Options&gt;<br> |
+| struct | [**Config**](structdynampi_1_1BaseWorkDistributor_1_1Config.md) <br> |
 | struct | [**enable\_prioritization**](structdynampi_1_1enable__prioritization.md) <br> |
 | struct | [**prioritize\_tasks\_t**](structdynampi_1_1prioritize__tasks__t.md) <br> |
 

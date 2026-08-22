@@ -25,6 +25,7 @@
 * `#include "../mpi/mpi_communicator.hpp"`
 * `#include "../mpi/mpi_types.hpp"`
 * `#include "dynampi/impl/base_distributor.hpp"`
+* `#include "dynampi/task_error.hpp"`
 * `#include "dynampi/utilities/timer.hpp"`
 
 
@@ -50,10 +51,10 @@
 
 | Type | Name |
 | ---: | :--- |
-| class | [**NaiveMPIWorkDistributor**](classdynampi_1_1NaiveMPIWorkDistributor.md) &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**TaskT**](structdynampi_1_1MPI__Type.md), [**typename**](structdynampi_1_1MPI__Type.md) [**ResultT**](structdynampi_1_1MPI__Type.md), Options&gt;<br> |
-| struct | [**Config**](structdynampi_1_1NaiveMPIWorkDistributor_1_1Config.md) <br> |
-| struct | [**RunConfig**](structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig.md) <br> |
-| struct | [**Statistics**](structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics.md) <br> |
+| class | [**NaiveWorkDistributor**](classdynampi_1_1NaiveWorkDistributor.md) &lt;[**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**TaskT**](namespacedynampi.md#function-check_fixed_size_mpi_type), [**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**ResultT**](namespacedynampi.md#function-check_fixed_size_mpi_type), Options&gt;<br> |
+| struct | [**Config**](structdynampi_1_1NaiveWorkDistributor_1_1Config.md) <br> |
+| struct | [**RunConfig**](structdynampi_1_1NaiveWorkDistributor_1_1RunConfig.md) <br> |
+| struct | [**Statistics**](structdynampi_1_1NaiveWorkDistributor_1_1Statistics.md) <br> |
 
 
 

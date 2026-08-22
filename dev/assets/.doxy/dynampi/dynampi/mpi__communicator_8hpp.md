@@ -11,6 +11,9 @@
 
 
 * `#include <mpi.h>`
+* `#include <algorithm>`
+* `#include <cstddef>`
+* `#include <limits>`
 * `#include <optional>`
 * `#include <variant>`
 * `#include "dynampi/mpi/mpi_group.hpp"`

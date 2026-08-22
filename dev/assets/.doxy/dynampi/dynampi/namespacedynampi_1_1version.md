@@ -35,10 +35,10 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**int**](structdynampi_1_1MPI__Type.md) | [**major**](#variable-major)   = `[**DYNAMPI\_VERSION\_MAJOR**](structdynampi_1_1MPI__Type.md)`<br> |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**int**](structdynampi_1_1MPI__Type.md) | [**minor**](#variable-minor)   = `[**DYNAMPI\_VERSION\_MINOR**](structdynampi_1_1MPI__Type.md)`<br> |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**int**](structdynampi_1_1MPI__Type.md) | [**patch**](#variable-patch)   = `[**DYNAMPI\_VERSION\_PATCH**](structdynampi_1_1MPI__Type.md)`<br> |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) std::string\_view | [**string**](#variable-string)   = `[**DYNAMPI\_VERSION\_STRING**](dynampi_8hpp.md#define-dynampi_version_string)`<br> |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**major**](#variable-major)   = `[**DYNAMPI\_VERSION\_MAJOR**](version_8hpp.md#define-dynampi_version_major)`<br> |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**minor**](#variable-minor)   = `[**DYNAMPI\_VERSION\_MINOR**](version_8hpp.md#define-dynampi_version_minor)`<br> |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**patch**](#variable-patch)   = `[**DYNAMPI\_VERSION\_PATCH**](version_8hpp.md#define-dynampi_version_patch)`<br> |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) std::string\_view | [**string**](#variable-string)   = `[**DYNAMPI\_VERSION\_STRING**](version_8hpp.md#define-dynampi_version_string)`<br> |
 
 
 
@@ -59,9 +59,9 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) std::string\_view | [**commit\_hash**](#function-commit_hash) () <br> |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) std::string\_view | [**compile\_date**](#function-compile_date) () <br> |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**bool**](structdynampi_1_1MPI__Type.md) | [**is\_at\_least**](#function-is_at_least) ([**int**](structdynampi_1_1MPI__Type.md) v\_major, [**int**](structdynampi_1_1MPI__Type.md) v\_minor, [**int**](structdynampi_1_1MPI__Type.md) v\_patch) <br> |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) std::string\_view | [**commit\_hash**](#function-commit_hash) () <br> |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) std::string\_view | [**compile\_date**](#function-compile_date) () <br> |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**bool**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**is\_at\_least**](#function-is_at_least) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) v\_major, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) v\_minor, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) v\_patch) <br> |
 
 
 
@@ -191,5 +191,5 @@ constexpr  bool dynampi::version::is_at_least (
 <hr>
 
 ------------------------------
-The documentation for this class was generated from the following file `/home/runner/work/DynaMPI/DynaMPI/include/dynampi/dynampi.hpp`
+The documentation for this class was generated from the following file `/home/runner/work/DynaMPI/DynaMPI/include/dynampi/version.hpp`
 

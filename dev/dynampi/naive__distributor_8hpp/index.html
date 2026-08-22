@@ -417,14 +417,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mpi_compare_and_swap_design/" class="md-nav__link">
+      <a href="../../lockfree_rma_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Lock-Free Design
+    Lock-Free RMA Design
   
 
     
@@ -532,6 +532,7 @@
 <li><code>#include "../mpi/mpi_communicator.hpp"</code></li>
 <li><code>#include "../mpi/mpi_types.hpp"</code></li>
 <li><code>#include "dynampi/impl/base_distributor.hpp"</code></li>
+<li><code>#include "dynampi/task_error.hpp"</code></li>
 <li><code>#include "dynampi/utilities/timer.hpp"</code></li>
 </ul>
 <h2 id="namespaces">Namespaces</h2>
@@ -560,19 +561,19 @@
 <tbody>
 <tr>
 <td style="text-align: right;">class</td>
-<td style="text-align: left;"><a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>NaiveMPIWorkDistributor</strong></a> &lt;<a href="../structdynampi_1_1MPI__Type/"><strong>typename</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>TaskT</strong></a>, <a href="../structdynampi_1_1MPI__Type/"><strong>typename</strong></a> <a href="../structdynampi_1_1MPI__Type/"><strong>ResultT</strong></a>, Options&gt;<br></td>
+<td style="text-align: left;"><a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>NaiveWorkDistributor</strong></a> &lt;<a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>typename</strong></a> <a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>TaskT</strong></a>, <a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>typename</strong></a> <a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>ResultT</strong></a>, Options&gt;<br></td>
 </tr>
 <tr>
 <td style="text-align: right;">struct</td>
-<td style="text-align: left;"><a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Config/"><strong>Config</strong></a> <br></td>
+<td style="text-align: left;"><a href="../structdynampi_1_1NaiveWorkDistributor_1_1Config/"><strong>Config</strong></a> <br></td>
 </tr>
 <tr>
 <td style="text-align: right;">struct</td>
-<td style="text-align: left;"><a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig/"><strong>RunConfig</strong></a> <br></td>
+<td style="text-align: left;"><a href="../structdynampi_1_1NaiveWorkDistributor_1_1RunConfig/"><strong>RunConfig</strong></a> <br></td>
 </tr>
 <tr>
 <td style="text-align: right;">struct</td>
-<td style="text-align: left;"><a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics/"><strong>Statistics</strong></a> <br></td>
+<td style="text-align: left;"><a href="../structdynampi_1_1NaiveWorkDistributor_1_1Statistics/"><strong>Statistics</strong></a> <br></td>
 </tr>
 </tbody>
 </table>

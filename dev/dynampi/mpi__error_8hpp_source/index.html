@@ -417,14 +417,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mpi_compare_and_swap_design/" class="md-nav__link">
+      <a href="../../lockfree_rma_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Lock-Free Design
+    Lock-Free RMA Design
   
 
     
@@ -527,10 +527,10 @@
 <a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a><span class="w">  </span><span class="kt">char</span><span class="w"> </span><span class="n">error_string</span><span class="p">[</span><span class="n">MPI_MAX_ERROR_STRING</span><span class="p">];</span>
 <a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">length_of_error_string</span><span class="p">;</span>
 <a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="w">  </span><span class="n">MPI_Error_string</span><span class="p">(</span><span class="n">err</span><span class="p">,</span><span class="w"> </span><span class="n">error_string</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">length_of_error_string</span><span class="p">);</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="w">  </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">&quot;MPI error in &quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">command</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;: &quot;</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="w">  </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">"MPI error in "</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">command</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">": "</span><span class="w"> </span><span class="o">+</span>
 <a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="w">                           </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">error_string</span><span class="p">,</span><span class="w"> </span><span class="n">length_of_error_string</span><span class="p">)</span>
 <a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a><span class="cp">#ifdef DYNAMPI_HAS_SOURCE_LOCATION</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a><span class="w">                           </span><span class="o">+</span><span class="w"> </span><span class="s">&quot; at &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">loc</span><span class="p">.</span><span class="n">file_name</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;:&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">loc</span><span class="p">.</span><span class="n">line</span><span class="p">())</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a><span class="w">                           </span><span class="o">+</span><span class="w"> </span><span class="s">" at "</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">loc</span><span class="p">.</span><span class="n">file_name</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">":"</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">loc</span><span class="p">.</span><span class="n">line</span><span class="p">())</span>
 <a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a><span class="cp">#endif</span>
 <a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a><span class="w">  </span><span class="p">);</span>
 <a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a><span class="p">}</span>

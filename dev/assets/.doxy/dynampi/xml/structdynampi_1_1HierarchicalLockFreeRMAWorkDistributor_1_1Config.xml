@@ -1,0 +1,192 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config" kind="struct" language="C++" prot="public">
+    <compoundname>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</compoundname>
+    <includes refid="hierarchical__lockfree__rma__distributor_8hpp" local="no">hierarchical_lockfree_rma_distributor.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1ab07419409417faa99ecc0391b2332711" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_Comm</ref></type>
+        <definition>MPI_Comm dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::comm</definition>
+        <argsstring></argsstring>
+        <name>comm</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config::comm</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">MPI_COMM_WORLD</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="630" column="14" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="630" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a7ef5e1c480f7046c8bed06aa0098e4fc" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::manager_rank</definition>
+        <argsstring></argsstring>
+        <name>manager_rank</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config::manager_rank</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="631" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="631" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a3ef56a6689a49f93f66a0911673a2b40" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>bool dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::auto_run_workers</definition>
+        <argsstring></argsstring>
+        <name>auto_run_workers</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config::auto_run_workers</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="632" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="632" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a629f7e117633eae979e5e46cd1d31ee6" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::max_tasks</definition>
+        <argsstring></argsstring>
+        <name>max_tasks</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config::max_tasks</qualifiedname>
+        <initializer>= 8192</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="633" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="633" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1aa3aad081af68c4b2793c06b34d23cee0" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::max_local_tasks</definition>
+        <argsstring></argsstring>
+        <name>max_local_tasks</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config::max_local_tasks</qualifiedname>
+        <initializer>= 8192</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="634" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="634" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a9b7640aa8d334c35892cf42a7f19249b" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::max_task_count</definition>
+        <argsstring></argsstring>
+        <name>max_task_count</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config::max_task_count</qualifiedname>
+        <initializer>= 256</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="635" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="635" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a66cac7eecb18d39a3c63d445e5ff6167" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::max_result_count</definition>
+        <argsstring></argsstring>
+        <name>max_result_count</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config::max_result_count</qualifiedname>
+        <initializer>= 256</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="636" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="636" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a9859d655f0563f57fa64710a053e53be" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::max_local_group_size</definition>
+        <argsstring></argsstring>
+        <name>max_local_group_size</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config::max_local_group_size</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="639" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="639" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a4fe1059ba7e94db179c147a9a45199ba" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::max_upper_fanout</definition>
+        <argsstring></argsstring>
+        <name>max_upper_fanout</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config::max_upper_fanout</qualifiedname>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="642" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="642" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a7f027842a82dc06a23f296f754d784c5" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">int</ref></type>
+        <definition>int dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::max_pending_rounds</definition>
+        <argsstring></argsstring>
+        <name>max_pending_rounds</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config::max_pending_rounds</qualifiedname>
+        <initializer>= 2</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="645" column="9" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="645" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a3cbbed4d8bb4233de3ee3bb7a409ff08" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
+        <definition>bool dynampi::HierarchicalLockFreeRMAWorkDistributor&lt; TaskT, ResultT, Options &gt;::Config::rethrow_task_errors</definition>
+        <argsstring></argsstring>
+        <name>rethrow_task_errors</name>
+        <qualifiedname>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config::rethrow_task_errors</qualifiedname>
+        <initializer>= <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">true</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="649" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="649" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" line="629" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/hierarchical_lockfree_rma_distributor.hpp" bodystart="629" bodyend="650"/>
+    <listofallmembers>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a3ef56a6689a49f93f66a0911673a2b40" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</scope><name>auto_run_workers</name></member>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1ab07419409417faa99ecc0391b2332711" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</scope><name>comm</name></member>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a7ef5e1c480f7046c8bed06aa0098e4fc" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</scope><name>manager_rank</name></member>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a9859d655f0563f57fa64710a053e53be" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</scope><name>max_local_group_size</name></member>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1aa3aad081af68c4b2793c06b34d23cee0" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</scope><name>max_local_tasks</name></member>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a7f027842a82dc06a23f296f754d784c5" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</scope><name>max_pending_rounds</name></member>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a66cac7eecb18d39a3c63d445e5ff6167" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</scope><name>max_result_count</name></member>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a9b7640aa8d334c35892cf42a7f19249b" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</scope><name>max_task_count</name></member>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a629f7e117633eae979e5e46cd1d31ee6" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</scope><name>max_tasks</name></member>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a4fe1059ba7e94db179c147a9a45199ba" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</scope><name>max_upper_fanout</name></member>
+      <member refid="structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config_1a3cbbed4d8bb4233de3ee3bb7a409ff08" prot="public" virt="non-virtual"><scope>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</scope><name>rethrow_task_errors</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

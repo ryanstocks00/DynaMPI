@@ -52,17 +52,17 @@
 
 | Type | Name |
 | ---: | :--- |
-|   | [**MPIGroup**](#function-mpigroup-13) ([**const**](structdynampi_1_1MPI__Type.md) [**MPICommunicator**](classdynampi_1_1MPICommunicator.md)&lt; Options... &gt; & comm) <br> |
-|   | [**MPIGroup**](#function-mpigroup-23) ([**const**](structdynampi_1_1MPI__Type.md) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & other) = delete<br> |
+|   | [**MPIGroup**](#function-mpigroup-13) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPICommunicator**](classdynampi_1_1MPICommunicator.md)&lt; Options... &gt; & comm) <br> |
+|   | [**MPIGroup**](#function-mpigroup-23) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & other) = delete<br> |
 |   | [**MPIGroup**](#function-mpigroup-33) ([**MPIGroup**](classdynampi_1_1MPIGroup.md) && other) noexcept<br> |
-|  [**MPI\_Group**](structdynampi_1_1MPI__Type.md) | [**get**](#function-get) () const<br> |
+|  [**MPI\_Group**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**get**](#function-get) () const<br> |
 |   | [**operator MPI\_Group**](#function-operator-mpi_group) () const<br> |
-|  [**MPIGroup**](classdynampi_1_1MPIGroup.md) & | [**operator=**](#function-operator) ([**const**](structdynampi_1_1MPI__Type.md) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & other) = delete<br> |
+|  [**MPIGroup**](classdynampi_1_1MPIGroup.md) & | [**operator=**](#function-operator) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & other) = delete<br> |
 |  [**MPIGroup**](classdynampi_1_1MPIGroup.md) & | [**operator=**](#function-operator_1) ([**MPIGroup**](classdynampi_1_1MPIGroup.md) && other) noexcept<br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**rank**](#function-rank) () const<br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**size**](#function-size) () const<br> |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**translate\_rank**](#function-translate_rank) ([**int**](structdynampi_1_1MPI__Type.md) rank, [**const**](structdynampi_1_1MPI__Type.md) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & to\_group) const<br> |
-|  [**void**](structdynampi_1_1MPI__Type.md) | [**translate\_ranks**](#function-translate_ranks) ([**const**](structdynampi_1_1MPI__Type.md) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & to\_group, [**int**](structdynampi_1_1MPI__Type.md) n, [**const**](structdynampi_1_1MPI__Type.md) [**int**](structdynampi_1_1MPI__Type.md) ranks, [**int**](structdynampi_1_1MPI__Type.md) translated\_ranks) const<br> |
+|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**rank**](#function-rank) () const<br> |
+|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**size**](#function-size) () const<br> |
+|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**translate\_rank**](#function-translate_rank) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) rank, [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & to\_group) const<br> |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**translate\_ranks**](#function-translate_ranks) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & to\_group, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) n, [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) ranks, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) translated\_ranks) const<br> |
 |   | [**~MPIGroup**](#function-mpigroup) () <br> |
 
 
@@ -70,7 +70,7 @@
 
 | Type | Name |
 | ---: | :--- |
-|  [**int**](structdynampi_1_1MPI__Type.md) | [**contains\_rank\_in\_group**](#function-contains_rank_in_group) ([**int**](structdynampi_1_1MPI__Type.md) rank\_in\_reference, [**const**](structdynampi_1_1MPI__Type.md) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & reference\_group, [**const**](structdynampi_1_1MPI__Type.md) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & target\_group) <br> |
+|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**contains\_rank\_in\_group**](#function-contains_rank_in_group) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) rank\_in\_reference, [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & reference\_group, [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & target\_group) <br> |
 
 
 

@@ -417,14 +417,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mpi_compare_and_swap_design/" class="md-nav__link">
+      <a href="../../lockfree_rma_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Lock-Free Design
+    Lock-Free RMA Design
   
 
     
@@ -486,28 +486,34 @@
 <h1 id="class-hierarchy">Class Hierarchy</h1>
 <p>This inheritance list is sorted roughly, but not completely, alphabetically:</p>
 <ul>
-<li><strong>class</strong> <a href="../classdynampi_1_1BaseMPIWorkDistributor/"><strong>dynampi::BaseMPIWorkDistributor</strong></a> </li>
-<li><strong>class</strong> <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a> </li>
+<li><strong>class</strong> <a href="../classdynampi_1_1BaseWorkDistributor/"><strong>dynampi::BaseWorkDistributor</strong></a> </li>
+<li><strong>class</strong> <a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a> </li>
+<li><strong>class</strong> <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a> </li>
 <li><strong>class</strong> <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a> </li>
 <li><strong>class</strong> <a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a> </li>
-<li><strong>class</strong> <a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a> </li>
-<li><strong>class</strong> <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a> </li>
+<li><strong>class</strong> <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a> </li>
 <li><strong>class</strong> <a href="../classdynampi_1_1Timer/"><strong>dynampi::Timer</strong></a> </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1BaseMPIWorkDistributor_1_1Config/"><strong>dynampi::BaseMPIWorkDistributor::Config</strong></a> </li>
+<li><strong>class</strong> <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a> </li>
+<li><strong>class</strong> <a href="../classdynampi_1_1detail_1_1TaskErrorLog/"><strong>dynampi::detail::TaskErrorLog</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1BaseWorkDistributor_1_1Config/"><strong>dynampi::BaseWorkDistributor::Config</strong></a> </li>
 <li><strong>struct</strong> <a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a> </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalMPIWorkDistributor::Config</strong></a> </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig/"><strong>dynampi::HierarchicalMPIWorkDistributor::RunConfig</strong></a> </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config/"><strong>dynampi::LockFreeMPIWorkDistributor::Config</strong></a> </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig/"><strong>dynampi::LockFreeMPIWorkDistributor::RunConfig</strong></a> </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics/"><strong>dynampi::LockFreeMPIWorkDistributor::Statistics</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1RunConfig/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::RunConfig</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalWorkDistributor::Config</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1RunConfig/"><strong>dynampi::HierarchicalWorkDistributor::RunConfig</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::LockFreeRMAWorkDistributor::Config</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig/"><strong>dynampi::LockFreeRMAWorkDistributor::RunConfig</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1Statistics/"><strong>dynampi::LockFreeRMAWorkDistributor::Statistics</strong></a> </li>
 <li><strong>struct</strong> <a href="../structdynampi_1_1MPI__Type/"><strong>dynampi::MPI_Type</strong></a> </li>
 <li><strong>struct</strong> <a href="../structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4/"><strong>dynampi::MPI_Type&lt; std::nullptr_t &gt;</strong></a> </li>
 <li><strong>struct</strong> <a href="../structdynampi_1_1MPI__Type_3_01std_1_1string_01_4/"><strong>dynampi::MPI_Type&lt; std::string &gt;</strong></a> </li>
 <li><strong>struct</strong> <a href="../structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051/"><strong>dynampi::MPI_Type&lt; std::vector&lt; T &gt;, std::enable_if_t&lt; has_dynampi_mpi_type&lt; T &gt;::value &gt; &gt;</strong></a> </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor::Config</strong></a> </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Config/"><strong>dynampi::NaiveMPIWorkDistributor::Config</strong></a> </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig/"><strong>dynampi::NaiveMPIWorkDistributor::RunConfig</strong></a> </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics/"><strong>dynampi::NaiveMPIWorkDistributor::Statistics</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1NaiveWorkDistributor_1_1Config/"><strong>dynampi::NaiveWorkDistributor::Config</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1NaiveWorkDistributor_1_1RunConfig/"><strong>dynampi::NaiveWorkDistributor::RunConfig</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1NaiveWorkDistributor_1_1Statistics/"><strong>dynampi::NaiveWorkDistributor::Statistics</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1TaskError/"><strong>dynampi::TaskError</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1detail_1_1LockFreeRMALevel_1_1ClaimedRange/"><strong>dynampi::detail::LockFreeRMALevel::ClaimedRange</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1detail_1_1LockFreeRMALevel_1_1Config/"><strong>dynampi::detail::LockFreeRMALevel::Config</strong></a> </li>
 <li><strong>struct</strong> <a href="../structdynampi_1_1prioritize__tasks__t/"><strong>dynampi::prioritize_tasks_t</strong></a>     <ul>
 <li><strong>struct</strong> <a href="../structdynampi_1_1enable__prioritization/"><strong>dynampi::enable_prioritization</strong></a> </li>
 </ul>
@@ -516,10 +522,16 @@
 <li><strong>struct</strong> <a href="../structdynampi_1_1track__statistics/"><strong>dynampi::track_statistics</strong></a> </li>
 </ul>
 </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Statistics/"><strong>dynampi::HierarchicalMPIWorkDistributor::Statistics</strong></a> </li>
-<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1TaskRequest/"><strong>dynampi::HierarchicalMPIWorkDistributor::TaskRequest</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::BridgeHop</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1PendingRelay/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::PendingRelay</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Statistics/"><strong>dynampi::HierarchicalWorkDistributor::Statistics</strong></a> </li>
+<li><strong>struct</strong> <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1TaskRequest/"><strong>dynampi::HierarchicalWorkDistributor::TaskRequest</strong></a> </li>
 <li><strong>struct</strong> <a href="../structoption__value/"><strong>option_value</strong></a> </li>
 <li><strong>struct</strong> <a href="../structoption__value_3_01Option_00_01Head_00_01Tail_8_8_8_01_4/"><strong>option_value&lt; Option, Head, Tail... &gt;</strong></a> </li>
+<li><strong>class</strong> <strong>std::runtime_error</strong>    <ul>
+<li><strong>class</strong> <a href="../classdynampi_1_1TaskFailure/"><strong>dynampi::TaskFailure</strong></a> </li>
+</ul>
+</li>
 <li><strong>class</strong> <strong>std::false_type</strong>    <ul>
 <li><strong>struct</strong> <a href="../structdynampi_1_1has__dynampi__mpi__type/"><strong>dynampi::has_dynampi_mpi_type</strong></a> </li>
 </ul>

@@ -13,6 +13,7 @@
 * `#include <mpi.h>`
 * `#include <cassert>`
 * `#include <cstddef>`
+* `#include <stdexcept>`
 * `#include <string>`
 * `#include <type_traits>`
 * `#include <vector>`
@@ -40,12 +41,12 @@
 
 | Type | Name |
 | ---: | :--- |
-| struct | [**MPI\_Type**](structdynampi_1_1MPI__Type.md) &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**T**](structdynampi_1_1MPI__Type.md), [**typename**](structdynampi_1_1MPI__Type.md)&gt;<br> |
+| struct | [**MPI\_Type**](structdynampi_1_1MPI__Type.md) &lt;[**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type), [**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type)&gt;<br> |
 | struct | [**MPI\_Type&lt; std::nullptr\_t &gt;**](structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4.md) &lt;&gt;<br> |
 | struct | [**MPI\_Type&lt; std::string &gt;**](structdynampi_1_1MPI__Type_3_01std_1_1string_01_4.md) &lt;&gt;<br> |
-| struct | [**MPI\_Type&lt; std::vector&lt; T &gt;, std::enable\_if\_t&lt; has\_dynampi\_mpi\_type&lt; T &gt;::value &gt; &gt;**](structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051.md) &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**T**](structdynampi_1_1MPI__Type.md)&gt;<br> |
-| struct | [**has\_dynampi\_mpi\_type**](structdynampi_1_1has__dynampi__mpi__type.md) &lt;[**typename**](structdynampi_1_1MPI__Type.md), [**typename**](structdynampi_1_1MPI__Type.md)&gt;<br> |
-| struct | [**has\_dynampi\_mpi\_type&lt; U, std::void\_t&lt; decltype(MPI\_Type&lt; U &gt;::value)&gt; &gt;**](structdynampi_1_1has__dynampi__mpi__type_3_01U_00_01std_1_1void__t_3_01decltype_07MPI__Type_3_01U_01_4_1_1value_08_4_01_4.md) &lt;[**typename**](structdynampi_1_1MPI__Type.md) [**U**](structdynampi_1_1MPI__Type.md)&gt;<br> |
+| struct | [**MPI\_Type&lt; std::vector&lt; T &gt;, std::enable\_if\_t&lt; has\_dynampi\_mpi\_type&lt; T &gt;::value &gt; &gt;**](structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051.md) &lt;[**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type)&gt;<br> |
+| struct | [**has\_dynampi\_mpi\_type**](structdynampi_1_1has__dynampi__mpi__type.md) &lt;[**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type), [**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type)&gt;<br> |
+| struct | [**has\_dynampi\_mpi\_type&lt; U, std::void\_t&lt; decltype(MPI\_Type&lt; U &gt;::value)&gt; &gt;**](structdynampi_1_1has__dynampi__mpi__type_3_01U_00_01std_1_1void__t_3_01decltype_07MPI__Type_3_01U_01_4_1_1value_08_4_01_4.md) &lt;[**typename**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**U**](namespacedynampi.md#function-check_fixed_size_mpi_type)&gt;<br> |
 
 
 

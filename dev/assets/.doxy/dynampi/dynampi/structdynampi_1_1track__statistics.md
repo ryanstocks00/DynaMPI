@@ -47,7 +47,7 @@ Inherits the following classes: [dynampi::track\_statistics\_t](structdynampi_1_
 
 | Type | Name |
 | ---: | :--- |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**StatisticsMode**](namespacedynampi.md#enum-statisticsmode) | [**value**](#variable-value)   = `[**Mode**](structdynampi_1_1MPI__Type.md)`<br> |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**StatisticsMode**](namespacedynampi.md#enum-statisticsmode) | [**value**](#variable-value)   = `[**Mode**](namespacedynampi.md#function-check_fixed_size_mpi_type)`<br> |
 
 
 ## Public Static Attributes inherited from dynampi::track_statistics_t
@@ -56,7 +56,7 @@ See [dynampi::track\_statistics\_t](structdynampi_1_1track__statistics__t.md)
 
 | Type | Name |
 | ---: | :--- |
-|  [**constexpr**](structdynampi_1_1MPI__Type.md) [**StatisticsMode**](namespacedynampi.md#enum-statisticsmode) | [**value**](structdynampi_1_1track__statistics__t.md#variable-value)   = `StatisticsMode::None`<br> |
+|  [**constexpr**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**StatisticsMode**](namespacedynampi.md#enum-statisticsmode) | [**value**](structdynampi_1_1track__statistics__t.md#variable-value)   = `StatisticsMode::None`<br> |
 
 
 

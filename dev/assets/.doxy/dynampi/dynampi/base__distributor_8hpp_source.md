@@ -33,7 +33,7 @@ struct enable_prioritization : public prioritize_tasks_t {
 };
 
 template <typename TaskT, typename ResultT, typename... Options>
-class BaseMPIWorkDistributor {
+class BaseWorkDistributor {
  public:
   struct Config {
     MPI_Comm comm = MPI_COMM_WORLD;

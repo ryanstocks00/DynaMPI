@@ -417,14 +417,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mpi_compare_and_swap_design/" class="md-nav__link">
+      <a href="../../lockfree_rma_design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Lock-Free Design
+    Lock-Free RMA Design
   
 
     
@@ -758,209 +758,316 @@
 <h1 id="class-members">Class Members</h1>
 <h2 id="a">a</h2>
 <ul>
-<li><strong>auto_run_workers</strong> (<a href="../structdynampi_1_1BaseMPIWorkDistributor_1_1Config/"><strong>dynampi::BaseMPIWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalMPIWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config/"><strong>dynampi::LockFreeMPIWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Config/"><strong>dynampi::NaiveMPIWorkDistributor::Config</strong></a>)</li>
+<li><strong>auto_run_workers</strong> (<a href="../structdynampi_1_1BaseWorkDistributor_1_1Config/"><strong>dynampi::BaseWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::LockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1NaiveWorkDistributor_1_1Config/"><strong>dynampi::NaiveWorkDistributor::Config</strong></a>)</li>
+<li><strong>atomic_bytes</strong> (<a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a>)</li>
+<li><strong>atomic_count</strong> (<a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a>)</li>
 <li><strong>average_receive_size</strong> (<a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a>)</li>
 <li><strong>average_send_size</strong> (<a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a>)</li>
-<li><strong>allocate_task_to_child</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>allow_more_than_target_tasks</strong> (<a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig/"><strong>dynampi::HierarchicalMPIWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig/"><strong>dynampi::LockFreeMPIWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig/"><strong>dynampi::NaiveMPIWorkDistributor::RunConfig</strong></a>)</li>
-<li><strong>atomic_read</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>atomic_set</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>available</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>active_worker_count</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
+<li><strong>assign_hop_layers</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>allow_more_than_target_tasks</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1RunConfig/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1RunConfig/"><strong>dynampi::HierarchicalWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig/"><strong>dynampi::LockFreeRMAWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1NaiveWorkDistributor_1_1RunConfig/"><strong>dynampi::NaiveWorkDistributor::RunConfig</strong></a>)</li>
+<li><strong>allocate_task_to_child</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>atomic_read</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>atomic_set</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>active_worker_count</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
 <li><strong>AutoStart</strong> (<a href="../classdynampi_1_1Timer/"><strong>dynampi::Timer</strong></a>)</li>
 </ul>
 <h2 id="b">b</h2>
 <ul>
 <li><strong>bytes_received</strong> (<a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a>)</li>
 <li><strong>bytes_sent</strong> (<a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a>)</li>
-<li><strong>Base</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>batch_size_multiplier</strong> (<a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalMPIWorkDistributor::Config</strong></a>)</li>
+<li><strong>bridge_hop_done</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>build_upper_hops</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>Base</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>batch_size_multiplier</strong> (<a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalWorkDistributor::Config</strong></a>)</li>
 <li><strong>broadcast</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
-<li><strong>broadcast_done</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
+<li><strong>broadcast_done</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>BridgeHop</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::BridgeHop</strong></a>)</li>
 </ul>
 <h2 id="c">c</h2>
 <ul>
-<li><strong>comm</strong> (<a href="../structdynampi_1_1BaseMPIWorkDistributor_1_1Config/"><strong>dynampi::BaseMPIWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalMPIWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config/"><strong>dynampi::LockFreeMPIWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Config/"><strong>dynampi::NaiveMPIWorkDistributor::Config</strong></a>)</li>
+<li><strong>comm</strong> (<a href="../structdynampi_1_1BaseWorkDistributor_1_1Config/"><strong>dynampi::BaseWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::LockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1NaiveWorkDistributor_1_1Config/"><strong>dynampi::NaiveWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1detail_1_1LockFreeRMALevel_1_1Config/"><strong>dynampi::detail::LockFreeRMALevel::Config</strong></a>)</li>
 <li><strong>collective_count</strong> (<a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a>)</li>
-<li><strong>CommLayer</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>create_statistics</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>coordinator_per_node</strong> (<a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalMPIWorkDistributor::Config</strong></a>)</li>
-<li><strong>CONTROL_BYTES</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>Comm</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>compare_and_swap</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>comm_statistics</strong> (<a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics/"><strong>dynampi::LockFreeMPIWorkDistributor::Statistics</strong></a>, <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics/"><strong>dynampi::NaiveMPIWorkDistributor::Statistics</strong></a>, <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Statistics/"><strong>dynampi::HierarchicalMPIWorkDistributor::Statistics</strong></a>)</li>
+<li><strong>claim_and_execute</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>collect_level_errors</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>create_statistics</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>CONTROL_BYTES</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>Comm</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>comm_statistics</strong> (<a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1Statistics/"><strong>dynampi::LockFreeRMAWorkDistributor::Statistics</strong></a>, <a href="../structdynampi_1_1NaiveWorkDistributor_1_1Statistics/"><strong>dynampi::NaiveWorkDistributor::Statistics</strong></a>, <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Statistics/"><strong>dynampi::HierarchicalWorkDistributor::Statistics</strong></a>)</li>
 <li><strong>contains_rank_in_group</strong> (<a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>)</li>
 <li><strong>count</strong> (<a href="../structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4/"><strong>dynampi::MPI_Type&lt; std::nullptr_t &gt;</strong></a>, <a href="../structdynampi_1_1MPI__Type_3_01std_1_1string_01_4/"><strong>dynampi::MPI_Type&lt; std::string &gt;</strong></a>, <a href="../structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051/"><strong>dynampi::MPI_Type&lt; std::vector&lt; T &gt;, std::enable_if_t&lt; has_dynampi_mpi_type&lt; T &gt;::value &gt; &gt;</strong></a>)</li>
-<li><strong>collect_available_results</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
+<li><strong>collect_available_results</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>check_finished</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>claim_width</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>comm_rank</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>comm_size</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>child</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::BridgeHop</strong></a>)</li>
+<li><strong>child_len</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1PendingRelay/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::PendingRelay</strong></a>)</li>
 </ul>
 <h2 id="d">d</h2>
 <ul>
-<li><strong>determine_layer_from_world_rank</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>drain_results</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
+<li><strong>drain_results</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>distribute_current_round</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>drain_inflight_results_at_shutdown</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>drained</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
 </ul>
 <h2 id="e">e</h2>
 <ul>
-<li><strong>exchange_gathered_results</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>ensure_result_capacity</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
+<li><strong>emplace_upper_level</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>ERROR_COUNT_OFF</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>ERROR_SLOT_BYTES</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>E_DATA</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>E_RANK</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>error_slot</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>ensure_result_capacity</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>error</strong> (<a href="../classdynampi_1_1TaskFailure/"><strong>dynampi::TaskFailure</strong></a>)</li>
 <li><strong>elapsed</strong> (<a href="../classdynampi_1_1Timer/"><strong>dynampi::Timer</strong></a>)</li>
+<li><strong>empty</strong> (<a href="../classdynampi_1_1detail_1_1TaskErrorLog/"><strong>dynampi::detail::TaskErrorLog</strong></a>)</li>
 </ul>
 <h2 id="f">f</h2>
 <ul>
-<li><strong>finalize</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>finish_remaining_tasks</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>FINISHED_OFF</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>flush</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>fetch_add</strong> (<a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>)</li>
+<li><strong>finalize</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>finish_remaining_tasks</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>FINISHED_OFF</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>fetch_add</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>flush_local</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>flush_remote</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>fetch_and_op</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
+<li><strong>finish_marked</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::BridgeHop</strong></a>)</li>
 </ul>
 <h2 id="g">g</h2>
 <ul>
-<li><strong>get_next_task_to_send</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>get_parent_target</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>get_statistics</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>GATHER_SEQ_OFF</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>get_bytes</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
+<li><strong>gather_once</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>get_next_task_to_send</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>get_parent_target</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>get_statistics</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>get_bytes_local</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>get_ring_bytes_local</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
 <li><strong>gather</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 <li><strong>get</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>)</li>
+<li><strong>get_bytes</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 <li><strong>get_group</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
-<li><strong>gather_sorted</strong> (<a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>)</li>
 </ul>
 <h2 id="h">h</h2>
 <ul>
-<li><strong>HierarchicalMPIWorkDistributor</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>HEAD_OFF</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>handle_result_message</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
+<li><strong>HierarchicalLockFreeRMAWorkDistributor</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>harvest_top_level</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>has_task_errors</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>hops_done</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>HierarchicalWorkDistributor</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>HEAD_OFF</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>harvest_ready_results</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>harvest_task_errors</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>handle_error_message</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>handle_result_message</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>harvest_ready_results_throttled</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
 </ul>
 <h2 id="i">i</h2>
 <ul>
-<li><strong>idx_for_worker</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>insert_task</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>insert_tasks</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>is_leaf_worker</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>is_root_manager</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>initialize_window</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
+<li><strong>insert_task</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>insert_tasks</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>is_root_manager</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>idx_for_worker</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>is_leaf_worker</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>initialize_window</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
 <li><strong>iprobe</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
+<li><strong>isend</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
+<li><strong>isend_empty</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
+<li><strong>idle_wait</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>is_owner</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
 </ul>
 <h2 id="k">k</h2>
 <ul>
-<li><strong>kMaxTasksRequested</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
+<li><strong>kMaxTasksRequested</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>kMaxRecordedErrors</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>kMaxRmaChunkBytes</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 </ul>
 <h2 id="l">l</h2>
 <ul>
-<li><strong>LockFreeMPIWorkDistributor</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
+<li><strong>last_upper_level</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>LOG_ENTRY_BYTES</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>LockFreeRMAWorkDistributor</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>log_slot</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>LockFreeRMALevel</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>local_load_i64</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>local_only</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>local_store_i64</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>layers</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::BridgeHop</strong></a>)</li>
 </ul>
 <h2 id="m">m</h2>
 <ul>
-<li><strong>manager_rank</strong> (<a href="../structdynampi_1_1BaseMPIWorkDistributor_1_1Config/"><strong>dynampi::BaseMPIWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalMPIWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config/"><strong>dynampi::LockFreeMPIWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1MinimalLockFreeMPIWorkDistributor_1_1Config/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Config/"><strong>dynampi::NaiveMPIWorkDistributor::Config</strong></a>)</li>
-<li><strong>MPICommunicator</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>max_workers_per_coordinator</strong> (<a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalMPIWorkDistributor::Config</strong></a>, <a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>message_batch_size</strong> (<a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalMPIWorkDistributor::Config</strong></a>)</li>
-<li><strong>max_seconds</strong> (<a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig/"><strong>dynampi::HierarchicalMPIWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig/"><strong>dynampi::LockFreeMPIWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig/"><strong>dynampi::NaiveMPIWorkDistributor::RunConfig</strong></a>)</li>
-<li><strong>m_cached_parent_target</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_communicator</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_config</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_done</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_finalized</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_free_worker_indices</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_leader_group</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_local_group</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_results</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_results_received_from_child</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_results_returned</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_results_sent_to_parent</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_tasks_executed</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_tasks_received_from_parent</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_tasks_sent_to_child</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_unallocated_task_queue</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_worker_function</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_world_group</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>max_result_count</strong> (<a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config/"><strong>dynampi::LockFreeMPIWorkDistributor::Config</strong></a>)</li>
-<li><strong>max_task_count</strong> (<a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config/"><strong>dynampi::LockFreeMPIWorkDistributor::Config</strong></a>)</li>
-<li><strong>max_tasks</strong> (<a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1Config/"><strong>dynampi::LockFreeMPIWorkDistributor::Config</strong></a>)</li>
-<li><strong>m_collected_count</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_comm</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_gather_seq</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_local_results</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_max_result_count</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_max_task_count</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_result_elem</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_returned_count</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_seen_gather_seq</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_staging</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_statistics</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_task_base</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_task_elem</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_task_slot_stride</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_task_store</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_total_tasks</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_window</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_window_buffer</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_worker_window</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>make_statistics</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>maybe_participate_in_gather</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
+<li><strong>manager_rank</strong> (<a href="../structdynampi_1_1BaseWorkDistributor_1_1Config/"><strong>dynampi::BaseWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::LockFreeRMAWorkDistributor::Config</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../structdynampi_1_1NaiveWorkDistributor_1_1Config/"><strong>dynampi::NaiveWorkDistributor::Config</strong></a>)</li>
+<li><strong>max_local_group_size</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalWorkDistributor::Config</strong></a>)</li>
+<li><strong>max_local_tasks</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</strong></a>)</li>
+<li><strong>max_pending_rounds</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</strong></a>)</li>
+<li><strong>max_result_count</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::LockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1detail_1_1LockFreeRMALevel_1_1Config/"><strong>dynampi::detail::LockFreeRMALevel::Config</strong></a>)</li>
+<li><strong>max_task_count</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::LockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1detail_1_1LockFreeRMALevel_1_1Config/"><strong>dynampi::detail::LockFreeRMALevel::Config</strong></a>)</li>
+<li><strong>max_tasks</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::LockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1detail_1_1LockFreeRMALevel_1_1Config/"><strong>dynampi::detail::LockFreeRMALevel::Config</strong></a>)</li>
+<li><strong>max_upper_fanout</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalWorkDistributor::Config</strong></a>)</li>
+<li><strong>max_seconds</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1RunConfig/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1RunConfig/"><strong>dynampi::HierarchicalWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig/"><strong>dynampi::LockFreeRMAWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1NaiveWorkDistributor_1_1RunConfig/"><strong>dynampi::NaiveWorkDistributor::RunConfig</strong></a>)</li>
+<li><strong>m_config</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_finalized</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>m_local_collected_count</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>m_local_comm</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>m_local_level</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>m_local_task_store</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>m_owned_upper_levels</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>m_parent_level</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>m_results</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>m_solo</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>m_task_errors</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>m_upper_comms</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>m_worker_function</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>m_world_comm</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>MPICommunicator</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>manager_per_node</strong> (<a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalWorkDistributor::Config</strong></a>)</li>
+<li><strong>max_workers_per_manager</strong> (<a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalWorkDistributor::Config</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>message_batch_size</strong> (<a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalWorkDistributor::Config</strong></a>)</li>
+<li><strong>m_cached_parent_target</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_communicator</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>m_done</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_free_worker_indices</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_leader_parent_group</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_local_group</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_owned_leader_levels</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_prefetched_tasks</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_request_outstanding</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_results_received_from_child</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_results_sent_to_parent</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_round_active</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_subtree_leaf_count</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_tasks_executed</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_tasks_received_from_parent</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_tasks_sent_to_child</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_unallocated_task_queue</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>m_world_group</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>m_collected_count</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>m_comm</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_error_base</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_errors_seen</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_log_base</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_max_result_count</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_max_task_count</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_result_base</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_result_elem</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_result_slot_stride</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_returned_count</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>m_statistics</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>m_task_base</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_task_elem</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_task_slot_stride</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_task_store</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>m_total_tasks</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_window</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_window_buffer</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_worker_window</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>make_statistics</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
 <li><strong>m_ownership</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 <li><strong>MPIGroup</strong> (<a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>)</li>
 <li><strong>m_group</strong> (<a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>)</li>
-<li><strong>MinimalLockFreeMPIWorkDistributor</strong> (<a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_counter</strong> (<a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>max_result_size</strong> (<a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Config/"><strong>dynampi::NaiveMPIWorkDistributor::Config</strong></a>)</li>
-<li><strong>m_free_worker_ranks</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_front_result_idx</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_known_contiguous_results</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_pending_results</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_pending_results_valid</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_tasks_sent</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>m_worker_current_task_indices</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
+<li><strong>max_result_size</strong> (<a href="../structdynampi_1_1NaiveWorkDistributor_1_1Config/"><strong>dynampi::NaiveWorkDistributor::Config</strong></a>)</li>
+<li><strong>m_free_worker_ranks</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>m_front_result_idx</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>m_known_contiguous_results</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>m_pending_results</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>m_pending_results_valid</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>m_tasks_sent</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>m_worker_current_task_indices</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>message</strong> (<a href="../structdynampi_1_1TaskError/"><strong>dynampi::TaskError</strong></a>)</li>
+<li><strong>m_error</strong> (<a href="../classdynampi_1_1TaskFailure/"><strong>dynampi::TaskFailure</strong></a>)</li>
+<li><strong>m_cached_head</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_cached_total</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_claim_width</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_owner_collected_count</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_owner_errors</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_owner_marked_finished</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_owner_unordered_completed</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_peer_window</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_pending_end</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_pending_start</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_seen_finished</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>mark_finished</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>m_errors</strong> (<a href="../classdynampi_1_1detail_1_1TaskErrorLog/"><strong>dynampi::detail::TaskErrorLog</strong></a>)</li>
 </ul>
 <h2 id="n">n</h2>
 <ul>
-<li><strong>num_direct_children</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>num_workers</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>NaiveMPIWorkDistributor</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>num_tasks_requested</strong> (<a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1TaskRequest/"><strong>dynampi::HierarchicalMPIWorkDistributor::TaskRequest</strong></a>)</li>
+<li><strong>num_direct_children</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>num_workers</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>NaiveWorkDistributor</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>num_tasks_requested</strong> (<a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1TaskRequest/"><strong>dynampi::HierarchicalWorkDistributor::TaskRequest</strong></a>)</li>
 </ul>
 <h2 id="o">o</h2>
 <ul>
-<li><strong>ordered</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
+<li><strong>ordered</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
 <li><strong>Ownership</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 <li><strong>operator MPI_Comm</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
-<li><strong>operator=</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>)</li>
+<li><strong>operator=</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
 <li><strong>operator MPI_Group</strong> (<a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>)</li>
+<li><strong>owner_rank</strong> (<a href="../structdynampi_1_1detail_1_1LockFreeRMALevel_1_1Config/"><strong>dynampi::detail::LockFreeRMALevel::Config</strong></a>)</li>
+<li><strong>owner_available_capacity</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>owner_collected_count</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>owner_marked_finished</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>owner_published_count</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>owner_unordered_completed_estimate</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
 </ul>
 <h2 id="p">p</h2>
 <ul>
-<li><strong>prioritize_tasks</strong> (<a href="../classdynampi_1_1BaseMPIWorkDistributor/"><strong>dynampi::BaseMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>publish_task</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>put_bytes</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
+<li><strong>prioritize_tasks</strong> (<a href="../classdynampi_1_1BaseWorkDistributor/"><strong>dynampi::BaseWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>pipeline_depth</strong> (<a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalWorkDistributor::Config</strong></a>)</li>
+<li><strong>post_fetch_and_op</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>post_get_bytes</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>post_put_bytes</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>publish_tasks</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
 <li><strong>probe</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
+<li><strong>put_bytes</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 <li><strong>ptr</strong> (<a href="../structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4/"><strong>dynampi::MPI_Type&lt; std::nullptr_t &gt;</strong></a>, <a href="../structdynampi_1_1MPI__Type_3_01std_1_1string_01_4/"><strong>dynampi::MPI_Type&lt; std::string &gt;</strong></a>, <a href="../structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051/"><strong>dynampi::MPI_Type&lt; std::vector&lt; T &gt;, std::enable_if_t&lt; has_dynampi_mpi_type&lt; T &gt;::value &gt; &gt;</strong></a>)</li>
-<li><strong>pop_next_task</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>process_incoming_message</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
+<li><strong>pop_next_task</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>process_incoming_message</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>put_bytes_owner</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>put_ring_bytes</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>parent</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::BridgeHop</strong></a>)</li>
+<li><strong>pending_relays</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::BridgeHop</strong></a>)</li>
+<li><strong>pending_task_count</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::BridgeHop</strong></a>)</li>
+<li><strong>parent_start</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1PendingRelay/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::PendingRelay</strong></a>)</li>
 </ul>
 <h2 id="q">q</h2>
 <ul>
-<li><strong>QueueT</strong> (<a href="../classdynampi_1_1BaseMPIWorkDistributor/"><strong>dynampi::BaseMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
+<li><strong>QueueT</strong> (<a href="../classdynampi_1_1BaseWorkDistributor/"><strong>dynampi::BaseWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
 </ul>
 <h2 id="r">r</h2>
 <ul>
 <li><strong>recv_count</strong> (<a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a>)</li>
 <li><strong>recv_time</strong> (<a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a>)</li>
 <li><strong>reset</strong> (<a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a>, <a href="../classdynampi_1_1Timer/"><strong>dynampi::Timer</strong></a>)</li>
-<li><strong>receive_done_from</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>receive_execute_return_task_from</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>receive_from_anyone</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>receive_request_batch_from</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>receive_request_from</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>receive_result_batch_from</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>receive_result_from</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>receive_task_batch_from</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>remaining_tasks_count</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>result_mpi_type</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>return_results_and_request_next_batch_from_manager</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>run_tasks</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>run_worker</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>read_task</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>request_gather</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>run_one_task_locally</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
+<li><strong>RMALevel</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>rethrow_task_errors</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Config/"><strong>dynampi::HierarchicalWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1Config/"><strong>dynampi::LockFreeRMAWorkDistributor::Config</strong></a>, <a href="../structdynampi_1_1NaiveWorkDistributor_1_1Config/"><strong>dynampi::NaiveWorkDistributor::Config</strong></a>)</li>
+<li><strong>remaining_tasks_count</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>run_leaf_leader_worker</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>run_local_worker</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>run_node_manager</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>run_one_solo_task</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>run_tasks</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>run_worker</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>receive_batch</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>receive_done_from</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>receive_error_from</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>receive_execute_return_task_from</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>receive_from_anyone</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>receive_request_batch_from</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>receive_request_from</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>receive_result_batch_from</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>receive_result_from</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>receive_task_batch_from</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>release_prefetched_tasks</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>request_next_batch_if_room</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>result_mpi_type</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>run_intermediate_worker</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>R_COUNT</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>R_DATA</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>read_task_batch</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>report_task_error</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>result_slot</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>ring_slot</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>run_one_task_locally</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
 <li><strong>rank</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>)</li>
 <li><strong>recv</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 <li><strong>recv_any</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
@@ -968,74 +1075,98 @@
 <li><strong>recv_empty_message</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 <li><strong>resize</strong> (<a href="../structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4/"><strong>dynampi::MPI_Type&lt; std::nullptr_t &gt;</strong></a>, <a href="../structdynampi_1_1MPI__Type_3_01std_1_1string_01_4/"><strong>dynampi::MPI_Type&lt; std::string &gt;</strong></a>, <a href="../structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051/"><strong>dynampi::MPI_Type&lt; std::vector&lt; T &gt;, std::enable_if_t&lt; has_dynampi_mpi_type&lt; T &gt;::value &gt; &gt;</strong></a>)</li>
 <li><strong>resize_required</strong> (<a href="../structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4/"><strong>dynampi::MPI_Type&lt; std::nullptr_t &gt;</strong></a>, <a href="../structdynampi_1_1MPI__Type_3_01std_1_1string_01_4/"><strong>dynampi::MPI_Type&lt; std::string &gt;</strong></a>, <a href="../structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051/"><strong>dynampi::MPI_Type&lt; std::vector&lt; T &gt;, std::enable_if_t&lt; has_dynampi_mpi_type&lt; T &gt;::value &gt; &gt;</strong></a>)</li>
-<li><strong>run</strong> (<a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>rank_to_worker_idx</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>run_task_locally</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
+<li><strong>rank_to_worker_idx</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>run_task_locally</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>relay_buffer</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::BridgeHop</strong></a>)</li>
+<li><strong>relay_error_pending</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::BridgeHop</strong></a>)</li>
+<li><strong>record</strong> (<a href="../classdynampi_1_1detail_1_1TaskErrorLog/"><strong>dynampi::detail::TaskErrorLog</strong></a>)</li>
+<li><strong>rethrow_first_if</strong> (<a href="../classdynampi_1_1detail_1_1TaskErrorLog/"><strong>dynampi::detail::TaskErrorLog</strong></a>)</li>
 </ul>
 <h2 id="s">s</h2>
 <ul>
 <li><strong>send_count</strong> (<a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a>)</li>
 <li><strong>send_time</strong> (<a href="../structdynampi_1_1CommStatistics/"><strong>dynampi::CommStatistics</strong></a>)</li>
-<li><strong>StatisticsT</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>send_done_to_children_when_free</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>send_to_parent</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>send_to_worker</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>statistics_mode</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>store_result</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
+<li><strong>setup_levels</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>setup_topology</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>setup_upper_chain</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>step_bridge_hop</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>StatisticsT</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>send_batch</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>send_done_to_children_when_free</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>send_results_to_parent</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>send_to_parent</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>setup_leader_hierarchy</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>statistics_mode</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>subtree_leaf_count</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>subtree_manager_layers</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
 <li><strong>send</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 <li><strong>send_empty</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
-<li><strong>size</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>)</li>
+<li><strong>size</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>, <a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>, <a href="../classdynampi_1_1detail_1_1TaskErrorLog/"><strong>dynampi::detail::TaskErrorLog</strong></a>)</li>
 <li><strong>split</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 <li><strong>split_by_node</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
-<li><strong>set_counter</strong> (<a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>send_next_task_to_worker</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>start</strong> (<a href="../classdynampi_1_1Timer/"><strong>dynampi::Timer</strong></a>)</li>
+<li><strong>send_next_task_to_worker</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>store_completed_task</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>start</strong> (<a href="../classdynampi_1_1Timer/"><strong>dynampi::Timer</strong></a>, <a href="../structdynampi_1_1detail_1_1LockFreeRMALevel_1_1ClaimedRange/"><strong>dynampi::detail::LockFreeRMALevel::ClaimedRange</strong></a>)</li>
 <li><strong>stop</strong> (<a href="../classdynampi_1_1Timer/"><strong>dynampi::Timer</strong></a>)</li>
-<li><strong>source_layer</strong> (<a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1TaskRequest/"><strong>dynampi::HierarchicalMPIWorkDistributor::TaskRequest</strong></a>)</li>
 </ul>
 <h2 id="t">t</h2>
 <ul>
-<li><strong>Tag</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>target_num_tasks</strong> (<a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1RunConfig/"><strong>dynampi::HierarchicalMPIWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1RunConfig/"><strong>dynampi::LockFreeMPIWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1RunConfig/"><strong>dynampi::NaiveMPIWorkDistributor::RunConfig</strong></a>)</li>
-<li><strong>task_mpi_type</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>total_num_children</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>TOTAL_OFF</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>T_COUNT</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>T_DATA</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>task_slot</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>try_gather_results</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
+<li><strong>target_num_tasks</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1RunConfig/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1RunConfig/"><strong>dynampi::HierarchicalWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1LockFreeRMAWorkDistributor_1_1RunConfig/"><strong>dynampi::LockFreeRMAWorkDistributor::RunConfig</strong></a>, <a href="../structdynampi_1_1NaiveWorkDistributor_1_1RunConfig/"><strong>dynampi::NaiveWorkDistributor::RunConfig</strong></a>)</li>
+<li><strong>take_task_errors</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>top_level</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>Tag</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>take_tasks_from_queue</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>task_mpi_type</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>TOTAL_OFF</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>T_COUNT</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>T_DATA</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>task_slot</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>timed</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
+<li><strong>track_time</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 <li><strong>translate_rank</strong> (<a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>)</li>
 <li><strong>translate_ranks</strong> (<a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>)</li>
+<li><strong>TaskFailure</strong> (<a href="../classdynampi_1_1TaskFailure/"><strong>dynampi::TaskFailure</strong></a>)</li>
 <li><strong>Timer</strong> (<a href="../classdynampi_1_1Timer/"><strong>dynampi::Timer</strong></a>)</li>
+<li><strong>tasks</strong> (<a href="../structdynampi_1_1detail_1_1LockFreeRMALevel_1_1ClaimedRange/"><strong>dynampi::detail::LockFreeRMALevel::ClaimedRange</strong></a>)</li>
+<li><strong>take_errors</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>try_claim</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>total_claimed</strong> (<a href="../structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor::BridgeHop</strong></a>)</li>
+<li><strong>take</strong> (<a href="../classdynampi_1_1detail_1_1TaskErrorLog/"><strong>dynampi::detail::TaskErrorLog</strong></a>)</li>
 </ul>
 <h2 id="u">u</h2>
 <ul>
-<li><strong>use_immediate_recv</strong> (<a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Config/"><strong>dynampi::NaiveMPIWorkDistributor::Config</strong></a>)</li>
-<li><strong>update_contiguous_results_count</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
+<li><strong>UpperLevelRole</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>use_immediate_recv</strong> (<a href="../structdynampi_1_1NaiveWorkDistributor_1_1Config/"><strong>dynampi::NaiveWorkDistributor::Config</strong></a>)</li>
+<li><strong>update_contiguous_results_count</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
 </ul>
 <h2 id="v">v</h2>
 <ul>
+<li><strong>virtual_rank</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
 <li><strong>value</strong> (<a href="../structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4/"><strong>dynampi::MPI_Type&lt; std::nullptr_t &gt;</strong></a>, <a href="../structdynampi_1_1MPI__Type_3_01std_1_1string_01_4/"><strong>dynampi::MPI_Type&lt; std::string &gt;</strong></a>, <a href="../structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051/"><strong>dynampi::MPI_Type&lt; std::vector&lt; T &gt;, std::enable_if_t&lt; has_dynampi_mpi_type&lt; T &gt;::value &gt; &gt;</strong></a>, <a href="../structdynampi_1_1enable__prioritization/"><strong>dynampi::enable_prioritization</strong></a>, <a href="../structdynampi_1_1prioritize__tasks__t/"><strong>dynampi::prioritize_tasks_t</strong></a>, <a href="../structdynampi_1_1track__statistics/"><strong>dynampi::track_statistics</strong></a>, <a href="../structdynampi_1_1track__statistics__t/"><strong>dynampi::track_statistics_t</strong></a>, <a href="../structoption__value/"><strong>option_value</strong></a>, <a href="../structoption__value_3_01Option_00_01Head_00_01Tail_8_8_8_01_4/"><strong>option_value&lt; Option, Head, Tail... &gt;</strong></a>)</li>
 </ul>
 <h2 id="w">w</h2>
 <ul>
-<li><strong>worker_for_idx</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>worker_task_counts</strong> (<a href="../structdynampi_1_1LockFreeMPIWorkDistributor_1_1Statistics/"><strong>dynampi::LockFreeMPIWorkDistributor::Statistics</strong></a>, <a href="../structdynampi_1_1NaiveMPIWorkDistributor_1_1Statistics/"><strong>dynampi::NaiveMPIWorkDistributor::Statistics</strong></a>, <a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1Statistics/"><strong>dynampi::HierarchicalMPIWorkDistributor::Statistics</strong></a>)</li>
-<li><strong>worker_idx_to_rank</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
-<li><strong>worker_rank</strong> (<a href="../structdynampi_1_1HierarchicalMPIWorkDistributor_1_1TaskRequest/"><strong>dynampi::HierarchicalMPIWorkDistributor::TaskRequest</strong></a>)</li>
+<li><strong>wait_for_work_or_flush</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>worker_for_idx</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>write_result_range</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>, <a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
+<li><strong>worker_task_counts</strong> (<a href="../structdynampi_1_1NaiveWorkDistributor_1_1Statistics/"><strong>dynampi::NaiveWorkDistributor::Statistics</strong></a>, <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1Statistics/"><strong>dynampi::HierarchicalWorkDistributor::Statistics</strong></a>)</li>
+<li><strong>worker_idx_to_rank</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>worker_rank</strong> (<a href="../structdynampi_1_1TaskError/"><strong>dynampi::TaskError</strong></a>, <a href="../structdynampi_1_1HierarchicalWorkDistributor_1_1TaskRequest/"><strong>dynampi::HierarchicalWorkDistributor::TaskRequest</strong></a>)</li>
+<li><strong>warn_if_unreported</strong> (<a href="../classdynampi_1_1detail_1_1TaskErrorLog/"><strong>dynampi::detail::TaskErrorLog</strong></a>)</li>
 </ul>
 <h2 id="_1">~</h2>
 <ul>
-<li><strong>~HierarchicalMPIWorkDistributor</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>)</li>
-<li><strong>~LockFreeMPIWorkDistributor</strong> (<a href="../classdynampi_1_1LockFreeMPIWorkDistributor/"><strong>dynampi::LockFreeMPIWorkDistributor</strong></a>)</li>
+<li><strong>~HierarchicalLockFreeRMAWorkDistributor</strong> (<a href="../classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor/"><strong>dynampi::HierarchicalLockFreeRMAWorkDistributor</strong></a>)</li>
+<li><strong>~HierarchicalWorkDistributor</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>)</li>
+<li><strong>~LockFreeRMAWorkDistributor</strong> (<a href="../classdynampi_1_1LockFreeRMAWorkDistributor/"><strong>dynampi::LockFreeRMAWorkDistributor</strong></a>)</li>
 <li><strong>~MPICommunicator</strong> (<a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 <li><strong>~MPIGroup</strong> (<a href="../classdynampi_1_1MPIGroup/"><strong>dynampi::MPIGroup</strong></a>)</li>
-<li><strong>~MinimalLockFreeMPIWorkDistributor</strong> (<a href="../classdynampi_1_1MinimalLockFreeMPIWorkDistributor/"><strong>dynampi::MinimalLockFreeMPIWorkDistributor</strong></a>)</li>
-<li><strong>~NaiveMPIWorkDistributor</strong> (<a href="../classdynampi_1_1NaiveMPIWorkDistributor/"><strong>dynampi::NaiveMPIWorkDistributor</strong></a>)</li>
+<li><strong>~NaiveWorkDistributor</strong> (<a href="../classdynampi_1_1NaiveWorkDistributor/"><strong>dynampi::NaiveWorkDistributor</strong></a>)</li>
+<li><strong>~LockFreeRMALevel</strong> (<a href="../classdynampi_1_1detail_1_1LockFreeRMALevel/"><strong>dynampi::detail::LockFreeRMALevel</strong></a>)</li>
 </ul>
 <h2 id="_">_</h2>
 <ul>
-<li><strong>_statistics</strong> (<a href="../classdynampi_1_1HierarchicalMPIWorkDistributor/"><strong>dynampi::HierarchicalMPIWorkDistributor</strong></a>, <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
+<li><strong>_statistics</strong> (<a href="../classdynampi_1_1HierarchicalWorkDistributor/"><strong>dynampi::HierarchicalWorkDistributor</strong></a>, <a href="../classdynampi_1_1MPICommunicator/"><strong>dynampi::MPICommunicator</strong></a>)</li>
 <li><strong>_elapsed_time</strong> (<a href="../classdynampi_1_1Timer/"><strong>dynampi::Timer</strong></a>)</li>
 <li><strong>_start_time</strong> (<a href="../classdynampi_1_1Timer/"><strong>dynampi::Timer</strong></a>)</li>
 </ul>
