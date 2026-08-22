@@ -5,14 +5,22 @@
 
 # DynaMPI
 
-**Header-only C++20 library for dynamic MPI task distribution.**
+**Header-only C++20 library for manager–worker dynamic load distribution over MPI.**
 
-DynaMPI distributes tasks across MPI ranks at runtime.  A single *manager*
-rank holds a queue of tasks; *worker* ranks pull work as they become
-available.  Result ordering depends on the distributor (naive and lock-free
-return results in task-index order; hierarchical does not).
+DynaMPI hands out a stream of tasks to MPI ranks at runtime instead of
+partitioning them up front.  One rank acts as the *manager* and owns the task
+queue; the remaining ranks act as *workers* and pull work as they finish what
+they already have.  This keeps every rank busy when task costs are irregular or
+unknown in advance.
 
-## Quick Start
+Four distributors implement that contract with different communication
+strategies — from a 400-line two-sided loop to a tree of one-sided RMA windows
+that sustains millions of task hand-offs per second.  They share one interface,
+so switching between them is a single type change.
+
+## Quick start
+
+### Fixed set of index tasks
 
 ```cpp
 #include <cmath>
@@ -20,162 +28,91 @@ return results in task-index order; hierarchical does not).
 
 #include <dynampi/dynampi.hpp>
 
-auto work = [](size_t task) -> double {
-  return std::sqrt(static_cast<double>(task));
-};
+int main(int argc, char** argv) {
+  MPI_Init(&argc, &argv);
+  {
+    auto work = [](size_t task) -> double {
+      return std::sqrt(static_cast<double>(task));
+    };
 
-// Single function call — manager gets results, workers return nullopt
-auto results = dynampi::mpi_manager_worker_distribution<double>(
-    100,    // number of tasks (indices 0 .. 99)
-    work    // worker function
-);
+    // Collective: every rank calls it. Workers loop internally and return
+    // std::nullopt; the manager returns the results.
+    auto results = dynampi::mpi_manager_worker_distribution<double>(100, work);
 
-if (results.has_value()) {
-    for (double r : *results) {
-        std::cout << r << "\n";
+    if (results.has_value()) {
+      for (double r : *results) std::cout << r << "\n";
     }
+  }
+  MPI_Finalize();
 }
 ```
 
-## API Reference
+!!! warning "Results are unordered by default"
+    The default distributor is hierarchical, and hierarchical results come back
+    in completion order — `(*results)[i]` is **not** the result of task `i`.
+    Either carry the index inside your result type, or use
+    `NaiveWorkDistributor` (see
+    [Result ordering](implementations.md#result-ordering)).
 
-### `dynampi::mpi_manager_worker_distribution`
+### Tasks discovered as you go
 
-```cpp
-template <typename ResultT,
-          template <typename, typename, typename...> typename Distributor =
-              HierarchicalMPIWorkDistributor>
-std::optional<std::vector<ResultT>> mpi_manager_worker_distribution(
-    size_t n_tasks,
-    std::function<ResultT(size_t)> worker_function,
-    MPI_Comm comm = MPI_COMM_WORLD,
-    int manager_rank = 0);
-```
-
-Distributes `n_tasks` tasks (indices `0 .. n_tasks-1`) across the MPI
-communicator.  Returns the results on the manager rank, `std::nullopt` on
-workers.
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `n_tasks` | — | Number of tasks to distribute |
-| `worker_function` | — | `size_t → ResultT` — called with the task index |
-| `comm` | `MPI_COMM_WORLD` | MPI communicator |
-| `manager_rank` | `0` | Rank that manages distribution and collects results |
-
-**Template parameters:**
-- `ResultT` — the type each task produces
-- `Distributor` — implementation to use (default template argument is
-  `HierarchicalMPIWorkDistributor`, the same type as the public alias
-  `MPIDynamicWorkDistributor`)
-
-### `dynampi::MPIDynamicWorkDistributor`
-
-The default distributor (hierarchical tree of coordinators). Construct it
-directly when you need incremental `insert_task(s)` / `run_tasks`:
-
-```cpp
-template <typename TaskT, typename ResultT, typename... Options>
-using MPIDynamicWorkDistributor = HierarchicalMPIWorkDistributor<TaskT, ResultT, Options...>;
-```
-
-### Direct Distributor Usage
-
-For fine-grained control (incremental task insertion, batch result
-collection, statistics):
-
-```cpp
-#include <cmath>
-
-#include <dynampi/impl/naive_distributor.hpp>
-
-using Distributor = dynampi::NaiveMPIWorkDistributor<int, double>;
-
-auto work = [](int task) -> double { return std::sqrt(static_cast<double>(task)); };
-Distributor::Config cfg;
-cfg.comm = MPI_COMM_WORLD;
-cfg.auto_run_workers = false;
-
-Distributor dist(work, cfg);
-
-if (dist.is_root_manager()) {
-    dist.insert_tasks({1, 2, 3, 4, 5});
-
-    // Collect first 3 results, leave remaining tasks in-flight
-    auto batch = dist.run_tasks({
-        .target_num_tasks = 3,
-        .allow_more_than_target_tasks = false
-    });
-
-    // Collect remaining results
-    auto rest = dist.finish_remaining_tasks();
-} else {
-    dist.run_worker();
-}
-```
-
-#### Common Config Fields
-
-All full distributors share these configuration fields:
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `comm` | `MPI_Comm` | `MPI_COMM_WORLD` | MPI communicator |
-| `manager_rank` | `int` | `0` | Manager rank |
-| `auto_run_workers` | `bool` | `true` | If true, workers start automatically in the constructor |
-
-#### Common RunConfig Fields
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `target_num_tasks` | `size_t` | `max` | Stop once this many results are ready |
-| `allow_more_than_target_tasks` | `bool` | `true` | If false, clip return to `target_num_tasks` |
-| `max_seconds` | `optional<double>` | `nullopt` | Stop if this many seconds have elapsed |
-
-#### Common Methods
-
-| Method | Returns | Description |
-|--------|---------|-------------|
-| `is_root_manager()` | `bool` | Whether this rank is the manager |
-| `insert_task(TaskT)` | `void` | Add one task to the queue (manager only) |
-| `insert_tasks(vector)` | `void` | Add multiple tasks (manager only) |
-| `run_tasks(RunConfig)` | `vector<ResultT>` | Process tasks, return completed results (manager) |
-| `finish_remaining_tasks()` | `vector<ResultT>` | Process all remaining tasks (manager) |
-| `run_worker()` | `void` | Enter worker loop (non-manager ranks) |
-| `remaining_tasks_count()` | `size_t` | Tasks still in the queue (manager) |
-| `finalize()` | `void` | Signal shutdown to workers |
-| `get_statistics()` | `Statistics` | Communication statistics (requires `track_statistics`) |
-
-### Options
-
-Template options customise distributor behaviour:
-
-```cpp
-// Enable task prioritisation (NaiveMPIWorkDistributor)
-using Dist = NaiveMPIWorkDistributor<int, double, dynampi::enable_prioritization>;
-
-// Enable statistics tracking
-using Dist = NaiveMPIWorkDistributor<int, double,
-    dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>;
-
-// Statistics on the default distributor
-using Dist = MPIDynamicWorkDistributor<int, double,
-    dynampi::track_statistics<dynampi::StatisticsMode::Aggregated>>;
-```
-
-| Option | Values | Description |
-|--------|--------|-------------|
-| `prioritize_tasks_t` | `enable_prioritization` | `insert_task(task, priority)` on distributors that support it (naive) |
-| `track_statistics_t` | `track_statistics<None>`, `<Aggregated>`, `<Detailed>` | Track communication volume and per-rank task counts |
-
-### Version Info
+When the task set is not known up front, construct a distributor directly and
+alternate insertion with collection:
 
 ```cpp
 #include <dynampi/dynampi.hpp>
 
-dynampi::version::string;           // "v0.0.1"
-dynampi::version::major;            // 0
-dynampi::version::is_at_least(0,0,1); // true
-dynampi::version::compile_date();   // "Jun  6 2026 12:34:56"
-dynampi::version::commit_hash();    // "abc1234" or "abc1234-dirty"
+using Task = int;
+using Result = double;
+
+dynampi::DynamicWorkDistributor<Task, Result> dist(
+    [](Task t) -> Result { return std::sqrt(static_cast<double>(t)); });
+
+if (dist.is_root_manager()) {
+  dist.insert_tasks({1, 2, 3, 4, 5});
+  auto first = dist.finish_remaining_tasks();   // 5 results
+
+  dist.insert_tasks({6, 7, 8});
+  auto second = dist.finish_remaining_tasks();  // 3 results
+}
+// Non-manager ranks entered the worker loop inside the constructor
+// (auto_run_workers defaults to true) and return here once the
+// manager's distributor is destroyed.
 ```
+
+## Mental model
+
+| Concept | Meaning |
+|---------|---------|
+| **Manager** | Rank `Config::manager_rank` (default `0`). Owns the queue, collects results, and is the only rank allowed to call `insert_task*` / `run_tasks` / `finish_remaining_tasks`. |
+| **Worker** | Every other rank. Runs `run_worker()` — automatically from the constructor unless you set `auto_run_workers = false`. |
+| **Node manager** | In the hierarchical distributors, an intermediate rank (one per node by default) that relays batches of tasks down and results up, so the root manager never talks to every rank directly. |
+| **Task** | A `TaskT` value. Must be sendable — see [task and result types](api.md#task-and-result-types). |
+| **Result** | Whatever the worker function returns. Collected on the manager. |
+
+Construction is collective over `Config::comm`, and so is destruction: every
+rank must construct and destroy the distributor.
+
+## Choosing a distributor
+
+| Situation | Use |
+|-----------|-----|
+| Small communicator, need results in task order or task priorities | [`NaiveWorkDistributor`](implementations.md#naiveworkdistributor) |
+| General purpose, multi-node | [`DynamicWorkDistributor`](implementations.md#hierarchicalworkdistributor-dynamicworkdistributor) (default) |
+| Fine-grained tasks, want the highest hand-off rate at moderate scale | [`LockFreeRMAWorkDistributor`](implementations.md#lockfreermaworkdistributor) |
+| Same, but at large node counts where one manager window saturates | [`HierarchicalLockFreeRMAWorkDistributor`](implementations.md#hierarchicallockfreermaworkdistributor) |
+
+The full comparison, including protocol descriptions and the constraints each
+distributor imposes, is in [Implementations](implementations.md).
+
+## Where to go next
+
+- **[Examples](https://github.com/ryanstocks00/DynaMPI/tree/main/examples)** —
+  seven short runnable programs, one per concept.
+- **[Installation](install.md)** — requirements, CMake, and the header-only path.
+- **[API Reference](api.md)** — every public type, method, config field and option.
+- **[Implementations](implementations.md)** — how each distributor works and when to pick it.
+- **[Lock-free RMA design](lockfree_rma_design.md)** — window layouts and
+  synchronisation rules behind the RMA distributors.
+
+Licensed under the Apache License 2.0.

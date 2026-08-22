@@ -16,6 +16,16 @@ IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-1 10 100 1000 10000 100000 
 IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
 IFS=' ' read -r -a MODES <<< "${MODES:-fixed random}"
 DURATION_S="${DURATION_S:-10}"
+# Lifetime task capacity of each preallocated RMA window (lockfree_rma and
+# hierarchical_lockfree_rma only). Empty keeps the binary's default, which is
+# sized for a compute node (~19GiB on the manager rank) -- lower it to run the
+# RMA distributors on a workstation, at the cost of a shorter measured window
+# if the run exhausts the table before duration_s.
+MAX_TASKS="${MAX_TASKS:-}"
+MAX_TASKS_ARGS=()
+if [[ -n "${MAX_TASKS}" ]]; then
+  MAX_TASKS_ARGS=(--max_tasks "${MAX_TASKS}")
+fi
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
 
@@ -48,6 +58,7 @@ for ranks in "${RANK_LIST[@]}"; do
             --duration_s "${DURATION_S}" \
             --nodes 1 \
             --system "${SYSTEM}" \
+            ${MAX_TASKS_ARGS[@]+"${MAX_TASKS_ARGS[@]}"} \
             --output "${CSV}"
         else
           "${LAUNCHER}" ${LAUNCHER_ARGS[@]+"${LAUNCHER_ARGS[@]}"} -np "${ranks}" \
@@ -58,6 +69,7 @@ for ranks in "${RANK_LIST[@]}"; do
             --duration_s "${DURATION_S}" \
             --nodes 1 \
             --system "${SYSTEM}" \
+            ${MAX_TASKS_ARGS[@]+"${MAX_TASKS_ARGS[@]}"} \
             --output "${CSV}"
         fi
       done

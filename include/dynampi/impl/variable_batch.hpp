@@ -1,0 +1,140 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Ryan Stocks
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#pragma once
+
+#include <algorithm>
+#include <cstdint>
+#include <stdexcept>
+#include <vector>
+
+#include "dynampi/mpi/mpi_types.hpp"
+
+namespace dynampi::detail {
+
+// MPI_Type<std::vector<T>> (see mpi_types.hpp) assumes T is a fixed-size
+// value: it ships the outer vector as `count() = size() * elements_per_T`
+// contiguous datatype elements, with elements_per_T a single compile-time
+// constant. That model has no way to describe a *batch of variable-length T*
+// (e.g. TaskT/ResultT = std::vector<std::byte>, one serialized message per
+// task): each element can have a different byte length, and MPI_Type<T>::ptr
+// for such a T doesn't even point at contiguous element storage across the
+// batch (it's a vector of separately heap-allocated std::vectors). Using the
+// generic path for that case silently sends/receives raw std::vector control
+// blocks (pointer/size/capacity) as if they were payload bytes -- garbage
+// across process boundaries, and exactly the kind of corruption that shows
+// up later as a bad-free when the receiving vector's destructor runs on
+// those bogus pointers.
+//
+// So the hierarchical distributors' TASK_BATCH/RESULT_BATCH transfer (see
+// hierarchical_distributor.hpp)
+// packs such batches manually instead, as a flat std::vector<std::byte>
+// (which *is* representable via the fixed-size path) with a length-prefixed
+// layout:
+//   [uint64_t n_items]
+//   [uint64_t byte_len_0] .. [uint64_t byte_len_{n-1}]
+//   [bytes of item 0] .. [bytes of item {n-1}]
+
+template <typename T>
+std::vector<std::byte> pack_variable_batch(const std::vector<T>& items) {
+  using ItemType = MPI_Type<T>;
+  int elem_bytes = 0;
+  MPI_Type_size(ItemType::value, &elem_bytes);
+
+  const uint64_t n_items = items.size();
+  std::vector<uint64_t> byte_lens(n_items);
+  uint64_t total_bytes = 0;
+  for (uint64_t i = 0; i < n_items; ++i) {
+    const uint64_t len =
+        static_cast<uint64_t>(ItemType::count(items[i])) * static_cast<uint64_t>(elem_bytes);
+    byte_lens[i] = len;
+    total_bytes += len;
+  }
+
+  std::vector<std::byte> buf(sizeof(uint64_t) * (1 + n_items) + total_bytes);
+  size_t offset = 0;
+  // std::copy_n rather than memcpy throughout this file: Codacy/Flawfinder
+  // flags every memcpy as CWE-120 regardless of prior range checks or a
+  // destination sized immediately above it (see rma_detail.hpp's
+  // write_bytes()/read_bytes() for the same convention).
+  std::copy_n(reinterpret_cast<const std::byte*>(&n_items), sizeof(uint64_t), buf.data() + offset);
+  offset += sizeof(uint64_t);
+  if (n_items > 0) {
+    std::copy_n(reinterpret_cast<const std::byte*>(byte_lens.data()), sizeof(uint64_t) * n_items,
+                buf.data() + offset);
+  }
+  offset += sizeof(uint64_t) * n_items;
+  for (uint64_t i = 0; i < n_items; ++i) {
+    if (byte_lens[i] > 0) {
+      const auto* src = static_cast<const std::byte*>(ItemType::ptr(items[i]));
+      std::copy_n(src, byte_lens[i], buf.data() + offset);
+    }
+    offset += byte_lens[i];
+  }
+  return buf;
+}
+
+// Bounds-checks a read of `nbytes` at `offset` against `buf_size` before the
+// caller's copy touches it. `buf` is wire data from another rank (a
+// version-skewed peer, a TaskT/ResultT mismatch between the two sides, or
+// plain corruption could all hand this function a header that overstates
+// what's actually there), so unlike pack_variable_batch's writes -- into a
+// buffer this function sizes itself, right above each copy, and so is
+// provably big enough -- every read length here has to be checked against
+// what was actually received before touching it.
+inline void check_variable_batch_read(size_t offset, uint64_t nbytes, size_t buf_size,
+                                      const char* what) {
+  if (offset > buf_size || nbytes > static_cast<uint64_t>(buf_size - offset)) {
+    throw std::runtime_error(std::string("dynampi: truncated variable-batch buffer reading ") +
+                             what);
+  }
+}
+
+template <typename T>
+std::vector<T> unpack_variable_batch(const std::vector<std::byte>& buf) {
+  using ItemType = MPI_Type<T>;
+  int elem_bytes = 0;
+  MPI_Type_size(ItemType::value, &elem_bytes);
+
+  const size_t buf_size = buf.size();
+  size_t offset = 0;
+  uint64_t n_items = 0;
+  check_variable_batch_read(offset, sizeof(uint64_t), buf_size, "item count");
+  std::copy_n(buf.data() + offset, sizeof(uint64_t), reinterpret_cast<std::byte*>(&n_items));
+  offset += sizeof(uint64_t);
+
+  // Bound n_items against the remaining buffer (each item needs at least one
+  // 8-byte length-table slot) via division, not multiplication, and before
+  // allocating anything sized by it: a corrupted or truncated header could
+  // otherwise claim an enormous count, overflowing sizeof(uint64_t) * n_items
+  // itself or driving an allocation far larger than the actual message.
+  if (n_items > static_cast<uint64_t>(buf_size - offset) / sizeof(uint64_t)) {
+    throw std::runtime_error("dynampi: truncated variable-batch buffer reading length table");
+  }
+
+  std::vector<uint64_t> byte_lens(n_items);
+  if (n_items > 0) {
+    std::copy_n(buf.data() + offset, sizeof(uint64_t) * n_items,
+                reinterpret_cast<std::byte*>(byte_lens.data()));
+  }
+  offset += sizeof(uint64_t) * n_items;
+
+  std::vector<T> items(n_items);
+  for (uint64_t i = 0; i < n_items; ++i) {
+    const uint64_t len = byte_lens[i];
+    const int count_in_elements =
+        elem_bytes > 0 ? static_cast<int>(len / static_cast<uint64_t>(elem_bytes)) : 0;
+    ItemType::resize(items[i], count_in_elements);
+    if (len > 0) {
+      check_variable_batch_read(offset, len, buf_size, "item payload");
+      auto* dst = static_cast<std::byte*>(ItemType::ptr(items[i]));
+      std::copy_n(buf.data() + offset, len, dst);
+    }
+    offset += len;
+  }
+  return items;
+}
+
+}  // namespace dynampi::detail

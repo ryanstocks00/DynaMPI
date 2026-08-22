@@ -86,8 +86,11 @@ static double run_single_benchmark(const BenchmarkOptions& opts) {
   if (dynamic_communicator.has_value()) {
     int rank = dynamic_communicator.value().rank();
     int size = dynamic_communicator.value().size();
-    dynampi::MPIDynamicWorkDistributor<Task, Result,
-                                       dynampi::track_statistics<dynampi::StatisticsMode::Detailed>>
+    // Aggregated, not Detailed: this benchmark only reads message/byte counts
+    // and per-rank task counts. Detailed would additionally time every send and
+    // receive, perturbing the throughput being measured.
+    dynampi::DynamicWorkDistributor<Task, Result,
+                                    dynampi::track_statistics<dynampi::StatisticsMode::Aggregated>>
         work_distributer(worker_task, {.comm = dynamic_communicator.value()});
 
     if (work_distributer.is_root_manager()) {

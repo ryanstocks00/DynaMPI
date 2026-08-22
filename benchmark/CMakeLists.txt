@@ -12,9 +12,11 @@ FetchContent_MakeAvailable(cxxopts)
 set(benchmarks
     asymptotic_distribution_throughput
     strong_scaling_distribution_rate
+    test_load_balancing
     pingpong
     timer_resolution
-    naive_shutdown_time
+    shutdown_time
+    rma_atomic_microbench
 )
 
 foreach(benchmark IN LISTS benchmarks)

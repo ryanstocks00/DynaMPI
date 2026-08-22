@@ -17,6 +17,23 @@ IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-1 10 100 1000 10000 100000 
 IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
 IFS=' ' read -r -a MODES <<< "${MODES:-fixed random}"
 DURATION_S="${DURATION_S:-10}"
+# hierarchical_lockfree_rma only: forwarded as --max_upper_fanout (ignored by
+# every other distributor, which is run exactly once regardless of how many values
+# are listed here). Negative (default) = auto, picking a fanout from manager
+# count -- see HierarchicalLockFreeRMAWorkDistributor's setup_upper_chain().
+# 0 = single unbounded manager level. Set multiple space-separated values to
+# sweep hierarchy branching factor within one job.
+IFS=' ' read -r -a MAX_UPPER_FANOUT_LIST <<< "${MAX_UPPER_FANOUT_LIST:-${MAX_UPPER_FANOUT:--1}}"
+# Lifetime task capacity of each preallocated RMA window (lockfree_rma and
+# hierarchical_lockfree_rma only). Empty keeps the binary's default, which is
+# sized for a compute node (~19GiB on the manager rank) -- lower it to run the
+# RMA distributors where that much memory is not available, at the cost of a
+# shorter measured window if the run exhausts the table before duration_s.
+MAX_TASKS="${MAX_TASKS:-}"
+MAX_TASKS_ARGS=()
+if [[ -n "${MAX_TASKS}" ]]; then
+  MAX_TASKS_ARGS=(--max_tasks "${MAX_TASKS}")
+fi
 IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-core}"
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
@@ -70,14 +87,30 @@ for nodes in "${NODE_LIST[@]}"; do
     fi
     total_ranks=$((nodes * ranks_per_node))
     for dist in "${DISTRIBUTIONS[@]}"; do
-      # For Aurora, restrict to hierarchical distributor on 2048 nodes and above
-      if [[ "${SYSTEM}" == "aurora" && "${nodes}" -ge 2048 && "${dist}" != "hierarchical" ]]; then
-        continue
+      # Only hierarchical and hierarchical_lockfree_rma's behavior
+      # depends on max_upper_fanout; every other distributor would just
+      # repeat identical runs, so collapse its fanout list down to one (the
+      # first) value.
+      if [[ "${dist}" == "hierarchical_lockfree_rma" || "${dist}" == "hierarchical" ]]; then
+        fanouts=("${MAX_UPPER_FANOUT_LIST[@]}")
+      else
+        fanouts=("${MAX_UPPER_FANOUT_LIST[0]}")
       fi
+      for fanout in "${fanouts[@]}"; do
       for mode in "${MODES[@]}"; do
       for expected_us in "${TASK_US_LIST[@]}"; do
-          echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist} mode=${mode} expected_us=${expected_us}"
+          echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node} dist=${dist} mode=${mode} expected_us=${expected_us} max_upper_fanout=${fanout}"
         launcher_base="$(basename "${LAUNCHER}")"
+        # `|| true` on both launches below: strong_scaling_distribution_rate
+        # now prints its RESULT line and then calls MPI_Abort itself (see
+        # print_result_and_abort's comment) instead of returning/finalizing
+        # normally, so every run -- success or not -- now exits non-zero.
+        # Without `|| true`, this script's `set -e` (line 4) would treat
+        # that as a fatal error and kill the whole node-count's remaining
+        # combos after just the first one (confirmed: three real jobs each
+        # stopped after exactly 1 of 36 combos this way). Exit code is no
+        # longer a meaningful success signal for this benchmark either way
+        # -- check for a RESULT line in the CSV/log instead.
         if [[ "${launcher_base}" == mpiexec || "${launcher_base}" == mpirun ]]; then
           "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -n "${total_ranks}" --ppn "${ranks_per_node}" \
             "${APP}" \
@@ -87,7 +120,9 @@ for nodes in "${NODE_LIST[@]}"; do
             --duration_s "${DURATION_S}" \
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
-            --output "${CSV}"
+            --max_upper_fanout "${fanout}" \
+            ${MAX_TASKS_ARGS[@]+"${MAX_TASKS_ARGS[@]}"} \
+            --output "${CSV}" || true
         else
           "${LAUNCHER}" "${LAUNCHER_ARGS[@]}" -N "${nodes}" -n "${total_ranks}" \
             --ntasks-per-node="${ranks_per_node}" \
@@ -98,9 +133,12 @@ for nodes in "${NODE_LIST[@]}"; do
             --duration_s "${DURATION_S}" \
             --nodes "${nodes}" \
             --system "${SYSTEM}" \
-            --output "${CSV}"
+            --max_upper_fanout "${fanout}" \
+            ${MAX_TASKS_ARGS[@]+"${MAX_TASKS_ARGS[@]}"} \
+            --output "${CSV}" || true
         fi
         done
+      done
       done
     done
   done

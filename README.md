@@ -30,6 +30,11 @@
 
 Header-only C++20 library for efficient manager–worker dynamic load distribution over MPI.
 
+One rank manages a task queue; the rest pull work as they finish, keeping every
+rank busy when task costs are irregular or unknown up front. Four distributors
+implement that contract behind one interface, from a plain two-sided loop to a
+tree of one-sided RMA windows.
+
 Licensed under the Apache License 2.0.
 
 ## Usage
@@ -43,33 +48,30 @@ Licensed under the Apache License 2.0.
 auto worker_task = [](size_t task) -> size_t { return task * task; };
 auto result = dynampi::mpi_manager_worker_distribution<size_t>(4, worker_task);
 if (result.has_value()) {
-  // Manager: one result per task. Default distributor is hierarchical and
-  // unordered — use NaiveMPIWorkDistributor or LockFreeMPIWorkDistributor
-  // if you need results in task-index order.
+  // Manager: one result per task. The default distributor is hierarchical and
+  // unordered — result[i] is *not* task i. Pass NaiveWorkDistributor as the
+  // second template argument if you need task-index order.
   assert(result->size() == 4);
 }
 ```
 
-The default distributor is `MPIDynamicWorkDistributor` (hierarchical). Pass another
-distributor as a template argument if needed (e.g. `NaiveMPIWorkDistributor` for
-strictly ordered results on small communicator sizes).
-
 ### Dynamic / incremental tasks
 
-When the task set is not known up front, use `MPIDynamicWorkDistributor`
-and alternate `insert_tasks` with `run_tasks` / `finish_remaining_tasks`:
+When the task set is not known up front, construct a distributor directly and
+alternate `insert_tasks` with `run_tasks` / `finish_remaining_tasks`:
 
 ```cpp
+#include <cmath>
 #include <dynampi/dynampi.hpp>
 
 using Task = int;
-using Result = std::vector<int>;
+using Result = double;
 
 auto worker_task = [](Task task) -> Result {
-  return Result{task, task * task, task * task * task};
+  return std::sqrt(static_cast<double>(task));
 };
 
-dynampi::MPIDynamicWorkDistributor<Task, Result> distributor(worker_task);
+dynampi::DynamicWorkDistributor<Task, Result> distributor(worker_task);
 if (distributor.is_root_manager()) {
   distributor.insert_tasks({1, 2, 3, 4, 5});
   auto results = distributor.finish_remaining_tasks();
@@ -82,17 +84,35 @@ if (distributor.is_root_manager()) {
 ```
 
 With `auto_run_workers = true` (the default), non-manager ranks enter the worker
-loop in the constructor. Optional compile-time features include task
-prioritization (naive distributor), statistics tracking, and custom MPI
-datatypes via `dynampi::MPI_Type`.
+loop in the constructor. Construction and destruction are collective.
 
-See the [documentation](https://ryanstocks00.github.io/DynaMPI/) for
-distributor choice (naive, hierarchical, lock-free RMA) and configuration.
+### Distributors
+
+| Class | Communication | Ordered | Notes |
+|-------|---------------|---------|-------|
+| `NaiveWorkDistributor` | Two-sided | Yes | Task priorities, variable-length payloads; manager-bound at scale |
+| `DynamicWorkDistributor` (hierarchical) | Two-sided, batched | No | Default. Node-aware tree; variable-length payloads supported |
+| `LockFreeRMAWorkDistributor` | Passive-target RMA | Yes | No collectives on the hot path; preallocated window |
+| `HierarchicalLockFreeRMAWorkDistributor` | Passive-target RMA, per level | Yes | RMA protocol applied per tree level, for large node counts |
+
+A task that throws is reported to the manager rather than aborting the job:
+`run_tasks` rethrows it as `dynampi::TaskFailure`, or set
+`Config::rethrow_task_errors = false` and collect failures from
+`take_task_errors()`.
+
+Optional compile-time features: task prioritization
+(`dynampi::enable_prioritization`), statistics tracking
+(`dynampi::track_statistics<Mode>`), and custom payloads via
+`dynampi::MPI_Type`.
+
+See the [documentation](https://ryanstocks00.github.io/DynaMPI/) for how each
+distributor works, its constraints, and its configuration, and
+[`examples/`](examples/) for short runnable programs covering each concept.
 
 ## Installation
 
-DynaMPI depends only on MPI. Copy `include/` into your project, or consume it
-with CMake:
+DynaMPI depends only on MPI. Copy `include/` into your project — no macros to
+define, nothing to link — or consume it with CMake:
 
 ```cmake
 include(FetchContent)

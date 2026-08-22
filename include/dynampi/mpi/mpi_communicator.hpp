@@ -7,6 +7,9 @@
 
 #include <mpi.h>
 
+#include <algorithm>
+#include <cstddef>
+#include <limits>
 #include <optional>
 #include <variant>
 
@@ -37,14 +40,24 @@ struct CommStatistics {
   int send_count = 0;
   int recv_count = 0;
   int collective_count = 0;
+  int atomic_count = 0;
   size_t bytes_sent = 0;
   size_t bytes_received = 0;
+  size_t atomic_bytes = 0;
+  // Seconds spent inside the MPI calls that increment send_count / recv_count.
+  // Only accumulated under StatisticsMode::Detailed -- Aggregated deliberately
+  // skips the clock reads so counting costs nothing in the hot path.
   double send_time = 0.0;
   double recv_time = 0.0;
 
   void reset() {
     send_count = 0;
     recv_count = 0;
+    collective_count = 0;
+    atomic_count = 0;
+    bytes_sent = 0;
+    bytes_received = 0;
+    atomic_bytes = 0;
     send_time = 0.0;
     recv_time = 0.0;
   }
@@ -80,8 +93,24 @@ class MPICommunicator {
 
   StatisticsT _statistics;
 
+  static constexpr bool track_time = statistics_mode == StatisticsMode::Detailed;
+
+  // Runs `op`, accumulating its wall time into `accumulator` under Detailed.
+  // Compiles to a bare call to `op` in every other mode, so Aggregated pays no
+  // clock reads at all.
+  template <typename F>
+  inline void timed(double CommStatistics::* accumulator, F&& op) {
+    if constexpr (track_time) {
+      const double start = MPI_Wtime();
+      op();
+      _statistics.*accumulator += MPI_Wtime() - start;
+    } else {
+      op();
+    }
+  }
+
  public:
-  MPICommunicator(MPI_Comm comm, Ownership ownership = Duplicate)
+  explicit MPICommunicator(MPI_Comm comm, Ownership ownership = Duplicate)
       : m_comm(comm), m_ownership(ownership) {
     if (m_ownership == Duplicate) {
       DYNAMPI_MPI_CHECK(MPI_Comm_dup, (comm, &m_comm));
@@ -145,8 +174,28 @@ class MPICommunicator {
   template <typename T>
   inline void send(const T& data, int dest, int tag = 0) {
     using mpi_type = MPI_Type<T>;
-    DYNAMPI_MPI_CHECK(
-        MPI_Send, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value, dest, tag, m_comm));
+    timed(&CommStatistics::send_time, [&] {
+      DYNAMPI_MPI_CHECK(MPI_Send, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
+                                   dest, tag, m_comm));
+    });
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.send_count++;
+      int size;
+      MPI_Type_size(mpi_type::value, &size);
+      _statistics.bytes_sent += mpi_type::count(data) * size;
+    }
+  }
+
+  // Non-blocking counterpart of send(): posts MPI_Isend and records the same
+  // statistics immediately (byte counts are known at post time). Caller owns
+  // the request and must keep `data` alive until the request completes.
+  template <typename T>
+  inline void isend(const T& data, int dest, int tag, MPI_Request* request) {
+    using mpi_type = MPI_Type<T>;
+    timed(&CommStatistics::send_time, [&] {
+      DYNAMPI_MPI_CHECK(MPI_Isend, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
+                                    dest, tag, m_comm, request));
+    });
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.send_count++;
       int size;
@@ -175,8 +224,10 @@ class MPICommunicator {
   inline void recv(T& data, int source, int tag = 0) {
     using mpi_type = MPI_Type<T>;
     MPI_Status status;
-    DYNAMPI_MPI_CHECK(MPI_Recv, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
-                                 source, tag, m_comm, &status));
+    timed(&CommStatistics::recv_time, [&] {
+      DYNAMPI_MPI_CHECK(MPI_Recv, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
+                                   source, tag, m_comm, &status));
+    });
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
       int actual_count;
@@ -192,8 +243,10 @@ class MPICommunicator {
   inline MPI_Status recv_any(T& data, int source = MPI_ANY_SOURCE, int tag = MPI_ANY_TAG) {
     using mpi_type = MPI_Type<T>;
     MPI_Status status;
-    DYNAMPI_MPI_CHECK(MPI_Recv, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
-                                 source, tag, m_comm, &status));
+    timed(&CommStatistics::recv_time, [&] {
+      DYNAMPI_MPI_CHECK(MPI_Recv, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
+                                   source, tag, m_comm, &status));
+    });
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
       int actual_count;
@@ -224,10 +277,25 @@ class MPICommunicator {
 
   inline void recv_empty_message(int source, int tag = 0) {
     using mpi_type = MPI_Type<std::nullptr_t>;
-    DYNAMPI_MPI_CHECK(MPI_Recv, (nullptr, mpi_type::count(nullptr), mpi_type::value, source, tag,
-                                 m_comm, MPI_STATUS_IGNORE));
+    timed(&CommStatistics::recv_time, [&] {
+      DYNAMPI_MPI_CHECK(MPI_Recv, (nullptr, mpi_type::count(nullptr), mpi_type::value, source, tag,
+                                   m_comm, MPI_STATUS_IGNORE));
+    });
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
+    }
+  }
+
+  /// Non-blocking 0-byte send (Tag::DONE / Tag::REQUEST). Same statistics as
+  /// send_empty; caller owns the request (may MPI_Request_free immediately).
+  inline void isend_empty(int dest, int tag, MPI_Request* request) {
+    using mpi_type = MPI_Type<std::nullptr_t>;
+    timed(&CommStatistics::send_time, [&] {
+      DYNAMPI_MPI_CHECK(MPI_Isend, (nullptr, mpi_type::count(nullptr), mpi_type::value, dest, tag,
+                                    m_comm, request));
+    });
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.send_count++;
     }
   }
 
@@ -236,7 +304,8 @@ class MPICommunicator {
   template <typename T>
   inline void send_empty(int dest, int tag = 0) {
     using mpi_type = MPI_Type<T>;
-    DYNAMPI_MPI_CHECK(MPI_Send, (nullptr, 0, mpi_type::value, dest, tag, m_comm));
+    timed(&CommStatistics::send_time,
+          [&] { DYNAMPI_MPI_CHECK(MPI_Send, (nullptr, 0, mpi_type::value, dest, tag, m_comm)); });
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.send_count++;
     }
@@ -246,8 +315,10 @@ class MPICommunicator {
   template <typename T>
   inline void recv_empty(int source, int tag = 0) {
     using mpi_type = MPI_Type<T>;
-    DYNAMPI_MPI_CHECK(MPI_Recv,
-                      (nullptr, 0, mpi_type::value, source, tag, m_comm, MPI_STATUS_IGNORE));
+    timed(&CommStatistics::recv_time, [&] {
+      DYNAMPI_MPI_CHECK(MPI_Recv,
+                        (nullptr, 0, mpi_type::value, source, tag, m_comm, MPI_STATUS_IGNORE));
+    });
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
     }
@@ -263,6 +334,74 @@ class MPICommunicator {
                                    mpi_type::count(data), mpi_type::value, root, m_comm));
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.collective_count++;
+    }
+  }
+
+  // --- One-sided RMA (window is owned by the caller) ---
+  //
+  // Displacements are byte offsets. The target rank's window must have
+  // been created with disp_unit == 1 when using put_bytes/get_bytes.
+  //
+  // put_bytes/get_bytes chunk transfers larger than INT_MAX so MPI's plain
+  // `int` count argument never silently wraps. Statistics count one logical
+  // transfer (send_count/recv_count += 1, bytes = total n), not one entry
+  // per chunk.
+
+  static constexpr size_t kMaxRmaChunkBytes = static_cast<size_t>(std::numeric_limits<int>::max());
+
+  inline void put_bytes(const void* src, size_t n, int target_rank, MPI_Aint target_disp,
+                        MPI_Win win) {
+    if (n == 0) return;
+    const auto* bytes = static_cast<const std::byte*>(src);
+    timed(&CommStatistics::send_time, [&] {
+      size_t done = 0;
+      while (done < n) {
+        const size_t chunk = std::min(kMaxRmaChunkBytes, n - done);
+        DYNAMPI_MPI_CHECK(MPI_Put, (bytes + done, static_cast<int>(chunk), MPI_BYTE, target_rank,
+                                    target_disp + static_cast<MPI_Aint>(done),
+                                    static_cast<int>(chunk), MPI_BYTE, win));
+        done += chunk;
+      }
+    });
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.send_count++;
+      _statistics.bytes_sent += n;
+    }
+  }
+
+  inline void get_bytes(void* dst, size_t n, int target_rank, MPI_Aint target_disp, MPI_Win win) {
+    if (n == 0) return;
+    auto* bytes = static_cast<std::byte*>(dst);
+    timed(&CommStatistics::recv_time, [&] {
+      size_t done = 0;
+      while (done < n) {
+        const size_t chunk = std::min(kMaxRmaChunkBytes, n - done);
+        DYNAMPI_MPI_CHECK(MPI_Get, (bytes + done, static_cast<int>(chunk), MPI_BYTE, target_rank,
+                                    target_disp + static_cast<MPI_Aint>(done),
+                                    static_cast<int>(chunk), MPI_BYTE, win));
+        done += chunk;
+      }
+    });
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      _statistics.recv_count++;
+      _statistics.bytes_received += n;
+    }
+  }
+
+  // RMA atomic: counted separately from point-to-point send/recv.
+  template <typename T>
+  inline void fetch_and_op(T& origin, T& result, int target_rank, MPI_Aint target_disp, MPI_Op op,
+                           MPI_Win win) {
+    using mpi_type = MPI_Type<T>;
+    static_assert(!mpi_type::resize_required, "fetch_and_op requires a fixed-size type");
+    DYNAMPI_MPI_CHECK(MPI_Fetch_and_op, (mpi_type::ptr(origin), mpi_type::ptr(result),
+                                         mpi_type::value, target_rank, target_disp, op, win));
+    if constexpr (statistics_mode != StatisticsMode::None) {
+      int size = 0;
+      MPI_Type_size(mpi_type::value, &size);
+      const size_t bytes = static_cast<size_t>(mpi_type::count(origin)) * static_cast<size_t>(size);
+      _statistics.atomic_count++;
+      _statistics.atomic_bytes += bytes;
     }
   }
 

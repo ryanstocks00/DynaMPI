@@ -1,0 +1,9 @@
+system,distributor,nodes,max_upper_fanout,world_size,workers,time_per_shutdown_us,iterations
+frontier,naive,8,-1,72,71,250.704,31334
+frontier,hierarchical,8,-1,72,71,31.6999,24538
+frontier,lockfree_rma,8,-1,72,71,1183.08,4632
+frontier,hierarchical_lockfree_rma,8,-1,72,71,2003.09,2509
+frontier,naive,8,-1,448,447,1715.67,5543
+frontier,hierarchical,8,-1,448,447,36.1654,16859
+frontier,lockfree_rma,8,-1,448,447,2374.85,2271
+frontier,hierarchical_lockfree_rma,8,-1,448,447,2310.64,1932

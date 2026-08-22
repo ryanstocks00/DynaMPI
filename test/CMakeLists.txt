@@ -61,6 +61,11 @@ if(NOT CMAKE_CXX_COMPILER MATCHES "smpicxx")
 endif()
 
 create_test(mpi_test mpi "GTest::gtest;dynampi")
+if(MSVC)
+  # test_distributers.cpp's heavily templated TYPED_TEST suite exceeds MSVC's
+  # default COFF section limit (C1128).
+  target_compile_options(mpi_test PRIVATE /bigobj)
+endif()
 
 # --------------------------------------------------------------------
 # Detect MPI implementation and configure oversubscribe flags
@@ -79,6 +84,12 @@ if(MPIEXEC_EXECUTABLE)
   if(IS_OPENMPI)
     set(MPI_OVERSUBSCRIBE_FLAG "--oversubscribe")
     message(STATUS "Detected MPI implementation with oversubscribe support")
+    string(REGEX MATCH "(Open MPI|OpenRTE)[^0-9]*([0-9]+)" OPENMPI_VERSION_MATCH
+                 "${MPI_VERSION_OUTPUT}")
+    if(CMAKE_MATCH_2 AND CMAKE_MATCH_2 LESS 5)
+      set(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND TRUE)
+      message(STATUS "Open MPI ${CMAKE_MATCH_2}: using osc/pt2pt for split-window tests")
+    endif()
   else()
     message(
       STATUS
@@ -98,6 +109,14 @@ if(DEFINED ENV{DYNAMPI_MAX_MPI_RANK})
 endif()
 
 function(add_mpi_test test_name num_procs)
+  set(gtest_args "")
+  if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND)
+    list(
+      APPEND
+      gtest_args
+      "--gtest_filter=-HierarchicalLockFreeRMA.GroupedUpperHierarchy:HierarchicalLockFreeRMA.AutoFanoutUpperHierarchy"
+    )
+  endif()
   set(command
       ${MPIEXEC_EXECUTABLE}
       ${MPIEXEC_NUMPROC_FLAG}
@@ -105,6 +124,7 @@ function(add_mpi_test test_name num_procs)
       ${MPI_OVERSUBSCRIBE_FLAG}
       ${MPIEXEC_PREFLAGS}
       $<TARGET_FILE:mpi_test>
+      ${gtest_args}
       ${MPIEXEC_POSTFLAGS})
   add_test(NAME ${test_name} COMMAND ${command})
 endfunction()
@@ -116,3 +136,39 @@ foreach(rank 1 2 3 4 8 16 64)
   add_mpi_test(mpi_test_${rank}_rank ${rank})
   endif()
 endforeach()
+
+# Open MPI 4's osc/rdma component can race while creating windows on disjoint
+# communicators from one shared-memory node. Run only the synthetic grouped
+# topology tests with osc/pt2pt; forcing that legacy backend on the full
+# lock-free suite can stall at high rank counts. Open MPI 5 fixed the rdma path
+# and removed the pt2pt fallback.
+if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND AND DYNAMPI_MAX_MPI_RANK GREATER_EQUAL 8)
+  add_test(
+    NAME mpi_test_8_rank_grouped
+    COMMAND
+      ${MPIEXEC_EXECUTABLE}
+      ${MPIEXEC_NUMPROC_FLAG}
+      8
+      ${MPI_OVERSUBSCRIBE_FLAG}
+      ${MPIEXEC_PREFLAGS}
+      $<TARGET_FILE:mpi_test>
+      "--gtest_filter=HierarchicalLockFreeRMA.GroupedUpperHierarchy"
+      ${MPIEXEC_POSTFLAGS})
+  set_tests_properties(mpi_test_8_rank_grouped
+                       PROPERTIES ENVIRONMENT "OMPI_MCA_osc=pt2pt")
+endif()
+if(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND AND DYNAMPI_MAX_MPI_RANK GREATER_EQUAL 64)
+  add_test(
+    NAME mpi_test_64_rank_auto_fanout
+    COMMAND
+      ${MPIEXEC_EXECUTABLE}
+      ${MPIEXEC_NUMPROC_FLAG}
+      64
+      ${MPI_OVERSUBSCRIBE_FLAG}
+      ${MPIEXEC_PREFLAGS}
+      $<TARGET_FILE:mpi_test>
+      "--gtest_filter=HierarchicalLockFreeRMA.AutoFanoutUpperHierarchy"
+      ${MPIEXEC_POSTFLAGS})
+  set_tests_properties(mpi_test_64_rank_auto_fanout
+                       PROPERTIES ENVIRONMENT "OMPI_MCA_osc=pt2pt")
+endif()
