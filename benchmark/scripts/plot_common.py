@@ -527,6 +527,20 @@ def filter_systems(rows: Sequence[RowT], exclude_systems: Sequence[str]) -> list
     return [row for row in rows if str(row["system"]).lower() not in excluded]
 
 
+# Gap between stacked panels, as a fraction of panel height. Panels sharing
+# an x axis need no room for a label between them, so this is well below
+# matplotlib's 0.2 default.
+PANEL_HSPACE = 0.04
+
+IEEE_RC_PARAMS = {
+    "font.size": 10,
+    "axes.labelsize": 10,
+    "xtick.labelsize": 9,
+    "ytick.labelsize": 9,
+    "legend.fontsize": 8,
+}
+
+
 @contextmanager
 def ieee_figure() -> Iterator[tuple[Figure, Axes]]:
     """Open a (fig, ax) pair styled and sized for the paper's IEEE figures.
@@ -536,17 +550,32 @@ def ieee_figure() -> Iterator[tuple[Figure, Axes]]:
     the labels, the legend.
     """
     with plt.style.context(['science', 'ieee']):
-        plt.rcParams.update(
-            {
-                "font.size": 10,
-                "axes.labelsize": 10,
-                "xtick.labelsize": 9,
-                "ytick.labelsize": 9,
-                "legend.fontsize": 8,
-            }
-        )
+        plt.rcParams.update(IEEE_RC_PARAMS)
         fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT * 0.7))
         yield fig, ax
+
+
+@contextmanager
+def ieee_panel_figure(nrows: int, *, sharey: bool = True) -> Iterator[tuple[Figure, list[Axes]]]:
+    """Same style as ieee_figure(), as ``nrows`` panels stacked in one column.
+
+    The panels always share the x axis, so only the bottom one carries tick
+    labels and an axis label -- which is the point: a stacked pair costs less
+    height than two separate figures and reads as the single comparison it
+    is. ``sharey`` additionally pins them to one vertical scale, which suits
+    panels measuring the same quantity and not ones an order of magnitude
+    apart.
+    """
+    with plt.style.context(['science', 'ieee']):
+        plt.rcParams.update(IEEE_RC_PARAMS)
+        fig, axes = plt.subplots(
+            nrows,
+            1,
+            sharex=True,
+            sharey=sharey,
+            figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT * 0.6 * nrows),
+        )
+        yield fig, list(np.atleast_1d(axes))
 
 
 def save_figure(
@@ -555,11 +584,16 @@ def save_figure(
     filename: str,
     *,
     tight_layout_rect: tuple[float, float, float, float] | None = None,
+    hspace: float | None = None,
 ) -> None:
     if tight_layout_rect is not None:
         fig.tight_layout(rect=tight_layout_rect)
     else:
         fig.tight_layout()
+    # After tight_layout, which sets its own spacing: panels sharing an x axis
+    # need no room between them for a label, so the default gap is dead space.
+    if hspace is not None:
+        fig.subplots_adjust(hspace=hspace)
     # Crop hard to the drawn content: any border baked into the image becomes
     # a gap between the figure and its caption once the file is included in
     # the paper, on top of whatever the document class already adds.

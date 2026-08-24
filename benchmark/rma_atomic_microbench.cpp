@@ -30,6 +30,7 @@
 #include <chrono>
 #include <cstdint>
 #include <cxxopts.hpp>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -105,7 +106,12 @@ int main(int argc, char** argv) {
   options.add_options()("d,duration_s", "duration per phase, in seconds",
                         cxxopts::value<double>()->default_value("3"))(
       "p,pipeline_depths", "comma-separated pipeline depths to test for faa_pipelined",
-      cxxopts::value<std::string>()->default_value("1,8,32,128"))("h,help", "print usage");
+      cxxopts::value<std::string>()->default_value("1,8,32,128"))(
+      "nodes", "node count, recorded in the CSV only", cxxopts::value<int>()->default_value("0"))(
+      "system", "system name, recorded in the CSV only",
+      cxxopts::value<std::string>()->default_value("unknown"))(
+      "o,output", "append a CSV row per phase to this file",
+      cxxopts::value<std::string>()->default_value(""))("h,help", "print usage");
   auto parsed = options.parse(argc, argv);
   if (parsed.count("help")) {
     if (rank == 0) std::cout << options.help() << std::endl;
@@ -136,6 +142,20 @@ int main(int argc, char** argv) {
     }
     MPI_Finalize();
     return 1;
+  }
+
+  const int nodes = parsed["nodes"].as<int>();
+  const std::string system = parsed["system"].as<std::string>();
+  const std::string output = parsed["output"].as<std::string>();
+
+  std::ofstream csv;
+  if (rank == 0 && !output.empty()) {
+    const bool exists = std::ifstream(output).good();
+    csv.open(output, std::ios::app);
+    if (!exists) {
+      csv << "system,phase,nodes,world_size,participants,duration_s,succeeded,attempted,"
+             "succeeded_per_s,attempted_per_s,succeeded_per_s_per_rank\n";
+    }
   }
 
   const int root = 0;
@@ -173,6 +193,12 @@ int main(int argc, char** argv) {
                 << " attempted=" << total.attempted << " duration_s=" << duration_s
                 << " succeeded_per_s=" << succ_rate << " attempted_per_s=" << att_rate
                 << " succeeded_per_s_per_rank=" << (succ_rate / participants) << std::endl;
+      if (csv.is_open()) {
+        csv << system << "," << name << "," << nodes << "," << size << "," << participants << ","
+            << duration_s << "," << total.succeeded << "," << total.attempted << "," << succ_rate
+            << "," << att_rate << "," << (succ_rate / participants) << "\n";
+        csv.flush();
+      }
     }
   };
 

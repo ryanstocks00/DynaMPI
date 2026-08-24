@@ -17,6 +17,7 @@ set(benchmarks
     timer_resolution
     shutdown_time
     rma_atomic_microbench
+    twosided_msgrate_microbench
 )
 
 foreach(benchmark IN LISTS benchmarks)

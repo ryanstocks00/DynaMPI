@@ -20,6 +20,8 @@ from typing import TypedDict
 import matplotlib.pyplot as plt
 
 from plot_common import (
+    COMPACT_LEGEND_STYLE,
+    PANEL_HSPACE,
     Recency,
     add_light_grid,
     add_plot_cli_args,
@@ -31,6 +33,7 @@ from plot_common import (
     finish_compact_node_plot,
     format_distributor_label,
     ieee_figure,
+    ieee_panel_figure,
     iter_csv_rows,
     legend_avoiding_data,
     log_padded_limits,
@@ -441,6 +444,106 @@ def plot_distributor_comparison(
         save_figure(fig, mode_dir, filename)
 
 
+def comparison_panel_series(
+    system: str,
+    mode: str,
+    expected_ns: int,
+    ranks_per_node: int,
+    grouped: dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]],
+) -> list[tuple[str, int, list[int], list[float]]]:
+    """The curves one comparison panel draws, fastest at the largest node count first."""
+    series = []
+    for (sys_name, dist, mode_name, series_ns, rpn, fanout), points in grouped.items():
+        if (
+            sys_name != system
+            or normalize_mode(mode_name) != mode
+            or series_ns != expected_ns
+            or rpn != ranks_per_node
+            or not comparison_series_kept(dist, fanout)
+        ):
+            continue
+        nodes, throughput = sorted_series_xy(points)
+        series.append((dist, fanout, nodes, throughput))
+
+    def final_throughput(item: tuple[str, int, list[int], list[float]]) -> tuple[int, float]:
+        _, _, nodes, throughput = item
+        largest = max(range(len(nodes)), key=lambda i: nodes[i])
+        return (nodes[largest], throughput[largest])
+
+    return sorted(series, key=final_throughput, reverse=True)
+
+
+def plot_comparison_panels(
+    mode: str,
+    expected_ns: int,
+    layouts: Sequence[tuple[str, int]],
+    grouped: dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]],
+    output_dir: str,
+    image_format: str,
+    ylimits: dict[tuple[str, int, str], tuple[float, float]] | None = None,
+) -> None:
+    """The cross-machine comparison as stacked panels over one shared node axis.
+
+    The pair is read as a single comparison, so it is drawn as a single
+    figure: sharing the x axis drops a duplicate label and tick row, and the
+    shared y range puts both machines on one scale. The legend goes in the
+    first panel only, since every panel plots the same series.
+    """
+    panels = [
+        (system, rpn, comparison_panel_series(system, mode, expected_ns, rpn, grouped))
+        for system, rpn in layouts
+    ]
+    panels = [panel for panel in panels if len(panel[2]) >= 2]
+    if len(panels) < 2:
+        return
+
+    with ieee_panel_figure(len(panels)) as (fig, axes):
+        for index, ((system, ranks_per_node, series), ax) in enumerate(zip(panels, axes)):
+            all_nodes: set[int] = set()
+            handles = []
+            labels = []
+            for dist, fanout, nodes, throughput in series:
+                all_nodes.update(nodes)
+                label = format_distributor_label(dist, fanout)
+                line = plot_node_series(ax, distributor_series_index(dist, fanout), nodes,
+                                        throughput, label)
+                handles.append(line)
+                labels.append(label)
+
+            ax.set_ylabel("Tasks per second")
+            set_log_node_axes(ax, all_nodes)
+            limits = (ylimits or {}).get((mode, expected_ns, layout_class(ranks_per_node)))
+            if limits is not None:
+                ax.set_ylim(limits)
+            add_light_grid(ax)
+            # Named in the panel rather than a sub-caption: the machine is
+            # what the reader needs while looking at the curves.
+            ax.annotate(
+                f"({chr(ord('a') + index)}) {system.capitalize()}, {ranks_per_node} ranks/node",
+                (0.98, 0.03),
+                xycoords="axes fraction",
+                ha="right",
+                va="bottom",
+                fontsize=8,
+            )
+            if index == 0:
+                legend_avoiding_data(
+                    ax, handles, labels, locations=("upper left",), **COMPACT_LEGEND_STYLE
+                )
+            if index == len(panels) - 1:
+                ax.set_xlabel("Nodes")
+
+        duration = format_duration(expected_ns).replace(" ", "")
+        mode_dir = os.path.join(output_dir, mode)
+        os.makedirs(mode_dir, exist_ok=True)
+        save_figure(
+            fig,
+            mode_dir,
+            f"weak_scaling_compare_panels_{duration}.{image_format}",
+            hspace=PANEL_HSPACE,
+        )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Plot weak scaling distribution throughput.")
     add_plot_cli_args(parser)
@@ -510,6 +613,24 @@ def main() -> None:
                 mode,
                 expected_ns,
                 ranks_per_node,
+                grouped,
+                args.output_dir,
+                args.format,
+                ylimits=compare_ylimits,
+            )
+
+        # One stacked figure per (mode, duration, layout class): the matched
+        # cross-machine pair the prose reads together.
+        panel_groups: dict[tuple[str, int, str], list[tuple[str, int]]] = defaultdict(list)
+        for system, mode, expected_ns, ranks_per_node in compare_keys:
+            key = (mode, expected_ns, layout_class(ranks_per_node))
+            if (system, ranks_per_node) not in panel_groups[key]:
+                panel_groups[key].append((system, ranks_per_node))
+        for (mode, expected_ns, _layout), layouts in sorted(panel_groups.items()):
+            plot_comparison_panels(
+                mode,
+                expected_ns,
+                layouts,
                 grouped,
                 args.output_dir,
                 args.format,
