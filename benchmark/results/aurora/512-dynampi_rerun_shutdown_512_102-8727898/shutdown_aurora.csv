@@ -1,7 +1,0 @@
-system,distributor,nodes,max_upper_fanout,world_size,workers,time_per_shutdown_us,iterations
-aurora,naive,512,-1,52224,52223,265859,25
-aurora,hierarchical,512,0,52224,52223,1197.49,173
-aurora,hierarchical,512,-1,52224,52223,57.0526,47
-aurora,lockfree_rma,512,-1,52224,52223,349869,27
-aurora,hierarchical_lockfree_rma,512,0,52224,52223,20914.4,69
-aurora,hierarchical_lockfree_rma,512,-1,52224,52223,20999.5,51

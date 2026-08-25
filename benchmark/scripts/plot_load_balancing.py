@@ -63,6 +63,7 @@ class MakespanRow(TypedDict):
     phases: dict[str, float]
     file_mtime: float
     path: str
+    job_id: str
     recency: Recency
 
 
@@ -106,6 +107,9 @@ def parse_rows(paths: Sequence[str]) -> list[MakespanRow]:
                 "phases": phases,
                 "file_mtime": file_mtime,
                 "path": path,
+                # Falls back to the file path for the per-job layout, where one
+                # file is one job anyway.
+                "job_id": (row.get("job_id") or "").strip() or path,
                 "recency": recency,
             }
         )
@@ -119,16 +123,17 @@ def launch_ranks_per_node(rows: list[MakespanRow]) -> list[MakespanRow]:
     test_load_balancing.cpp's flat_comm), so they report a smaller world_size
     than the hierarchical pair. Per-row rpn would split one sweep across two
     plot keys, and the --ranks-per-node filter would then drop the flat pair
-    entirely. The largest world_size in a file is that job's --ntasks-per-node.
+    entirely. The largest world_size in one *job* is its --ntasks-per-node,
+    which is why this groups on job id and not on the containing file.
     """
     launch: dict[tuple[str, int], int] = {}
     for row in rows:
-        key = (row["path"], row["nodes"])
+        key = (row["job_id"], row["nodes"])
         launch[key] = max(launch.get(key, 0), row["world_size"])
     for row in rows:
         nodes = row["nodes"]
         if nodes:
-            row["ranks_per_node"] = int(round(launch[(row["path"], nodes)] / nodes))
+            row["ranks_per_node"] = int(round(launch[(row["job_id"], nodes)] / nodes))
     return rows
 
 

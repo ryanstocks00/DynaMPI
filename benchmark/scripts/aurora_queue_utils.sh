@@ -9,7 +9,7 @@
 AURORA_QUEUE_POLL_INTERVAL="${AURORA_QUEUE_POLL_INTERVAL:-60}"
 
 # Job name prefix used by all of this repo's submit scripts (see
-# submit_aurora_strong_scaling.sh's job_name="dynampi_ss_${SYSTEM}_${nodes}"
+# submit_aurora_weak_scaling.sh's job_name="dynampi_ws_${SYSTEM}_${nodes}"
 # and the shutdown-benchmark equivalent) -- lets the checks below ignore
 # other, unrelated jobs under the same account (e.g. a different project's
 # runs) instead of deferring to them.

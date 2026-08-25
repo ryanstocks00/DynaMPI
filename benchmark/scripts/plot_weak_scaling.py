@@ -5,10 +5,7 @@
 
 These sweeps are weak scaling: the manager keeps every worker supplied for a
 fixed wall-clock window, so the work offered grows in proportion to the node
-count and the ideal curve is linear in nodes. The driver, launch scripts and
-result CSVs still carry the older ``strong_scaling`` name, so
-``collect_csv_paths`` accepts either spelling as input; only the plots this
-script writes are named ``weak_scaling_*``.
+count and the ideal curve is linear in nodes.
 """
 
 import argparse
@@ -562,7 +559,7 @@ def main() -> None:
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
-    rows = parse_rows(collect_csv_paths(args.input, ("weak_scaling", "strong_scaling")))
+    rows = parse_rows(collect_csv_paths(args.input, "weak_scaling"))
     rows = filter_systems(rows, args.exclude_system)
     rows = filter_ranks_per_node(rows, args.ranks_per_node)
     modes = {normalize_mode(mode) for mode in args.modes}

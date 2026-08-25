@@ -445,14 +445,14 @@ repository ships drivers for exactly that (build with
 
 | Benchmark | Measures |
 |-----------|----------|
-| `strong_scaling_distribution_rate` | Task hand-off rate at fixed rank count, across all four full distributors |
+| `weak_scaling_distribution_rate` | Task hand-off rate at fixed rank count, across all four full distributors |
 | `asymptotic_distribution_throughput` | Throughput vs. task count |
 | `shutdown_time` | Cost of finalisation at scale |
 | `rma_atomic_microbench` | Raw `MPI_Fetch_and_op` ceiling for the RMA path |
 | `pingpong`, `timer_resolution` | Baseline latency and clock granularity |
 
 ```bash
-mpirun -n 64 ./build/benchmark/strong_scaling_distribution_rate -D lockfree_rma -t 100 -d 10
+mpirun -n 64 ./build/benchmark/weak_scaling_distribution_rate -D lockfree_rma -t 100 -d 10
 ```
 
 `-D` selects `naive`, `hierarchical`, `lockfree_rma` or

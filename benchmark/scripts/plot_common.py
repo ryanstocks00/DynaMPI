@@ -50,16 +50,14 @@ _JOB_ID_RE = re.compile(r"(?:^|[-_/])(\d{6,})(?:\.[A-Za-z]+)?(?:/|$)")
 
 RowT = TypeVar("RowT", bound=Mapping[str, Any])
 KeyT = TypeVar("KeyT")
-Recency = tuple[int, int, float]
+Recency = tuple[int, float]
 
 
 def collect_csv_paths(inputs: Sequence[str], name_substring: str | Sequence[str]) -> list[str]:
     """Collect CSVs whose basename contains any of the given substrings.
 
-    Accepts several needles because the throughput results predate the
-    strong- to weak-scaling rename: the benchmark driver and launch scripts
-    still emit ``strong_scaling_<system>.csv``, while the plots they feed are
-    named ``weak_scaling_*``.
+    Several needles are accepted because one plot can draw on more than one
+    sweep's output.
     """
     needles = [name_substring.lower()] if isinstance(name_substring, str) else [
         needle.lower() for needle in name_substring
@@ -86,17 +84,16 @@ def collect_csv_paths(inputs: Sequence[str], name_substring: str | Sequence[str]
 
 
 def path_recency(path: str, file_mtime: float) -> Recency:
-    """Return a comparable recency key: (final_boost, job_id, mtime).
+    """Return a comparable recency key: (job_id, mtime).
 
     Job id dominates mtime so a fresh git checkout's near-identical timestamps
     cannot prefer an older PBS result over a later one.
     """
     normalized = path.replace("\\", "/")
-    final_boost = 1 if "/final-" in normalized or normalized.startswith("final-") else 0
     job_id = 0
     for match in _JOB_ID_RE.finditer(normalized):
         job_id = max(job_id, int(match.group(1)))
-    return (final_boost, job_id, file_mtime)
+    return (job_id, file_mtime)
 
 
 def iter_csv_rows(paths: Sequence[str]) -> Iterator[tuple[dict[str, str], str, float, Recency]]:
@@ -108,10 +105,14 @@ def iter_csv_rows(paths: Sequence[str]) -> Iterator[tuple[dict[str, str], str, f
     """
     for path in paths:
         file_mtime = os.path.getmtime(path)
-        recency = path_recency(path, file_mtime)
+        file_recency = path_recency(path, file_mtime)
         with open(path, "r", encoding="utf-8") as handle:
             reader = csv.DictReader(handle)
             for row in reader:
+                # Consolidated files carry each row's job id, so recency stays
+                # per-row once many jobs share one path.
+                job_id = (row.get("job_id") or "").strip()
+                recency = (int(job_id), file_mtime) if job_id.isdigit() else file_recency
                 yield row, path, file_mtime, recency
 
 
@@ -120,11 +121,7 @@ def dedupe_newest(
     config_key: Callable[[RowT], KeyT],
     value_key: str,
 ) -> dict[KeyT, tuple[Any, Recency]]:
-    """Keep the newest row per configuration key.
-
-    Prefer ``final-*`` result dirs, then the highest embedded job id, then
-    later file mtimes.
-    """
+    """Keep the newest row per configuration key: highest job id, then mtime."""
     newest: dict[KeyT, tuple[Any, Recency]] = {}
     for row in rows:
         key = config_key(row)
@@ -532,7 +529,10 @@ def filter_systems(rows: Sequence[RowT], exclude_systems: Sequence[str]) -> list
 # matplotlib's 0.2 default.
 PANEL_HSPACE = 0.04
 
-IEEE_RC_PARAMS = {
+# Keys are left untyped because matplotlib 3.11 narrowed RcParams to a Literal
+# union of valid rc keys, which a plain dict[str, ...] does not satisfy. Earlier
+# versions type it as dict[str, Any]; Mapping[Any, Any] checks against both.
+IEEE_RC_PARAMS: Mapping[Any, Any] = {
     "font.size": 10,
     "axes.labelsize": 10,
     "xtick.labelsize": 9,

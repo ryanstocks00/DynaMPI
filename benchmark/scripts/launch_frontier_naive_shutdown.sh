@@ -14,7 +14,7 @@ SYSTEM="frontier"
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512 1024 2048 4096 8192}"
 IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
 # hierarchical and hierarchical_lockfree_rma only: see the matching
-# comment in launch_frontier_strong_scaling.sh / launch_aurora_strong_scaling.sh.
+# comment in launch_frontier_weak_scaling.sh / launch_aurora_weak_scaling.sh.
 IFS=' ' read -r -a MAX_UPPER_FANOUT_LIST <<< "${MAX_UPPER_FANOUT_LIST:-${MAX_UPPER_FANOUT:--1}}"
 IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-core}"
 LAUNCHER="${LAUNCHER:-}"

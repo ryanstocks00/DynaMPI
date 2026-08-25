@@ -113,7 +113,7 @@ static void spin_wait(std::chrono::microseconds duration) {
 // Fixed by default so a run isolates scheduling/distribution overhead from
 // task-duration variance. Two ways to opt back into variance, both mean
 // expected_us: uniform on [0, 2*expected_us] -- the same symmetric spread
-// strong_scaling_distribution_rate's WorkerFunctor calls its "random" mode --
+// weak_scaling_distribution_rate's WorkerFunctor calls its "random" mode --
 // and lognormal, deliberately shaped like real task-duration distributions
 // instead (heavily right-skewed: most tasks well under the mean, a long tail
 // of much longer ones, rather than uniform's hard cutoff at 2x).
@@ -294,7 +294,7 @@ static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t 
   }
   // The lock-free RMA classes preallocate their task/result window to this
   // capacity (library default is a modest 8192, not the 500M constant
-  // strong_scaling_distribution_rate.cpp always overrides it with) -- size it
+  // weak_scaling_distribution_rate.cpp always overrides it with) -- size it
   // to cover both the warmup and the largest real batch this run will ever
   // publish, plus headroom for the "-1" reserved slot other drivers in this
   // codebase budget for.
@@ -427,7 +427,7 @@ int main(int argc, char** argv) {
       "duration_mode",
       "Task duration distribution, all with mean expected_us: fixed (every "
       "task takes exactly expected_us), uniform (symmetric on [0, "
-      "2*expected_us], matches strong_scaling_distribution_rate's \"random\" "
+      "2*expected_us], matches weak_scaling_distribution_rate's \"random\" "
       "mode), or lognormal (shaped like real task-duration variance -- "
       "mostly short, a long right tail, no hard cutoff).",
       cxxopts::value<std::string>()->default_value("fixed"))(

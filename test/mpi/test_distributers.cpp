@@ -510,7 +510,7 @@ TYPED_TEST(DynamicDistribution, AutoRunWorkers) {
   // Workers run automatically in constructor, no need to call run_worker()
 }
 
-// gather_once() is the non-looping snapshot API used by the strong-scaling
+// gather_once() is the non-looping snapshot API used by the weak-scaling
 // bench to avoid per-retry busy-spin harvest. Only LockFreeRMA exposes
 // it.
 //

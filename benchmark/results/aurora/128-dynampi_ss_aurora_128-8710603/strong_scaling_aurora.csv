@@ -1,9 +1,0 @@
-system,distributor,mode,expected_us,duration_s,nodes,world_size,workers,max_upper_fanout,total_tasks,elapsed_s,throughput_tasks_per_s
-aurora,naive,random,10,30,128,13056,13055,0,11894035,30.0452,395871
-aurora,naive,random,1000,30,128,13056,13055,0,12097596,30.012,403091
-aurora,hierarchical,random,10,30,128,13056,13055,0,48233714,30.3506,1.58922e+06
-aurora,hierarchical,random,1000,30,128,13056,13055,0,33717722,30.3475,1.11106e+06
-aurora,lockfree_rma,random,10,30,128,13056,13055,0,7005403,30.1886,232054
-aurora,lockfree_rma,random,1000,30,128,13056,13055,0,6731506,30.1484,223279
-aurora,hierarchical_lockfree_rma,random,10,30,128,13056,13055,0,74593573,31.244,2.38745e+06
-aurora,hierarchical_lockfree_rma,random,1000,30,128,13056,13055,0,74607916,31.2123,2.39034e+06

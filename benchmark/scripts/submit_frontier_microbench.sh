@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 set -euo pipefail
 
-# One Slurm job per node count, mirroring submit_frontier_strong_scaling.sh.
+# One Slurm job per node count, mirroring submit_frontier_weak_scaling.sh.
 # Example:
 #   ./benchmark/scripts/submit_frontier_microbench.sh
 #   NODE_LIST="1 8 64" WALLTIME=00:10:00 ./benchmark/scripts/submit_frontier_microbench.sh
