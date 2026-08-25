@@ -21,6 +21,7 @@ from plot_common import (
     iter_csv_rows,
     plot_node_series,
     save_figure,
+    set_output_formats,
     sorted_series_xy,
 )
 
@@ -216,6 +217,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Plot shutdown time vs number of nodes.")
     add_plot_cli_args(parser)
     args = parser.parse_args()
+    set_output_formats(args.format)
 
     # Own subdirectory, as plot_weak_scaling.py does for its modes: one
     # results tree feeds several benchmarks, and a flat output directory
@@ -229,8 +231,8 @@ def main() -> None:
 
     configs = sorted({(row["system"], row["ranks_per_node"]) for row in rows})
     for system, ranks_per_node in configs:
-        plot_system_rpn(system, ranks_per_node, grouped, output_dir, args.format)
-    plot_cross_system_by_distributor(grouped, output_dir, args.format)
+        plot_system_rpn(system, ranks_per_node, grouped, output_dir, args.format[0])
+    plot_cross_system_by_distributor(grouped, output_dir, args.format[0])
 
 
 if __name__ == "__main__":

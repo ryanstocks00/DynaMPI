@@ -44,6 +44,7 @@ from plot_common import (
     path_recency,
     plot_node_series,
     save_figure,
+    set_output_formats,
     series_color,
 )
 
@@ -667,6 +668,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     add_plot_cli_args(parser)
     args = parser.parse_args()
+    set_output_formats(args.format)
 
     paths = collect_csv_paths(args.input, ["load_balancing", "makespan"])
     rows = parse_rows(paths)
@@ -691,13 +693,13 @@ def main() -> None:
                 phase_suffix,
                 phases,
                 output_dir,
-                args.format,
+                args.format[0],
                 repeats.get(plot_key),
             )
 
     # One stacked figure per layout and duration mode, over PANEL_DURATIONS.
     for base_key in sorted({(*k[:3], PANEL_DURATIONS[0], *k[4:]) for k in grouped}):
-        plot_duration_panels(base_key, grouped, workers, output_dir, args.format, repeats)
+        plot_duration_panels(base_key, grouped, workers, output_dir, args.format[0], repeats)
 
 
 if __name__ == "__main__":

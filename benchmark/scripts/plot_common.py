@@ -487,7 +487,11 @@ def add_plot_cli_args(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument("--output-dir", required=True, help="Directory to write output plots")
     parser.add_argument(
-        "--format", default="png", choices=["png", "pdf", "svg"], help="Output image format"
+        "--format",
+        nargs="+",
+        default=["png"],
+        choices=["png", "pdf", "svg"],
+        help="Output image format(s); pass several to write each (default: png)",
     )
     parser.add_argument(
         "--ranks-per-node",
@@ -578,6 +582,20 @@ def ieee_panel_figure(nrows: int, *, sharey: bool = True) -> Iterator[tuple[Figu
         yield fig, list(np.atleast_1d(axes))
 
 
+# Formats save_figure() writes. A figure is laid out and rendered once and
+# then encoded to each, so asking for pdf and png together costs one extra
+# encode rather than a second full run of the script. Empty means "whatever
+# extension the caller put on the filename", which is the behaviour every
+# call site had before this was configurable.
+_OUTPUT_FORMATS: tuple[str, ...] = ()
+
+
+def set_output_formats(formats: Sequence[str]) -> None:
+    """Set the formats save_figure() writes, preserving order and dropping repeats."""
+    global _OUTPUT_FORMATS
+    _OUTPUT_FORMATS = tuple(dict.fromkeys(formats))
+
+
 def save_figure(
     fig: Figure,
     output_dir: str,
@@ -597,7 +615,13 @@ def save_figure(
     # Crop hard to the drawn content: any border baked into the image becomes
     # a gap between the figure and its caption once the file is included in
     # the paper, on top of whatever the document class already adds.
-    fig.savefig(
-        os.path.join(output_dir, filename), dpi=300, bbox_inches='tight', pad_inches=0.01
-    )
+    stem, extension = os.path.splitext(filename)
+    formats = _OUTPUT_FORMATS or (extension.lstrip("."),)
+    for image_format in formats:
+        fig.savefig(
+            os.path.join(output_dir, f"{stem}.{image_format}"),
+            dpi=300,
+            bbox_inches='tight',
+            pad_inches=0.01,
+        )
     plt.close(fig)

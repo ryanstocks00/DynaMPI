@@ -37,6 +37,7 @@ from plot_common import (
     normalize_mode,
     plot_node_series,
     save_figure,
+    set_output_formats,
     series_color,
     set_log_node_axes,
     sorted_series_xy,
@@ -557,6 +558,7 @@ def main() -> None:
         help="Task-time modes to plot into separate subdirectories (default: both)",
     )
     args = parser.parse_args()
+    set_output_formats(args.format)
 
     os.makedirs(args.output_dir, exist_ok=True)
     rows = parse_rows(collect_csv_paths(args.input, "weak_scaling"))
@@ -586,7 +588,7 @@ def main() -> None:
             fanout,
             grouped,
             args.output_dir,
-            args.format,
+            args.format[0],
             ylimits=distributor_ylimits,
         )
 
@@ -612,7 +614,7 @@ def main() -> None:
                 ranks_per_node,
                 grouped,
                 args.output_dir,
-                args.format,
+                args.format[0],
                 ylimits=compare_ylimits,
             )
 
@@ -630,7 +632,7 @@ def main() -> None:
                 layouts,
                 grouped,
                 args.output_dir,
-                args.format,
+                args.format[0],
                 ylimits=compare_ylimits,
             )
 

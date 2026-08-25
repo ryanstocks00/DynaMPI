@@ -11,10 +11,11 @@ into a single file and records where every row came from.
 One provenance column, ``job_id``, is added: the scheduler job id pulled
 off the end of the source directory name.
 
-Rows are deduplicated on every column except the measured outputs, keeping
-the highest job id. Rows that merely *look* duplicated to a plot (same
-configuration, different ``duration_s``) are kept, so no measurement is
-discarded here; the plot scripts resolve those from ``job_id``.
+Rows are reduced to what the plot scripts actually draw: one row per plot
+configuration, keeping the highest job id. That deliberately discards
+measurements a plot would never reach -- an older short-window run of a
+configuration that was later re-measured, for instance -- so the committed
+CSVs are exactly the data behind the figures rather than a superset of it.
 """
 
 from __future__ import annotations
@@ -26,7 +27,9 @@ from collections.abc import Iterable, Sequence
 from typing import Any
 
 # Columns that are measurements rather than settings. Everything else in a
-# row identifies the configuration that produced it.
+# row identifies the configuration that produced it. Used for the sweeps
+# whose plots keep every distinct setting, which is all of them bar the two
+# with an explicit key below.
 MEASURED: dict[str, frozenset[str]] = {
     "weak_scaling": frozenset({"total_tasks", "elapsed_s", "throughput_tasks_per_s"}),
     "shutdown": frozenset({"time_per_shutdown_us", "iterations"}),
@@ -34,6 +37,68 @@ MEASURED: dict[str, frozenset[str]] = {
         {"total_tasks", "elapsed_s", "construct_s", "warmup_s", "finalize_s", "destruct_s"}
     ),
 }
+
+
+def _int(value: str, default: int = 0) -> int:
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return default
+
+
+def _ranks_per_node(row: dict[str, Any]) -> int:
+    nodes = _int(row.get("nodes", ""))
+    return round(_int(row.get("world_size", "")) / nodes) if nodes else 0
+
+
+def _fanout(row: dict[str, Any]) -> int:
+    """Fan-out only distinguishes hierarchical topologies, as in the plots."""
+    distributor = (row.get("distributor") or "").strip()
+    if "hierarchical" not in distributor:
+        return -1
+    return _int(row.get("max_upper_fanout", ""), -1)
+
+
+# Sweeps whose plots collapse several settings into one drawn point. Keying on
+# the raw columns would keep rows no figure can reach -- most visibly the
+# 10-second windows superseded by 20-second reruns of the same configuration.
+CONFIG_KEY = {
+    "weak_scaling": lambda r: (
+        r.get("system", ""),
+        (r.get("distributor") or "").strip(),
+        "random" if r.get("mode") == "poisson" else r.get("mode", ""),
+        _int(r.get("expected_us", "")),
+        _ranks_per_node(r),
+        _fanout(r),
+        _int(r.get("nodes", "")),
+    ),
+    "shutdown": lambda r: (
+        r.get("system", ""),
+        (r.get("distributor") or "").strip() or "naive",
+        _fanout(r),
+        _ranks_per_node(r),
+        _int(r.get("nodes", "")),
+    ),
+}
+
+
+def is_plottable(sweep: str, row: dict[str, Any]) -> bool:
+    """Drop rows every plot rejects, so a rejected row cannot win its key.
+
+    Only the shutdown sweep has any: runs above the plotted node range, and
+    sub-microsecond hierarchical timings that are teardown no-ops rather than
+    measurements.
+    """
+    if sweep != "shutdown":
+        return True
+    if _int(row.get("nodes", "")) > 2048:
+        return False
+    distributor = (row.get("distributor") or "").strip() or "naive"
+    try:
+        elapsed = float(row.get("time_per_shutdown_us") or 0.0)
+    except ValueError:
+        return False
+    return not ("hierarchical" in distributor and elapsed < 1.0)
 
 PROVENANCE = ("job_id",)
 
@@ -61,8 +126,9 @@ def job_id_of(source_run: str) -> str:
 
 def consolidate(results_dir: str, sweep: str) -> tuple[list[str], list[dict[str, Any]], int]:
     measured = MEASURED[sweep]
+    config_key = CONFIG_KEY.get(sweep)
     fieldnames: list[str] = []
-    newest: dict[tuple[str, ...], tuple[Any, dict[str, Any]]] = {}
+    newest: dict[tuple[Any, ...], tuple[Any, dict[str, Any]]] = {}
     seen = 0
 
     for path, run in source_runs(results_dir, sweep):
@@ -72,9 +138,14 @@ def consolidate(results_dir: str, sweep: str) -> tuple[list[str], list[dict[str,
                 seen += 1
                 if not fieldnames:
                     fieldnames = [c for c in row if c is not None]
+                if not is_plottable(sweep, row):
+                    continue
                 row = dict(row)
                 row["job_id"] = job_id_of(run)
-                key = tuple(row.get(c, "") for c in fieldnames if c not in measured)
+                if config_key is not None:
+                    key: tuple[Any, ...] = config_key(row)
+                else:
+                    key = tuple(row.get(c, "") for c in fieldnames if c not in measured)
                 if key not in newest or recency > newest[key][0]:
                     newest[key] = (recency, row)
 
