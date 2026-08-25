@@ -34,7 +34,6 @@ from plot_common import (
     iter_csv_rows,
     legend_avoiding_data,
     log_padded_limits,
-    normalize_mode,
     plot_node_series,
     save_figure,
     set_output_formats,
@@ -124,7 +123,7 @@ def group_rows(
         lambda row: (
             row["system"],
             row["distributor"],
-            normalize_mode(row["mode"]),
+            row["mode"],
             row["expected_ns"],
             row["ranks_per_node"],
             row["fanout"],
@@ -185,7 +184,7 @@ def per_distributor_ylimits(
     ), points in grouped.items():
         if (system, distributor, ranks_per_node, fanout) not in plotted:
             continue
-        key = (system, ranks_per_node, normalize_mode(mode))
+        key = (system, ranks_per_node, mode)
         buckets[key].extend(throughput for _, throughput in points)
     return {
         key: limits
@@ -232,7 +231,7 @@ def comparison_ylimits(
     ), points in grouped.items():
         if not comparison_series_kept(distributor, fanout):
             continue
-        key = (normalize_mode(mode), expected_ns, layout_class(ranks_per_node))
+        key = (mode, expected_ns, layout_class(ranks_per_node))
         buckets[key].extend(throughput for _, throughput in points)
     return {
         key: limits
@@ -251,7 +250,7 @@ def plot_distributor(
     image_format: str,
     ylimits: dict[tuple[str, int, str], tuple[float, float]] | None = None,
 ) -> None:
-    for mode in ("fixed", "random"):
+    for mode in ("fixed", "uniform"):
         with ieee_figure() as (fig, ax):
             series = []
             all_nodes: set[int] = set()
@@ -266,7 +265,7 @@ def plot_distributor(
                 if (
                     sys_name != system
                     or dist != distributor
-                    or normalize_mode(mode_name) != mode
+                    or mode_name != mode
                     or rpn != ranks_per_node
                     or series_fanout != fanout
                 ):
@@ -390,7 +389,7 @@ def plot_distributor_comparison(
         ), points in grouped.items():
             if (
                 sys_name != system
-                or normalize_mode(mode_name) != mode
+                or mode_name != mode
                 or series_expected_ns != expected_ns
                 or rpn != ranks_per_node
             ):
@@ -454,7 +453,7 @@ def comparison_panel_series(
     for (sys_name, dist, mode_name, series_ns, rpn, fanout), points in grouped.items():
         if (
             sys_name != system
-            or normalize_mode(mode_name) != mode
+            or mode_name != mode
             or series_ns != expected_ns
             or rpn != ranks_per_node
             or not comparison_series_kept(dist, fanout)
@@ -553,8 +552,8 @@ def main() -> None:
     parser.add_argument(
         "--modes",
         nargs="+",
-        choices=["fixed", "random"],
-        default=["fixed", "random"],
+        choices=["fixed", "uniform"],
+        default=["fixed", "uniform"],
         help="Task-time modes to plot into separate subdirectories (default: both)",
     )
     args = parser.parse_args()
@@ -564,8 +563,8 @@ def main() -> None:
     rows = parse_rows(collect_csv_paths(args.input, "weak_scaling"))
     rows = filter_systems(rows, args.exclude_system)
     rows = filter_ranks_per_node(rows, args.ranks_per_node)
-    modes = {normalize_mode(mode) for mode in args.modes}
-    rows = [row for row in rows if normalize_mode(row["mode"]) in modes]
+    modes = {mode for mode in args.modes}
+    rows = [row for row in rows if row["mode"] in modes]
     grouped = group_rows(rows)
 
     configs = sorted(
@@ -598,7 +597,7 @@ def main() -> None:
             {
                 (
                     row["system"],
-                    normalize_mode(row["mode"]),
+                    row["mode"],
                     row["expected_ns"],
                     row["ranks_per_node"],
                 )

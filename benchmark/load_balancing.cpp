@@ -418,7 +418,7 @@ int main(int argc, char** argv) {
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
   cxxopts::Options options(
-      "test_load_balancing",
+      "load_balancing",
       "Times each distributor's wall-clock drain of a fixed-size task batch "
       "(tasks_per_worker * workers tasks) across a range of tasks_per_worker "
       "values, to compare load-balancing/scheduling overhead between distributors.");

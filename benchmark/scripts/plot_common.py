@@ -134,10 +134,6 @@ def dedupe_newest(
     return newest
 
 
-def normalize_mode(mode: str) -> str:
-    return "random" if mode == "poisson" else mode
-
-
 def format_fanout(fanout: int) -> str:
     """Name a hierarchy depth by its number of coordination layers.
 

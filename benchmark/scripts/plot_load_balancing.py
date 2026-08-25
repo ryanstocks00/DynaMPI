@@ -121,7 +121,7 @@ def launch_ranks_per_node(rows: list[MakespanRow]) -> list[MakespanRow]:
     """Key every row to the geometry its job was *launched* with.
 
     naive/lockfree_rma run on a comm with one rank per node dropped (see
-    test_load_balancing.cpp's flat_comm), so they report a smaller world_size
+    load_balancing.cpp's flat_comm), so they report a smaller world_size
     than the hierarchical pair. Per-row rpn would split one sweep across two
     plot keys, and the --ranks-per-node filter would then drop the flat pair
     entirely. The largest world_size in one *job* is its --ntasks-per-node,
@@ -139,7 +139,7 @@ def launch_ranks_per_node(rows: list[MakespanRow]) -> list[MakespanRow]:
 
 
 def duration_sampler(mode: str, mean_s: float, cv: float):
-    """Draw n task durations in seconds, mirroring test_load_balancing.cpp.
+    """Draw n task durations in seconds, mirroring load_balancing.cpp.
 
     The reference curves are properties of the duration distribution, not of
     any distributor, so both are resampled per mode. With fixed durations the

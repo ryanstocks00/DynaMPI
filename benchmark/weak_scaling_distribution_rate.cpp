@@ -53,7 +53,7 @@ enum class DistributorKind {
   LockFreeRMA,
   HierarchicalLockFreeRMA,
 };
-enum class DurationMode { Fixed, Poisson };
+enum class DurationMode { Fixed, Uniform };
 
 struct BenchmarkOptions {
   uint64_t expected_us = 1;
@@ -84,7 +84,7 @@ static DistributorKind parse_distributor(const std::string& value) {
 
 static DurationMode parse_duration_mode(const std::string& value) {
   if (value == "fixed") return DurationMode::Fixed;
-  if (value == "poisson" || value == "random") return DurationMode::Poisson;
+  if (value == "uniform") return DurationMode::Uniform;
   throw std::runtime_error("Unknown duration mode: " + value);
 }
 
@@ -103,7 +103,7 @@ static std::string to_string(DistributorKind kind) {
 }
 
 static std::string to_string(DurationMode mode) {
-  return mode == DurationMode::Fixed ? "fixed" : "random";
+  return mode == DurationMode::Fixed ? "fixed" : "uniform";
 }
 
 static void spin_wait(std::chrono::microseconds duration) {
@@ -187,7 +187,7 @@ struct WorkerFunctor {
   uint32_t operator()(Task task) {
     uint32_t value = task;
     uint64_t duration_us = expected_us;
-    if (duration_mode == DurationMode::Poisson) {
+    if (duration_mode == DurationMode::Uniform) {
       duration_us = uniform(rng);
     }
     spin_wait(std::chrono::microseconds(duration_us));
@@ -409,7 +409,7 @@ int main(int argc, char** argv) {
       "Distribution strategy: naive, hierarchical, lockfree_rma, "
       "or hierarchical_lockfree_rma",
       cxxopts::value<std::string>()->default_value("hierarchical"))(
-      "m,mode", "Duration mode: fixed or random (uniform 0-2x expected)",
+      "m,mode", "Duration mode: fixed or uniform (uniform on [0, 2x expected])",
       cxxopts::value<std::string>()->default_value("fixed"))(
       "max_upper_fanout",
       "hierarchical_lockfree_rma only: max direct children per manager "

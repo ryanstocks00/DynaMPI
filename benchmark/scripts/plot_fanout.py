@@ -31,7 +31,6 @@ from plot_common import (
     format_distributor_label,
     format_fanout,
     ieee_figure,
-    normalize_mode,
     plot_node_series,
     save_figure,
     set_output_formats,
@@ -50,7 +49,7 @@ def group_rows(rows: Sequence[WeakScalingRow]) -> Grouped:
         lambda row: (
             row["system"],
             row["distributor"],
-            normalize_mode(row["mode"]),
+            row["mode"],
             row["expected_ns"],
             row["ranks_per_node"],
             row["fanout"],

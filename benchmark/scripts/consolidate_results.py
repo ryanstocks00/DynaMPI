@@ -33,7 +33,7 @@ from typing import Any
 MEASURED: dict[str, frozenset[str]] = {
     "weak_scaling": frozenset({"total_tasks", "elapsed_s", "throughput_tasks_per_s"}),
     "shutdown": frozenset({"time_per_shutdown_us", "iterations"}),
-    "test_load_balancing": frozenset(
+    "load_balancing": frozenset(
         {"total_tasks", "elapsed_s", "construct_s", "warmup_s", "finalize_s", "destruct_s"}
     ),
 }
@@ -66,7 +66,7 @@ CONFIG_KEY = {
     "weak_scaling": lambda r: (
         r.get("system", ""),
         (r.get("distributor") or "").strip(),
-        "random" if r.get("mode") == "poisson" else r.get("mode", ""),
+        r.get("mode", ""),
         _int(r.get("expected_us", "")),
         _ranks_per_node(r),
         _fanout(r),
