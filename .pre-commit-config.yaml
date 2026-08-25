@@ -47,6 +47,8 @@ repos:
       - id: check-merge-conflict
       - id: check-added-large-files
         args: ['--maxkb=100']
+        # The EXESS case-study inputs carry a 1179-atom geometry and are ~106 KB.
+        exclude: '^benchmark/exess/.*\.json$'
       - id: check-json
       - id: check-yaml
       - id: check-toml

@@ -460,7 +460,7 @@ using-declaration.
 
 `dynampi::MPICommunicator<Options...>` and `dynampi::MPIGroup` are the RAII
 wrappers the distributors are built on.  `MPICommunicator` owns (or references) a
-communicator, offers typed `send` / `isend` / `recv` / `probe` / `broadcast` /
+communicator, offers typed `send` / `recv` / `probe` / `broadcast` /
 `gather` and RMA helpers (`put_bytes`, `get_bytes`, `fetch_and_op`), records
 `CommStatistics` when a `track_statistics` option is supplied, and provides
 `split()` / `split_by_node()`.  `MPIGroup` wraps `MPI_Group` for rank

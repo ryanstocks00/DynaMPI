@@ -1,0 +1,136 @@
+
+The following have been reloaded with a version change:
+  1) cray-mpich/8.1.31 => cray-mpich/9.1.0
+
+
+The following have been reloaded with a version change:
+  1) cray-libsci/24.11.0 => cray-libsci/24.07.0
+
+WARNING: OpenMP is set to use only 1 threads(s)!
+Broooom broooom! Speed enabled
+[2026-08-24 03:27:43.367 r0 ERROR]
+                 _..--+~/@-~--.      _____  __  __  _____   ____    ____
+             _-=~      (  .   "}    | ____| \ \/ / | ____| / ___|  / ___|
+          _-~     _.--=.\ \""""     |  _|    \  /  |  _|   \___ \  \___ \
+        _~      _-       \ \_\      | |___   /  \  | |___   ___) |  ___) |
+       =      _=          '--'      |_____| /_/\_\ |_____| |____/  |____/
+      '      =
+     :      :     ____            EXtreme-scale Electronic Structure System
+___ |      ;                               Enjoy the power of GPUs!
+    ;       ;                            Gordon Bell Award Winner 2024
+  ___=       \ ___ __     __..-...__
+     :        =_     _.-~~          ~~--.__
+_____ \         ~-+-~                   ___~=_______
+       == ...______ __ ___ _--~~--_
+
+
+[2026-08-24 03:27:43.367 r0 ERROR] ------------------------------------------------------------------------------
+
+[2026-08-24 03:27:43.367 r0 PERFORMANCE] Start of Calculation Local time: 2026-08-24 03:27:43
+[2026-08-24 03:27:43.367 r0 PERFORMANCE] Start of Calculation UTC time:   2026-08-24 07:27:43
+[2026-08-24 03:27:43.368 r0 PERFORMANCE] ├── Calculation params
+│   ├── Title: input
+│   ├── Driver: Energy
+│   ├── Model
+│   │   ├── Theory level: HF
+│   │   ├── Spin configuration: Restricted
+│   │   ├── Primary basis: cc-pVDZ
+│   │   ├── Auxiliary basis: cc-pVDZ-RIFIT
+│   │   ├── Force cartesian basis sets: True
+│   │   ├── Standard orientation: None
+│   ├── Topologies
+│   │   ├── Number of topologies: 1
+│   ├── Keywords
+│   │   ├── SCF keywords
+│   │   │   ├── Max iterations: 40
+│   │   │   ├── Batch size: 2560
+│   │   │   ├── DIIS size: 12
+│   │   │   ├── Convergence threshold: 1.000e-06
+│   │   │   ├── Use guess fallback: True
+│   │   │   ├── Convergence metric: Energy
+│   │   │   ├── Density threshold: 1.000e-10
+│   │   │   ├── Gradient screening threshold: 1.000e-10
+│   │   │   ├── Allow crap scf: False
+│   │   │   ├── Fock build type: RI
+│   │   │   ├── Group shared exponents: False
+│   │   │   ├── Store RI B tensor on host: False
+│   │   │   ├── Compress B tensor shell pairs: False
+│   │   ├── Fragmentation keywords
+│   │   │   ├── Fragmented energy type: Total
+│   │   │   ├── Fragmentation level: Trimer
+│   │   │   ├── Cutoff type: Centroid
+│   │   │   ├── Distance method: Max
+│   │   │   ├── Using speed (beta)
+│   │   │   ├── Work distributor: DynaMPIHierarchical
+│   │   │   ├── Fragmentation Cutoffs
+│   │   │   │   ├── Dimer: 1000
+│   │   │   │   ├── Trimer: 100
+│   │   ├── RTAT keywords
+│   │   │   ├── Enabled: True
+│   │   ├── Debug keywords
+│   │   │   ├── Dry run: False
+│   │   │   ├── Skip calcs: False
+│   │   │   ├── Subfragment XYZ debug: False
+│   │   ├── Export Keywords
+│   │   │   ├── Not exporting any matrices
+│   │   ├── Guess keywords
+│   │   │   ├── Superposition of monomer densities: False
+│   │   │   ├── Superposition of subfragment densities: False
+│   │   │   ├── Basis set projection: False
+│   │   ├── Boundary keywords
+│   │   │   ├── X
+│   │   │   │   ├── Type: None
+│   │   │   ├── Y
+│   │   │   │   ├── Type: None
+│   │   │   ├── Z
+│   │   │   │   ├── Type: None
+│   │   ├── Logging
+│   │   │   ├── Restricted logs visible
+│   │   │   ├── Console logging
+│   │   │   │   ├── Level: PERFORMANCE
+│   │   │   │   ├── Use log level colors: False
+│   │   ├── Integrals Keywords
+│   │   │   ├── Scheduler: Round Robin
+│   │   │   ├── Number of streams: 8
+│   ├── System
+│   │   ├── Max GPU Memory: 40 GB
+│   │   ├── Oversubscribe GPUs: False
+│   │   ├── Teams per node: 8
+│   │   ├── # GPUs per team: 1
+
+[2026-08-24 03:28:07.796 r0 PERFORMANCE] Queue building took 11.133060
+[2026-08-24 03:28:10.942 r0 PERFORMANCE] Coefficient precomputation took 3.146288 (closed-form fast path)
+[2026-08-24 03:28:15.490 r0 PERFORMANCE] =======================================================
+                  Fragmentation queue
+=======================================================
+ -> 393 Monomers
+ -> 77028 Dimers
+ -> 10039316 Trimers
+ -> 10116737 total fragments
+
+[2026-08-24 03:29:43.244 r0 PERFORMANCE] Task enumeration (local dequeue + insert_tasks) took 5.818968s (10116737 tasks)
+[2026-08-24 03:30:03.104 r0 PERFORMANCE] Result harvesting (remaining dispatch + all worker compute + collection) took 19.860397s (of which run_tasks=14.579535s, result processing (update_from_fixed_energy_result)=5.280183s)
+[2026-08-24 03:30:03.105 r0 PERFORMANCE] =======================================================
+           Fragmentation Calculation Summary
+=======================================================
+
+[2026-08-24 03:30:03.105 r0 PERFORMANCE] Total energy: E_RHF: -29877.78101 E_MP2_OS: 0 E_MP2_SS: 0 E_MP2: 0 E_total: -29877.78101
+[2026-08-24 03:30:03.105 r0 PERFORMANCE] get_qdx_output took 0.000005
+[2026-08-24 03:30:07.262 r0 PERFORMANCE] Topology 0 flops.accumulate_across_comm (world, 131073 ranks) took 0.691459
+[2026-08-24 03:30:07.264 r0 PERFORMANCE] flops.accumulate_across_comm (world, 131073 ranks) took 0.000061
+[2026-08-24 03:30:07.264 r0 PERFORMANCE] Total flops: SP: 0 FLOPS, DP: 15.13844 PFLOPS
+[2026-08-24 03:30:07.264 r0 PERFORMANCE] Performance: SP: 0 FLOP/s, DP: 105.5 TFLOP/s
+[2026-08-24 03:30:07.265 r0 ERROR]
+Now, a word from our sponsors...
+ Don't open a box full of soldier flies without first knowing if they're contained!
+
+Total processing time 180.118573 seconds
+Please cite the following papers for the methods used in this calculation:
+ - J.L. Galvez Vallejo et. al., Toward an extreme-scale electronic structure system, J. Chem. Phys., 2023. DOI: 10.1063/5.0156399
+
+ - R. Stocks, E. Palethorpe, and G.M.J. Barca, Multi-GPU RI-HF Energies and Analytic Gradients ─ Toward High-Throughput Ab Initio Molecular Dynamics, J. Chem. Theory Comput., 2024. DOI: 10.1021/acs.jctc.4c00877
+   For:
+     * RI-HF energy
+
+[CRAYBLAS_WARNING] Application linked against multiple cray-libsci libraries
+wall_seconds=311

@@ -144,8 +144,7 @@ task and receiving the next.
 ### Configuration
 
 Beyond the [common fields](api.md#common-config-fields) there are none that take
-effect.  `use_immediate_recv` and `max_result_size` exist on `Config` but are
-currently unused by the implementation.
+effect.
 
 ---
 
@@ -262,8 +261,6 @@ its claims the same way (`setup_upper_chain()`'s `feed_width`).
 | `manager_per_node` | `bool` | `true` | Use shared-memory node discovery instead of a rank-order virtual tree. |
 | `max_local_group_size` | `int` | `0` | `> 0` splits nodes into local groups of at most this size. `manager_per_node` only. |
 | `max_upper_fanout` | `int` | `-1` | Max direct leader-layer children. `-1` auto, `0` disabled, `> 0` explicit. `manager_per_node` only. |
-
-`message_batch_size` is present on `Config` but currently unused.
 
 **Statistics:** `track_statistics<Aggregated>` and `<Detailed>` are both
 supported.  `Statistics::worker_task_counts` is populated by an `MPI_Gather`
