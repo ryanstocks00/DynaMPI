@@ -16,6 +16,11 @@ configuration, keeping the highest job id. That deliberately discards
 measurements a plot would never reach -- an older short-window run of a
 configuration that was later re-measured, for instance -- so the committed
 CSVs are exactly the data behind the figures rather than a superset of it.
+
+For repeat and provenance analysis, ``--all-runs-dir`` additionally writes one
+audit CSV per sweep. It retains every source row and marks whether the default
+latest-run selection kept, superseded, or rejected it. The default outputs and
+selection rules are unchanged.
 """
 
 from __future__ import annotations
@@ -24,6 +29,7 @@ import argparse
 import csv
 import os
 from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
 from typing import Any
 
 # Columns that are measurements rather than settings. Everything else in a
@@ -101,6 +107,38 @@ def is_plottable(sweep: str, row: dict[str, Any]) -> bool:
     return not ("hierarchical" in distributor and elapsed < 1.0)
 
 PROVENANCE = ("job_id",)
+AUDIT_PROVENANCE = (
+    "source_run",
+    "source_path",
+    "source_row",
+    "source_mtime_ns",
+    "selected",
+    "selection_reason",
+)
+Recency = tuple[int, float]
+
+
+@dataclass
+class SourceRecord:
+    row: dict[str, Any]
+    recency: Recency
+    key: tuple[Any, ...] | None
+    source_run: str
+    source_path: str
+    source_row: int
+    source_mtime_ns: int
+    plottable: bool
+    selected: bool = False
+    selection_reason: str = ""
+
+
+@dataclass
+class Consolidation:
+    fieldnames: list[str]
+    all_fieldnames: list[str]
+    selected_rows: list[dict[str, Any]]
+    records: list[SourceRecord]
+    seen: int
 
 
 def source_runs(results_dir: str, sweep: str) -> Iterable[tuple[str, str]]:
@@ -124,34 +162,105 @@ def job_id_of(source_run: str) -> str:
     return tail if tail.isdigit() else ""
 
 
-def consolidate(results_dir: str, sweep: str) -> tuple[list[str], list[dict[str, Any]], int]:
+def _append_unique(fieldnames: Sequence[str], additions: Sequence[str]) -> list[str]:
+    output = list(fieldnames)
+    output.extend(name for name in additions if name not in output)
+    return output
+
+
+def build_consolidation(results_dir: str, sweep: str) -> Consolidation:
+    """Read every source row and apply the default latest-run selection."""
     measured = MEASURED[sweep]
     config_key = CONFIG_KEY.get(sweep)
     fieldnames: list[str] = []
-    newest: dict[tuple[Any, ...], tuple[Any, dict[str, Any]]] = {}
+    all_fieldnames: list[str] = []
+    records: list[SourceRecord] = []
+    newest: dict[tuple[Any, ...], SourceRecord] = {}
     seen = 0
 
     for path, run in source_runs(results_dir, sweep):
-        recency = (int(job_id_of(run) or 0), os.path.getmtime(path))
+        stat = os.stat(path)
+        recency = (int(job_id_of(run) or 0), stat.st_mtime)
+        relative_path = os.path.relpath(path, results_dir).replace(os.sep, "/")
         with open(path, newline="", encoding="utf-8") as handle:
-            for row in csv.DictReader(handle):
+            for source_row, row in enumerate(csv.DictReader(handle), start=2):
                 seen += 1
                 if not fieldnames:
                     fieldnames = [c for c in row if c is not None]
-                if not is_plottable(sweep, row):
-                    continue
+                all_fieldnames = _append_unique(
+                    all_fieldnames, [c for c in row if c is not None]
+                )
+                plottable = is_plottable(sweep, row)
                 row = dict(row)
                 row["job_id"] = job_id_of(run)
                 if config_key is not None:
                     key: tuple[Any, ...] = config_key(row)
                 else:
                     key = tuple(row.get(c, "") for c in fieldnames if c not in measured)
-                if key not in newest or recency > newest[key][0]:
-                    newest[key] = (recency, row)
+                record = SourceRecord(
+                    row=row,
+                    recency=recency,
+                    key=key if plottable else None,
+                    source_run=run,
+                    source_path=relative_path,
+                    source_row=source_row,
+                    source_mtime_ns=stat.st_mtime_ns,
+                    plottable=plottable,
+                )
+                records.append(record)
+                if plottable and (key not in newest or recency > newest[key].recency):
+                    newest[key] = record
 
-    rows = [row for _, row in newest.values()]
+    for record in records:
+        if not record.plottable:
+            record.selection_reason = "excluded_not_plottable"
+        elif record.key is not None and newest[record.key] is record:
+            record.selected = True
+            record.selection_reason = "selected_latest"
+        elif record.key is not None and newest[record.key].recency == record.recency:
+            record.selection_reason = "superseded_by_same_run_first_row"
+        else:
+            record.selection_reason = "superseded_by_newer_run"
+
+    rows = [record.row for record in records if record.selected]
     rows.sort(key=lambda r: tuple(str(r.get(c, "")) for c in fieldnames))
-    return fieldnames + list(PROVENANCE), rows, seen
+    return Consolidation(fieldnames, all_fieldnames, rows, records, seen)
+
+
+def consolidate(results_dir: str, sweep: str) -> tuple[list[str], list[dict[str, Any]], int]:
+    """Return the unchanged default latest-run output."""
+    result = build_consolidation(results_dir, sweep)
+    return _append_unique(result.fieldnames, PROVENANCE), result.selected_rows, result.seen
+
+
+def all_runs_rows(result: Consolidation) -> tuple[list[str], list[dict[str, Any]]]:
+    """Return every source row plus provenance and its selection disposition."""
+    rows: list[dict[str, Any]] = []
+    for record in result.records:
+        row = dict(record.row)
+        row.update(
+            {
+                "source_run": record.source_run,
+                "source_path": record.source_path,
+                "source_row": record.source_row,
+                "source_mtime_ns": record.source_mtime_ns,
+                "selected": "1" if record.selected else "0",
+                "selection_reason": record.selection_reason,
+            }
+        )
+        rows.append(row)
+    rows.sort(key=lambda row: (str(row["source_path"]), int(row["source_row"])))
+    fieldnames = _append_unique(result.all_fieldnames, (*PROVENANCE, *AUDIT_PROVENANCE))
+    return fieldnames, rows
+
+
+def write_csv(path: str, fieldnames: Sequence[str], rows: Sequence[dict[str, Any]]) -> None:
+    with open(path, "w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(
+            handle, fieldnames=fieldnames, extrasaction="ignore", lineterminator="\n"
+        )
+        writer.writeheader()
+        writer.writerows(rows)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -167,28 +276,58 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--sweeps", nargs="+", default=sorted(MEASURED), choices=sorted(MEASURED)
     )
     parser.add_argument(
+        "--output-dir",
+        help="Directory for the selected latest-run CSVs (default: --results-dir)",
+    )
+    parser.add_argument(
+        "--all-runs-dir",
+        help="Optional directory for <sweep>_all_runs.csv audit files. These retain "
+        "every repeat and source row with selection provenance.",
+    )
+    parser.add_argument(
         "--check",
         action="store_true",
-        help="Report what would be written without writing it",
+        help="Report every selected and all-runs output without creating or writing files",
     )
     args = parser.parse_args(argv)
     results_dir = os.path.normpath(args.results_dir)
+    output_dir = os.path.normpath(args.output_dir or results_dir)
+    all_runs_dir = os.path.normpath(args.all_runs_dir) if args.all_runs_dir else None
 
     for sweep in args.sweeps:
-        fieldnames, rows, seen = consolidate(results_dir, sweep)
-        if not rows:
+        result = build_consolidation(results_dir, sweep)
+        if not result.records:
             print(f"{sweep}: no source CSVs found")
             continue
-        out = os.path.join(results_dir, f"{sweep}.csv")
-        print(f"{sweep}: {seen} rows in -> {len(rows)} out ({seen - len(rows)} superseded) -> {out}")
-        if args.check:
-            continue
-        with open(out, "w", newline="", encoding="utf-8") as handle:
-            writer = csv.DictWriter(
-                handle, fieldnames=fieldnames, extrasaction="ignore", lineterminator="\n"
+        selected = len(result.selected_rows)
+        rejected = sum(not record.plottable for record in result.records)
+        superseded = result.seen - selected - rejected
+        out = os.path.join(output_dir, f"{sweep}.csv")
+        print(
+            f"{sweep}: {result.seen} rows in -> {selected} selected "
+            f"({superseded} superseded, {rejected} excluded) -> {out}"
+        )
+        if not args.check:
+            if result.selected_rows:
+                os.makedirs(output_dir, exist_ok=True)
+                write_csv(
+                    out,
+                    _append_unique(result.fieldnames, PROVENANCE),
+                    result.selected_rows,
+                )
+            else:
+                print(f"{sweep}: no selected rows, leaving {out} untouched")
+
+        if all_runs_dir is not None:
+            audit_out = os.path.join(all_runs_dir, f"{sweep}_all_runs.csv")
+            print(
+                f"{sweep}: {result.seen} provenance-preserving rows "
+                f"(selection report) -> {audit_out}"
             )
-            writer.writeheader()
-            writer.writerows(rows)
+            if not args.check:
+                os.makedirs(all_runs_dir, exist_ok=True)
+                audit_fieldnames, audit_rows = all_runs_rows(result)
+                write_csv(audit_out, audit_fieldnames, audit_rows)
     return 0
 
 

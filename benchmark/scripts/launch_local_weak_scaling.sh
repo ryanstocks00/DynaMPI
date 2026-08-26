@@ -12,16 +12,15 @@ OUTPUT_DIR="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 SYSTEM="local"
 
 IFS=' ' read -r -a RANK_LIST <<< "${RANK_LIST:-1 2 4 8 12}"
-IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-1 10 100 1000 10000 100000 1000000}"
-IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
-IFS=' ' read -r -a MODES <<< "${MODES:-fixed random}"
-DURATION_S="${DURATION_S:-10}"
-# Lifetime task capacity of each preallocated RMA window (lockfree_rma and
-# hierarchical_lockfree_rma only). Empty keeps the binary's default, which is
-# sized for a compute node (~19GiB on the manager rank) -- lower it to run the
-# RMA distributors on a workstation, at the cost of a shorter measured window
-# if the run exhausts the table before duration_s.
-MAX_TASKS="${MAX_TASKS:-}"
+IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-10 100 1000 10000 100000 1000000}"
+IFS=' ' read -r -a DISTRIBUTIONS <<< \
+  "${DISTRIBUTIONS:-naive hierarchical lockfree_rma hierarchical_lockfree_rma}"
+# Paper workload is uniform on [0, 2T]. Override with MODES="uniform fixed".
+IFS=' ' read -r -a MODES <<< "${MODES:-uniform}"
+DURATION_S="${DURATION_S:-20}"
+# Smaller than the compute-node 500M default: 25M slots (~1 GiB) cover the
+# default 12-rank, 20 s local sweep. Raise MAX_TASKS for larger RANK_LIST.
+MAX_TASKS="${MAX_TASKS:-25000000}"
 MAX_TASKS_ARGS=()
 if [[ -n "${MAX_TASKS}" ]]; then
   MAX_TASKS_ARGS=(--max_tasks "${MAX_TASKS}")
@@ -49,6 +48,8 @@ for ranks in "${RANK_LIST[@]}"; do
       for expected_us in "${TASK_US_LIST[@]}"; do
         echo "Running ${SYSTEM} ranks=${ranks} dist=${dist} mode=${mode} expected_us=${expected_us}"
         launcher_base="$(basename "${LAUNCHER}")"
+        # A successful measurement prints its row and intentionally calls
+        # MPI_Abort, so launcher exit status is not a benchmark success signal.
         if [[ "${launcher_base}" == mpiexec ]]; then
           "${LAUNCHER}" ${LAUNCHER_ARGS[@]+"${LAUNCHER_ARGS[@]}"} -n "${ranks}" \
             "${APP}" \
@@ -59,7 +60,7 @@ for ranks in "${RANK_LIST[@]}"; do
             --nodes 1 \
             --system "${SYSTEM}" \
             ${MAX_TASKS_ARGS[@]+"${MAX_TASKS_ARGS[@]}"} \
-            --output "${CSV}"
+            --output "${CSV}" || true
         else
           "${LAUNCHER}" ${LAUNCHER_ARGS[@]+"${LAUNCHER_ARGS[@]}"} -np "${ranks}" \
             "${APP}" \
@@ -70,7 +71,7 @@ for ranks in "${RANK_LIST[@]}"; do
             --nodes 1 \
             --system "${SYSTEM}" \
             ${MAX_TASKS_ARGS[@]+"${MAX_TASKS_ARGS[@]}"} \
-            --output "${CSV}"
+            --output "${CSV}" || true
         fi
       done
     done

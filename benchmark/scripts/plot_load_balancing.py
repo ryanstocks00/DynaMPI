@@ -503,10 +503,8 @@ def draw_load_balancing_axes(
         for k in ANNOTATE_AT:
             if k not in points or k not in ideal_ms or k in skipped:
                 continue
-            # The percent sign needs escaping: the science/ieee style
-            # renders text through LaTeX.
             ax.annotate(
-                rf"{100.0 * ideal_ms[k] / points[k]:.0f}\%",
+                f"{100.0 * ideal_ms[k] / points[k]:.0f}%",
                 (k, points[k]),
                 textcoords="offset points",
                 xytext=(1, offset + LABEL_NUDGES.get((distributor, k), 0.0)),
@@ -640,7 +638,7 @@ def plot_duration_panels(
             # Top left, where no curve reaches: these all rise to the right,
             # which is also why the legend goes bottom right.
             ax.annotate(
-                f"({chr(ord('a') + index)}) {key[3] / 1000:g}\\,ms mean task duration",
+                f"({chr(ord('a') + index)}) {key[3] / 1000:g} ms mean task duration",
                 (0.02, 0.97),
                 xycoords="axes fraction",
                 ha="left",

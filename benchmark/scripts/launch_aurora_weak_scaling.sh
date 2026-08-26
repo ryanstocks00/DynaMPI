@@ -12,29 +12,24 @@ APP="${APP:-${ROOT_DIR}/build/benchmark/weak_scaling_distribution_rate}"
 OUTPUT_DIR="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 SYSTEM="aurora"
 
-IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512}"
-IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-1 10 100 1000 10000 100000 1000000}"
-IFS=' ' read -r -a DISTRIBUTIONS <<< "${DISTRIBUTIONS:-naive hierarchical}"
-IFS=' ' read -r -a MODES <<< "${MODES:-fixed random}"
-DURATION_S="${DURATION_S:-10}"
-# hierarchical_lockfree_rma only: forwarded as --max_upper_fanout (ignored by
-# every other distributor, which is run exactly once regardless of how many values
-# are listed here). Negative (default) = auto, picking a fanout from manager
-# count -- see HierarchicalLockFreeRMAWorkDistributor's setup_upper_chain().
-# 0 = single unbounded manager level. Set multiple space-separated values to
-# sweep hierarchy branching factor within one job.
+IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512 1024 2048}"
+IFS=' ' read -r -a TASK_US_LIST <<< "${TASK_US_LIST:-10 100 1000 10000 100000 1000000}"
+IFS=' ' read -r -a DISTRIBUTIONS <<< \
+  "${DISTRIBUTIONS:-naive hierarchical lockfree_rma hierarchical_lockfree_rma}"
+# Paper workload is uniform on [0, 2T]. Override with MODES="uniform fixed".
+IFS=' ' read -r -a MODES <<< "${MODES:-uniform}"
+DURATION_S="${DURATION_S:-20}"
+# Hierarchical distributors only. Negative = auto; 0 = one unbounded manager
+# level. Extra values sweep fan-out; other distributors ignore this list.
 IFS=' ' read -r -a MAX_UPPER_FANOUT_LIST <<< "${MAX_UPPER_FANOUT_LIST:-${MAX_UPPER_FANOUT:--1}}"
-# Lifetime task capacity of each preallocated RMA window (lockfree_rma and
-# hierarchical_lockfree_rma only). Empty keeps the binary's default, which is
-# sized for a compute node (~19GiB on the manager rank) -- lower it to run the
-# RMA distributors where that much memory is not available, at the cost of a
-# shorter measured window if the run exhausts the table before duration_s.
+# RMA ring capacity and this benchmark's publication budget. Empty keeps the
+# 500M default (~19 GiB), enough for a 20 s window.
 MAX_TASKS="${MAX_TASKS:-}"
 MAX_TASKS_ARGS=()
 if [[ -n "${MAX_TASKS}" ]]; then
   MAX_TASKS_ARGS=(--max_tasks "${MAX_TASKS}")
 fi
-IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-core}"
+IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-7}"
 LAUNCHER="${LAUNCHER:-}"
 IFS=' ' read -r -a LAUNCHER_ARGS <<< "${LAUNCHER_ARGS:-}"
 if [[ -z "${LAUNCHER}" ]]; then
@@ -69,7 +64,7 @@ get_allocated_cores_per_node() {
 ALLOC_CORES_PER_NODE="$(get_allocated_cores_per_node)"
 echo "Allocated cores per node: ${ALLOC_CORES_PER_NODE}"
 
-export FI_CXI_RX_MATCH_MODE=software
+export FI_CXI_RX_MATCH_MODE="${FI_CXI_RX_MATCH_MODE:-software}"
 
 mkdir -p "${OUTPUT_DIR}"
 CSV="${OUTPUT_DIR}/weak_scaling_${SYSTEM}.csv"

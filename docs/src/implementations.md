@@ -319,11 +319,13 @@ not guaranteed to observe remote writes at all.
 
 ### Capacity
 
-The window is preallocated, so capacities are hard limits, not hints.
+The window is preallocated as a ring. Capacities are hard limits on
+simultaneously published, unharvested work, but harvested slots are reused and
+there is no lifetime task cap.
 
 | Field | Default | Meaning |
 |-------|---------|---------|
-| `max_tasks` | `8192` | **Lifetime** total of published tasks, not a concurrent depth. Exceeding it throws `std::length_error`. |
+| `max_tasks` | `8192` | Reusable task/result/log ring slots. A single insertion batch larger than the ring throws `std::length_error`; when live work fills it, publication harvests and waits for space. |
 | `max_task_count` | `256` | Max element count of a single task, for variable-length `TaskT`. Ignored for fixed-size types. |
 | `max_result_count` | `256` | Same, for `ResultT`. |
 
@@ -406,8 +408,8 @@ other ranks still finishing setup.
 
 | Field | Default | Description |
 |-------|---------|-------------|
-| `max_tasks` | `8192` | Lifetime task capacity of each **upper-level** window. |
-| `max_local_tasks` | `8192` | Lifetime task capacity of each **node-local** window. |
+| `max_tasks` | `8192` | Reusable ring capacity of each **upper-level** window. |
+| `max_local_tasks` | `8192` | Reusable ring capacity of each **node-local** window. |
 | `max_task_count` / `max_result_count` | `256` | Per-slot element caps, as for the flat variant. |
 | `max_local_group_size` | `0` | `> 0` splits nodes into smaller local groups. |
 | `max_upper_fanout` | `-1` | `-1` auto (flat at ≤ 32 managers, else smallest power of two ≥ `sqrt(manager_count)`), `0` disabled, `> 0` explicit. |
@@ -457,13 +459,12 @@ mpirun -n 64 ./build/benchmark/weak_scaling_distribution_rate -D lockfree_rma -t
 
 `-D` selects `naive`, `hierarchical`, `lockfree_rma` or
 `hierarchical_lockfree_rma`; `-t` is the expected task duration in
-microseconds and `-d` the measurement window in seconds.  The two RMA
-distributors preallocate their windows for `--max_tasks` tasks (default 500M,
-roughly 19 GiB on the owning rank), so lower it to run them anywhere with less
-memory than a compute node — the run warns and stops early if it exhausts the
-table before `-d` elapses.  Launch scripts for Frontier and Aurora (which take
-the same value as `MAX_TASKS`), plus plotting helpers, live under
-`benchmark/scripts/`.
+microseconds and `-d` the measurement window in seconds.  For RMA runs,
+`--max_tasks` is both the reusable ring capacity and a benchmark-only
+publication budget (default 500M, ~19 GiB for this scalar workload).  The
+library itself has no lifetime task cap.  Lower it to save memory; the driver
+warns if the budget ends the window early.  Site scripts expose this as
+`MAX_TASKS`; plotting helpers live under `benchmark/scripts/`.
 
 For orientation, the design work behind these classes found the flat lock-free RMA
 distributor plateauing once a single manager window saturated, while the

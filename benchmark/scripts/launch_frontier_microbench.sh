@@ -20,6 +20,8 @@ TWOSIDED_APP="${TWOSIDED_APP:-${BUILD_DIR}/benchmark/twosided_msgrate_microbench
 RMA_APP="${RMA_APP:-${BUILD_DIR}/benchmark/rma_atomic_microbench}"
 OUTPUT_DIR="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 SYSTEM="${SYSTEM:-frontier}"
+# Keeps an off-node sweep from appending into the all-workers CSVs.
+CSV_SUFFIX="${CSV_SUFFIX:-}"
 
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512 1024 2048}"
 # 9 = the GPU-mapped layout the paper's weak-scaling sweeps use on Frontier, so
@@ -28,7 +30,7 @@ IFS=' ' read -r -a RANKS_PER_NODE_LIST <<< "${RANKS_PER_NODE_LIST:-9}"
 # 4-byte payload matches the synthetic workload; the wider list is only worth
 # running at a few node counts (see PAYLOAD_NODE_LIST below).
 IFS=' ' read -r -a PAYLOAD_INTS_LIST <<< "${PAYLOAD_INTS_LIST:-1}"
-MODES="${MODES:-probe,noprobe,irecv,oneway}"
+MODES="${MODES:-probe,noprobe,oneway}"
 DURATION_S="${DURATION_S:-5}"
 WARMUP_S="${WARMUP_S:-1}"
 CREDIT_WINDOW="${CREDIT_WINDOW:-64}"
@@ -36,6 +38,9 @@ RMA_DURATION_S="${RMA_DURATION_S:-3}"
 RMA_PIPELINE_DEPTHS="${RMA_PIPELINE_DEPTHS:-1,8,32,128}"
 RUN_RMA="${RUN_RMA:-1}"
 RUN_TWOSIDED="${RUN_TWOSIDED:-1}"
+# 1 drops workers sharing the root's node (8 at the default 9 ranks/node), so
+# every measured exchange crosses the fabric. Needs at least 2 nodes.
+EXCLUDE_ROOT_NODE="${EXCLUDE_ROOT_NODE:-0}"
 
 LAUNCHER="${LAUNCHER:-}"
 if [[ -z "${LAUNCHER}" ]]; then
@@ -49,13 +54,17 @@ if [[ -z "${LAUNCHER}" ]]; then
   fi
 fi
 
-# Same fabric setting the paper's Aurora runs needed; harmless on Frontier and
-# keeps the two machines' configurations comparable if Aurora is rerun later.
-export FI_CXI_RX_MATCH_MODE=software
+# FI_CXI_RX_MATCH_MODE is deliberately left unset so the fabric uses its
+# default (hardware) matching, as in production microbenchmark runs.
+
+EXCLUDE_ARGS=()
+if [[ "${EXCLUDE_ROOT_NODE}" == "1" ]]; then
+  EXCLUDE_ARGS+=(--exclude_root_node=true)
+fi
 
 mkdir -p "${OUTPUT_DIR}"
-TS_CSV="${OUTPUT_DIR}/twosided_msgrate_${SYSTEM}.csv"
-RMA_CSV="${OUTPUT_DIR}/rma_atomic_${SYSTEM}.csv"
+TS_CSV="${OUTPUT_DIR}/twosided_msgrate_${SYSTEM}${CSV_SUFFIX}.csv"
+RMA_CSV="${OUTPUT_DIR}/rma_atomic_${SYSTEM}${CSV_SUFFIX}.csv"
 
 for nodes in "${NODE_LIST[@]}"; do
   for rpn in "${RANKS_PER_NODE_LIST[@]}"; do
@@ -73,6 +82,7 @@ for nodes in "${NODE_LIST[@]}"; do
           --credit_window "${CREDIT_WINDOW}" \
           --nodes "${nodes}" \
           --system "${SYSTEM}" \
+          ${EXCLUDE_ARGS[@]+"${EXCLUDE_ARGS[@]}"} \
           --output "${TS_CSV}" || echo "  !! twosided failed at nodes=${nodes} payload=${payload}"
       done
     fi
@@ -85,6 +95,7 @@ for nodes in "${NODE_LIST[@]}"; do
         --pipeline_depths "${RMA_PIPELINE_DEPTHS}" \
         --nodes "${nodes}" \
         --system "${SYSTEM}" \
+        ${EXCLUDE_ARGS[@]+"${EXCLUDE_ARGS[@]}"} \
         --output "${RMA_CSV}" || echo "  !! rma failed at nodes=${nodes}"
     fi
   done

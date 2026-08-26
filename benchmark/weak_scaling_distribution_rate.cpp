@@ -23,28 +23,11 @@
 
 using Task = uint32_t;
 
-// Default lifetime task capacity for the RMA distributors, overridable with
-// --max_tasks.
-//
-// The RMA distributors pre-allocate a fixed-capacity task/result table sized
-// for the entire lifetime of the distributor (not a ring buffer), so this is a
-// hard ceiling on how many tasks a single run may publish, not a hint. Per-slot
-// cost is tiny for our scalar uint32_t Task/ResultT (task slot + result slot +
-// log entry <= ~40 bytes, since MPI_Type<uint32_t>::resize_required is false so
-// the variable-length max_task_count/max_result_count machinery collapses to a
-// single element) -- 500M tasks is ~19GiB, trivial on a compute-node manager
-// rank, and comfortably covers even our empirically-observed ~2.4-5M tasks/s
-// aggregate ceiling (which doesn't grow with node count -- it's a
-// manager-window bottleneck, not a per-worker one) sustained for a full
-// duration_s with room for repeated top-up chunks on top.
-//
-// Lower it with --max_tasks to run this benchmark on a machine that cannot
-// spare that much memory on the manager rank: the window is allocated eagerly
-// in the distributor's constructor, so an over-large value is an outright OOM
-// rather than a gradual slowdown. Sizing it below expected throughput x
-// duration_s ends the run early (see the capacity check in
-// run_benchmark_lockfree_rma_style), which still reports a valid rate over
-// however long it did run, but measures less of the window than asked for.
+// Default --max_tasks: RMA ring capacity and this driver's cumulative
+// publication budget. Library rings reuse harvested slots; the driver still
+// stops after this many published tasks so measurements match the archived
+// sweeps. 500M (~19 GiB for this scalar workload) covers the 20 s paper
+// window; lower it on memory-constrained hosts (the run warns if it ends early).
 constexpr int kDefaultLockFreeMaxTasks = 500'000'000;
 
 enum class DistributorKind {
@@ -363,12 +346,9 @@ static BenchmarkResult run_benchmark_lockfree_rma_style(const BenchmarkOptions& 
       const uint64_t capacity_left = static_cast<uint64_t>(opts.max_tasks) - 1 - published;
       const uint64_t to_insert = std::min(chunk_size, capacity_left);
       if (to_insert == 0) {
-        // Table full: end the run rather than overrun the preallocated window.
-        // Only reachable with a --max_tasks well below throughput x duration_s,
-        // so say so -- the reported rate is still valid, but it covers a
-        // shorter window than requested and that is easy to miss in a log.
-        std::cerr << "WARNING: --max_tasks (" << opts.max_tasks << ") exhausted after "
-                  << timer.elapsed().count() << "s of a " << opts.duration_s
+        // Cumulative publication budget exhausted (rings could still reuse slots).
+        std::cerr << "WARNING: --max_tasks publication budget (" << opts.max_tasks
+                  << ") exhausted after " << timer.elapsed().count() << "s of a " << opts.duration_s
                   << "s window; raise it for a full-length measurement." << std::endl;
         break;
       }
@@ -420,11 +400,10 @@ int main(int argc, char** argv) {
       "multiple upper levels once the manager count exceeds this fanout.",
       cxxopts::value<int>()->default_value("-1"))(
       "max_tasks",
-      "lockfree_rma and hierarchical_lockfree_rma only: lifetime task capacity "
-      "of each preallocated RMA window, in tasks. The window is allocated up "
-      "front on the owning rank (~40 bytes per task here), so lower this to run "
-      "on a machine with less memory than a compute node; too low and the run "
-      "ends before duration_s elapses.",
+      "lockfree_rma and hierarchical_lockfree_rma only: reusable ring capacity "
+      "of each preallocated RMA window and this benchmark's total publication "
+      "budget, in tasks. The window is allocated up front on the owning rank "
+      "(~40 bytes per slot here); too low and the run ends before duration_s.",
       cxxopts::value<int>()->default_value(std::to_string(kDefaultLockFreeMaxTasks)))(
       "n,nodes", "Number of nodes for labeling output (defaults to world size)",
       cxxopts::value<uint64_t>()->default_value("0"))(

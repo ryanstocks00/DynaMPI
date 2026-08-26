@@ -7,6 +7,8 @@ set -euo pipefail
 # Example:
 #   ./benchmark/scripts/submit_frontier_microbench.sh
 #   NODE_LIST="1 8 64" WALLTIME=00:10:00 ./benchmark/scripts/submit_frontier_microbench.sh
+#   NODE_LIST="2 8 64" EXCLUDE_ROOT_NODE=1 CSV_SUFFIX=_offnode \
+#     JOB_TAG=_offnode ./benchmark/scripts/submit_frontier_microbench.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SYSTEM="frontier"
@@ -29,11 +31,14 @@ RMA_DURATION_S="${RMA_DURATION_S:-}"
 RMA_PIPELINE_DEPTHS="${RMA_PIPELINE_DEPTHS:-}"
 RUN_RMA="${RUN_RMA:-}"
 RUN_TWOSIDED="${RUN_TWOSIDED:-}"
+EXCLUDE_ROOT_NODE="${EXCLUDE_ROOT_NODE:-}"
+CSV_SUFFIX="${CSV_SUFFIX:-}"
+JOB_TAG="${JOB_TAG:-}"
 BUILD_DIR="${BUILD_DIR:-}"
 OUTPUT_BASE="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 
 for nodes in "${NODE_LIST[@]}"; do
-  job_name="dynampi_micro_${SYSTEM}_${nodes}"
+  job_name="dynampi_micro${JOB_TAG}_${SYSTEM}_${nodes}"
   submit_args=(${SBATCH_ARGS[@]+"${SBATCH_ARGS[@]}"})
   if [[ -n "${ACCOUNT}" ]]; then
     submit_args+=(--account="${ACCOUNT}")
@@ -51,6 +56,8 @@ export RMA_DURATION_S=\"${RMA_DURATION_S}\"
 export RMA_PIPELINE_DEPTHS=\"${RMA_PIPELINE_DEPTHS}\"
 export RUN_RMA=\"${RUN_RMA}\"
 export RUN_TWOSIDED=\"${RUN_TWOSIDED}\"
+export EXCLUDE_ROOT_NODE=\"${EXCLUDE_ROOT_NODE}\"
+export CSV_SUFFIX=\"${CSV_SUFFIX}\"
 export BUILD_DIR=\"${BUILD_DIR}\"
 export OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${SLURM_JOB_ID:-manual}\"
 ${SCRIPT}

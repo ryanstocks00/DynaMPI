@@ -13,13 +13,13 @@ SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_frontier_weak_scaling.sh"
 
 SBATCH_ARGS=()
 if [[ -z "${NODE_LIST:-}" ]]; then
-  NODE_LIST="1 2 4 8 16 32 64 128 256 512"
+  NODE_LIST="1 2 4 8 16 32 64 128 256 512 1024 2048"
 fi
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST}"
 IFS=' ' read -r -a SBATCH_ARGS <<< "${SBATCH_ARGS:-}"
 ACCOUNT="${ACCOUNT:-chm213}"
 
-WALLTIME="${WALLTIME:-00:15:00}"
+WALLTIME="${WALLTIME:-02:00:00}"
 LAUNCHER="${LAUNCHER:-}"
 LAUNCHER_ARGS="${LAUNCHER_ARGS:-}"
 DISTRIBUTIONS="${DISTRIBUTIONS:-}"

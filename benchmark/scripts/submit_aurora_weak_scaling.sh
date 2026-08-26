@@ -14,13 +14,13 @@ source "${SCRIPT_DIR}/aurora_queue_utils.sh"
 SYSTEM="aurora"
 SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_aurora_weak_scaling.sh"
 
-IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512}"
+IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512 1024 2048}"
 IFS=' ' read -r -a QSUB_ARGS <<< "${QSUB_ARGS:-}"
 ACCOUNT="${ACCOUNT:-DynaMPI}"
 FILESYSTEMS="${FILESYSTEMS:-flare}"
 NCPUS_PER_NODE="${NCPUS_PER_NODE:-102}"
 
-WALLTIME="${WALLTIME:-00:15:00}"
+WALLTIME="${WALLTIME:-}"
 DURATION_S="${DURATION_S:-}"
 LAUNCHER="${LAUNCHER:-}"
 LAUNCHER_ARGS="${LAUNCHER_ARGS:-}"
@@ -30,10 +30,19 @@ MODES="${MODES:-}"
 MAX_UPPER_FANOUT="${MAX_UPPER_FANOUT:-}"
 MAX_UPPER_FANOUT_LIST="${MAX_UPPER_FANOUT_LIST:-}"
 MAX_TASKS="${MAX_TASKS:-}"
+RANKS_PER_NODE_LIST="${RANKS_PER_NODE_LIST:-}"
 OUTPUT_BASE="${OUTPUT_DIR:-${ROOT_DIR}/benchmark/results}"
 
 for nodes in "${NODE_LIST[@]}"; do
   job_name="dynampi_ws_${SYSTEM}_${nodes}"
+  job_walltime="${WALLTIME}"
+  if [[ -z "${job_walltime}" ]]; then
+    # debug-scaling jobs are typically capped at one hour.
+    job_walltime="00:30:00"
+    if [[ "${nodes}" -ge 256 ]]; then
+      job_walltime="02:00:00"
+    fi
+  fi
   submit_args=("${QSUB_ARGS[@]}")
   if [[ -n "${ACCOUNT}" ]]; then
     submit_args+=(-A "${ACCOUNT}")
@@ -59,10 +68,11 @@ export DURATION_S=\"${DURATION_S}\"
 export MAX_UPPER_FANOUT=\"${MAX_UPPER_FANOUT}\"
 export MAX_UPPER_FANOUT_LIST=\"${MAX_UPPER_FANOUT_LIST}\"
 export MAX_TASKS=\"${MAX_TASKS}\"
+export RANKS_PER_NODE_LIST=\"${RANKS_PER_NODE_LIST}\"
 export OUTPUT_DIR=\"${OUTPUT_BASE}/${SYSTEM}/${nodes}-${job_name}-\${PBS_JOBID_SHORT:-manual}\"
 ${SCRIPT}
 "
-  echo "qsub ${submit_args[*]} -N \"${job_name}\" -l \"select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}\" -l \"walltime=${WALLTIME}\" -l \"filesystems=${FILESYSTEMS}\" <<'QSUBEOF'"
+  echo "qsub ${submit_args[*]} -N \"${job_name}\" -l \"select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}\" -l \"walltime=${job_walltime}\" -l \"filesystems=${FILESYSTEMS}\" <<'QSUBEOF'"
   echo "${job_script}"
   echo "QSUBEOF"
   # The account can have OTHER unrelated jobs (different projects) sitting in
@@ -75,7 +85,7 @@ ${SCRIPT}
   qsub_attempts=0
   qsub_max_attempts="${AURORA_QSUB_MAX_ATTEMPTS:-30}"
   until qsub "${submit_args[@]}" -N "${job_name}" -l "select=${nodes}:ncpus=${NCPUS_PER_NODE}:mpiprocs=${NCPUS_PER_NODE}" \
-    -l "walltime=${WALLTIME}" -l "filesystems=${FILESYSTEMS}" <<< "${job_script}"; do
+    -l "walltime=${job_walltime}" -l "filesystems=${FILESYSTEMS}" <<< "${job_script}"; do
     qsub_attempts=$((qsub_attempts + 1))
     if (( qsub_attempts >= qsub_max_attempts )); then
       echo "qsub failed permanently for nodes=${nodes} after ${qsub_attempts} attempts" >&2

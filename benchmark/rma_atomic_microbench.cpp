@@ -93,6 +93,21 @@ PhaseResult run_faa_pipelined(MPI_Win win, int root, double duration_s, int pipe
   return {n, n};
 }
 
+// True on every rank that shares a compute node with `root`. --exclude_root_node
+// uses this to drop the root's own node, so the contention measured is purely
+// over the fabric rather than partly through shared memory.
+bool shares_node_with_root(int root) {
+  int rank = 0;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm node_comm = MPI_COMM_NULL;
+  MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, rank, MPI_INFO_NULL, &node_comm);
+  const int has_root = (rank == root) ? 1 : 0;
+  int any_has_root = 0;
+  MPI_Allreduce(&has_root, &any_has_root, 1, MPI_INT, MPI_MAX, node_comm);
+  MPI_Comm_free(&node_comm);
+  return any_has_root == 1;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -111,7 +126,9 @@ int main(int argc, char** argv) {
       "system", "system name, recorded in the CSV only",
       cxxopts::value<std::string>()->default_value("unknown"))(
       "o,output", "append a CSV row per phase to this file",
-      cxxopts::value<std::string>()->default_value(""))("h,help", "print usage");
+      cxxopts::value<std::string>()->default_value(""))(
+      "exclude_root_node", "drop participants sharing the root's node, leaving only off-node ones",
+      cxxopts::value<bool>()->default_value("false"))("h,help", "print usage");
   auto parsed = options.parse(argc, argv);
   if (parsed.count("help")) {
     if (rank == 0) std::cout << options.help() << std::endl;
@@ -147,6 +164,7 @@ int main(int argc, char** argv) {
   const int nodes = parsed["nodes"].as<int>();
   const std::string system = parsed["system"].as<std::string>();
   const std::string output = parsed["output"].as<std::string>();
+  const bool exclude_root_node = parsed["exclude_root_node"].as<bool>();
 
   std::ofstream csv;
   if (rank == 0 && !output.empty()) {
@@ -154,7 +172,7 @@ int main(int argc, char** argv) {
     csv.open(output, std::ios::app);
     if (!exists) {
       csv << "system,phase,nodes,world_size,participants,duration_s,succeeded,attempted,"
-             "succeeded_per_s,attempted_per_s,succeeded_per_s_per_rank\n";
+             "succeeded_per_s,attempted_per_s,succeeded_per_s_per_rank,exclude_root_node\n";
     }
   }
 
@@ -166,8 +184,23 @@ int main(int argc, char** argv) {
   MPI_Win_create(base, winsize, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &win);
   MPI_Win_lock_all(MPI_MODE_NOCHECK, win);
 
-  const bool participates = (size > 1) ? (rank != root) : true;
-  const int participants = (size > 1) ? (size - 1) : 1;
+  const bool on_root_node = shares_node_with_root(root);
+  const bool participates =
+      (size > 1) ? (rank != root && !(exclude_root_node && on_root_node)) : true;
+  int participants = 0;
+  {
+    const int local = participates ? 1 : 0;
+    MPI_Allreduce(&local, &participants, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  }
+  if (participants == 0) {
+    if (rank == root) {
+      std::cerr << "No participants left: --exclude_root_node needs more than one node\n";
+    }
+    MPI_Win_unlock_all(win);
+    MPI_Win_free(&win);
+    MPI_Finalize();
+    return 1;
+  }
 
   auto run_phase = [&](const std::string& name, auto fn) {
     MPI_Barrier(MPI_COMM_WORLD);
@@ -192,11 +225,13 @@ int main(int argc, char** argv) {
                 << " participants=" << participants << " succeeded=" << total.succeeded
                 << " attempted=" << total.attempted << " duration_s=" << duration_s
                 << " succeeded_per_s=" << succ_rate << " attempted_per_s=" << att_rate
-                << " succeeded_per_s_per_rank=" << (succ_rate / participants) << std::endl;
+                << " succeeded_per_s_per_rank=" << (succ_rate / participants)
+                << " exclude_root_node=" << (exclude_root_node ? 1 : 0) << std::endl;
       if (csv.is_open()) {
         csv << system << "," << name << "," << nodes << "," << size << "," << participants << ","
             << duration_s << "," << total.succeeded << "," << total.attempted << "," << succ_rate
-            << "," << att_rate << "," << (succ_rate / participants) << "\n";
+            << "," << att_rate << "," << (succ_rate / participants) << ","
+            << (exclude_root_node ? 1 : 0) << "\n";
         csv.flush();
       }
     }

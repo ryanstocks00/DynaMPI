@@ -540,6 +540,9 @@ IEEE_RC_PARAMS: Mapping[Any, Any] = {
     "legend.fontsize": 8,
 }
 
+# ``no-latex`` keeps Science/IEEE styling without requiring a TeX installation.
+IEEE_STYLES = ("science", "ieee", "no-latex")
+
 
 @contextmanager
 def ieee_figure() -> Iterator[tuple[Figure, Axes]]:
@@ -549,7 +552,7 @@ def ieee_figure() -> Iterator[tuple[Figure, Axes]]:
     these scripts, so each caller only has to write what differs: the data,
     the labels, the legend.
     """
-    with plt.style.context(['science', 'ieee']):
+    with plt.style.context(IEEE_STYLES):
         plt.rcParams.update(IEEE_RC_PARAMS)
         fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT * 0.7))
         yield fig, ax
@@ -566,7 +569,7 @@ def ieee_panel_figure(nrows: int, *, sharey: bool = True) -> Iterator[tuple[Figu
     panels measuring the same quantity and not ones an order of magnitude
     apart.
     """
-    with plt.style.context(['science', 'ieee']):
+    with plt.style.context(IEEE_STYLES):
         plt.rcParams.update(IEEE_RC_PARAMS)
         fig, axes = plt.subplots(
             nrows,
