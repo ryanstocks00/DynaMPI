@@ -35,6 +35,7 @@ from plot_common import (
     legend_avoiding_data,
     log_padded_limits,
     plot_node_series,
+    SERIES_MARKERSIZE,
     save_figure,
     set_output_formats,
     series_color,
@@ -284,7 +285,8 @@ def plot_distributor(
 
             for idx, (expected_ns, nodes, throughput) in enumerate(series_sorted):
                 label = format_duration_label(expected_ns)
-                line = plot_node_series(ax, idx, nodes, throughput, label)
+                line = plot_node_series(ax, idx, nodes, throughput, label,
+                                        markersize=SERIES_MARKERSIZE)
                 handles.append(line)
                 labels.append(label)
 
@@ -418,7 +420,8 @@ def plot_distributor_comparison(
         for dist, fanout, nodes, throughput in series_sorted:
             label = format_distributor_label(dist, fanout)
             color_idx = distributor_series_index(dist, fanout)
-            line = plot_node_series(ax, color_idx, nodes, throughput, label)
+            line = plot_node_series(ax, color_idx, nodes, throughput, label,
+                                    markersize=SERIES_MARKERSIZE)
             handles.append(line)
             labels.append(label)
 
@@ -503,9 +506,29 @@ def plot_comparison_panels(
                 all_nodes.update(nodes)
                 label = format_distributor_label(dist, fanout)
                 line = plot_node_series(ax, distributor_series_index(dist, fanout), nodes,
-                                        throughput, label)
+                                        throughput, label,
+                                        markersize=SERIES_MARKERSIZE)
                 handles.append(line)
                 labels.append(label)
+
+            # Reference line for the hierarchical family only. The two
+            # families do not share a worker count: reserving one node manager
+            # per node leaves the hierarchical distributors (rpn-1) workers per
+            # node against the flat designs' rpn, so a single line cannot serve
+            # both. The hierarchical one is drawn because it bounds the series
+            # still scaling at the right-hand edge.
+            if all_nodes and expected_ns > 0 and ranks_per_node > 1:
+                ideal_nodes = sorted(all_nodes)
+                ideal = [
+                    max(1, n * (ranks_per_node - 1) - 1) * 1e9 / expected_ns
+                    for n in ideal_nodes
+                ]
+                (ideal_handle,) = ax.plot(
+                    ideal_nodes, ideal, linestyle='--', color='0.4',
+                    linewidth=1.0, zorder=0, label="Hierarchical ideal",
+                )
+                handles.append(ideal_handle)
+                labels.append("Hierarchical ideal")
 
             ax.set_ylabel("Tasks per second")
             set_log_node_axes(ax, all_nodes)

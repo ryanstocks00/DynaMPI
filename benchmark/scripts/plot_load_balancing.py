@@ -43,6 +43,7 @@ from plot_common import (
     legend_avoiding_data,
     path_recency,
     plot_node_series,
+    SERIES_MARKERSIZE,
     save_figure,
     set_output_formats,
     series_color,
@@ -200,44 +201,6 @@ def _ideal_greedy_cached(
     return tuple(times)
 
 
-def static_split_times(
-    mode: str, cv: float, workers: int, batches: Sequence[int], mean_s: float
-) -> list[float]:
-    """Makespan of a static split: k tasks pinned to each rank before the batch runs.
-
-    The greedy floor says how well a distributor *could* do; this says what it
-    has to beat to be worth its cost at all. Tasks are assigned round-robin
-    with no knowledge of their durations -- the only assignment available
-    when durations are unpredictable -- so the makespan is the slowest rank's
-    own total rather than the point at which the machine drains.
-
-    At k = 1 the two references coincide whatever the distribution: every rank
-    runs exactly one task either way. Above that the gap grows with the spread
-    of the durations, and vanishes entirely in fixed mode.
-    """
-    return list(_static_split_cached(mode, cv, workers, tuple(batches), mean_s))
-
-
-@lru_cache(maxsize=None)
-def _static_split_cached(
-    mode: str, cv: float, workers: int, batches: tuple[int, ...], mean_s: float
-) -> tuple[float, ...]:
-    # Vectorized rather than looped: at _STATIC_TRIALS this is tens of
-    # millions of draws per figure, which costs a minute in pure Python and
-    # milliseconds here. The greedy simulation above stays looped because its
-    # heap is inherently sequential.
-    rng = np.random.default_rng(20260815)
-    draw = duration_sampler(mode, mean_s, cv)
-    times = []
-    for k in batches:
-        # (trials, workers) -> each rank's own k durations summed, then the
-        # slowest rank in each trial.
-        totals = draw(rng, _STATIC_TRIALS * workers * k)
-        totals = totals.reshape(_STATIC_TRIALS, workers, k).sum(axis=2)
-        times.append(float(totals.max(axis=1).mean()))
-    return tuple(times)
-
-
 PHASE_COLUMNS = ("construct_s", "elapsed_s", "finalize_s", "destruct_s")
 
 # The figures this script writes, each summing a different set of phases.
@@ -289,12 +252,6 @@ LABEL_OVERRIDES: dict[int, dict[str, float]] = {
 # Enough to settle the simulated offset to a few parts in a thousand, which
 # is far below the spread of the measurements it is drawn against.
 _IDEAL_TRIALS = 20
-
-# The static makespan needs an order of magnitude more. It is a max of sums,
-# which concentrates far more weakly than a greedy makespan: at 20 trials the
-# seed-to-seed spread is 1-3%, enough to move a curve's crossing point by a
-# whole batch size. 200 brings it under 0.5% for a few milliseconds of work.
-_STATIC_TRIALS = 200
 
 
 # system, nodes, ranks_per_node, expected_us, duration_mode, task_duration_cv.
@@ -451,9 +408,12 @@ def draw_load_balancing_axes(
         points = totals[series_key]
         batches = sorted(points)
         idx = distributor_series_index(distributor, fanout)
-        label = format_distributor_label(distributor, fanout)
+        # Only the default topology appears in this figure, so the fan-out
+        # suffix would be the same on every series.
+        label = format_distributor_label(distributor)
         line = plot_node_series(
-            ax, idx, batches, [points[b] for b in batches], label, linewidth=1.0
+            ax, idx, batches, [points[b] for b in batches], label, linewidth=1.0,
+            markersize=SERIES_MARKERSIZE,
         )
         handles.append(line)
         labels.append(label)
@@ -528,26 +488,6 @@ def draw_load_balancing_axes(
         )
         handles.append(ideal_handle)
         labels.append("Ideal greedy")
-
-        # The bar a dynamic distributor has to clear, drawn dotted against
-        # the greedy line's dash: a second *dashed* grey line reads as one
-        # line with it at this figure width.
-        (static_handle,) = ax.plot(
-            ideal_batches,
-            [
-                t * 1000.0
-                for t in static_split_times(
-                    duration_mode, cv, workers, ideal_batches, expected_us / 1e6
-                )
-            ],
-            linestyle=(0, (1, 1.6)),
-            color='0.4',
-            linewidth=1.0,
-            zorder=0,
-            label="Static split",
-        )
-        handles.append(static_handle)
-        labels.append("Static split")
 
     ax.set_ylabel("Total time (ms)")
     ax.set_yscale('log')

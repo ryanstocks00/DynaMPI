@@ -126,6 +126,10 @@ class LockFreeRMALevel {
       local_store_i64(TOTAL_OFF, m_total_tasks);
       return true;
     }
+    // Land the payload and log-clear Puts before the counter that makes them
+    // claimable moves; see the same barrier in LockFreeRMAWorkDistributor.
+    // The local_only path above needs none: it writes the window directly.
+    flush_remote();
     m_total_tasks += count;
     int64_t total_out = 0;
     post_fetch_and_op(m_total_tasks, total_out, TOTAL_OFF, MPI_REPLACE);

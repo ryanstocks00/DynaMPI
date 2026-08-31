@@ -385,6 +385,7 @@ def plot_node_series(
     label: str,
     *,
     linewidth: float | None = None,
+    markersize: float | None = None,
 ) -> Any:
     """Plot one node-count series in the shared marker/color style, returning its handle."""
     kwargs: dict[str, Any] = {
@@ -397,6 +398,8 @@ def plot_node_series(
     }
     if linewidth is not None:
         kwargs["linewidth"] = linewidth
+    if markersize is not None:
+        kwargs["markersize"] = markersize * MARKER_SIZE_SCALE.get(kwargs["marker"], 1.0)
     (line,) = ax.plot(nodes, values, **kwargs)
     return line
 
@@ -524,6 +527,20 @@ def filter_systems(rows: Sequence[RowT], exclude_systems: Sequence[str]) -> list
     return [row for row in rows if str(row["system"]).lower() not in excluded]
 
 
+# Marker size for the plotted series. Below the 6.0 the style supplies: these
+# figures carry up to six overlapping series, and at full size the markers
+# merge into a band wherever the curves converge.
+SERIES_MARKERSIZE = 5.2
+
+# markersize sets a marker's bounding diameter, not its area, so shapes that
+# fill less of that box read smaller at the same nominal size. A regular
+# pentagon covers ~59% of the square its size defines against a disc's ~79%,
+# which is visible against the other five shapes. Only that one is corrected:
+# equalising area outright would scale the triangles by ~1.25 and they would
+# then read as oversized, since open markers are judged on extent as much as
+# on fill.
+MARKER_SIZE_SCALE = {'p': 1.15}
+
 # Gap between stacked panels, as a fraction of panel height. Panels sharing
 # an x axis need no room for a label between them, so this is well below
 # matplotlib's 0.2 default.
@@ -532,15 +549,27 @@ PANEL_HSPACE = 0.04
 # Keys are left untyped because matplotlib 3.11 narrowed RcParams to a Literal
 # union of valid rc keys, which a plain dict[str, ...] does not satisfy. Earlier
 # versions type it as dict[str, Any]; Mapping[Any, Any] checks against both.
+# Matplotlib's default ``pdf.fonttype`` of 3 embeds Type 3 fonts, which IEEE
+# PDF eXpress rejects, so the figures ask for TrueType instead. That alone is
+# not enough: it would keep ``no-latex``'s bundled cmr10, whose outlines
+# rasterize noticeably lighter than the Type 3 charprocs they replace --
+# washed-out labels in poppler and Ghostscript alike. STIX renders at full
+# weight, embeds cleanly, and being Times-metric it sits better with the
+# IEEEtran body text than Computer Modern did.
 IEEE_RC_PARAMS: Mapping[Any, Any] = {
     "font.size": 10,
     "axes.labelsize": 10,
     "xtick.labelsize": 9,
     "ytick.labelsize": 9,
     "legend.fontsize": 8,
+    "pdf.fonttype": 42,
+    "ps.fonttype": 42,
+    "font.serif": ["STIXGeneral", "DejaVu Serif"],
+    "mathtext.fontset": "stix",
 }
 
-# ``no-latex`` keeps Science/IEEE styling without requiring a TeX installation.
+# ``no-latex`` keeps Science/IEEE styling without requiring a TeX installation;
+# IEEE_RC_PARAMS replaces its cmr10 font choice above.
 IEEE_STYLES = ("science", "ieee", "no-latex")
 
 
