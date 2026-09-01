@@ -1,0 +1,15 @@
+== twosided nodes=4 rpn=9 ranks=36 payload_ints=1
+RESULT mode=probe world_size=36 workers=35 payload_bytes=4 completed=7268568 completed_per_s=1.45371e+06 completed_per_s_per_worker=41534.7
+RESULT mode=noprobe world_size=36 workers=35 payload_bytes=4 completed=7152288 completed_per_s=1.43046e+06 completed_per_s_per_worker=40870.2
+RESULT mode=irecv world_size=36 workers=35 payload_bytes=4 completed=5796795 completed_per_s=1.15936e+06 completed_per_s_per_worker=33124.5
+RESULT mode=oneway world_size=36 workers=35 payload_bytes=4 completed=12166589 completed_per_s=2.43332e+06 completed_per_s_per_worker=69523.4
+== rma nodes=4 rpn=9 ranks=36
+RESULT phase=faa_flushed world_size=36 participants=35 succeeded=5390756 attempted=5390756 duration_s=3 succeeded_per_s=1.79692e+06 attempted_per_s=1.79692e+06 succeeded_per_s_per_rank=51340.5
+RESULT phase=cas_flushed world_size=36 participants=35 succeeded=440236 attempted=5560531 duration_s=3 succeeded_per_s=146745 attempted_per_s=1.85351e+06 succeeded_per_s_per_rank=4192.72
+RESULT phase=faa_pipelined_depth1 world_size=36 participants=35 succeeded=5404414 attempted=5404414 duration_s=3 succeeded_per_s=1.80147e+06 attempted_per_s=1.80147e+06 succeeded_per_s_per_rank=51470.6
+RESULT phase=faa_pipelined_depth8 world_size=36 participants=35 succeeded=5910024 attempted=5910024 duration_s=3 succeeded_per_s=1.97001e+06 attempted_per_s=1.97001e+06 succeeded_per_s_per_rank=56285.9
+RESULT phase=faa_pipelined_depth32 world_size=36 participants=35 succeeded=6095488 attempted=6095488 duration_s=3 succeeded_per_s=2.03183e+06 attempted_per_s=2.03183e+06 succeeded_per_s_per_rank=58052.3
+RESULT phase=faa_pipelined_depth128 world_size=36 participants=35 succeeded=6068736 attempted=6068736 duration_s=3 succeeded_per_s=2.02291e+06 attempted_per_s=2.02291e+06 succeeded_per_s_per_rank=57797.5
+Wrote:
+  /ccs/home/ryan/DynaMPI/benchmark/results/frontier/4-dynampi_micro_frontier_4-5337389/twosided_msgrate_frontier.csv
+  /ccs/home/ryan/DynaMPI/benchmark/results/frontier/4-dynampi_micro_frontier_4-5337389/rma_atomic_frontier.csv

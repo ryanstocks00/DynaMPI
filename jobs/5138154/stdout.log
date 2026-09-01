@@ -1,0 +1,33 @@
+Running frontier nodes=2048 ranks_per_node=9 dist=naive max_upper_fanout=-1
+RESULT distributor=naive nodes=2048 max_upper_fanout=-1 world_size=18432 workers=18431 time_per_shutdown_us=106695 iterations=94
+Running frontier nodes=2048 ranks_per_node=9 dist=hierarchical max_upper_fanout=-1
+RESULT distributor=hierarchical nodes=2048 max_upper_fanout=-1 world_size=18432 workers=18431 time_per_shutdown_us=137.662 iterations=1070
+Running frontier nodes=2048 ranks_per_node=9 dist=hierarchical max_upper_fanout=0
+srun: Step created for StepId=5138154.2
+RESULT distributor=hierarchical nodes=2048 max_upper_fanout=0 world_size=18432 workers=18431 time_per_shutdown_us=8705.68 iterations=691
+Running frontier nodes=2048 ranks_per_node=9 dist=lockfree_rma max_upper_fanout=-1
+srun: Step created for StepId=5138154.3
+RESULT distributor=lockfree_rma nodes=2048 max_upper_fanout=-1 world_size=18432 workers=18431 time_per_shutdown_us=69628.2 iterations=127
+Running frontier nodes=2048 ranks_per_node=9 dist=hierarchical_lockfree_rma max_upper_fanout=-1
+srun: Step created for StepId=5138154.4
+RESULT distributor=hierarchical_lockfree_rma nodes=2048 max_upper_fanout=-1 world_size=18432 workers=18431 time_per_shutdown_us=3907.94 iterations=591
+Running frontier nodes=2048 ranks_per_node=9 dist=hierarchical_lockfree_rma max_upper_fanout=0
+RESULT distributor=hierarchical_lockfree_rma nodes=2048 max_upper_fanout=0 world_size=18432 workers=18431 time_per_shutdown_us=7870.58 iterations=479
+Running frontier nodes=2048 ranks_per_node=56 dist=naive max_upper_fanout=-1
+srun: Step created for StepId=5138154.6
+RESULT distributor=naive nodes=2048 max_upper_fanout=-1 world_size=114688 workers=114687 time_per_shutdown_us=1.88425e+06 iterations=6
+Running frontier nodes=2048 ranks_per_node=56 dist=hierarchical max_upper_fanout=-1
+srun: Step created for StepId=5138154.7
+RESULT distributor=hierarchical nodes=2048 max_upper_fanout=-1 world_size=114688 workers=114687 time_per_shutdown_us=153.99 iterations=263
+Running frontier nodes=2048 ranks_per_node=56 dist=hierarchical max_upper_fanout=0
+srun: Step created for StepId=5138154.8
+RESULT distributor=hierarchical nodes=2048 max_upper_fanout=0 world_size=114688 workers=114687 time_per_shutdown_us=9604.03 iterations=203
+Running frontier nodes=2048 ranks_per_node=56 dist=lockfree_rma max_upper_fanout=-1
+srun: Step created for StepId=5138154.9
+RESULT distributor=lockfree_rma nodes=2048 max_upper_fanout=-1 world_size=114688 workers=114687 time_per_shutdown_us=2.78481e+06 iterations=4
+Running frontier nodes=2048 ranks_per_node=56 dist=hierarchical_lockfree_rma max_upper_fanout=-1
+srun: Step created for StepId=5138154.10
+RESULT distributor=hierarchical_lockfree_rma nodes=2048 max_upper_fanout=-1 world_size=114688 workers=114687 time_per_shutdown_us=4416.45 iterations=186
+Running frontier nodes=2048 ranks_per_node=56 dist=hierarchical_lockfree_rma max_upper_fanout=0
+srun: Step created for StepId=5138154.11
+RESULT distributor=hierarchical_lockfree_rma nodes=2048 max_upper_fanout=0 world_size=114688 workers=114687 time_per_shutdown_us=8096.71 iterations=175

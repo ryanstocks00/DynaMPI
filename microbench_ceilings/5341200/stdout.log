@@ -1,0 +1,37 @@
+== twosided nodes=64 rpn=9 ranks=576 payload_ints=1
+RESULT mode=probe world_size=576 workers=575 payload_bytes=4 completed=4517658 completed_per_s=1.50589e+06 completed_per_s_per_worker=2618.93 exclude_root_node=0
+RESULT mode=noprobe world_size=576 workers=575 payload_bytes=4 completed=4350387 completed_per_s=1.45013e+06 completed_per_s_per_worker=2521.96 exclude_root_node=0
+RESULT mode=irecv world_size=576 workers=575 payload_bytes=4 completed=3035420 completed_per_s=1.01181e+06 completed_per_s_per_worker=1759.66 exclude_root_node=0
+RESULT mode=oneway world_size=576 workers=575 payload_bytes=4 completed=4362615 completed_per_s=1.4542e+06 completed_per_s_per_worker=2529.05 exclude_root_node=0
+== twosided nodes=64 rpn=9 ranks=576 payload_ints=16
+srun: Step created for StepId=5341200.1
+RESULT mode=probe world_size=576 workers=575 payload_bytes=64 completed=3606698 completed_per_s=1.20223e+06 completed_per_s_per_worker=2090.84 exclude_root_node=0
+RESULT mode=noprobe world_size=576 workers=575 payload_bytes=64 completed=3661175 completed_per_s=1.22039e+06 completed_per_s_per_worker=2122.42 exclude_root_node=0
+RESULT mode=irecv world_size=576 workers=575 payload_bytes=64 completed=3075092 completed_per_s=1.02503e+06 completed_per_s_per_worker=1782.66 exclude_root_node=0
+RESULT mode=oneway world_size=576 workers=575 payload_bytes=64 completed=4316644 completed_per_s=1.43888e+06 completed_per_s_per_worker=2502.4 exclude_root_node=0
+== twosided nodes=64 rpn=9 ranks=576 payload_ints=64
+RESULT mode=probe world_size=576 workers=575 payload_bytes=256 completed=3511639 completed_per_s=1.17055e+06 completed_per_s_per_worker=2035.73 exclude_root_node=0
+RESULT mode=noprobe world_size=576 workers=575 payload_bytes=256 completed=1942830 completed_per_s=647610 completed_per_s_per_worker=1126.28 exclude_root_node=0
+RESULT mode=irecv world_size=576 workers=575 payload_bytes=256 completed=2696339 completed_per_s=898780 completed_per_s_per_worker=1563.1 exclude_root_node=0
+RESULT mode=oneway world_size=576 workers=575 payload_bytes=256 completed=4081608 completed_per_s=1.36054e+06 completed_per_s_per_worker=2366.15 exclude_root_node=0
+== twosided nodes=64 rpn=9 ranks=576 payload_ints=256
+srun: Step created for StepId=5341200.3
+RESULT mode=probe world_size=576 workers=575 payload_bytes=1024 completed=2628048 completed_per_s=876016 completed_per_s_per_worker=1523.51 exclude_root_node=0
+RESULT mode=noprobe world_size=576 workers=575 payload_bytes=1024 completed=1666035 completed_per_s=555345 completed_per_s_per_worker=965.817 exclude_root_node=0
+RESULT mode=irecv world_size=576 workers=575 payload_bytes=1024 completed=2627498 completed_per_s=875833 completed_per_s_per_worker=1523.19 exclude_root_node=0
+RESULT mode=oneway world_size=576 workers=575 payload_bytes=1024 completed=3734291 completed_per_s=1.24476e+06 completed_per_s_per_worker=2164.81 exclude_root_node=0
+== twosided nodes=64 rpn=9 ranks=576 payload_ints=1024
+srun: Step created for StepId=5341200.4
+RESULT mode=probe world_size=576 workers=575 payload_bytes=4096 completed=1553115 completed_per_s=517705 completed_per_s_per_worker=900.357 exclude_root_node=0
+RESULT mode=noprobe world_size=576 workers=575 payload_bytes=4096 completed=1147057 completed_per_s=382352 completed_per_s_per_worker=664.961 exclude_root_node=0
+RESULT mode=irecv world_size=576 workers=575 payload_bytes=4096 completed=2470593 completed_per_s=823531 completed_per_s_per_worker=1432.23 exclude_root_node=0
+RESULT mode=oneway world_size=576 workers=575 payload_bytes=4096 completed=2704510 completed_per_s=901503 completed_per_s_per_worker=1567.83 exclude_root_node=0
+== twosided nodes=64 rpn=9 ranks=576 payload_ints=4096
+srun: Step created for StepId=5341200.5
+RESULT mode=probe world_size=576 workers=575 payload_bytes=16384 completed=1024118 completed_per_s=341373 completed_per_s_per_worker=593.692 exclude_root_node=0
+RESULT mode=noprobe world_size=576 workers=575 payload_bytes=16384 completed=1149556 completed_per_s=383185 completed_per_s_per_worker=666.409 exclude_root_node=0
+RESULT mode=irecv world_size=576 workers=575 payload_bytes=16384 completed=2437321 completed_per_s=812440 completed_per_s_per_worker=1412.94 exclude_root_node=0
+RESULT mode=oneway world_size=576 workers=575 payload_bytes=16384 completed=2260164 completed_per_s=753388 completed_per_s_per_worker=1310.24 exclude_root_node=0
+Wrote:
+  /ccs/home/ryan/DynaMPI/benchmark/results/frontier/64-dynampi_micro_payload_frontier_64-5341200/twosided_msgrate_frontier_payload.csv
+  /ccs/home/ryan/DynaMPI/benchmark/results/frontier/64-dynampi_micro_payload_frontier_64-5341200/rma_atomic_frontier_payload.csv

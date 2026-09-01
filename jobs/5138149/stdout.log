@@ -1,0 +1,9 @@
+Running frontier nodes=128 ranks_per_node=9 dist=hierarchical max_upper_fanout=0
+RESULT distributor=hierarchical nodes=128 max_upper_fanout=0 world_size=1152 workers=1151 time_per_shutdown_us=541.009 iterations=7033
+Running frontier nodes=128 ranks_per_node=9 dist=hierarchical_lockfree_rma max_upper_fanout=0
+RESULT distributor=hierarchical_lockfree_rma nodes=128 max_upper_fanout=0 world_size=1152 workers=1151 time_per_shutdown_us=3389.26 iterations=1374
+Running frontier nodes=128 ranks_per_node=56 dist=hierarchical max_upper_fanout=0
+RESULT distributor=hierarchical nodes=128 max_upper_fanout=0 world_size=7168 workers=7167 time_per_shutdown_us=580.937 iterations=2925
+Running frontier nodes=128 ranks_per_node=56 dist=hierarchical_lockfree_rma max_upper_fanout=0
+RESULT distributor=hierarchical_lockfree_rma nodes=128 max_upper_fanout=0 world_size=7168 workers=7167 time_per_shutdown_us=2811.02 iterations=1133
+Results written to /autofs/nccs-svm1_home2/ryan/DynaMPI/benchmark/results/frontier/128-dynampi_shutdown_frontier_128-5138149/shutdown_frontier.csv

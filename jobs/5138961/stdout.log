@@ -1,0 +1,464 @@
+# Condensed from 9543 lines to 460: repeated per-rank
+# MPI_Abort teardown messages collapsed to counts. Every distinct message
+# is retained with its first two occurrences. The unmodified log is in the
+# raw-output backup bundle held with the paper materials.
+Running frontier nodes=256 ranks_per_node=9 dist=hierarchical mode=fixed expected_us=10 max_upper_fanout=4
+RESULT distributor=hierarchical mode=fixed expected_us=10 nodes=256 world_size=2304 max_upper_fanout=4 total_tasks=19790892 elapsed_s=20.0093 throughput_tasks_per_s=989083
+MPICH Notice [Rank 0] [job id 5138961.0] [Sun Aug  2 04:43:49 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.0
+[2026-08-02T04:43:49.612] error: *** STEP 5138961.0 ON frontier00114 CANCELLED AT 2026-08-02T04:43:49 DUE TO TASK FAILURE ***
+srun: error: frontier08559: tasks 1854-1862: Terminated
+srun: error: frontier07919: tasks 1548-1556: Terminated
+srun: Force Terminated StepId=5138961.0
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=9 dist=hierarchical mode=fixed expected_us=100 max_upper_fanout=4
+srun: Step created for StepId=5138961.1
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=256 world_size=2304 max_upper_fanout=4 total_tasks=14348714 elapsed_s=20.0112 throughput_tasks_per_s=717034
+MPICH Notice [Rank 0] [job id 5138961.1] [Sun Aug  2 04:44:27 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.1
+[2026-08-02T04:44:29.120] error: *** STEP 5138961.1 ON frontier00114 CANCELLED AT 2026-08-02T04:44:29 DUE TO TASK FAILURE ***
+srun: error: frontier08825: tasks 1971-1979: Terminated
+srun: error: frontier01396: tasks 180-188: Terminated
+srun: Force Terminated StepId=5138961.1
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=9 dist=hierarchical mode=fixed expected_us=1000 max_upper_fanout=4
+srun: Step created for StepId=5138961.2
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=256 world_size=2304 max_upper_fanout=4 total_tasks=40774636 elapsed_s=20.0109 throughput_tasks_per_s=2.03762e+06
+MPICH Notice [Rank 0] [job id 5138961.2] [Sun Aug  2 04:44:50 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.2
+[2026-08-02T04:44:50.692] error: *** STEP 5138961.2 ON frontier00114 CANCELLED AT 2026-08-02T04:44:50 DUE TO TASK FAILURE ***
+srun: error: frontier00377: tasks 72-80: Terminated
+srun: error: frontier01135: tasks 162-170: Terminated
+srun: Force Terminated StepId=5138961.2
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=9 dist=hierarchical mode=uniform expected_us=10 max_upper_fanout=4
+srun: Step created for StepId=5138961.3
+RESULT distributor=hierarchical mode=uniform expected_us=10 nodes=256 world_size=2304 max_upper_fanout=4 total_tasks=20577584 elapsed_s=20.0057 throughput_tasks_per_s=1.02859e+06
+MPICH Notice [Rank 0] [job id 5138961.3] [Sun Aug  2 04:45:12 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.3
+[2026-08-02T04:45:12.717] error: *** STEP 5138961.3 ON frontier00114 CANCELLED AT 2026-08-02T04:45:12 DUE TO TASK FAILURE ***
+srun: error: frontier07921: tasks 1557-1565: Terminated
+srun: error: frontier00378: tasks 81-89: Terminated
+srun: Force Terminated StepId=5138961.3
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=9 dist=hierarchical mode=uniform expected_us=100 max_upper_fanout=4
+srun: Step created for StepId=5138961.4
+RESULT distributor=hierarchical mode=uniform expected_us=100 nodes=256 world_size=2304 max_upper_fanout=4 total_tasks=14467822 elapsed_s=20.0109 throughput_tasks_per_s=722996
+MPICH Notice [Rank 0] [job id 5138961.4] [Sun Aug  2 04:45:42 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.4
+[2026-08-02T04:45:42.976] error: *** STEP 5138961.4 ON frontier00114 CANCELLED AT 2026-08-02T04:45:42 DUE TO TASK FAILURE ***
+srun: error: frontier09075: tasks 2097-2105: Terminated
+srun: error: frontier01135: tasks 162-170: Terminated
+srun: Force Terminated StepId=5138961.4
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=9 dist=hierarchical mode=uniform expected_us=1000 max_upper_fanout=4
+srun: Step created for StepId=5138961.5
+RESULT distributor=hierarchical mode=uniform expected_us=1000 nodes=256 world_size=2304 max_upper_fanout=4 total_tasks=40789038 elapsed_s=20.0106 throughput_tasks_per_s=2.03837e+06
+MPICH Notice [Rank 0] [job id 5138961.5] [Sun Aug  2 04:46:05 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.5
+[2026-08-02T04:46:05.933] error: *** STEP 5138961.5 ON frontier00114 CANCELLED AT 2026-08-02T04:46:05 DUE TO TASK FAILURE ***
+srun: error: frontier07539: tasks 1386-1394: Terminated
+srun: error: frontier00378: tasks 81-89: Terminated
+srun: Force Terminated StepId=5138961.5
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=9 dist=hierarchical_lockfree_rma mode=fixed expected_us=10 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=10 nodes=256 world_size=2304 max_upper_fanout=4 total_tasks=19109944 elapsed_s=20.0009 throughput_tasks_per_s=955455
+MPICH Notice [Rank 0] [job id 5138961.6] [Sun Aug  2 04:46:57 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.6
+[2026-08-02T04:46:58.669] error: *** STEP 5138961.6 ON frontier00114 CANCELLED AT 2026-08-02T04:46:58 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 550-557: Terminated
+srun: error: frontier07414: tasks 1315-1322: Terminated
+srun: error: frontier06520: task 1071: Terminated
+srun: error: frontier07414: task 1314: Terminated
+srun: Force Terminated StepId=5138961.6
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 254 further lines matching: srun: error: frontier#: task #: Terminated ...]
+Running frontier nodes=256 ranks_per_node=9 dist=hierarchical_lockfree_rma mode=fixed expected_us=100 max_upper_fanout=4
+srun: Step created for StepId=5138961.7
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=100 nodes=256 world_size=2304 max_upper_fanout=4 total_tasks=15497620 elapsed_s=20.0012 throughput_tasks_per_s=774836
+MPICH Notice [Rank 0] [job id 5138961.7] [Sun Aug  2 04:47:51 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.7
+[2026-08-02T04:48:01.393] error: *** STEP 5138961.7 ON frontier00114 CANCELLED AT 2026-08-02T04:48:01 DUE TO TASK FAILURE ***
+srun: error: frontier06507: tasks 1054-1061: Terminated
+srun: error: frontier07653: tasks 1405-1412: Terminated
+srun: error: frontier06507: task 1053: Terminated
+srun: error: frontier05363: tasks 550-552,554-557: Terminated
+srun: error: frontier01662: task 207: Terminated
+srun: error: frontier08174: tasks 1648-1649,1651-1655: Terminated
+srun: error: frontier07018: tasks 1180,1182-1187: Terminated
+srun: error: frontier05499: tasks 640-645,647: Terminated
+srun: error: frontier04583: tasks 415,417-422: Terminated
+srun: error: frontier05363: tasks 549,553: Terminated
+srun: Force Terminated StepId=5138961.7
+[... 260 further lines matching: srun: error: frontier#: task #: Terminated ...]
+[... 247 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 2 further lines matching: srun: error: frontier#: tasks #-#,#-#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=9 dist=hierarchical_lockfree_rma mode=fixed expected_us=1000 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=1000 nodes=256 world_size=2304 max_upper_fanout=4 total_tasks=3637902 elapsed_s=20.0013 throughput_tasks_per_s=181883
+MPICH Notice [Rank 0] [job id 5138961.8] [Sun Aug  2 04:49:03 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.8
+[2026-08-02T04:49:06.412] error: *** STEP 5138961.8 ON frontier00114 CANCELLED AT 2026-08-02T04:49:06 DUE TO TASK FAILURE ***
+srun: error: frontier08426: tasks 1756-1763: Terminated
+srun: error: frontier00114: tasks 2-8: Terminated
+srun: error: frontier06009: tasks 829,832-835: Terminated
+srun: error: frontier00378: tasks 82,85-86,89: Terminated
+srun: error: frontier09075: tasks 2098-2099,2101,2103-2105: Terminated
+srun: error: frontier07019: tasks 1189-1190,1192-1194,1196: Terminated
+srun: error: frontier05612: tasks 658,660,663-664: Terminated
+srun: error: frontier07793: tasks 1478,1480-1481,1484: Terminated
+srun: error: frontier06264: tasks 946-951,953: Terminated
+srun: error: frontier08177: tasks 1666,1668-1673: Terminated
+srun: error: frontier09336: tasks 2233-2234,2236-2239: Terminated
+srun: error: frontier07270: tasks 1270,1272,1274-1277: Terminated
+srun: error: frontier05881: tasks 802-805,807-809: Terminated
+srun: error: frontier08823: tasks 1954,1956-1957,1959-1961: Terminated
+srun: error: frontier00249: tasks 37,40-41,43-44: Terminated
+srun: error: frontier07796: task 1502: Terminated
+srun: error: frontier05100: task 530: Terminated
+srun: error: frontier09072: tasks 2074,2077: Terminated
+srun: error: frontier05992: tasks 815,818: Terminated
+srun: error: frontier07653: tasks 1406-1409,1412: Terminated
+srun: error: frontier08948: tasks 2036,2040,2042: Terminated
+srun: error: frontier08826: tasks 1981,1983,1985,1987: Terminated
+srun: error: frontier09075: tasks 2097,2100,2102: Terminated
+srun: error: frontier07793: tasks 1476-1477,1479,1482-1483: Terminated
+srun: error: frontier05612: tasks 657,659,661-662,665: Terminated
+srun: error: frontier08297: tasks 1719-1720,1722,1727: Terminated
+srun: error: frontier01786: tasks 225-226,228,233: Terminated
+srun: error: frontier09072: tasks 2070-2073,2075-2076,2078: Terminated
+srun: error: frontier08826: tasks 1980,1982,1984,1986,1988: Terminated
+srun: Force Terminated StepId=5138961.8
+[... 199 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 179 further lines matching: srun: error: frontier#: task #: Terminated ...]
+[... 31 further lines matching: srun: error: frontier#: tasks #,#: Terminated ...]
+[... 26 further lines matching: srun: error: frontier#: tasks #-#,#-#: Terminated ...]
+[... 20 further lines matching: srun: error: frontier#: tasks #,#-#: Terminated ...]
+[... 9 further lines matching: srun: error: frontier#: tasks #-#,#: Terminated ...]
+[... 9 further lines matching: srun: error: frontier#: tasks #,#,#: Terminated ...]
+[... 3 further lines matching: srun: error: frontier#: tasks #,#,#-#: Terminated ...]
+[... 3 further lines matching: srun: error: frontier#: tasks #,#-#,#-#: Terminated ...]
+[... 2 further lines matching: srun: error: frontier#: tasks #,#-#,#: Terminated ...]
+[... 1 further lines matching: srun: error: frontier#: tasks #-#,#,#: Terminated ...]
+[... 1 further lines matching: srun: error: frontier#: tasks #-#,#-#,#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=9 dist=hierarchical_lockfree_rma mode=uniform expected_us=10 max_upper_fanout=4
+srun: Step created for StepId=5138961.9
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=10 nodes=256 world_size=2304 max_upper_fanout=4 total_tasks=19161864 elapsed_s=20.001 throughput_tasks_per_s=958045
+MPICH Notice [Rank 0] [job id 5138961.9] [Sun Aug  2 04:50:18 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.9
+[2026-08-02T04:50:19.686] error: *** STEP 5138961.9 ON frontier00114 CANCELLED AT 2026-08-02T04:50:19 DUE TO TASK FAILURE ***
+srun: error: frontier06137: tasks 892-899: Terminated
+srun: error: frontier09075: tasks 2098-2105: Terminated
+srun: error: frontier06520: task 1071: Terminated
+srun: error: frontier07918: task 1539: Terminated
+srun: Force Terminated StepId=5138961.9
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 254 further lines matching: srun: error: frontier#: task #: Terminated ...]
+Running frontier nodes=256 ranks_per_node=9 dist=hierarchical_lockfree_rma mode=uniform expected_us=100 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=100 nodes=256 world_size=2304 max_upper_fanout=4 total_tasks=15297172 elapsed_s=20.0015 throughput_tasks_per_s=764800
+MPICH Notice [Rank 0] [job id 5138961.10] [Sun Aug  2 04:51:33 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.10
+[2026-08-02T04:51:34.233] error: *** STEP 5138961.10 ON frontier00114 CANCELLED AT 2026-08-02T04:51:34 DUE TO TASK FAILURE ***
+srun: error: frontier00114: tasks 2-8: Terminated
+srun: error: frontier07142: tasks 1207-1214: Terminated
+srun: error: frontier05097: task 513: Terminated
+srun: error: frontier05364: task 558: Terminated
+srun: Force Terminated StepId=5138961.10
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 254 further lines matching: srun: error: frontier#: task #: Terminated ...]
+Running frontier nodes=256 ranks_per_node=9 dist=hierarchical_lockfree_rma mode=uniform expected_us=1000 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=1000 nodes=256 world_size=2304 max_upper_fanout=4 total_tasks=3327830 elapsed_s=20.0011 throughput_tasks_per_s=166382
+MPICH Notice [Rank 0] [job id 5138961.11] [Sun Aug  2 04:52:47 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.11
+[2026-08-02T04:52:48.971] error: *** STEP 5138961.11 ON frontier00114 CANCELLED AT 2026-08-02T04:52:48 DUE TO TASK FAILURE ***
+srun: error: frontier05751: tasks 766-773: Terminated
+srun: error: frontier06373: tasks 964-971: Terminated
+srun: error: frontier06134: task 882: Terminated
+srun: error: frontier07414: task 1314: Terminated
+srun: Force Terminated StepId=5138961.11
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 254 further lines matching: srun: error: frontier#: task #: Terminated ...]
+Running frontier nodes=256 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=10 max_upper_fanout=4
+RESULT distributor=hierarchical mode=fixed expected_us=10 nodes=256 world_size=14336 max_upper_fanout=4 total_tasks=34477446 elapsed_s=20.035 throughput_tasks_per_s=1.72086e+06
+MPICH Notice [Rank 0] [job id 5138961.12] [Sun Aug  2 04:53:35 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.12
+[2026-08-02T04:53:35.629] error: *** STEP 5138961.12 ON frontier00114 CANCELLED AT 2026-08-02T04:53:35 DUE TO TASK FAILURE ***
+srun: error: frontier08948: tasks 12683,12707: Terminated
+srun: error: frontier02169: tasks 1855,1873,1899: Terminated
+srun: error: frontier06134: tasks 5488-5489,5493,5509,5514,5518,5520,5529,5535,5537,5541: Terminated
+srun: error: frontier06138: tasks 5607,5611,5614,5617,5619,5629-5630,5633,5635,5639,5645,5649: Terminated
+srun: error: frontier08559: tasks 11543,11566,11569: Terminated
+srun: error: frontier00114: tasks 1-55: Terminated
+srun: error: frontier05363: tasks 3416-3440,3442-3471: Terminated
+srun: error: frontier07789: tasks 9072-9127: Terminated
+srun: error: frontier06134: tasks 5490-5492,5494-5508,5510-5513,5515-5517,5519,5521-5528,5530-5534,5536,5538-5540,5542-5543: Terminated
+srun: error: frontier06138: tasks 5600-5606,5608-5610,5612-5613,5615-5616,5618,5620-5628,5631-5632,5634,5636-5638,5640-5644,5646-5648,5650-5655: Terminated
+srun: error: frontier05363: task 3441: Terminated
+srun: error: frontier08559: tasks 11536-11542,11544-11565,11567-11568,11570-11591: Terminated
+srun: error: frontier08948: tasks 12656-12682,12684-12706,12708-12711: Terminated
+srun: error: frontier02169: tasks 1848-1854,1856-1872,1874-1898,1900-1903: Terminated
+srun: Force Terminated StepId=5138961.12
+[... 248 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=100 max_upper_fanout=4
+srun: Step created for StepId=5138961.13
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=256 world_size=14336 max_upper_fanout=4 total_tasks=24086806 elapsed_s=20.031 throughput_tasks_per_s=1.20248e+06
+MPICH Notice [Rank 0] [job id 5138961.13] [Sun Aug  2 04:54:00 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.13
+[2026-08-02T04:54:01.591] error: *** STEP 5138961.13 ON frontier00114 CANCELLED AT 2026-08-02T04:54:01 DUE TO TASK FAILURE ***
+srun: error: frontier08297: tasks 10696-10751: Terminated
+srun: error: frontier05109: tasks 3360-3415: Terminated
+srun: error: frontier08948: tasks 12656,12658-12711: Terminated
+srun: error: frontier08948: task 12657: Terminated
+srun: Force Terminated StepId=5138961.13
+[... 253 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=1000 max_upper_fanout=4
+srun: Step created for StepId=5138961.14
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=256 world_size=14336 max_upper_fanout=4 total_tasks=24822946 elapsed_s=20.0624 throughput_tasks_per_s=1.23728e+06
+MPICH Notice [Rank 0] [job id 5138961.14] [Sun Aug  2 04:54:46 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.14
+[2026-08-02T04:54:50.147] error: *** STEP 5138961.14 ON frontier00114 CANCELLED AT 2026-08-02T04:54:50 DUE TO TASK FAILURE ***
+srun: error: frontier00114: tasks 1-55: Terminated
+srun: error: frontier08824: tasks 12208-12263: Terminated
+srun: Force Terminated StepId=5138961.14
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=56 dist=hierarchical mode=uniform expected_us=10 max_upper_fanout=4
+srun: Step created for StepId=5138961.15
+RESULT distributor=hierarchical mode=uniform expected_us=10 nodes=256 world_size=14336 max_upper_fanout=4 total_tasks=34330552 elapsed_s=20.0219 throughput_tasks_per_s=1.71465e+06
+MPICH Notice [Rank 0] [job id 5138961.15] [Sun Aug  2 04:55:15 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.15
+[2026-08-02T04:55:16.624] error: *** STEP 5138961.15 ON frontier00114 CANCELLED AT 2026-08-02T04:55:16 DUE TO TASK FAILURE ***
+srun: error: frontier00249: tasks 254,257,277: Terminated
+srun: error: frontier05109: tasks 3371,3387: Terminated
+srun: error: frontier07918: tasks 9590,9595,9603-9604: Terminated
+srun: error: frontier07146: tasks 7616,7621,7623,7626,7631,7635,7638,7642-7643,7651,7655,7658-7659,7664-7665: Terminated
+srun: error: frontier07653: tasks 8741,8747,8751-8753,8757,8759,8766,8769,8775,8783: Terminated
+srun: error: frontier05363: tasks 3416-3471: Terminated
+srun: error: frontier08173: tasks 10192-10247: Terminated
+srun: error: frontier08947: tasks 12601,12610,12614,12620,12624,12637,12641: Terminated
+srun: error: frontier07287: tasks 7954-7960,7962-7967,7970,7973-7975,7978,7980-7985,7988-7993,7995-8005,8007: Terminated
+srun: error: frontier07789: tasks 9072-9073,9075,9079,9081-9083,9086-9091,9093-9096,9100-9103,9108-9115,9117-9119,9121-9126: Terminated
+srun: error: frontier09462: tasks 14224-14225,14227-14233,14235,14238,14240-14250,14252-14258,14260,14264,14266-14267,14270-14279: Terminated
+srun: error: frontier08292: tasks 10587,10589,10599,10601-10605,10611-10613,10620,10631-10632: Terminated
+srun: error: frontier07657: tasks 8904-8908,8910-8926,8929-8932,8934-8959: Terminated
+srun: error: frontier04472: tasks 2520-2560,2562-2563,2565-2573,2575: Terminated
+srun: error: frontier05748: tasks 4592,4595,4597,4600,4602,4605,4613-4617,4619,4622-4623,4625-4627,4629,4631-4635,4637,4639-4646: Terminated
+srun: error: frontier07400: tasks 8008-8033,8035-8063: Terminated
+srun: error: frontier09077: tasks 13160-13191,13193-13215: Terminated
+srun: error: frontier00377: tasks 448-467,469-472,474-476,478-479,481-486,488-503: Terminated
+srun: error: frontier06137: tasks 5544,5546-5592,5594,5596-5599: Terminated
+srun: error: frontier08293: tasks 10640-10641,10643,10645-10647,10649-10653,10656-10657,10660-10664,10666,10671,10676-10679,10683-10685,10687-10688,10690-10692,10694-10695: Terminated
+srun: error: frontier06387: tasks 6049-6060,6062-6072,6074-6083,6086-6087,6089-6103: Terminated
+srun: error: frontier05870: tasks 4872-4877,4879-4881,4883-4885,4887-4888,4891-4896,4898-4910,4912-4916,4918-4920,4922-4927: Terminated
+srun: error: frontier06263: tasks 5824-5834,5836-5848,5850-5852,5854-5871,5873-5879: Terminated
+srun: error: frontier05493: tasks 3864,3866-3872,3874-3880,3882-3888,3890-3892,3894-3898,3901-3902,3904-3919: Terminated
+srun: error: frontier05752: tasks 4816-4823,4826-4830,4833-4843,4845-4848,4850-4856,4858-4862,4865-4869,4871: Terminated
+srun: error: frontier00878: tasks 896-897,899-900,902,904-907,909-910,912,914-917,919-920,922-927,930-931,933,935-937,939,941,944-951: Terminated
+srun: error: frontier01916: tasks 1624-1640,1642-1658,1660-1663,1665-1679: Terminated
+srun: error: frontier01135: tasks 1008-1009,1011-1050,1052,1054-1063: Terminated
+srun: error: frontier08303: tasks 10808-10820,10822-10833,10835-10837,10839-10842,10845-10852,10854-10859,10863: Terminated
+srun: error: frontier05369: tasks 3696-3716,3718-3719,3723,3726-3731,3734-3737,3739-3751: Terminated
+srun: error: frontier01531: tasks 1232-1240,1243-1244,1247-1254,1256-1261,1263-1265,1267-1275,1278-1287: Terminated
+srun: error: frontier07528: tasks 8456-8461,8463-8476,8478,8480-8497,8499-8511: Terminated
+srun: error: frontier04588: tasks 2744-2774,2777-2788,2790-2799: Terminated
+srun: error: frontier08945: tasks 12488-12489,12491-12538,12540-12543: Terminated
+srun: error: frontier08559: tasks 11536,11538-11591: Terminated
+srun: error: frontier07146: tasks 7617-7620,7622,7624-7625,7627-7630,7632-7634,7636-7637,7639-7641,7644-7650,7652-7654,7656-7657,7660-7663,7666-7671: Terminated
+srun: error: frontier07287: tasks 7952-7953,7961,7968-7969,7971-7972,7976-7977,7979,7986-7987,7994,8006: Terminated
+srun: error: frontier07400: task 8034: Terminated
+srun: error: frontier07653: tasks 8736-8740,8742-8746,8748-8750,8754-8756,8758,8760-8765,8767-8768,8770-8774,8776-8782,8784-8791: Terminated
+srun: error: frontier09077: task 13192: Terminated
+srun: error: frontier09462: tasks 14226,14234,14236-14237,14239,14251,14259,14261-14263,14265,14268-14269: Terminated
+srun: error: frontier08947: tasks 12600,12602-12609,12611-12613,12615-12619,12621-12623,12625-12636,12638-12640,12642-12655: Terminated
+srun: error: frontier07789: tasks 9074,9076-9078,9080,9084-9085,9092,9097-9099,9104-9107,9116,9120,9127: Terminated
+srun: error: frontier08292: tasks 10584-10586,10588,10590-10598,10600,10606-10610,10614-10619,10621-10630,10633-10639: Terminated
+srun: error: frontier01916: tasks 1641,1659,1664: Terminated
+srun: error: frontier00377: tasks 468,473,477,480,487: Terminated
+srun: error: frontier07657: tasks 8909,8927-8928,8933: Terminated
+srun: error: frontier05748: tasks 4593-4594,4596,4598-4599,4601,4603-4604,4606-4612,4618,4620-4621,4624,4628,4630,4636,4638,4647: Terminated
+srun: error: frontier06387: tasks 6048,6061,6073,6084-6085,6088: Terminated
+srun: error: frontier08293: tasks 10642,10644,10648,10654-10655,10658-10659,10665,10667-10670,10672-10675,10680-10682,10686,10689,10693: Terminated
+srun: error: frontier09203: tasks 13410,13431: Terminated
+srun: error: frontier08303: tasks 10821,10834,10838,10843-10844,10853,10860-10862: Terminated
+srun: error: frontier00878: tasks 898,901,903,908,911,913,918,921,928-929,932,934,938,940,942-943: Terminated
+srun: error: frontier07528: tasks 8462,8477,8479,8498: Terminated
+srun: error: frontier06263: tasks 5835,5849,5853,5872: Terminated
+srun: error: frontier01531: tasks 1241-1242,1245-1246,1255,1262,1266,1276-1277: Terminated
+srun: error: frontier05369: tasks 3717,3720-3722,3724-3725,3732-3733,3738: Terminated
+srun: error: frontier04588: tasks 2775-2776,2789: Terminated
+srun: error: frontier05752: tasks 4824-4825,4831-4832,4844,4849,4857,4863-4864,4870: Terminated
+srun: error: frontier05870: tasks 4878,4882,4886,4889-4890,4897,4911,4917,4921: Terminated
+srun: error: frontier05493: tasks 3865,3873,3881,3889,3893,3899-3900,3903: Terminated
+srun: Force Terminated StepId=5138961.15
+[... 199 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 25 further lines matching: srun: error: frontier#: task #: Terminated ...]
+[... 21 further lines matching: srun: error: frontier#: tasks #-#,#-#: Terminated ...]
+[... 3 further lines matching: srun: error: frontier#: tasks #,#,#: Terminated ...]
+[... 2 further lines matching: srun: error: frontier#: tasks #-#,#-#,#-#: Terminated ...]
+[... 2 further lines matching: srun: error: frontier#: tasks #-#,#-#,#-#,#-#: Terminated ...]
+[... 1 further lines matching: srun: error: frontier#: tasks #,#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=56 dist=hierarchical mode=uniform expected_us=100 max_upper_fanout=4
+srun: Step created for StepId=5138961.16
+RESULT distributor=hierarchical mode=uniform expected_us=100 nodes=256 world_size=14336 max_upper_fanout=4 total_tasks=24196998 elapsed_s=20.047 throughput_tasks_per_s=1.20702e+06
+MPICH Notice [Rank 0] [job id 5138961.16] [Sun Aug  2 04:56:02 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.16
+[2026-08-02T04:56:03.223] error: *** STEP 5138961.16 ON frontier00114 CANCELLED AT 2026-08-02T04:56:03 DUE TO TASK FAILURE ***
+srun: error: frontier00378: tasks 504-559: Terminated
+srun: error: frontier00114: tasks 1-55: Terminated
+srun: Force Terminated StepId=5138961.16
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=56 dist=hierarchical mode=uniform expected_us=1000 max_upper_fanout=4
+srun: Step created for StepId=5138961.17
+RESULT distributor=hierarchical mode=uniform expected_us=1000 nodes=256 world_size=14336 max_upper_fanout=4 total_tasks=26012350 elapsed_s=20.0344 throughput_tasks_per_s=1.29838e+06
+MPICH Notice [Rank 0] [job id 5138961.17] [Sun Aug  2 04:56:27 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.17
+[2026-08-02T04:56:28.141] error: *** STEP 5138961.17 ON frontier00114 CANCELLED AT 2026-08-02T04:56:28 DUE TO TASK FAILURE ***
+srun: error: frontier00114: tasks 1-55: Terminated
+srun: error: frontier08949: tasks 12712-12767: Terminated
+srun: Force Terminated StepId=5138961.17
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+Running frontier nodes=256 ranks_per_node=56 dist=hierarchical_lockfree_rma mode=fixed expected_us=10 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=10 nodes=256 world_size=14336 max_upper_fanout=4 total_tasks=56490483 elapsed_s=20.0004 throughput_tasks_per_s=2.82447e+06
+MPICH Notice [Rank 0] [job id 5138961.18] [Sun Aug  2 04:57:29 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.18
+[2026-08-02T04:57:30.711] error: *** STEP 5138961.18 ON frontier00114 CANCELLED AT 2026-08-02T04:57:30 DUE TO TASK FAILURE ***
+srun: error: frontier01915: tasks 1569-1623: Terminated
+srun: error: frontier09077: tasks 13161-13215: Terminated
+srun: error: frontier01662: task 1288: Terminated
+srun: error: frontier08692: task 11816: Terminated
+srun: Force Terminated StepId=5138961.18
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 254 further lines matching: srun: error: frontier#: task #: Terminated ...]
+Running frontier nodes=256 ranks_per_node=56 dist=hierarchical_lockfree_rma mode=fixed expected_us=100 max_upper_fanout=4
+srun: Step created for StepId=5138961.19
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=100 nodes=256 world_size=14336 max_upper_fanout=4 total_tasks=60000000 elapsed_s=20.0164 throughput_tasks_per_s=2.99754e+06
+MPICH Notice [Rank 0] [job id 5138961.19] [Sun Aug  2 04:58:31 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.19
+[2026-08-02T04:58:32.874] error: *** STEP 5138961.19 ON frontier00114 CANCELLED AT 2026-08-02T04:58:32 DUE TO TASK FAILURE ***
+srun: error: frontier06394: tasks 6329-6383: Terminated
+srun: error: frontier08291: tasks 10529-10583: Terminated
+srun: error: frontier09203: task 13384: Terminated
+srun: error: frontier08293: task 10640: Terminated
+srun: Force Terminated StepId=5138961.19
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 254 further lines matching: srun: error: frontier#: task #: Terminated ...]
+Running frontier nodes=256 ranks_per_node=56 dist=hierarchical_lockfree_rma mode=fixed expected_us=1000 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=1000 nodes=256 world_size=14336 max_upper_fanout=4 total_tasks=20948340 elapsed_s=20.0008 throughput_tasks_per_s=1.04738e+06
+MPICH Notice [Rank 0] [job id 5138961.20] [Sun Aug  2 04:59:35 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.20
+[2026-08-02T04:59:36.968] error: *** STEP 5138961.20 ON frontier00114 CANCELLED AT 2026-08-02T04:59:36 DUE TO TASK FAILURE ***
+srun: error: frontier06241: tasks 5657-5711: Terminated
+srun: error: frontier07142: tasks 7505-7559: Terminated
+srun: error: frontier00630: task 784: Terminated
+srun: error: frontier09072: task 12880: Terminated
+srun: Force Terminated StepId=5138961.20
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 254 further lines matching: srun: error: frontier#: task #: Terminated ...]
+Running frontier nodes=256 ranks_per_node=56 dist=hierarchical_lockfree_rma mode=uniform expected_us=10 max_upper_fanout=4
+srun: Step created for StepId=5138961.21
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=10 nodes=256 world_size=14336 max_upper_fanout=4 total_tasks=56234046 elapsed_s=20.0003 throughput_tasks_per_s=2.81166e+06
+MPICH Notice [Rank 0] [job id 5138961.21] [Sun Aug  2 05:00:38 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.21
+[2026-08-02T05:00:39.147] error: *** STEP 5138961.21 ON frontier00114 CANCELLED AT 2026-08-02T05:00:39 DUE TO TASK FAILURE ***
+srun: error: frontier01135: tasks 1009-1063: Terminated
+srun: error: frontier01786: tasks 1401-1455: Terminated
+srun: error: frontier01135: task 1008: Terminated
+srun: error: frontier04463: task 2352: Terminated
+srun: Force Terminated StepId=5138961.21
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 254 further lines matching: srun: error: frontier#: task #: Terminated ...]
+Running frontier nodes=256 ranks_per_node=56 dist=hierarchical_lockfree_rma mode=uniform expected_us=100 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=100 nodes=256 world_size=14336 max_upper_fanout=4 total_tasks=57738760 elapsed_s=20.0013 throughput_tasks_per_s=2.88676e+06
+MPICH Notice [Rank 0] [job id 5138961.22] [Sun Aug  2 05:02:02 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.22
+[2026-08-02T05:02:03.628] error: *** STEP 5138961.22 ON frontier00114 CANCELLED AT 2026-08-02T05:02:03 DUE TO TASK FAILURE ***
+srun: error: frontier08430: tasks 11089-11143: Terminated
+srun: error: frontier08822: tasks 12097-12151: Terminated
+srun: error: frontier07257: task 7728: Terminated
+srun: error: frontier05494: task 3920: Terminated
+srun: Force Terminated StepId=5138961.22
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 254 further lines matching: srun: error: frontier#: task #: Terminated ...]
+Running frontier nodes=256 ranks_per_node=56 dist=hierarchical_lockfree_rma mode=uniform expected_us=1000 max_upper_fanout=4
+srun: Step created for StepId=5138961.23
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=1000 nodes=256 world_size=14336 max_upper_fanout=4 total_tasks=20051111 elapsed_s=20.0002 throughput_tasks_per_s=1.00255e+06
+MPICH Notice [Rank 0] [job id 5138961.23] [Sun Aug  2 05:03:05 2026] [frontier00114] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00114: task 0: Exited with exit code 255
+srun: Terminating StepId=5138961.23
+[2026-08-02T05:03:06.714] error: *** STEP 5138961.23 ON frontier00114 CANCELLED AT 2026-08-02T05:03:06 DUE TO TASK FAILURE ***
+srun: error: frontier07402: tasks 8121-8175: Terminated
+srun: error: frontier00249: tasks 225-279: Terminated
+srun: error: frontier06509: task 6608: Terminated
+srun: error: frontier09335: task 13832: Terminated
+srun: Force Terminated StepId=5138961.23
+[... 254 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 254 further lines matching: srun: error: frontier#: task #: Terminated ...]

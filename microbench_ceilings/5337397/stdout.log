@@ -1,0 +1,15 @@
+== twosided nodes=1024 rpn=9 ranks=9216 payload_ints=1
+RESULT mode=probe world_size=9216 workers=9215 payload_bytes=4 completed=7435605 completed_per_s=1.48712e+06 completed_per_s_per_worker=161.38
+RESULT mode=noprobe world_size=9216 workers=9215 payload_bytes=4 completed=7201869 completed_per_s=1.44037e+06 completed_per_s_per_worker=156.308
+RESULT mode=irecv world_size=9216 workers=9215 payload_bytes=4 completed=4911595 completed_per_s=982319 completed_per_s_per_worker=106.6
+RESULT mode=oneway world_size=9216 workers=9215 payload_bytes=4 completed=1117005 completed_per_s=223401 completed_per_s_per_worker=24.2432
+== rma nodes=1024 rpn=9 ranks=9216
+RESULT phase=faa_flushed world_size=9216 participants=9215 succeeded=5081613 attempted=5081613 duration_s=3 succeeded_per_s=1.69387e+06 attempted_per_s=1.69387e+06 succeeded_per_s_per_rank=183.817
+RESULT phase=cas_flushed world_size=9216 participants=9215 succeeded=431987 attempted=5227633 duration_s=3 succeeded_per_s=143996 attempted_per_s=1.74254e+06 succeeded_per_s_per_rank=15.6262
+RESULT phase=faa_pipelined_depth1 world_size=9216 participants=9215 succeeded=5018226 attempted=5018226 duration_s=3 succeeded_per_s=1.67274e+06 attempted_per_s=1.67274e+06 succeeded_per_s_per_rank=181.524
+RESULT phase=faa_pipelined_depth8 world_size=9216 participants=9215 succeeded=1365712 attempted=1365712 duration_s=3 succeeded_per_s=455237 attempted_per_s=455237 succeeded_per_s_per_rank=49.4018
+RESULT phase=faa_pipelined_depth32 world_size=9216 participants=9215 succeeded=966688 attempted=966688 duration_s=3 succeeded_per_s=322229 attempted_per_s=322229 succeeded_per_s_per_rank=34.9679
+RESULT phase=faa_pipelined_depth128 world_size=9216 participants=9215 succeeded=2858112 attempted=2858112 duration_s=3 succeeded_per_s=952704 attempted_per_s=952704 succeeded_per_s_per_rank=103.386
+Wrote:
+  /ccs/home/ryan/DynaMPI/benchmark/results/frontier/1024-dynampi_micro_frontier_1024-5337397/twosided_msgrate_frontier.csv
+  /ccs/home/ryan/DynaMPI/benchmark/results/frontier/1024-dynampi_micro_frontier_1024-5337397/rma_atomic_frontier.csv

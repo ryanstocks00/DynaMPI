@@ -1,0 +1,16 @@
+== twosided nodes=64 rpn=9 ranks=576 payload_ints=1
+RESULT mode=probe world_size=576 workers=567 payload_bytes=4 completed=1210168 completed_per_s=242034 completed_per_s_per_worker=426.867 exclude_root_node=1
+RESULT mode=noprobe world_size=576 workers=567 payload_bytes=4 completed=2027333 completed_per_s=405467 completed_per_s_per_worker=715.109 exclude_root_node=1
+RESULT mode=irecv world_size=576 workers=567 payload_bytes=4 completed=4987281 completed_per_s=997456 completed_per_s_per_worker=1759.18 exclude_root_node=1
+RESULT mode=oneway world_size=576 workers=567 payload_bytes=4 completed=1160231 completed_per_s=232046 completed_per_s_per_worker=409.253 exclude_root_node=1
+== rma nodes=64 rpn=9 ranks=576
+srun: Step created for StepId=5341064.1
+RESULT phase=faa_flushed world_size=576 participants=567 succeeded=3353083 attempted=3353083 duration_s=3 succeeded_per_s=1.11769e+06 attempted_per_s=1.11769e+06 succeeded_per_s_per_rank=1971.24 exclude_root_node=1
+RESULT phase=cas_flushed world_size=576 participants=567 succeeded=6270 attempted=3511939 duration_s=3 succeeded_per_s=2090 attempted_per_s=1.17065e+06 succeeded_per_s_per_rank=3.68607 exclude_root_node=1
+RESULT phase=faa_pipelined_depth1 world_size=576 participants=567 succeeded=3367919 attempted=3367919 duration_s=3 succeeded_per_s=1.12264e+06 attempted_per_s=1.12264e+06 succeeded_per_s_per_rank=1979.96 exclude_root_node=1
+RESULT phase=faa_pipelined_depth8 world_size=576 participants=567 succeeded=3443296 attempted=3443296 duration_s=3 succeeded_per_s=1.14777e+06 attempted_per_s=1.14777e+06 succeeded_per_s_per_rank=2024.28 exclude_root_node=1
+RESULT phase=faa_pipelined_depth32 world_size=576 participants=567 succeeded=2732736 attempted=2732736 duration_s=3 succeeded_per_s=910912 attempted_per_s=910912 succeeded_per_s_per_rank=1606.55 exclude_root_node=1
+RESULT phase=faa_pipelined_depth128 world_size=576 participants=567 succeeded=1037440 attempted=1037440 duration_s=3 succeeded_per_s=345813 attempted_per_s=345813 succeeded_per_s_per_rank=609.9 exclude_root_node=1
+Wrote:
+  /ccs/home/ryan/DynaMPI/benchmark/results/frontier/64-dynampi_micro_offnode_frontier_64-5341064/twosided_msgrate_frontier_offnode.csv
+  /ccs/home/ryan/DynaMPI/benchmark/results/frontier/64-dynampi_micro_offnode_frontier_64-5341064/rma_atomic_frontier_offnode.csv

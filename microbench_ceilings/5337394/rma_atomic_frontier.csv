@@ -1,0 +1,7 @@
+system,phase,nodes,world_size,participants,duration_s,succeeded,attempted,succeeded_per_s,attempted_per_s,succeeded_per_s_per_rank
+frontier,faa_flushed,128,1152,1151,3,5125026,5125026,1.70834e+06,1.70834e+06,1484.22
+frontier,cas_flushed,128,1152,1151,3,427965,5258072,142655,1.75269e+06,123.94
+frontier,faa_pipelined_depth1,128,1152,1151,3,5136837,5136837,1.71228e+06,1.71228e+06,1487.64
+frontier,faa_pipelined_depth8,128,1152,1151,3,5757200,5757200,1.91907e+06,1.91907e+06,1667.3
+frontier,faa_pipelined_depth32,128,1152,1151,3,1402304,1402304,467435,467435,406.112
+frontier,faa_pipelined_depth128,128,1152,1151,3,2143104,2143104,714368,714368,620.65

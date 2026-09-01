@@ -1,0 +1,79 @@
+# Condensed from 16615 lines to 75: repeated per-rank
+# MPI_Abort teardown messages collapsed to counts. Every distinct message
+# is retained with its first two occurrences. The unmodified log is in the
+# raw-output backup bundle held with the paper materials.
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=1000 nodes=8192 world_size=73728 max_upper_fanout=-1 total_tasks=586000000 elapsed_s=20.0142 throughput_tasks_per_s=2.92792e+07
+MPICH Notice [Rank 0] [job id 5176094.0] [Tue Aug 11 00:54:13 2026] [frontier00001] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier00001: task 0: Exited with exit code 255
+srun: Terminating StepId=5176094.0
+[2026-08-11T00:54:17.100] error: *** STEP 5176094.0 ON frontier00001 CANCELLED AT 2026-08-11T00:54:17 DUE TO TASK FAILURE ***
+srun: error: frontier07188: task 55794: Terminated
+srun: error: frontier00397: task 3094: Terminated
+srun: error: frontier02163: tasks 16958-16963: Terminated
+srun: error: frontier04024: tasks 31331,31333-31335,31337: Terminated
+srun: error: frontier04025: tasks 31339,31344: Terminated
+srun: error: frontier02442: tasks 19055-19060: Terminated
+srun: error: frontier00874: tasks 6886,6888-6892: Terminated
+srun: error: frontier01082: tasks 8470,8472,8474-8476: Terminated
+srun: error: frontier02095: tasks 16354,16359-16360: Terminated
+srun: error: frontier01502: tasks 11773,11776,11778-11779: Terminated
+srun: error: frontier07693: tasks 59689,59691,59695: Terminated
+srun: error: frontier03118: tasks 24346-24350,24352: Terminated
+srun: error: frontier08158: tasks 63073,63078: Terminated
+srun: error: frontier00430: tasks 3385-3387,3389-3391: Terminated
+srun: error: frontier04457: tasks 34725-34726,34728: Terminated
+srun: error: frontier03048: tasks 23851-23853,23855-23858: Terminated
+srun: error: frontier02839: tasks 22159,22161-22164,22166: Terminated
+srun: error: frontier04457: tasks 34723-34724,34727,34729-34730: Terminated
+srun: error: frontier02360: tasks 18460,18465,18467: Terminated
+srun: error: frontier06403: tasks 49699,49701-49702,49704-49706: Terminated
+srun: error: frontier01502: tasks 11774-11775,11777,11780: Terminated
+srun: error: frontier04047: tasks 31528,31530-31531,31533-31535: Terminated
+srun: error: frontier08227: tasks 63587-63589,63591,63593: Terminated
+srun: error: frontier01242: tasks 9784,9786,9788,9790: Terminated
+srun: error: frontier00360: tasks 2890,2892,2894-2895,2897: Terminated
+srun: error: frontier02958: tasks 23060-23061,23063,23065-23066: Terminated
+srun: error: frontier02190: tasks 17093-17094,17096-17097,17099: Terminated
+srun: error: frontier01242: tasks 9785,9787,9789,9791: Terminated
+srun: error: frontier08176: tasks 63190-63191,63193-63194,63196-63197: Terminated
+srun: error: frontier00655: tasks 5122-5123,5125-5127,5129: Terminated
+srun: error: frontier03743: tasks 29160,29163-29164,29166,29168: Terminated
+srun: error: frontier03335: tasks 25974-25975,25977,25979,25982: Terminated
+srun: error: frontier00095: tasks 810-811,813-814,816-818: Terminated
+srun: error: frontier05633: tasks 43740,43742,43744,43746-43748: Terminated
+srun: error: frontier04507: tasks 35055-35057,35059,35061,35063: Terminated
+srun: error: frontier02656: tasks 20781,20784,20786-20787,20789: Terminated
+srun: error: frontier03909: tasks 30465-30466,30468,30470,30472-30473: Terminated
+srun: error: frontier03301: tasks 25785,25787-25789,25791,25793: Terminated
+srun: error: frontier01156: tasks 9009,9011,9013,9016-9017: Terminated
+srun: error: frontier05822: tasks 45270,45272,45274-45275,45277-45278: Terminated
+srun: error: frontier03148: tasks 24615,24617,24619,24621,24623: Terminated
+srun: error: frontier01998: tasks 15633-15634,15636,15638,15640-15641: Terminated
+srun: error: frontier07314: tasks 56763,56765,56767-56768,56770-56771: Terminated
+srun: error: frontier08261: tasks 63864,63866-63867,63869,63871-63872: Terminated
+srun: error: frontier06823: tasks 52974-52975,52977,52979-52980,52982: Terminated
+srun: error: frontier01011: tasks 7965,7967-7968,7970,7972-7973: Terminated
+srun: error: frontier04583: tasks 35712,35714,35716,35718,35720: Terminated
+srun: error: frontier07845: tasks 60867-60868,60870,60872-60873,60875: Terminated
+srun: Force Terminated StepId=5176094.0
+[... 7867 further lines matching: srun: error: frontier#: task #: Terminated ...]
+[... 7402 further lines matching: srun: error: frontier#: tasks #-#: Terminated ...]
+[... 401 further lines matching: srun: error: frontier#: tasks #-#,#-#: Terminated ...]
+[... 224 further lines matching: srun: error: frontier#: tasks #-#,#: Terminated ...]
+[... 185 further lines matching: srun: error: frontier#: tasks #,#: Terminated ...]
+[... 138 further lines matching: srun: error: frontier#: tasks #,#-#: Terminated ...]
+[... 109 further lines matching: srun: error: frontier#: tasks #,#,#: Terminated ...]
+[... 40 further lines matching: srun: error: frontier#: tasks #-#,#,#: Terminated ...]
+[... 36 further lines matching: srun: error: frontier#: tasks #-#,#-#,#: Terminated ...]
+[... 29 further lines matching: srun: error: frontier#: tasks #,#-#,#-#: Terminated ...]
+[... 29 further lines matching: srun: error: frontier#: tasks #-#,#,#-#: Terminated ...]
+[... 29 further lines matching: srun: error: frontier#: tasks #,#,#-#: Terminated ...]
+[... 28 further lines matching: srun: error: frontier#: tasks #,#-#,#: Terminated ...]
+[... 13 further lines matching: srun: error: frontier#: tasks #-#,#-#,#-#: Terminated ...]
+[... 11 further lines matching: srun: error: frontier#: tasks #,#,#,#: Terminated ...]
+[... 7 further lines matching: srun: error: frontier#: tasks #,#,#-#,#: Terminated ...]
+[... 5 further lines matching: srun: error: frontier#: tasks #-#,#,#,#: Terminated ...]
+[... 3 further lines matching: srun: error: frontier#: tasks #-#,#,#,#-#: Terminated ...]
+[... 2 further lines matching: srun: error: frontier#: tasks #,#,#,#-#: Terminated ...]

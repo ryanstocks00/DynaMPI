@@ -1,0 +1,15 @@
+== twosided nodes=256 rpn=9 ranks=2304 payload_ints=1
+RESULT mode=probe world_size=2304 workers=2303 payload_bytes=4 completed=7326464 completed_per_s=1.46529e+06 completed_per_s_per_worker=636.254
+RESULT mode=noprobe world_size=2304 workers=2303 payload_bytes=4 completed=7271704 completed_per_s=1.45434e+06 completed_per_s_per_worker=631.498
+RESULT mode=irecv world_size=2304 workers=2303 payload_bytes=4 completed=5027447 completed_per_s=1.00549e+06 completed_per_s_per_worker=436.6
+RESULT mode=oneway world_size=2304 workers=2303 payload_bytes=4 completed=7486982 completed_per_s=1.4974e+06 completed_per_s_per_worker=650.194
+== rma nodes=256 rpn=9 ranks=2304
+RESULT phase=faa_flushed world_size=2304 participants=2303 succeeded=5020821 attempted=5020821 duration_s=3 succeeded_per_s=1.67361e+06 attempted_per_s=1.67361e+06 succeeded_per_s_per_rank=726.707
+RESULT phase=cas_flushed world_size=2304 participants=2303 succeeded=428240 attempted=5167591 duration_s=3 succeeded_per_s=142747 attempted_per_s=1.72253e+06 succeeded_per_s_per_rank=61.9829
+RESULT phase=faa_pipelined_depth1 world_size=2304 participants=2303 succeeded=5029300 attempted=5029300 duration_s=3 succeeded_per_s=1.67643e+06 attempted_per_s=1.67643e+06 succeeded_per_s_per_rank=727.935
+RESULT phase=faa_pipelined_depth8 world_size=2304 participants=2303 succeeded=4822944 attempted=4822944 duration_s=3 succeeded_per_s=1.60765e+06 attempted_per_s=1.60765e+06 succeeded_per_s_per_rank=698.067
+RESULT phase=faa_pipelined_depth32 world_size=2304 participants=2303 succeeded=1476864 attempted=1476864 duration_s=3 succeeded_per_s=492288 attempted_per_s=492288 succeeded_per_s_per_rank=213.759
+RESULT phase=faa_pipelined_depth128 world_size=2304 participants=2303 succeeded=2992256 attempted=2992256 duration_s=3 succeeded_per_s=997419 attempted_per_s=997419 succeeded_per_s_per_rank=433.095
+Wrote:
+  /ccs/home/ryan/DynaMPI/benchmark/results/frontier/256-dynampi_micro_frontier_256-5337395/twosided_msgrate_frontier.csv
+  /ccs/home/ryan/DynaMPI/benchmark/results/frontier/256-dynampi_micro_frontier_256-5337395/rma_atomic_frontier.csv

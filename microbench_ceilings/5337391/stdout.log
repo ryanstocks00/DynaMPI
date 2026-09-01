@@ -1,0 +1,16 @@
+== twosided nodes=16 rpn=9 ranks=144 payload_ints=1
+RESULT mode=probe world_size=144 workers=143 payload_bytes=4 completed=7505862 completed_per_s=1.50117e+06 completed_per_s_per_worker=10497.7
+RESULT mode=noprobe world_size=144 workers=143 payload_bytes=4 completed=7195869 completed_per_s=1.43917e+06 completed_per_s_per_worker=10064.2
+RESULT mode=irecv world_size=144 workers=143 payload_bytes=4 completed=5328021 completed_per_s=1.0656e+06 completed_per_s_per_worker=7451.78
+RESULT mode=oneway world_size=144 workers=143 payload_bytes=4 completed=11196574 completed_per_s=2.23931e+06 completed_per_s_per_worker=15659.5
+== rma nodes=16 rpn=9 ranks=144
+srun: Step created for StepId=5337391.1
+RESULT phase=faa_flushed world_size=144 participants=143 succeeded=5335948 attempted=5335948 duration_s=3 succeeded_per_s=1.77865e+06 attempted_per_s=1.77865e+06 succeeded_per_s_per_rank=12438.1
+RESULT phase=cas_flushed world_size=144 participants=143 succeeded=437126 attempted=5425909 duration_s=3 succeeded_per_s=145709 attempted_per_s=1.80864e+06 succeeded_per_s_per_rank=1018.94
+RESULT phase=faa_pipelined_depth1 world_size=144 participants=143 succeeded=5341396 attempted=5341396 duration_s=3 succeeded_per_s=1.78047e+06 attempted_per_s=1.78047e+06 succeeded_per_s_per_rank=12450.8
+RESULT phase=faa_pipelined_depth8 world_size=144 participants=143 succeeded=5800256 attempted=5800256 duration_s=3 succeeded_per_s=1.93342e+06 attempted_per_s=1.93342e+06 succeeded_per_s_per_rank=13520.4
+RESULT phase=faa_pipelined_depth32 world_size=144 participants=143 succeeded=5990432 attempted=5990432 duration_s=3 succeeded_per_s=1.99681e+06 attempted_per_s=1.99681e+06 succeeded_per_s_per_rank=13963.7
+RESULT phase=faa_pipelined_depth128 world_size=144 participants=143 succeeded=5170432 attempted=5170432 duration_s=3 succeeded_per_s=1.72348e+06 attempted_per_s=1.72348e+06 succeeded_per_s_per_rank=12052.3
+Wrote:
+  /ccs/home/ryan/DynaMPI/benchmark/results/frontier/16-dynampi_micro_frontier_16-5337391/twosided_msgrate_frontier.csv
+  /ccs/home/ryan/DynaMPI/benchmark/results/frontier/16-dynampi_micro_frontier_16-5337391/rma_atomic_frontier.csv

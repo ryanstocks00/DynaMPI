@@ -1,0 +1,314 @@
+Running frontier nodes=2 ranks_per_node=9 dist=hierarchical mode=fixed expected_us=10 max_upper_fanout=4
+RESULT distributor=hierarchical mode=fixed expected_us=10 nodes=2 world_size=18 max_upper_fanout=4 total_tasks=20890782 elapsed_s=20.0002 throughput_tasks_per_s=1.04453e+06
+MPICH Notice [Rank 0] [job id 5138954.0] [Sun Aug  2 04:25:38 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.0
+[2026-08-02T04:25:38.303] error: *** STEP 5138954.0 ON frontier05363 CANCELLED AT 2026-08-02T04:25:38 DUE TO TASK FAILURE ***
+srun: error: frontier05364: tasks 9-17: Terminated
+srun: error: frontier05363: tasks 1-8: Terminated
+srun: Force Terminated StepId=5138954.0
+Running frontier nodes=2 ranks_per_node=9 dist=hierarchical mode=fixed expected_us=100 max_upper_fanout=4
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=2 world_size=18 max_upper_fanout=4 total_tasks=2902974 elapsed_s=20.0006 throughput_tasks_per_s=145144
+MPICH Notice [Rank 0] [job id 5138954.1] [Sun Aug  2 04:25:59 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.1
+[2026-08-02T04:25:59.394] error: *** STEP 5138954.1 ON frontier05363 CANCELLED AT 2026-08-02T04:25:59 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 1-8: Terminated
+srun: error: frontier05364: tasks 9-17: Terminated
+srun: Force Terminated StepId=5138954.1
+Running frontier nodes=2 ranks_per_node=9 dist=hierarchical mode=fixed expected_us=1000 max_upper_fanout=4
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=2 world_size=18 max_upper_fanout=4 total_tasks=299094 elapsed_s=20.007 throughput_tasks_per_s=14949.5
+MPICH Notice [Rank 0] [job id 5138954.2] [Sun Aug  2 04:26:32 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.2
+[2026-08-02T04:26:33.084] error: *** STEP 5138954.2 ON frontier05363 CANCELLED AT 2026-08-02T04:26:33 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 1-8: Terminated
+srun: error: frontier05364: tasks 9-17: Terminated
+srun: Force Terminated StepId=5138954.2
+Running frontier nodes=2 ranks_per_node=9 dist=hierarchical mode=uniform expected_us=10 max_upper_fanout=4
+RESULT distributor=hierarchical mode=uniform expected_us=10 nodes=2 world_size=18 max_upper_fanout=4 total_tasks=21251442 elapsed_s=20.0002 throughput_tasks_per_s=1.06256e+06
+MPICH Notice [Rank 0] [job id 5138954.3] [Sun Aug  2 04:26:55 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.3
+[2026-08-02T04:26:55.600] error: *** STEP 5138954.3 ON frontier05363 CANCELLED AT 2026-08-02T04:26:55 DUE TO TASK FAILURE ***
+srun: error: frontier05364: tasks 9-17: Terminated
+srun: error: frontier05363: tasks 1-8: Terminated
+srun: Force Terminated StepId=5138954.3
+Running frontier nodes=2 ranks_per_node=9 dist=hierarchical mode=uniform expected_us=100 max_upper_fanout=4
+RESULT distributor=hierarchical mode=uniform expected_us=100 nodes=2 world_size=18 max_upper_fanout=4 total_tasks=2902304 elapsed_s=20.0008 throughput_tasks_per_s=145110
+MPICH Notice [Rank 0] [job id 5138954.4] [Sun Aug  2 04:27:16 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.4
+[2026-08-02T04:27:16.306] error: *** STEP 5138954.4 ON frontier05363 CANCELLED AT 2026-08-02T04:27:16 DUE TO TASK FAILURE ***
+srun: error: frontier05364: tasks 9-17: Terminated
+srun: error: frontier05363: tasks 1-8: Terminated
+srun: Force Terminated StepId=5138954.4
+Running frontier nodes=2 ranks_per_node=9 dist=hierarchical mode=uniform expected_us=1000 max_upper_fanout=4
+RESULT distributor=hierarchical mode=uniform expected_us=1000 nodes=2 world_size=18 max_upper_fanout=4 total_tasks=299420 elapsed_s=20.0084 throughput_tasks_per_s=14964.7
+MPICH Notice [Rank 0] [job id 5138954.5] [Sun Aug  2 04:27:43 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.5
+[2026-08-02T04:27:44.613] error: *** STEP 5138954.5 ON frontier05363 CANCELLED AT 2026-08-02T04:27:44 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 1-8: Terminated
+srun: error: frontier05364: tasks 9-17: Terminated
+srun: Force Terminated StepId=5138954.5
+Running frontier nodes=2 ranks_per_node=9 dist=hierarchical_lockfree_rma mode=fixed expected_us=10 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=10 nodes=2 world_size=18 max_upper_fanout=4 total_tasks=1939781 elapsed_s=20.0001 throughput_tasks_per_s=96988.7
+MPICH Notice [Rank 0] [job id 5138954.6] [Sun Aug  2 04:28:16 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.6
+[2026-08-02T04:28:18.452] error: *** STEP 5138954.6 ON frontier05363 CANCELLED AT 2026-08-02T04:28:18 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 2-8: Terminated
+srun: error: frontier05364: tasks 10-17: Terminated
+srun: error: frontier05363: task 1: Terminated
+srun: error: frontier05364: task 9: Terminated
+srun: Force Terminated StepId=5138954.6
+Running frontier nodes=2 ranks_per_node=9 dist=hierarchical_lockfree_rma mode=fixed expected_us=100 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=100 nodes=2 world_size=18 max_upper_fanout=4 total_tasks=1972959 elapsed_s=20 throughput_tasks_per_s=98647.8
+MPICH Notice [Rank 0] [job id 5138954.7] [Sun Aug  2 04:28:54 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.7
+[2026-08-02T04:28:55.883] error: *** STEP 5138954.7 ON frontier05363 CANCELLED AT 2026-08-02T04:28:55 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 2-8: Terminated
+srun: error: frontier05364: tasks 10-17: Terminated
+srun: error: frontier05363: task 1: Terminated
+srun: error: frontier05364: task 9: Terminated
+srun: Force Terminated StepId=5138954.7
+Running frontier nodes=2 ranks_per_node=9 dist=hierarchical_lockfree_rma mode=fixed expected_us=1000 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=1000 nodes=2 world_size=18 max_upper_fanout=4 total_tasks=273614 elapsed_s=20 throughput_tasks_per_s=13680.7
+MPICH Notice [Rank 0] [job id 5138954.8] [Sun Aug  2 04:29:29 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.8
+[2026-08-02T04:29:30.919] error: *** STEP 5138954.8 ON frontier05363 CANCELLED AT 2026-08-02T04:29:30 DUE TO TASK FAILURE ***
+srun: error: frontier05364: tasks 10-17: Terminated
+srun: error: frontier05363: tasks 2-8: Terminated
+srun: error: frontier05363: task 1: Terminated
+srun: error: frontier05364: task 9: Terminated
+srun: Force Terminated StepId=5138954.8
+Running frontier nodes=2 ranks_per_node=9 dist=hierarchical_lockfree_rma mode=uniform expected_us=10 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=10 nodes=2 world_size=18 max_upper_fanout=4 total_tasks=1940644 elapsed_s=20 throughput_tasks_per_s=97032.1
+MPICH Notice [Rank 0] [job id 5138954.9] [Sun Aug  2 04:30:05 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.9
+[2026-08-02T04:30:08.497] error: *** STEP 5138954.9 ON frontier05363 CANCELLED AT 2026-08-02T04:30:08 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 2-8: Terminated
+srun: error: frontier05364: tasks 10-17: Terminated
+srun: error: frontier05363: task 1: Terminated
+srun: error: frontier05364: task 9: Terminated
+srun: Force Terminated StepId=5138954.9
+Running frontier nodes=2 ranks_per_node=9 dist=hierarchical_lockfree_rma mode=uniform expected_us=100 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=100 nodes=2 world_size=18 max_upper_fanout=4 total_tasks=1954389 elapsed_s=20 throughput_tasks_per_s=97719.3
+MPICH Notice [Rank 0] [job id 5138954.10] [Sun Aug  2 04:30:41 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.10
+[2026-08-02T04:30:42.689] error: *** STEP 5138954.10 ON frontier05363 CANCELLED AT 2026-08-02T04:30:42 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 2-8: Terminated
+srun: error: frontier05364: tasks 10-17: Terminated
+srun: error: frontier05363: task 1: Terminated
+srun: error: frontier05364: task 9: Terminated
+srun: Force Terminated StepId=5138954.10
+Running frontier nodes=2 ranks_per_node=9 dist=hierarchical_lockfree_rma mode=uniform expected_us=1000 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=1000 nodes=2 world_size=18 max_upper_fanout=4 total_tasks=278231 elapsed_s=20.0001 throughput_tasks_per_s=13911.5
+MPICH Notice [Rank 0] [job id 5138954.11] [Sun Aug  2 04:31:28 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.11
+[2026-08-02T04:31:29.554] error: *** STEP 5138954.11 ON frontier05363 CANCELLED AT 2026-08-02T04:31:29 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 2-8: Terminated
+srun: error: frontier05364: tasks 10-17: Terminated
+srun: error: frontier05364: task 9: Terminated
+srun: error: frontier05363: task 1: Terminated
+srun: Force Terminated StepId=5138954.11
+Running frontier nodes=2 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=10 max_upper_fanout=4
+RESULT distributor=hierarchical mode=fixed expected_us=10 nodes=2 world_size=112 max_upper_fanout=4 total_tasks=35412906 elapsed_s=20.0006 throughput_tasks_per_s=1.7706e+06
+MPICH Notice [Rank 0] [job id 5138954.12] [Sun Aug  2 04:31:51 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.12
+[2026-08-02T04:31:52.173] error: *** STEP 5138954.12 ON frontier05363 CANCELLED AT 2026-08-02T04:31:52 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 1-55: Terminated
+srun: error: frontier05364: tasks 56-111: Terminated
+srun: Force Terminated StepId=5138954.12
+Running frontier nodes=2 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=100 max_upper_fanout=4
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=2 world_size=112 max_upper_fanout=4 total_tasks=20796624 elapsed_s=20.001 throughput_tasks_per_s=1.03978e+06
+MPICH Notice [Rank 0] [job id 5138954.13] [Sun Aug  2 04:32:13 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.13
+[2026-08-02T04:32:13.596] error: *** STEP 5138954.13 ON frontier05363 CANCELLED AT 2026-08-02T04:32:13 DUE TO TASK FAILURE ***
+srun: error: frontier05364: tasks 56-111: Terminated
+srun: error: frontier05363: tasks 1-55: Terminated
+srun: Force Terminated StepId=5138954.13
+Running frontier nodes=2 ranks_per_node=56 dist=hierarchical mode=fixed expected_us=1000 max_upper_fanout=4
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=2 world_size=112 max_upper_fanout=4 total_tasks=2172938 elapsed_s=20.0072 throughput_tasks_per_s=108608
+MPICH Notice [Rank 0] [job id 5138954.14] [Sun Aug  2 04:32:45 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.14
+[2026-08-02T04:32:48.693] error: *** STEP 5138954.14 ON frontier05363 CANCELLED AT 2026-08-02T04:32:48 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 1-55: Terminated
+srun: error: frontier05364: tasks 56-111: Terminated
+srun: Force Terminated StepId=5138954.14
+Running frontier nodes=2 ranks_per_node=56 dist=hierarchical mode=uniform expected_us=10 max_upper_fanout=4
+RESULT distributor=hierarchical mode=uniform expected_us=10 nodes=2 world_size=112 max_upper_fanout=4 total_tasks=35857680 elapsed_s=20.0007 throughput_tasks_per_s=1.79282e+06
+MPICH Notice [Rank 0] [job id 5138954.15] [Sun Aug  2 04:33:15 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.15
+[2026-08-02T04:33:15.550] error: *** STEP 5138954.15 ON frontier05363 CANCELLED AT 2026-08-02T04:33:15 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 1-55: Terminated
+srun: error: frontier05364: tasks 56-111: Terminated
+srun: Force Terminated StepId=5138954.15
+Running frontier nodes=2 ranks_per_node=56 dist=hierarchical mode=uniform expected_us=100 max_upper_fanout=4
+RESULT distributor=hierarchical mode=uniform expected_us=100 nodes=2 world_size=112 max_upper_fanout=4 total_tasks=20921314 elapsed_s=20.0006 throughput_tasks_per_s=1.04603e+06
+MPICH Notice [Rank 0] [job id 5138954.16] [Sun Aug  2 04:33:36 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.16
+[2026-08-02T04:33:36.872] error: *** STEP 5138954.16 ON frontier05363 CANCELLED AT 2026-08-02T04:33:36 DUE TO TASK FAILURE ***
+srun: error: frontier05364: tasks 56-111: Terminated
+srun: error: frontier05363: tasks 1-55: Terminated
+srun: Force Terminated StepId=5138954.16
+Running frontier nodes=2 ranks_per_node=56 dist=hierarchical mode=uniform expected_us=1000 max_upper_fanout=4
+RESULT distributor=hierarchical mode=uniform expected_us=1000 nodes=2 world_size=112 max_upper_fanout=4 total_tasks=2172272 elapsed_s=20.0092 throughput_tasks_per_s=108564
+MPICH Notice [Rank 0] [job id 5138954.17] [Sun Aug  2 04:34:07 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.17
+[2026-08-02T04:34:08.954] error: *** STEP 5138954.17 ON frontier05363 CANCELLED AT 2026-08-02T04:34:08 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 1-55: Terminated
+srun: error: frontier05364: tasks 56-111: Terminated
+srun: Force Terminated StepId=5138954.17
+Running frontier nodes=2 ranks_per_node=56 dist=hierarchical_lockfree_rma mode=fixed expected_us=10 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=10 nodes=2 world_size=112 max_upper_fanout=4 total_tasks=7542555 elapsed_s=20.0002 throughput_tasks_per_s=377123
+MPICH Notice [Rank 0] [job id 5138954.18] [Sun Aug  2 04:34:45 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.18
+[2026-08-02T04:34:46.641] error: *** STEP 5138954.18 ON frontier05363 CANCELLED AT 2026-08-02T04:34:46 DUE TO TASK FAILURE ***
+srun: error: frontier05364: tasks 57-111: Terminated
+srun: error: frontier05363: tasks 2-55: Terminated
+srun: error: frontier05364: task 56: Terminated
+srun: error: frontier05363: task 1: Terminated
+srun: Force Terminated StepId=5138954.18
+Running frontier nodes=2 ranks_per_node=56 dist=hierarchical_lockfree_rma mode=fixed expected_us=100 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=100 nodes=2 world_size=112 max_upper_fanout=4 total_tasks=8105398 elapsed_s=20.0001 throughput_tasks_per_s=405269
+MPICH Notice [Rank 0] [job id 5138954.19] [Sun Aug  2 04:35:22 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.19
+[2026-08-02T04:35:23.082] error: *** STEP 5138954.19 ON frontier05363 CANCELLED AT 2026-08-02T04:35:23 DUE TO TASK FAILURE ***
+srun: error: frontier05364: tasks 57-111: Terminated
+srun: error: frontier05363: tasks 2-55: Terminated
+srun: error: frontier05364: task 56: Terminated
+srun: error: frontier05363: task 1: Terminated
+srun: Force Terminated StepId=5138954.19
+Running frontier nodes=2 ranks_per_node=56 dist=hierarchical_lockfree_rma mode=fixed expected_us=1000 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=1000 nodes=2 world_size=112 max_upper_fanout=4 total_tasks=1976093 elapsed_s=20.0002 throughput_tasks_per_s=98803.7
+MPICH Notice [Rank 0] [job id 5138954.20] [Sun Aug  2 04:35:58 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.20
+[2026-08-02T04:35:59.513] error: *** STEP 5138954.20 ON frontier05363 CANCELLED AT 2026-08-02T04:35:59 DUE TO TASK FAILURE ***
+srun: error: frontier05363: tasks 2-55: Terminated
+srun: error: frontier05364: tasks 57-111: Terminated
+srun: error: frontier05363: task 1: Terminated
+srun: error: frontier05364: task 56: Terminated
+srun: Force Terminated StepId=5138954.20
+Running frontier nodes=2 ranks_per_node=56 dist=hierarchical_lockfree_rma mode=uniform expected_us=10 max_upper_fanout=4
+srun: Step created for StepId=5138954.21
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=10 nodes=2 world_size=112 max_upper_fanout=4 total_tasks=7495453 elapsed_s=20.0002 throughput_tasks_per_s=374769
+MPICH Notice [Rank 0] [job id 5138954.21] [Sun Aug  2 04:36:35 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.21
+[2026-08-02T04:36:36.215] error: *** STEP 5138954.21 ON frontier05363 CANCELLED AT 2026-08-02T04:36:36 DUE TO TASK FAILURE ***
+srun: error: frontier05364: tasks 57-111: Terminated
+srun: error: frontier05363: tasks 2-55: Terminated
+srun: error: frontier05363: task 1: Terminated
+srun: error: frontier05364: task 56: Terminated
+srun: Force Terminated StepId=5138954.21
+Running frontier nodes=2 ranks_per_node=56 dist=hierarchical_lockfree_rma mode=uniform expected_us=100 max_upper_fanout=4
+srun: Step created for StepId=5138954.22
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=100 nodes=2 world_size=112 max_upper_fanout=4 total_tasks=8445269 elapsed_s=20.0001 throughput_tasks_per_s=422262
+MPICH Notice [Rank 0] [job id 5138954.22] [Sun Aug  2 04:37:12 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.22
+[2026-08-02T04:37:13.090] error: *** STEP 5138954.22 ON frontier05363 CANCELLED AT 2026-08-02T04:37:13 DUE TO TASK FAILURE ***
+srun: error: frontier05364: tasks 57-111: Terminated
+srun: error: frontier05363: tasks 2-55: Terminated
+srun: error: frontier05363: task 1: Terminated
+srun: error: frontier05364: task 56: Terminated
+srun: Force Terminated StepId=5138954.22
+Running frontier nodes=2 ranks_per_node=56 dist=hierarchical_lockfree_rma mode=uniform expected_us=1000 max_upper_fanout=4
+RESULT distributor=hierarchical_lockfree_rma mode=uniform expected_us=1000 nodes=2 world_size=112 max_upper_fanout=4 total_tasks=2064642 elapsed_s=20.0002 throughput_tasks_per_s=103231
+MPICH Notice [Rank 0] [job id 5138954.23] [Sun Aug  2 04:37:48 2026] [frontier05363] - Abort(0) (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+
+aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+srun: error: frontier05363: task 0: Exited with exit code 255
+srun: Terminating StepId=5138954.23
+[2026-08-02T04:37:49.563] error: *** STEP 5138954.23 ON frontier05363 CANCELLED AT 2026-08-02T04:37:49 DUE TO TASK FAILURE ***
+srun: error: frontier05364: tasks 57-111: Terminated
+srun: error: frontier05363: tasks 2-55: Terminated
+srun: error: frontier05364: task 56: Terminated
+srun: error: frontier05363: task 1: Terminated
+srun: Force Terminated StepId=5138954.23
