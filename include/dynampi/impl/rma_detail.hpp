@@ -21,6 +21,13 @@
 #include <string>
 #include <thread>
 
+// Declared directly; <windows.h>'s min/max/ERROR macros collide with the
+// distributor headers that include this one.
+#if defined(_WIN32) && defined(_MSC_VER)
+extern "C" __declspec(dllimport) unsigned int __stdcall timeBeginPeriod(unsigned int);
+#pragma comment(lib, "winmm")
+#endif
+
 #include "../mpi/mpi_communicator.hpp"
 #include "../mpi/mpi_types.hpp"
 #include "dynampi/mpi/mpi_error.hpp"
@@ -104,23 +111,26 @@ inline void read_result_bytes(const std::byte* buffer, size_t buffer_size, size_
   }
 }
 
-// Drive progress while a rank is spinning on one-sided completion.
-//
-// Under MPI_WIN_SEPARATE (MS-MPI always; some other stacks too), the
-// two-sided progress engine must run while ranks wait on remote RMA state.
-// Every LockFreeRMA primitive already flushes its target before returning,
-// so another MPI_Win_flush_all here only makes idle ranks contend with useful
-// traffic. MPI_Iprobe drives progress without adding that RMA contention.
+inline void backoff_sleep(std::chrono::microseconds duration) {
+#if defined(_WIN32) && defined(_MSC_VER)
+  // MSVC's sleep_for rounds any wait up to the global timer tick (~15.6 ms by
+  // default), so every rma_wait_idle backoff was ~300x too long: the MS-MPI
+  // ctest run took ~350 s. Raise the resolution to 1 ms once. It can't go
+  // lower: below ~1 ms, whether sleeping or spinning, the idle poll loop
+  // starves MS-MPI's passive-target progress and livelocks at >= 4 ranks.
+  [[maybe_unused]] static const auto timer_res = ::timeBeginPeriod(1);
+#endif
+  std::this_thread::sleep_for(duration);
+}
+
+// Drive progress while a rank spins on one-sided completion. Under
+// MPI_WIN_SEPARATE (MS-MPI always) the two-sided engine must run for remote RMA
+// state to advance; primitives already flush their target, so MPI_Iprobe drives
+// progress here without the extra contention of another MPI_Win_flush_all.
 inline void rma_wait_idle(MPI_Win /*window*/, MPI_Comm comm) {
   int flag = 0;
   DYNAMPI_MPI_CHECK(MPI_Iprobe, (MPI_ANY_SOURCE, MPI_ANY_TAG, comm, &flag, MPI_STATUS_IGNORE));
-#if defined(_WIN32)
-  int rank = 0;
-  DYNAMPI_MPI_CHECK(MPI_Comm_rank, (comm, &rank));
-  std::this_thread::sleep_for(std::chrono::microseconds(50 + (rank % 32) * 10));
-#else
-  std::this_thread::sleep_for(std::chrono::microseconds(50));
-#endif
+  backoff_sleep(std::chrono::microseconds(50));
 }
 
 }  // namespace detail
