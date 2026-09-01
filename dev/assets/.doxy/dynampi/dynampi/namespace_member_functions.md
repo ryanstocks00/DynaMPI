@@ -3,6 +3,11 @@
 
 
 
+## b
+
+* **backoff\_sleep** ([**dynampi::detail**](namespacedynampi_1_1detail.md))
+
+
 ## c
 
 * **check\_fixed\_size\_mpi\_type** ([**dynampi**](namespacedynampi.md))

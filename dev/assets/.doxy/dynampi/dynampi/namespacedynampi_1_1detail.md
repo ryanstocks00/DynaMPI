@@ -56,6 +56,7 @@
 
 | Type | Name |
 | ---: | :--- |
+|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**backoff\_sleep**](#function-backoff_sleep) (std::chrono::microseconds duration) <br> |
 |  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**check\_task\_capacity**](#function-check_task_capacity) ([**int64\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) start, [**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) count, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) max\_tasks, [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**char**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* distributor\_name) <br> |
 |  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**check\_variable\_batch\_read**](#function-check_variable_batch_read) ([**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) offset, [**uint64\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) nbytes, [**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) buf\_size, [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**char**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* what) <br> |
 |  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**mpi\_type\_size\_bytes**](#function-mpi_type_size_bytes) () <br> |
@@ -101,6 +102,21 @@
 
 ## Public Functions Documentation
 
+
+
+
+### function backoff\_sleep 
+
+```C++
+inline void dynampi::detail::backoff_sleep (
+    std::chrono::microseconds duration
+) 
+```
+
+
+
+
+<hr>
 
 
 
