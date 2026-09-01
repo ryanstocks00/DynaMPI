@@ -5,7 +5,7 @@ set -euo pipefail
 
 # Example usage (PBS, qsub):
 #   qsub -l select=1:ncpus=102:mpiprocs=102 -l walltime=02:00:00 launch_aurora_weak_scaling.sh
-# Or use the submit script: ./benchmark/scripts/submit_aurora_weak_scaling.sh
+# Or use the submit script: ./benchmark/aurora/submit_aurora_weak_scaling.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 APP="${APP:-${ROOT_DIR}/build/benchmark/weak_scaling_distribution_rate}"

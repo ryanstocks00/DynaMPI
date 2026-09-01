@@ -5,14 +5,14 @@ set -euo pipefail
 
 # One Slurm job per node count, mirroring submit_frontier_weak_scaling.sh.
 # Example:
-#   ./benchmark/scripts/submit_frontier_microbench.sh
-#   NODE_LIST="1 8 64" WALLTIME=00:10:00 ./benchmark/scripts/submit_frontier_microbench.sh
+#   ./benchmark/frontier/submit_frontier_microbench.sh
+#   NODE_LIST="1 8 64" WALLTIME=00:10:00 ./benchmark/frontier/submit_frontier_microbench.sh
 #   NODE_LIST="2 8 64" EXCLUDE_ROOT_NODE=1 CSV_SUFFIX=_offnode \
-#     JOB_TAG=_offnode ./benchmark/scripts/submit_frontier_microbench.sh
+#     JOB_TAG=_offnode ./benchmark/frontier/submit_frontier_microbench.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SYSTEM="frontier"
-SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_frontier_microbench.sh"
+SCRIPT="${ROOT_DIR}/benchmark/frontier/launch_frontier_microbench.sh"
 
 if [[ -z "${NODE_LIST:-}" ]]; then
   NODE_LIST="1 2 4 8 16 32 64 128 256 512 1024 2048"
