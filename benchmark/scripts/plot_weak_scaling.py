@@ -116,6 +116,18 @@ def parse_rows(paths: Sequence[str]) -> list[WeakScalingRow]:
     return rows
 
 
+def load_weak_scaling_rows(args: argparse.Namespace) -> list[WeakScalingRow]:
+    """Parse the weak-scaling CSVs and apply the shared CLI filters.
+
+    The --input/--exclude-system/--ranks-per-node handling is identical for
+    every consumer of these sweeps (plot_fanout.py builds its figures from the
+    same rows), so it lives here rather than being repeated in each main().
+    """
+    rows = parse_rows(collect_csv_paths(args.input, "weak_scaling"))
+    rows = filter_systems(rows, args.exclude_system)
+    return filter_ranks_per_node(rows, args.ranks_per_node)
+
+
 def group_rows(
     rows: Sequence[WeakScalingRow],
 ) -> dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]]:
@@ -583,10 +595,8 @@ def main() -> None:
     set_output_formats(args.format)
 
     os.makedirs(args.output_dir, exist_ok=True)
-    rows = parse_rows(collect_csv_paths(args.input, "weak_scaling"))
-    rows = filter_systems(rows, args.exclude_system)
-    rows = filter_ranks_per_node(rows, args.ranks_per_node)
-    modes = {mode for mode in args.modes}
+    rows = load_weak_scaling_rows(args)
+    modes = set(args.modes)
     rows = [row for row in rows if row["mode"] in modes]
     grouped = group_rows(rows)
 

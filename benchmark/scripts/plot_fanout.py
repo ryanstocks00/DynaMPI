@@ -23,10 +23,6 @@ from collections.abc import Sequence
 
 from plot_common import (
     add_plot_cli_args,
-    collect_csv_paths,
-    dedupe_newest,
-    filter_ranks_per_node,
-    filter_systems,
     finish_compact_node_plot,
     format_distributor_label,
     format_fanout,
@@ -36,7 +32,12 @@ from plot_common import (
     set_output_formats,
     sorted_series_xy,
 )
-from plot_weak_scaling import WeakScalingRow, format_duration, parse_rows
+from plot_weak_scaling import (
+    WeakScalingRow,
+    format_duration,
+    group_rows as group_weak_scaling_rows,
+    load_weak_scaling_rows,
+)
 
 # (system, distributor, ranks_per_node, mode, expected_ns) -> fanout -> [(nodes, rate)]
 PlotKey = tuple[str, str, int, str, int]
@@ -44,26 +45,21 @@ Grouped = dict[PlotKey, dict[int, list[tuple[int, float]]]]
 
 
 def group_rows(rows: Sequence[WeakScalingRow]) -> Grouped:
-    newest = dedupe_newest(
-        rows,
-        lambda row: (
-            row["system"],
-            row["distributor"],
-            row["mode"],
-            row["expected_ns"],
-            row["ranks_per_node"],
-            row["fanout"],
-            row["nodes"],
-        ),
-        "throughput",
-    )
+    """Re-nest the weak-scaling grouping as fan-out curves per plot config.
+
+    plot_weak_scaling.group_rows() already keeps the newest row per
+    (system, distributor, mode, duration, ranks/node, fanout, nodes); this
+    just drops the non-hierarchical rows and pivots fan-out out of the key so
+    each figure holds one curve per setting.
+    """
     grouped: Grouped = defaultdict(lambda: defaultdict(list))
-    for key, (throughput, _recency) in newest.items():
-        system, distributor, mode, expected_ns, ranks_per_node, fanout, nodes = key
+    for (system, distributor, mode, expected_ns, ranks_per_node, fanout), points in (
+        group_weak_scaling_rows(rows).items()
+    ):
         if "hierarchical" not in distributor:
             continue
         plot_key: PlotKey = (system, distributor, ranks_per_node, mode, expected_ns)
-        grouped[plot_key][fanout].append((nodes, throughput))
+        grouped[plot_key][fanout].extend(points)
     return grouped
 
 
@@ -116,10 +112,7 @@ def main() -> None:
     args = parser.parse_args()
     set_output_formats(args.format)
 
-    rows = parse_rows(collect_csv_paths(args.input, "weak_scaling"))
-    rows = filter_systems(rows, args.exclude_system)
-    rows = filter_ranks_per_node(rows, args.ranks_per_node)
-    grouped = group_rows(rows)
+    grouped = group_rows(load_weak_scaling_rows(args))
 
     drawn = 0
     for key, series in sorted(grouped.items()):
