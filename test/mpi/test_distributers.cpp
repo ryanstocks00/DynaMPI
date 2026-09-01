@@ -36,9 +36,6 @@ struct DistributerTypeWrapper {
   template <typename TaskT, typename ResultT, typename... Options>
   using type = TT<TaskT, ResultT, Options...>;
 
-  static constexpr bool use_immediate_recv = false;
-  static constexpr size_t max_result_size = 1024;
-
   template <typename TaskT, typename ResultT, typename... Options>
   static typename TT<TaskT, ResultT, Options...>::Config get_config() {
     return typename TT<TaskT, ResultT, Options...>::Config{};
@@ -50,9 +47,6 @@ template <bool ManagerPerNode>
 struct HierarchicalDistributerTypeWrapper {
   template <typename TaskT, typename ResultT, typename... Options>
   using type = dynampi::HierarchicalWorkDistributor<TaskT, ResultT, Options...>;
-
-  static constexpr bool use_immediate_recv = false;
-  static constexpr size_t max_result_size = 1024;
 
   template <typename TaskT, typename ResultT, typename... Options>
   static typename dynampi::HierarchicalWorkDistributor<TaskT, ResultT, Options...>::Config
@@ -86,11 +80,6 @@ class DynamicDistribution : public ::testing::Test {
     ConfigT opts{};
     opts.comm = MPI_COMM_WORLD;
     opts.auto_run_workers = auto_run;
-
-    if constexpr (T::use_immediate_recv) {
-      opts.use_immediate_recv = true;
-      opts.max_result_size = T::max_result_size;
-    }
 
     return DistT(worker_task, opts);
   }
@@ -521,7 +510,7 @@ TYPED_TEST(DynamicDistribution, AutoRunWorkers) {
   // Workers run automatically in constructor, no need to call run_worker()
 }
 
-// gather_once() is the non-looping snapshot API used by the strong-scaling
+// gather_once() is the non-looping snapshot API used by the weak-scaling
 // bench to avoid per-retry busy-spin harvest. Only LockFreeRMA exposes
 // it.
 //

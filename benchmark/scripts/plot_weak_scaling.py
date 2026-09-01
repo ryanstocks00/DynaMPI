@@ -5,10 +5,7 @@
 
 These sweeps are weak scaling: the manager keeps every worker supplied for a
 fixed wall-clock window, so the work offered grows in proportion to the node
-count and the ideal curve is linear in nodes. The driver, launch scripts and
-result CSVs still carry the older ``strong_scaling`` name, so
-``collect_csv_paths`` accepts either spelling as input; only the plots this
-script writes are named ``weak_scaling_*``.
+count and the ideal curve is linear in nodes.
 """
 
 import argparse
@@ -20,6 +17,8 @@ from typing import TypedDict
 import matplotlib.pyplot as plt
 
 from plot_common import (
+    COMPACT_LEGEND_STYLE,
+    PANEL_HSPACE,
     Recency,
     add_light_grid,
     add_plot_cli_args,
@@ -31,12 +30,14 @@ from plot_common import (
     finish_compact_node_plot,
     format_distributor_label,
     ieee_figure,
+    ieee_panel_figure,
     iter_csv_rows,
     legend_avoiding_data,
     log_padded_limits,
-    normalize_mode,
     plot_node_series,
+    SERIES_MARKERSIZE,
     save_figure,
+    set_output_formats,
     series_color,
     set_log_node_axes,
     sorted_series_xy,
@@ -115,6 +116,18 @@ def parse_rows(paths: Sequence[str]) -> list[WeakScalingRow]:
     return rows
 
 
+def load_weak_scaling_rows(args: argparse.Namespace) -> list[WeakScalingRow]:
+    """Parse the weak-scaling CSVs and apply the shared CLI filters.
+
+    The --input/--exclude-system/--ranks-per-node handling is identical for
+    every consumer of these sweeps (plot_fanout.py builds its figures from the
+    same rows), so it lives here rather than being repeated in each main().
+    """
+    rows = parse_rows(collect_csv_paths(args.input, "weak_scaling"))
+    rows = filter_systems(rows, args.exclude_system)
+    return filter_ranks_per_node(rows, args.ranks_per_node)
+
+
 def group_rows(
     rows: Sequence[WeakScalingRow],
 ) -> dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]]:
@@ -123,7 +136,7 @@ def group_rows(
         lambda row: (
             row["system"],
             row["distributor"],
-            normalize_mode(row["mode"]),
+            row["mode"],
             row["expected_ns"],
             row["ranks_per_node"],
             row["fanout"],
@@ -184,7 +197,7 @@ def per_distributor_ylimits(
     ), points in grouped.items():
         if (system, distributor, ranks_per_node, fanout) not in plotted:
             continue
-        key = (system, ranks_per_node, normalize_mode(mode))
+        key = (system, ranks_per_node, mode)
         buckets[key].extend(throughput for _, throughput in points)
     return {
         key: limits
@@ -231,7 +244,7 @@ def comparison_ylimits(
     ), points in grouped.items():
         if not comparison_series_kept(distributor, fanout):
             continue
-        key = (normalize_mode(mode), expected_ns, layout_class(ranks_per_node))
+        key = (mode, expected_ns, layout_class(ranks_per_node))
         buckets[key].extend(throughput for _, throughput in points)
     return {
         key: limits
@@ -250,7 +263,7 @@ def plot_distributor(
     image_format: str,
     ylimits: dict[tuple[str, int, str], tuple[float, float]] | None = None,
 ) -> None:
-    for mode in ("fixed", "random"):
+    for mode in ("fixed", "uniform"):
         with ieee_figure() as (fig, ax):
             series = []
             all_nodes: set[int] = set()
@@ -265,7 +278,7 @@ def plot_distributor(
                 if (
                     sys_name != system
                     or dist != distributor
-                    or normalize_mode(mode_name) != mode
+                    or mode_name != mode
                     or rpn != ranks_per_node
                     or series_fanout != fanout
                 ):
@@ -284,7 +297,8 @@ def plot_distributor(
 
             for idx, (expected_ns, nodes, throughput) in enumerate(series_sorted):
                 label = format_duration_label(expected_ns)
-                line = plot_node_series(ax, idx, nodes, throughput, label)
+                line = plot_node_series(ax, idx, nodes, throughput, label,
+                                        markersize=SERIES_MARKERSIZE)
                 handles.append(line)
                 labels.append(label)
 
@@ -389,7 +403,7 @@ def plot_distributor_comparison(
         ), points in grouped.items():
             if (
                 sys_name != system
-                or normalize_mode(mode_name) != mode
+                or mode_name != mode
                 or series_expected_ns != expected_ns
                 or rpn != ranks_per_node
             ):
@@ -418,7 +432,8 @@ def plot_distributor_comparison(
         for dist, fanout, nodes, throughput in series_sorted:
             label = format_distributor_label(dist, fanout)
             color_idx = distributor_series_index(dist, fanout)
-            line = plot_node_series(ax, color_idx, nodes, throughput, label)
+            line = plot_node_series(ax, color_idx, nodes, throughput, label,
+                                    markersize=SERIES_MARKERSIZE)
             handles.append(line)
             labels.append(label)
 
@@ -441,6 +456,126 @@ def plot_distributor_comparison(
         save_figure(fig, mode_dir, filename)
 
 
+def comparison_panel_series(
+    system: str,
+    mode: str,
+    expected_ns: int,
+    ranks_per_node: int,
+    grouped: dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]],
+) -> list[tuple[str, int, list[int], list[float]]]:
+    """The curves one comparison panel draws, fastest at the largest node count first."""
+    series = []
+    for (sys_name, dist, mode_name, series_ns, rpn, fanout), points in grouped.items():
+        if (
+            sys_name != system
+            or mode_name != mode
+            or series_ns != expected_ns
+            or rpn != ranks_per_node
+            or not comparison_series_kept(dist, fanout)
+        ):
+            continue
+        nodes, throughput = sorted_series_xy(points)
+        series.append((dist, fanout, nodes, throughput))
+
+    def final_throughput(item: tuple[str, int, list[int], list[float]]) -> tuple[int, float]:
+        _, _, nodes, throughput = item
+        largest = max(range(len(nodes)), key=lambda i: nodes[i])
+        return (nodes[largest], throughput[largest])
+
+    return sorted(series, key=final_throughput, reverse=True)
+
+
+def plot_comparison_panels(
+    mode: str,
+    expected_ns: int,
+    layouts: Sequence[tuple[str, int]],
+    grouped: dict[tuple[str, str, str, int, int, int], list[tuple[int, float]]],
+    output_dir: str,
+    image_format: str,
+    ylimits: dict[tuple[str, int, str], tuple[float, float]] | None = None,
+) -> None:
+    """The cross-machine comparison as stacked panels over one shared node axis.
+
+    The pair is read as a single comparison, so it is drawn as a single
+    figure: sharing the x axis drops a duplicate label and tick row, and the
+    shared y range puts both machines on one scale. The legend goes in the
+    first panel only, since every panel plots the same series.
+    """
+    panels = [
+        (system, rpn, comparison_panel_series(system, mode, expected_ns, rpn, grouped))
+        for system, rpn in layouts
+    ]
+    panels = [panel for panel in panels if len(panel[2]) >= 2]
+    if len(panels) < 2:
+        return
+
+    with ieee_panel_figure(len(panels)) as (fig, axes):
+        for index, ((system, ranks_per_node, series), ax) in enumerate(zip(panels, axes)):
+            all_nodes: set[int] = set()
+            handles = []
+            labels = []
+            for dist, fanout, nodes, throughput in series:
+                all_nodes.update(nodes)
+                label = format_distributor_label(dist, fanout)
+                line = plot_node_series(ax, distributor_series_index(dist, fanout), nodes,
+                                        throughput, label,
+                                        markersize=SERIES_MARKERSIZE)
+                handles.append(line)
+                labels.append(label)
+
+            # Reference line for the hierarchical family only. The two
+            # families do not share a worker count: reserving one node manager
+            # per node leaves the hierarchical distributors (rpn-1) workers per
+            # node against the flat designs' rpn, so a single line cannot serve
+            # both. The hierarchical one is drawn because it bounds the series
+            # still scaling at the right-hand edge.
+            if all_nodes and expected_ns > 0 and ranks_per_node > 1:
+                ideal_nodes = sorted(all_nodes)
+                ideal = [
+                    max(1, n * (ranks_per_node - 1) - 1) * 1e9 / expected_ns
+                    for n in ideal_nodes
+                ]
+                (ideal_handle,) = ax.plot(
+                    ideal_nodes, ideal, linestyle='--', color='0.4',
+                    linewidth=1.0, zorder=0, label="Hierarchical ideal",
+                )
+                handles.append(ideal_handle)
+                labels.append("Hierarchical ideal")
+
+            ax.set_ylabel("Tasks per second")
+            set_log_node_axes(ax, all_nodes)
+            limits = (ylimits or {}).get((mode, expected_ns, layout_class(ranks_per_node)))
+            if limits is not None:
+                ax.set_ylim(limits)
+            add_light_grid(ax)
+            # Named in the panel rather than a sub-caption: the machine is
+            # what the reader needs while looking at the curves.
+            ax.annotate(
+                f"({chr(ord('a') + index)}) {system.capitalize()}, {ranks_per_node} ranks/node",
+                (0.98, 0.03),
+                xycoords="axes fraction",
+                ha="right",
+                va="bottom",
+                fontsize=8,
+            )
+            if index == 0:
+                legend_avoiding_data(
+                    ax, handles, labels, locations=("upper left",), **COMPACT_LEGEND_STYLE
+                )
+            if index == len(panels) - 1:
+                ax.set_xlabel("Nodes")
+
+        duration = format_duration(expected_ns).replace(" ", "")
+        mode_dir = os.path.join(output_dir, mode)
+        os.makedirs(mode_dir, exist_ok=True)
+        save_figure(
+            fig,
+            mode_dir,
+            f"weak_scaling_compare_panels_{duration}.{image_format}",
+            hspace=PANEL_HSPACE,
+        )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Plot weak scaling distribution throughput.")
     add_plot_cli_args(parser)
@@ -452,18 +587,17 @@ def main() -> None:
     parser.add_argument(
         "--modes",
         nargs="+",
-        choices=["fixed", "random"],
-        default=["fixed", "random"],
+        choices=["fixed", "uniform"],
+        default=["fixed", "uniform"],
         help="Task-time modes to plot into separate subdirectories (default: both)",
     )
     args = parser.parse_args()
+    set_output_formats(args.format)
 
     os.makedirs(args.output_dir, exist_ok=True)
-    rows = parse_rows(collect_csv_paths(args.input, ("weak_scaling", "strong_scaling")))
-    rows = filter_systems(rows, args.exclude_system)
-    rows = filter_ranks_per_node(rows, args.ranks_per_node)
-    modes = {normalize_mode(mode) for mode in args.modes}
-    rows = [row for row in rows if normalize_mode(row["mode"]) in modes]
+    rows = load_weak_scaling_rows(args)
+    modes = set(args.modes)
+    rows = [row for row in rows if row["mode"] in modes]
     grouped = group_rows(rows)
 
     configs = sorted(
@@ -486,7 +620,7 @@ def main() -> None:
             fanout,
             grouped,
             args.output_dir,
-            args.format,
+            args.format[0],
             ylimits=distributor_ylimits,
         )
 
@@ -496,7 +630,7 @@ def main() -> None:
             {
                 (
                     row["system"],
-                    normalize_mode(row["mode"]),
+                    row["mode"],
                     row["expected_ns"],
                     row["ranks_per_node"],
                 )
@@ -512,7 +646,25 @@ def main() -> None:
                 ranks_per_node,
                 grouped,
                 args.output_dir,
-                args.format,
+                args.format[0],
+                ylimits=compare_ylimits,
+            )
+
+        # One stacked figure per (mode, duration, layout class): the matched
+        # cross-machine pair the prose reads together.
+        panel_groups: dict[tuple[str, int, str], list[tuple[str, int]]] = defaultdict(list)
+        for system, mode, expected_ns, ranks_per_node in compare_keys:
+            key = (mode, expected_ns, layout_class(ranks_per_node))
+            if (system, ranks_per_node) not in panel_groups[key]:
+                panel_groups[key].append((system, ranks_per_node))
+        for (mode, expected_ns, _layout), layouts in sorted(panel_groups.items()):
+            plot_comparison_panels(
+                mode,
+                expected_ns,
+                layouts,
+                grouped,
+                args.output_dir,
+                args.format[0],
                 ylimits=compare_ylimits,
             )
 

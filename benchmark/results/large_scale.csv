@@ -1,0 +1,4 @@
+system,distributor,mode,expected_us,duration_s,nodes,world_size,workers,max_upper_fanout,total_tasks,elapsed_s,throughput_tasks_per_s,job_id
+frontier,hierarchical_lockfree_rma,uniform,1000,20,8192,73728,73727,-1,586000000,20.0142,2.92792e+07,5176094
+frontier,hierarchical_lockfree_rma,uniform,5000,20,8192,73728,73727,-1,189799843,20.0013,9.48935e+06,5261415
+frontier,hierarchical_lockfree_rma,uniform,10000,20,8192,73728,73727,-1,105906592,20.0013,5.29498e+06,5261416

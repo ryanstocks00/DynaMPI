@@ -68,7 +68,7 @@ for nodes in "${NODE_LIST[@]}"; do
     total_ranks=$((nodes * ranks_per_node))
     for dist in "${DISTRIBUTIONS[@]}"; do
       # Naive is known not to scale well on Aurora at 2048 nodes and above
-      # (see the same restriction in launch_aurora_strong_scaling.sh).
+      # (see the same restriction in launch_aurora_weak_scaling.sh).
       if [[ "${SYSTEM}" == "aurora" && "${nodes}" -ge 2048 && "${dist}" == "naive" ]]; then
         continue
       fi

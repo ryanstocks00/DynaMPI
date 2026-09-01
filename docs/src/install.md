@@ -107,7 +107,7 @@ environment variable).
 cmake -B build -DDYNAMPI_BUILD_BENCHMARKS=ON
 cmake --build build -j
 
-mpirun -n 64 ./build/benchmark/strong_scaling_distribution_rate \
+mpirun -n 64 ./build/benchmark/weak_scaling_distribution_rate \
   -D hierarchical -t 100 -d 10
 ```
 

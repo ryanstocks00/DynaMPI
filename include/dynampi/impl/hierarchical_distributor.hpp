@@ -38,8 +38,6 @@ class HierarchicalWorkDistributor : public BaseWorkDistributor<TaskT, ResultT, O
     MPI_Comm comm = MPI_COMM_WORLD;
     int manager_rank = 0;
     bool auto_run_workers = true;
-    // Unused; kept for API compatibility with older Config initializers.
-    std::optional<size_t> message_batch_size = std::nullopt;
     std::optional<int> max_workers_per_manager = std::nullopt;
 
     // Tasks requested per subtree leaf. Prefer pipeline_depth for latency

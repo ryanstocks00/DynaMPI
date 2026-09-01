@@ -33,10 +33,6 @@ class NaiveWorkDistributor {
     MPI_Comm comm = MPI_COMM_WORLD;
     int manager_rank = 0;
     bool auto_run_workers = true;
-    bool use_immediate_recv = false;
-    int max_result_size = 1024;  // Maximum expected size for RESULT messages when using immediate
-                                 // recv. Must be large enough to hold the largest expected RESULT
-                                 // message. If a message exceeds this size, behavior is undefined.
 
     // If true (default), run_tasks()/finish_remaining_tasks() throw
     // dynampi::TaskFailure on the manager once a task has thrown. Set false to

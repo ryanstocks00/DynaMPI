@@ -16,6 +16,8 @@ core.*
 __pycache__/
 *.png
 slurm-*.out
+# ...except the EXESS case-study logs, which are the evidence for the paper's Section VII-D.
+!benchmark/exess/**/slurm-*.out
 mpi_pair_bench*.csv
 benchmark/plots/
 

@@ -50,16 +50,14 @@ _JOB_ID_RE = re.compile(r"(?:^|[-_/])(\d{6,})(?:\.[A-Za-z]+)?(?:/|$)")
 
 RowT = TypeVar("RowT", bound=Mapping[str, Any])
 KeyT = TypeVar("KeyT")
-Recency = tuple[int, int, float]
+Recency = tuple[int, float]
 
 
 def collect_csv_paths(inputs: Sequence[str], name_substring: str | Sequence[str]) -> list[str]:
     """Collect CSVs whose basename contains any of the given substrings.
 
-    Accepts several needles because the throughput results predate the
-    strong- to weak-scaling rename: the benchmark driver and launch scripts
-    still emit ``strong_scaling_<system>.csv``, while the plots they feed are
-    named ``weak_scaling_*``.
+    Several needles are accepted because one plot can draw on more than one
+    sweep's output.
     """
     needles = [name_substring.lower()] if isinstance(name_substring, str) else [
         needle.lower() for needle in name_substring
@@ -86,17 +84,16 @@ def collect_csv_paths(inputs: Sequence[str], name_substring: str | Sequence[str]
 
 
 def path_recency(path: str, file_mtime: float) -> Recency:
-    """Return a comparable recency key: (final_boost, job_id, mtime).
+    """Return a comparable recency key: (job_id, mtime).
 
     Job id dominates mtime so a fresh git checkout's near-identical timestamps
     cannot prefer an older PBS result over a later one.
     """
     normalized = path.replace("\\", "/")
-    final_boost = 1 if "/final-" in normalized or normalized.startswith("final-") else 0
     job_id = 0
     for match in _JOB_ID_RE.finditer(normalized):
         job_id = max(job_id, int(match.group(1)))
-    return (final_boost, job_id, file_mtime)
+    return (job_id, file_mtime)
 
 
 def iter_csv_rows(paths: Sequence[str]) -> Iterator[tuple[dict[str, str], str, float, Recency]]:
@@ -108,10 +105,14 @@ def iter_csv_rows(paths: Sequence[str]) -> Iterator[tuple[dict[str, str], str, f
     """
     for path in paths:
         file_mtime = os.path.getmtime(path)
-        recency = path_recency(path, file_mtime)
+        file_recency = path_recency(path, file_mtime)
         with open(path, "r", encoding="utf-8") as handle:
             reader = csv.DictReader(handle)
             for row in reader:
+                # Consolidated files carry each row's job id, so recency stays
+                # per-row once many jobs share one path.
+                job_id = (row.get("job_id") or "").strip()
+                recency = (int(job_id), file_mtime) if job_id.isdigit() else file_recency
                 yield row, path, file_mtime, recency
 
 
@@ -120,11 +121,7 @@ def dedupe_newest(
     config_key: Callable[[RowT], KeyT],
     value_key: str,
 ) -> dict[KeyT, tuple[Any, Recency]]:
-    """Keep the newest row per configuration key.
-
-    Prefer ``final-*`` result dirs, then the highest embedded job id, then
-    later file mtimes.
-    """
+    """Keep the newest row per configuration key: highest job id, then mtime."""
     newest: dict[KeyT, tuple[Any, Recency]] = {}
     for row in rows:
         key = config_key(row)
@@ -135,10 +132,6 @@ def dedupe_newest(
         if key not in newest or recency > newest[key][1]:
             newest[key] = value
     return newest
-
-
-def normalize_mode(mode: str) -> str:
-    return "random" if mode == "poisson" else mode
 
 
 def format_fanout(fanout: int) -> str:
@@ -392,6 +385,7 @@ def plot_node_series(
     label: str,
     *,
     linewidth: float | None = None,
+    markersize: float | None = None,
 ) -> Any:
     """Plot one node-count series in the shared marker/color style, returning its handle."""
     kwargs: dict[str, Any] = {
@@ -404,6 +398,8 @@ def plot_node_series(
     }
     if linewidth is not None:
         kwargs["linewidth"] = linewidth
+    if markersize is not None:
+        kwargs["markersize"] = markersize * MARKER_SIZE_SCALE.get(kwargs["marker"], 1.0)
     (line,) = ax.plot(nodes, values, **kwargs)
     return line
 
@@ -490,7 +486,11 @@ def add_plot_cli_args(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument("--output-dir", required=True, help="Directory to write output plots")
     parser.add_argument(
-        "--format", default="png", choices=["png", "pdf", "svg"], help="Output image format"
+        "--format",
+        nargs="+",
+        default=["png"],
+        choices=["png", "pdf", "svg"],
+        help="Output image format(s); pass several to write each (default: png)",
     )
     parser.add_argument(
         "--ranks-per-node",
@@ -527,6 +527,52 @@ def filter_systems(rows: Sequence[RowT], exclude_systems: Sequence[str]) -> list
     return [row for row in rows if str(row["system"]).lower() not in excluded]
 
 
+# Marker size for the plotted series. Below the 6.0 the style supplies: these
+# figures carry up to six overlapping series, and at full size the markers
+# merge into a band wherever the curves converge.
+SERIES_MARKERSIZE = 5.2
+
+# markersize sets a marker's bounding diameter, not its area, so shapes that
+# fill less of that box read smaller at the same nominal size. A regular
+# pentagon covers ~59% of the square its size defines against a disc's ~79%,
+# which is visible against the other five shapes. Only that one is corrected:
+# equalising area outright would scale the triangles by ~1.25 and they would
+# then read as oversized, since open markers are judged on extent as much as
+# on fill.
+MARKER_SIZE_SCALE = {'p': 1.15}
+
+# Gap between stacked panels, as a fraction of panel height. Panels sharing
+# an x axis need no room for a label between them, so this is well below
+# matplotlib's 0.2 default.
+PANEL_HSPACE = 0.04
+
+# Keys are left untyped because matplotlib 3.11 narrowed RcParams to a Literal
+# union of valid rc keys, which a plain dict[str, ...] does not satisfy. Earlier
+# versions type it as dict[str, Any]; Mapping[Any, Any] checks against both.
+# Matplotlib's default ``pdf.fonttype`` of 3 embeds Type 3 fonts, which IEEE
+# PDF eXpress rejects, so the figures ask for TrueType instead. That alone is
+# not enough: it would keep ``no-latex``'s bundled cmr10, whose outlines
+# rasterize noticeably lighter than the Type 3 charprocs they replace --
+# washed-out labels in poppler and Ghostscript alike. STIX renders at full
+# weight, embeds cleanly, and being Times-metric it sits better with the
+# IEEEtran body text than Computer Modern did.
+IEEE_RC_PARAMS: Mapping[Any, Any] = {
+    "font.size": 10,
+    "axes.labelsize": 10,
+    "xtick.labelsize": 9,
+    "ytick.labelsize": 9,
+    "legend.fontsize": 8,
+    "pdf.fonttype": 42,
+    "ps.fonttype": 42,
+    "font.serif": ["STIXGeneral", "DejaVu Serif"],
+    "mathtext.fontset": "stix",
+}
+
+# ``no-latex`` keeps Science/IEEE styling without requiring a TeX installation;
+# IEEE_RC_PARAMS replaces its cmr10 font choice above.
+IEEE_STYLES = ("science", "ieee", "no-latex")
+
+
 @contextmanager
 def ieee_figure() -> Iterator[tuple[Figure, Axes]]:
     """Open a (fig, ax) pair styled and sized for the paper's IEEE figures.
@@ -535,18 +581,47 @@ def ieee_figure() -> Iterator[tuple[Figure, Axes]]:
     these scripts, so each caller only has to write what differs: the data,
     the labels, the legend.
     """
-    with plt.style.context(['science', 'ieee']):
-        plt.rcParams.update(
-            {
-                "font.size": 10,
-                "axes.labelsize": 10,
-                "xtick.labelsize": 9,
-                "ytick.labelsize": 9,
-                "legend.fontsize": 8,
-            }
-        )
+    with plt.style.context(IEEE_STYLES):
+        plt.rcParams.update(IEEE_RC_PARAMS)
         fig, ax = plt.subplots(figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT * 0.7))
         yield fig, ax
+
+
+@contextmanager
+def ieee_panel_figure(nrows: int, *, sharey: bool = True) -> Iterator[tuple[Figure, list[Axes]]]:
+    """Same style as ieee_figure(), as ``nrows`` panels stacked in one column.
+
+    The panels always share the x axis, so only the bottom one carries tick
+    labels and an axis label -- which is the point: a stacked pair costs less
+    height than two separate figures and reads as the single comparison it
+    is. ``sharey`` additionally pins them to one vertical scale, which suits
+    panels measuring the same quantity and not ones an order of magnitude
+    apart.
+    """
+    with plt.style.context(IEEE_STYLES):
+        plt.rcParams.update(IEEE_RC_PARAMS)
+        fig, axes = plt.subplots(
+            nrows,
+            1,
+            sharex=True,
+            sharey=sharey,
+            figsize=(IEEE_FIG_WIDTH, IEEE_FIG_HEIGHT * 0.6 * nrows),
+        )
+        yield fig, list(np.atleast_1d(axes))
+
+
+# Formats save_figure() writes. A figure is laid out and rendered once and
+# then encoded to each, so asking for pdf and png together costs one extra
+# encode rather than a second full run of the script. Empty means "whatever
+# extension the caller put on the filename", which is the behaviour every
+# call site had before this was configurable.
+_OUTPUT_FORMATS: tuple[str, ...] = ()
+
+
+def set_output_formats(formats: Sequence[str]) -> None:
+    """Set the formats save_figure() writes, preserving order and dropping repeats."""
+    global _OUTPUT_FORMATS
+    _OUTPUT_FORMATS = tuple(dict.fromkeys(formats))
 
 
 def save_figure(
@@ -555,15 +630,26 @@ def save_figure(
     filename: str,
     *,
     tight_layout_rect: tuple[float, float, float, float] | None = None,
+    hspace: float | None = None,
 ) -> None:
     if tight_layout_rect is not None:
         fig.tight_layout(rect=tight_layout_rect)
     else:
         fig.tight_layout()
+    # After tight_layout, which sets its own spacing: panels sharing an x axis
+    # need no room between them for a label, so the default gap is dead space.
+    if hspace is not None:
+        fig.subplots_adjust(hspace=hspace)
     # Crop hard to the drawn content: any border baked into the image becomes
     # a gap between the figure and its caption once the file is included in
     # the paper, on top of whatever the document class already adds.
-    fig.savefig(
-        os.path.join(output_dir, filename), dpi=300, bbox_inches='tight', pad_inches=0.01
-    )
+    stem, extension = os.path.splitext(filename)
+    formats = _OUTPUT_FORMATS or (extension.lstrip("."),)
+    for image_format in formats:
+        fig.savefig(
+            os.path.join(output_dir, f"{stem}.{image_format}"),
+            dpi=300,
+            bbox_inches='tight',
+            pad_inches=0.01,
+        )
     plt.close(fig)

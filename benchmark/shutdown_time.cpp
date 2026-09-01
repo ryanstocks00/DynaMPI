@@ -111,7 +111,7 @@ static BenchmarkResult run_benchmark([[maybe_unused]] const BenchmarkOptions& op
     // Must match the is_root_manager() start path (not rank==0 alone).
     bool timed_this_iteration = false;
     {
-      // No max_tasks override needed here (unlike strong_scaling_distribution_rate.cpp):
+      // No max_tasks override needed here (unlike weak_scaling_distribution_rate.cpp):
       // this benchmark never calls insert_task/insert_tasks, so lockfree's
       // task-table capacity is never exercised regardless of its size --
       // each iteration constructs a fresh, empty distributor. The library

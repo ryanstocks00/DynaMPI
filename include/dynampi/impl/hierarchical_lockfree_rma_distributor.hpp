@@ -71,7 +71,6 @@ class LockFreeRMALevel {
   }
 
   bool is_owner() const { return m_comm.rank() == m_config.owner_rank; }
-  int comm_rank() const { return m_comm.rank(); }
   int comm_size() const { return m_comm.size(); }
   int claim_width() const { return m_claim_width; }
 
@@ -127,6 +126,10 @@ class LockFreeRMALevel {
       local_store_i64(TOTAL_OFF, m_total_tasks);
       return true;
     }
+    // Land the payload and log-clear Puts before the counter that makes them
+    // claimable moves; see the same barrier in LockFreeRMAWorkDistributor.
+    // The local_only path above needs none: it writes the window directly.
+    flush_remote();
     m_total_tasks += count;
     int64_t total_out = 0;
     post_fetch_and_op(m_total_tasks, total_out, TOTAL_OFF, MPI_REPLACE);
@@ -136,7 +139,6 @@ class LockFreeRMALevel {
 
   void mark_finished() {
     assert(is_owner());
-    m_owner_marked_finished = true;
     if (local_only()) {
       local_store_i64(FINISHED_OFF, 1);
     } else {
@@ -145,11 +147,6 @@ class LockFreeRMALevel {
       flush_remote();
     }
     idle_wait();
-  }
-
-  bool owner_marked_finished() const {
-    assert(is_owner());
-    return m_owner_marked_finished;
   }
 
   size_t owner_published_count() const {
@@ -406,7 +403,6 @@ class LockFreeRMALevel {
   size_t m_error_base = 0;
 
   int64_t m_total_tasks = 0;
-  bool m_owner_marked_finished = false;
   size_t m_owner_collected_count = 0;
   int64_t m_owner_unordered_completed = 0;
 
