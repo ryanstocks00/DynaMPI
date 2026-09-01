@@ -5,14 +5,14 @@ set -euo pipefail
 
 # Submit one PBS job per node count to avoid long serial waits.
 # Example:
-#   ./benchmark/scripts/submit_aurora_shutdown.sh
+#   ./benchmark/aurora/submit_aurora_shutdown.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=benchmark/scripts/aurora_queue_utils.sh
+# shellcheck source=benchmark/aurora/aurora_queue_utils.sh
 source "${SCRIPT_DIR}/aurora_queue_utils.sh"
 SYSTEM="aurora"
-SCRIPT="${ROOT_DIR}/benchmark/scripts/launch_aurora_shutdown.sh"
+SCRIPT="${ROOT_DIR}/benchmark/aurora/launch_aurora_shutdown.sh"
 
 IFS=' ' read -r -a NODE_LIST <<< "${NODE_LIST:-1 2 4 8 16 32 64 128 256 512}"
 IFS=' ' read -r -a QSUB_ARGS <<< "${QSUB_ARGS:-}"

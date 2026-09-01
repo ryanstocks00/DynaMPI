@@ -5,7 +5,7 @@ set -euo pipefail
 
 # Example usage (PBS, qsub):
 #   qsub -l select=512:ncpus=102:mpiprocs=102 -l walltime=00:15:00 launch_aurora_shutdown.sh
-# Or use the submit script: ./benchmark/scripts/submit_aurora_shutdown.sh
+# Or use the submit script: ./benchmark/aurora/submit_aurora_shutdown.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 APP="${APP:-${ROOT_DIR}/build/benchmark/shutdown_time}"

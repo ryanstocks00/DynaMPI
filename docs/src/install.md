@@ -112,6 +112,8 @@ mpirun -n 64 ./build/benchmark/weak_scaling_distribution_rate \
 ```
 
 Benchmarks fetch `cxxopts` at configure time for argument parsing.  See
-[Benchmarking](implementations.md#benchmarking) for what each driver measures, and
-`benchmark/scripts/` for Frontier and Aurora launch scripts plus plotting
-helpers (`pip install -r benchmark/scripts/requirements.txt`).
+[Benchmarking](implementations.md#benchmarking) for what each driver measures.
+Site launch and submit scripts live under `benchmark/frontier/` and
+`benchmark/aurora/`; machine-independent helpers, including the plotting
+scripts, stay in `benchmark/scripts/`
+(`pip install -r benchmark/scripts/requirements.txt`).

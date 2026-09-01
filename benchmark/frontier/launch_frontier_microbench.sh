@@ -12,7 +12,7 @@ set -euo pipefail
 # sweep lands in one file per job.
 #
 # Example (inside an salloc/sbatch allocation):
-#   NODE_LIST="1 2 4 8" ./benchmark/scripts/launch_frontier_microbench.sh
+#   NODE_LIST="1 2 4 8" ./benchmark/frontier/launch_frontier_microbench.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BUILD_DIR="${BUILD_DIR:-${ROOT_DIR}/build}"
@@ -53,9 +53,6 @@ if [[ -z "${LAUNCHER}" ]]; then
     exit 1
   fi
 fi
-
-# FI_CXI_RX_MATCH_MODE is deliberately left unset so the fabric uses its
-# default (hardware) matching, as in production microbenchmark runs.
 
 EXCLUDE_ARGS=()
 if [[ "${EXCLUDE_ROOT_NODE}" == "1" ]]; then
