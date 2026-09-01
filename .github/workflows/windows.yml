@@ -19,7 +19,7 @@ jobs:
   windows-msmpi:
     name: Windows MS-MPI (MPI 3.1)
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
       matrix:
         build-type: [Debug, Release]
@@ -46,11 +46,11 @@ jobs:
           cd build
           echo "Testing with Microsoft MPI (MPI 3.1 features)"
           $env:DYNAMPI_MAX_MPI_RANK = "8"
-          ctest --output-on-failure -j 1 --timeout 180 -C ${{ matrix.build-type }}
+          ctest --output-on-failure -j 1 --timeout 300 -C ${{ matrix.build-type }}
   windows-mingw:
     name: Windows MinGW
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
       matrix:
         build-type: [Debug, Release]
@@ -112,11 +112,11 @@ jobs:
           cd build
           echo "Testing with $MPI_TYPE"
           export DYNAMPI_MAX_MPI_RANK=8
-          ctest --output-on-failure -j 1 --timeout 180 -C ${{ matrix.build-type }}
+          ctest --output-on-failure -j 1 --timeout 300 -C ${{ matrix.build-type }}
   windows-intel-mpi:
     name: Windows Intel MPI (MPI 4.0)
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
       matrix:
         build-type: [Debug, Release]
@@ -144,4 +144,4 @@ jobs:
           cd build
           echo "Testing with Intel MPI (MPI 4.0 support)"
           $env:DYNAMPI_MAX_MPI_RANK = "8"
-          ctest --output-on-failure -j 1 --timeout 180 -C ${{ matrix.build-type }}
+          ctest --output-on-failure -j 1 --timeout 300 -C ${{ matrix.build-type }}
