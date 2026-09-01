@@ -1,0 +1,33 @@
+#!/bin/bash
+#PBS -l select=512:ncpus=102:mpiprocs=102
+#PBS -l walltime=00:20:00
+#PBS -q prod
+#PBS -A DynaMPI
+#PBS -l filesystems=flare
+#PBS -N dynampi_shutdown_512_7
+#PBS -j oe
+
+cd "$HOME/DynaMPI" || exit 1
+export FI_CXI_RX_MATCH_MODE=software
+SD="$HOME/DynaMPI/build/benchmark/shutdown_time"
+
+NODES=512
+RPN=7
+
+run_one() {
+  local dist="$1" fanout="$2"
+  local ranks=$((NODES * RPN))
+  echo "##### shutdown dist=$dist fanout=$fanout nodes=$NODES rpn=$RPN #####"
+  timeout 60 mpiexec -n "$ranks" --ppn "$RPN" "$SD" --distribution "$dist" --nodes "$NODES" \
+    --max_upper_fanout "$fanout" --system aurora
+  echo "exit=$?"
+}
+
+run_one naive -1
+run_one hierarchical 0
+run_one hierarchical -1
+run_one lockfree_rma -1
+run_one hierarchical_lockfree_rma 0
+run_one hierarchical_lockfree_rma -1
+
+echo "ALL DONE"

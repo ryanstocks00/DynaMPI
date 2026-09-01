@@ -1,0 +1,37 @@
+##### shutdown dist=naive fanout=-1 nodes=64 rpn=7 #####
+RESULT distributor=naive nodes=64 max_upper_fanout=-1 world_size=448 workers=447 time_per_shutdown_us=491.311 iterations=16694
+exit=0
+##### shutdown dist=hierarchical fanout=0 nodes=64 rpn=7 #####
+RESULT distributor=hierarchical nodes=64 max_upper_fanout=0 world_size=448 workers=447 time_per_shutdown_us=95.2238 iterations=16807
+exit=0
+##### shutdown dist=hierarchical fanout=-1 nodes=64 rpn=7 #####
+RESULT distributor=hierarchical nodes=64 max_upper_fanout=-1 world_size=448 workers=447 time_per_shutdown_us=19.0294 iterations=11768
+exit=0
+##### shutdown dist=lockfree_rma fanout=-1 nodes=64 rpn=7 #####
+RESULT distributor=lockfree_rma nodes=64 max_upper_fanout=-1 world_size=448 workers=447 time_per_shutdown_us=2464.06 iterations=2479
+exit=0
+##### shutdown dist=hierarchical_lockfree_rma fanout=0 nodes=64 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma nodes=64 max_upper_fanout=0 world_size=448 workers=447 time_per_shutdown_us=3334.78 iterations=2256
+exit=0
+##### shutdown dist=hierarchical_lockfree_rma fanout=-1 nodes=64 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma nodes=64 max_upper_fanout=-1 world_size=448 workers=447 time_per_shutdown_us=4340.15 iterations=1659
+exit=0
+##### shutdown dist=naive fanout=-1 nodes=128 rpn=7 #####
+RESULT distributor=naive nodes=128 max_upper_fanout=-1 world_size=896 workers=895 time_per_shutdown_us=968.854 iterations=8835
+exit=0
+##### shutdown dist=hierarchical fanout=0 nodes=128 rpn=7 #####
+RESULT distributor=hierarchical nodes=128 max_upper_fanout=0 world_size=896 workers=895 time_per_shutdown_us=182.397 iterations=11597
+exit=0
+##### shutdown dist=hierarchical fanout=-1 nodes=128 rpn=7 #####
+RESULT distributor=hierarchical nodes=128 max_upper_fanout=-1 world_size=896 workers=895 time_per_shutdown_us=20.0722 iterations=9258
+exit=0
+##### shutdown dist=lockfree_rma fanout=-1 nodes=128 rpn=7 #####
+RESULT distributor=lockfree_rma nodes=128 max_upper_fanout=-1 world_size=896 workers=895 time_per_shutdown_us=4043.49 iterations=1713
+exit=0
+##### shutdown dist=hierarchical_lockfree_rma fanout=0 nodes=128 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma nodes=128 max_upper_fanout=0 world_size=896 workers=895 time_per_shutdown_us=3463.87 iterations=2058
+exit=0
+##### shutdown dist=hierarchical_lockfree_rma fanout=-1 nodes=128 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma nodes=128 max_upper_fanout=-1 world_size=896 workers=895 time_per_shutdown_us=4385.58 iterations=1568
+exit=0
+ALL DONE

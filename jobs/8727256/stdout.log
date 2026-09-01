@@ -1,0 +1,211 @@
+##### dist=hierarchical fanout=0 nodes=2048 mode=fixed expected_us=10 rpn=7 #####
+RESULT distributor=hierarchical mode=fixed expected_us=10 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=32653312 elapsed_s=20.045 throughput_tasks_per_s=1.629e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=hierarchical fanout=-1 nodes=2048 mode=fixed expected_us=10 rpn=7 #####
+RESULT distributor=hierarchical mode=fixed expected_us=10 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=52221302 elapsed_s=20.0171 throughput_tasks_per_s=2.60884e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 2 died from signal 15
+exit=143
+##### dist=lockfree_rma fanout=-1 nodes=2048 mode=fixed expected_us=10 rpn=7 #####
+RESULT distributor=lockfree_rma mode=fixed expected_us=10 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=7124235 elapsed_s=20.0121 throughput_tasks_per_s=355996
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=hierarchical_lockfree_rma fanout=0 nodes=2048 mode=fixed expected_us=10 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=10 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=32636038 elapsed_s=20.0005 throughput_tasks_per_s=1.63176e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=hierarchical_lockfree_rma fanout=-1 nodes=2048 mode=fixed expected_us=10 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=10 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=398000000 elapsed_s=20.0041 throughput_tasks_per_s=1.98959e+07
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=naive fanout=-1 nodes=2048 mode=fixed expected_us=100 rpn=7 #####
+RESULT distributor=naive mode=fixed expected_us=100 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=13521228 elapsed_s=20.0597 throughput_tasks_per_s=674050
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=hierarchical fanout=0 nodes=2048 mode=fixed expected_us=100 rpn=7 #####
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=27749584 elapsed_s=20.0549 throughput_tasks_per_s=1.38368e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 4 died from signal 15
+exit=143
+##### dist=hierarchical fanout=-1 nodes=2048 mode=fixed expected_us=100 rpn=7 #####
+RESULT distributor=hierarchical mode=fixed expected_us=100 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=55465274 elapsed_s=20.0208 throughput_tasks_per_s=2.77038e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=lockfree_rma fanout=-1 nodes=2048 mode=fixed expected_us=100 rpn=7 #####
+RESULT distributor=lockfree_rma mode=fixed expected_us=100 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=6929168 elapsed_s=20.0093 throughput_tasks_per_s=346297
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 2 died from signal 15
+exit=143
+##### dist=hierarchical_lockfree_rma fanout=0 nodes=2048 mode=fixed expected_us=100 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=100 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=32661839 elapsed_s=20.0005 throughput_tasks_per_s=1.63305e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 3 died from signal 15
+exit=143
+##### dist=hierarchical_lockfree_rma fanout=-1 nodes=2048 mode=fixed expected_us=100 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=100 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=397509752 elapsed_s=20.001 throughput_tasks_per_s=1.98745e+07
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=naive fanout=-1 nodes=2048 mode=fixed expected_us=1000 rpn=7 #####
+RESULT distributor=naive mode=fixed expected_us=1000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=13202539 elapsed_s=20.0832 throughput_tasks_per_s=657393
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=hierarchical fanout=0 nodes=2048 mode=fixed expected_us=1000 rpn=7 #####
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=27491890 elapsed_s=20.0424 throughput_tasks_per_s=1.37169e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 2 died from signal 15
+exit=143
+##### dist=hierarchical fanout=-1 nodes=2048 mode=fixed expected_us=1000 rpn=7 #####
+RESULT distributor=hierarchical mode=fixed expected_us=1000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=43463028 elapsed_s=20.0245 throughput_tasks_per_s=2.17049e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 5 died from signal 15
+exit=143
+##### dist=lockfree_rma fanout=-1 nodes=2048 mode=fixed expected_us=1000 rpn=7 #####
+RESULT distributor=lockfree_rma mode=fixed expected_us=1000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=6814140 elapsed_s=20.0007 throughput_tasks_per_s=340696
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 2 died from signal 15
+exit=143
+##### dist=hierarchical_lockfree_rma fanout=0 nodes=2048 mode=fixed expected_us=1000 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=1000 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=39508538 elapsed_s=20.0012 throughput_tasks_per_s=1.97531e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 4 died from signal 15
+exit=143
+##### dist=hierarchical_lockfree_rma fanout=-1 nodes=2048 mode=fixed expected_us=1000 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=1000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=204729982 elapsed_s=20.0005 throughput_tasks_per_s=1.02362e+07
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=naive fanout=-1 nodes=2048 mode=fixed expected_us=10000 rpn=7 #####
+RESULT distributor=naive mode=fixed expected_us=10000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=13226954 elapsed_s=20.0777 throughput_tasks_per_s=658787
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 2 died from signal 15
+exit=143
+##### dist=hierarchical fanout=0 nodes=2048 mode=fixed expected_us=10000 rpn=7 #####
+RESULT distributor=hierarchical mode=fixed expected_us=10000 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=24666840 elapsed_s=20.0959 throughput_tasks_per_s=1.22746e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 4 died from signal 15
+exit=143
+##### dist=hierarchical fanout=-1 nodes=2048 mode=fixed expected_us=10000 rpn=7 #####
+RESULT distributor=hierarchical mode=fixed expected_us=10000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=24662836 elapsed_s=20.0968 throughput_tasks_per_s=1.2272e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 2 died from signal 15
+exit=143
+##### dist=lockfree_rma fanout=-1 nodes=2048 mode=fixed expected_us=10000 rpn=7 #####
+RESULT distributor=lockfree_rma mode=fixed expected_us=10000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=6344187 elapsed_s=20.011 throughput_tasks_per_s=317035
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=hierarchical_lockfree_rma fanout=0 nodes=2048 mode=fixed expected_us=10000 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=10000 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=24000000 elapsed_s=20.001 throughput_tasks_per_s=1.19994e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 4 died from signal 15
+exit=143
+##### dist=hierarchical_lockfree_rma fanout=-1 nodes=2048 mode=fixed expected_us=10000 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=10000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=23864454 elapsed_s=20.0015 throughput_tasks_per_s=1.19313e+06
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 3 died from signal 15
+exit=143
+##### dist=naive fanout=-1 nodes=2048 mode=fixed expected_us=100000 rpn=7 #####
+RESULT distributor=naive mode=fixed expected_us=100000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=2909978 elapsed_s=20.402 throughput_tasks_per_s=142632
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=hierarchical fanout=0 nodes=2048 mode=fixed expected_us=100000 rpn=7 #####
+RESULT distributor=hierarchical mode=fixed expected_us=100000 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=2539314 elapsed_s=20.8052 throughput_tasks_per_s=122052
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 2 died from signal 15
+exit=143
+##### dist=hierarchical fanout=-1 nodes=2048 mode=fixed expected_us=100000 rpn=7 #####
+RESULT distributor=hierarchical mode=fixed expected_us=100000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=2549950 elapsed_s=20.9023 throughput_tasks_per_s=121994
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 3 died from signal 15
+exit=143
+##### dist=lockfree_rma fanout=-1 nodes=2048 mode=fixed expected_us=100000 rpn=7 #####
+RESULT distributor=lockfree_rma mode=fixed expected_us=100000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=2562493 elapsed_s=20.0005 throughput_tasks_per_s=128122
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 3 died from signal 15
+exit=143
+##### dist=hierarchical_lockfree_rma fanout=0 nodes=2048 mode=fixed expected_us=100000 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=100000 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=2442329 elapsed_s=20.0026 throughput_tasks_per_s=122100
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 5 died from signal 15
+exit=143
+##### dist=hierarchical_lockfree_rma fanout=-1 nodes=2048 mode=fixed expected_us=100000 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=100000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=2428814 elapsed_s=20.0005 throughput_tasks_per_s=121438
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 3 died from signal 15
+exit=143
+##### dist=naive fanout=-1 nodes=2048 mode=fixed expected_us=1000000 rpn=7 #####
+RESULT distributor=naive mode=fixed expected_us=1000000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=343991 elapsed_s=24.1024 throughput_tasks_per_s=14272.1
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 1 died from signal 15
+exit=143
+##### dist=hierarchical fanout=0 nodes=2048 mode=fixed expected_us=1000000 rpn=7 #####
+RESULT distributor=hierarchical mode=fixed expected_us=1000000 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=327654 elapsed_s=28.0048 throughput_tasks_per_s=11699.9
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=hierarchical fanout=-1 nodes=2048 mode=fixed expected_us=1000000 rpn=7 #####
+RESULT distributor=hierarchical mode=fixed expected_us=1000000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=336896 elapsed_s=29.0017 throughput_tasks_per_s=11616.4
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 4 died from signal 15
+exit=143
+##### dist=lockfree_rma fanout=-1 nodes=2048 mode=fixed expected_us=1000000 rpn=7 #####
+RESULT distributor=lockfree_rma mode=fixed expected_us=1000000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=272365 elapsed_s=20.0001 throughput_tasks_per_s=13618.2
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 2 died from signal 15
+exit=143
+##### dist=hierarchical_lockfree_rma fanout=0 nodes=2048 mode=fixed expected_us=1000000 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=1000000 nodes=2048 world_size=14336 max_upper_fanout=0 total_tasks=233453 elapsed_s=20.0023 throughput_tasks_per_s=11671.3
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+##### dist=hierarchical_lockfree_rma fanout=-1 nodes=2048 mode=fixed expected_us=1000000 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma mode=fixed expected_us=1000000 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=232576 elapsed_s=20.0003 throughput_tasks_per_s=11628.6
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4212c4s4b0n0.hsn.cm.aurora.alcf.anl.gov: rank 3 died from signal 15
+exit=143
+ALL DONE

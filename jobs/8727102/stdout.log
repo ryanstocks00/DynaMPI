@@ -1,0 +1,20 @@
+Direct write is requested for job: 8727102.aurora-pbs-0001.hostmgmt.cm.aurora.alcf.anl.gov, but the destination is not usecp-able from x4405c6s1b0n0.hostmgmt2405.cm.aurora.alcf.anl.gov
+##### shutdown dist=naive fanout=-1 nodes=1024 rpn=7 #####
+RESULT distributor=naive nodes=1024 max_upper_fanout=-1 world_size=7168 workers=7167 time_per_shutdown_us=81088.6 iterations=123
+exit=0
+##### shutdown dist=hierarchical fanout=0 nodes=1024 rpn=7 #####
+RESULT distributor=hierarchical nodes=1024 max_upper_fanout=0 world_size=7168 workers=7167 time_per_shutdown_us=1383.28 iterations=3547
+exit=0
+##### shutdown dist=hierarchical fanout=-1 nodes=1024 rpn=7 #####
+RESULT distributor=hierarchical nodes=1024 max_upper_fanout=-1 world_size=7168 workers=7167 time_per_shutdown_us=53.1405 iterations=4461
+exit=0
+##### shutdown dist=lockfree_rma fanout=-1 nodes=1024 rpn=7 #####
+RESULT distributor=lockfree_rma nodes=1024 max_upper_fanout=-1 world_size=7168 workers=7167 time_per_shutdown_us=31904.6 iterations=262
+exit=0
+##### shutdown dist=hierarchical_lockfree_rma fanout=0 nodes=1024 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma nodes=1024 max_upper_fanout=0 world_size=7168 workers=7167 time_per_shutdown_us=5860.06 iterations=998
+exit=0
+##### shutdown dist=hierarchical_lockfree_rma fanout=-1 nodes=1024 rpn=7 #####
+RESULT distributor=hierarchical_lockfree_rma nodes=1024 max_upper_fanout=-1 world_size=7168 workers=7167 time_per_shutdown_us=4674.58 iterations=1121
+exit=0
+ALL DONE

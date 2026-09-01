@@ -1,0 +1,87 @@
+#!/bin/bash
+#PBS -l select=1:ncpus=102:mpiprocs=1
+#PBS -l walltime=00:05:00
+#PBS -q debug
+#PBS -A DynaMPI
+#PBS -l filesystems=flare
+#PBS -N dynampi_capture_env
+#PBS -j oe
+
+set -x
+echo "=== hostname ==="
+hostname -f
+date
+
+echo "=== OS / kernel ==="
+cat /etc/os-release
+uname -a
+
+echo "=== lscpu ==="
+lscpu
+
+echo "=== NUMA layout ==="
+numactl -H 2>&1 || echo "numactl not available"
+
+echo "=== memory ==="
+free -h
+cat /proc/meminfo | head -5
+
+echo "=== GPU: sycl-ls ==="
+sycl-ls 2>&1 || echo "sycl-ls not available"
+
+echo "=== GPU: xpu-smi discovery ==="
+xpu-smi discovery 2>&1 || echo "xpu-smi not available"
+
+echo "=== GPU: xpu-smi firmware ==="
+xpu-smi discovery -d 0 -j 2>&1 || echo "xpu-smi -j not available"
+
+echo "=== GPU: clinfo ==="
+clinfo 2>&1 | head -60 || echo "clinfo not available"
+
+echo "=== loaded modules ==="
+module list 2>&1
+
+echo "=== module versions (key ones) ==="
+module show gcc 2>&1
+module show oneapi 2>&1
+module show mpich 2>&1
+module show libfabric 2>&1
+module show cray-pals 2>&1
+module show cray-libpals 2>&1
+
+echo "=== compilers ==="
+gcc --version
+icx --version 2>&1 || echo "icx not available"
+mpicc --version 2>&1 || echo "mpicc not available"
+mpicxx --version 2>&1 || echo "mpicxx not available"
+
+echo "=== MPI info ==="
+mpiexec --version 2>&1 || echo "mpiexec --version not available"
+mpichversion 2>&1 || echo "mpichversion not available"
+
+echo "=== libfabric providers ==="
+fi_info --version 2>&1 || echo "fi_info not available"
+fi_info -l 2>&1 || echo "fi_info -l not available"
+
+echo "=== network / HSN ==="
+ip -brief addr 2>&1
+ibstat 2>&1 || echo "ibstat not available"
+
+echo "=== filesystems ==="
+df -h
+mount | grep -E "flare|home|lustre|daos"
+
+echo "=== PBS/scheduler ==="
+qstat --version 2>&1
+pbs_version 2>&1 || echo "pbs_version not available"
+
+echo "=== cmake ==="
+cmake --version 2>&1 || echo "cmake not loaded (module load cmake needed)"
+
+echo "=== relevant env vars ==="
+env | grep -E "FI_CXI|PALS|MPICH|LIBFABRIC|ONEAPI|ZE_|SYCL" | sort
+
+echo "=== ulimits ==="
+ulimit -a
+
+echo "ALL DONE"

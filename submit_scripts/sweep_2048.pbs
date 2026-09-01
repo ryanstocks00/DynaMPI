@@ -1,0 +1,35 @@
+#!/bin/bash
+#PBS -l select=2048:ncpus=102:mpiprocs=102
+#PBS -l walltime=00:45:00
+#PBS -q prod
+#PBS -A DynaMPI
+#PBS -l filesystems=flare
+#PBS -N dynampi_sweep_2048
+#PBS -j oe
+
+cd "$HOME/DynaMPI" || exit 1
+export FI_CXI_RX_MATCH_MODE=software
+SS="$HOME/DynaMPI/build/benchmark/strong_scaling_distribution_rate"
+
+NODES=2048
+EXPECTED_US_LIST="10 1000"
+
+run_one() {
+  local dist="$1" fanout="$2" us="$3"
+  local ranks=$((NODES * 102))
+  echo "##### dist=$dist fanout=$fanout nodes=$NODES expected_us=$us duration_s=20 #####"
+  timeout 90 mpiexec -n "$ranks" --ppn 102 "$SS" --distribution "$dist" --mode random \
+    --expected_us "$us" --duration_s 20 --nodes "$NODES" --max_upper_fanout "$fanout" --system aurora
+  echo "exit=$?"
+}
+
+for us in $EXPECTED_US_LIST; do
+  run_one naive -1 "$us"
+  run_one hierarchical 0 "$us"
+  run_one hierarchical -1 "$us"
+  run_one lockfree_rma -1 "$us"
+  run_one hierarchical_lockfree_rma 0 "$us"
+  run_one hierarchical_lockfree_rma -1 "$us"
+done
+
+echo "ALL DONE"

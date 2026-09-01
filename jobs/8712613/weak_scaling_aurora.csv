@@ -1,0 +1,17 @@
+system,distributor,mode,expected_us,duration_s,nodes,world_size,workers,max_upper_fanout,total_tasks,elapsed_s,throughput_tasks_per_s
+aurora,hierarchical,uniform,10,30,128,13056,13055,0,41018444,30.5411,1.34306e+06
+aurora,hierarchical,uniform,1000,30,128,13056,13055,0,29006645,30.3147,956852
+aurora,hierarchical,uniform,10,30,128,13056,13055,2,28737636,30.5082,941965
+aurora,hierarchical,uniform,1000,30,128,13056,13055,2,89419736,30.6937,2.91329e+06
+aurora,hierarchical,uniform,10,30,128,13056,13055,4,28818123,30.6557,940059
+aurora,hierarchical,uniform,1000,30,128,13056,13055,4,93983302,30.5272,3.07868e+06
+aurora,hierarchical,uniform,10,30,128,13056,13055,8,28360057,30.1735,939898
+aurora,hierarchical,uniform,1000,30,128,13056,13055,8,93934246,30.5919,3.07056e+06
+aurora,hierarchical,uniform,10,30,128,13056,13055,16,37184866,30.2974,1.22733e+06
+aurora,hierarchical,uniform,1000,30,128,13056,13055,16,132163874,30.6514,4.31184e+06
+aurora,hierarchical,uniform,10,30,128,13056,13055,32,32040089,30.4952,1.05066e+06
+aurora,hierarchical,uniform,1000,30,128,13056,13055,32,152402158,30.455,5.00417e+06
+aurora,hierarchical,uniform,10,30,128,13056,13055,64,27109827,30.3593,892966
+aurora,hierarchical,uniform,1000,30,128,13056,13055,64,92949463,30.6292,3.03467e+06
+aurora,hierarchical,uniform,10,30,128,13056,13055,-1,37610318,30.5664,1.23045e+06
+aurora,hierarchical,uniform,1000,30,128,13056,13055,-1,132294452,30.2522,4.37306e+06

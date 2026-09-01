@@ -1,0 +1,7 @@
+##### dist=lockfree_rma fanout=-1 nodes=2048 mode=uniform expected_us=100 rpn=7 #####
+RESULT distributor=lockfree_rma mode=uniform expected_us=100 nodes=2048 world_size=14336 max_upper_fanout=-1 total_tasks=6831208 elapsed_s=20.0013 throughput_tasks_per_s=341538
+Abort(0) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+Rank 0 aborted with code 0: application called MPI_Abort(MPI_COMM_WORLD, 0) - process 0
+x4520c4s0b0n0.hsn.cm.aurora.alcf.anl.gov: rank 6 died from signal 15
+exit=143
+ALL DONE
