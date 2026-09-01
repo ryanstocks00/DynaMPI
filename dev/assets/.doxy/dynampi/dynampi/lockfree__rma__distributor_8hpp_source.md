@@ -48,7 +48,7 @@ namespace dynampi {
 //   put(log flag) + flush           -- plain Put (slot is exclusively owned);
 //                                      second flush publishes the flag after data
 //
-// Manager publish: put(tasks) + atomic_set(TOTAL) + flush
+// Manager publish: put(tasks) + flush + atomic_set(TOTAL) + flush
 // Manager harvest reads use flush_local only.
 //
 // Results ARE ordered: each write_result_range() writes into the result slot
@@ -525,13 +525,15 @@ class LockFreeRMAWorkDistributor {
 
   // --- Task publish (manager side) / read (claimant side) ---
 
-  // Two round trips regardless of batch size: one bulk Put for the whole
-  // range's [count][data] slots, then one atomic_set of TOTAL_OFF. A
-  // per-task publish measured ~18K tasks/s against the ~900K/s raw ceiling
-  // in rma_atomic_microbench.
+  // Three round trips regardless of batch size: one bulk Put for the whole
+  // range's [count][data] slots, a flush to land it, then one atomic_set of
+  // TOTAL_OFF. A per-task publish measured ~18K tasks/s against the ~900K/s
+  // raw ceiling in rma_atomic_microbench.
   //
-  // TOTAL_OFF is bumped last, once every task's data is in place, so a
-  // claimant can never see an index whose payload is still in flight.
+  // TOTAL_OFF is bumped last and only after that flush, so every task's data
+  // is in place at the manager before the counter that makes it claimable
+  // moves: a claimant can never see an index whose payload is still in
+  // flight.
   void publish_tasks(std::span<const TaskT> tasks) {
     if (tasks.empty()) return;
     const int64_t count = static_cast<int64_t>(tasks.size());
@@ -581,9 +583,9 @@ class LockFreeRMAWorkDistributor {
     }
     // The ring can wrap mid-batch (task_slot() is only contiguous within one
     // lap), so a batch crossing the boundary needs two Puts instead of one --
-    // both flush together with the atomic_set below, so this costs no extra
-    // round trip in the common (non-wrapping) case and only one extra Put
-    // issuance in the wrapping one.
+    // both complete on the flush below, so this costs no extra round trip in
+    // the common (non-wrapping) case and only one extra Put issuance in the
+    // wrapping one.
     const int64_t ring = static_cast<int64_t>(m_config.max_tasks);
     const int64_t first_count = std::min(count, ring - ring_slot(start));
     post_put_bytes(buffer.data(), static_cast<size_t>(first_count) * m_task_slot_stride,
@@ -613,6 +615,15 @@ class LockFreeRMAWorkDistributor {
                      static_cast<size_t>(count - first_count) * LOG_ENTRY_BYTES,
                      log_slot(start + first_count));
     }
+    // Ordering barrier, the publish-side counterpart to the one in the worker
+    // loop. MPI orders accumulate operations only when they target the same
+    // location, so without this the TOTAL_OFF replace below -- a different
+    // location from either Put -- may reach the manager first, and a claimant
+    // that sees the raised counter can Get a payload slot the Put has not
+    // landed in yet, or write a completion that the log clear then erases.
+    // Issue order alone does not prevent it; only completion at the target
+    // does. Costs one round trip per publish call, not per task.
+    flush_remote();
     m_total_tasks += count;
     atomic_set(TOTAL_OFF, m_total_tasks);
   }

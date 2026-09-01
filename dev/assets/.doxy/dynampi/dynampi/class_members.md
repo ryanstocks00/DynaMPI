@@ -42,12 +42,10 @@
 * **CONTROL\_BYTES** ([**dynampi::LockFreeRMAWorkDistributor**](classdynampi_1_1LockFreeRMAWorkDistributor.md), [**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **Comm** ([**dynampi::LockFreeRMAWorkDistributor**](classdynampi_1_1LockFreeRMAWorkDistributor.md))
 * **comm\_statistics** ([**dynampi::LockFreeRMAWorkDistributor::Statistics**](structdynampi_1_1LockFreeRMAWorkDistributor_1_1Statistics.md), [**dynampi::NaiveWorkDistributor::Statistics**](structdynampi_1_1NaiveWorkDistributor_1_1Statistics.md), [**dynampi::HierarchicalWorkDistributor::Statistics**](structdynampi_1_1HierarchicalWorkDistributor_1_1Statistics.md))
-* **contains\_rank\_in\_group** ([**dynampi::MPIGroup**](classdynampi_1_1MPIGroup.md))
 * **count** ([**dynampi::MPI\_Type&lt; std::nullptr\_t &gt;**](structdynampi_1_1MPI__Type_3_01std_1_1nullptr__t_01_4.md), [**dynampi::MPI\_Type&lt; std::string &gt;**](structdynampi_1_1MPI__Type_3_01std_1_1string_01_4.md), [**dynampi::MPI\_Type&lt; std::vector&lt; T &gt;, std::enable\_if\_t&lt; has\_dynampi\_mpi\_type&lt; T &gt;::value &gt; &gt;**](structdynampi_1_1MPI__Type_3_01std_1_1vector_3_01T_01_4_00_01std_1_1enable__if__t_3_01has__dynam0c05b0754f90b71498257126104ee051.md))
 * **collect\_available\_results** ([**dynampi::NaiveWorkDistributor**](classdynampi_1_1NaiveWorkDistributor.md))
 * **check\_finished** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **claim\_width** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
-* **comm\_rank** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **comm\_size** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **child** ([**dynampi::HierarchicalLockFreeRMAWorkDistributor::BridgeHop**](structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1BridgeHop.md))
 * **child\_len** ([**dynampi::HierarchicalLockFreeRMAWorkDistributor::PendingRelay**](structdynampi_1_1HierarchicalLockFreeRMAWorkDistributor_1_1PendingRelay.md))
@@ -98,7 +96,6 @@
 * **gather** ([**dynampi::MPICommunicator**](classdynampi_1_1MPICommunicator.md))
 * **get** ([**dynampi::MPICommunicator**](classdynampi_1_1MPICommunicator.md), [**dynampi::MPIGroup**](classdynampi_1_1MPIGroup.md))
 * **get\_bytes** ([**dynampi::MPICommunicator**](classdynampi_1_1MPICommunicator.md))
-* **get\_group** ([**dynampi::MPICommunicator**](classdynampi_1_1MPICommunicator.md))
 
 
 ## h
@@ -124,9 +121,6 @@
 * **idx\_for\_worker** ([**dynampi::HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md))
 * **is\_leaf\_worker** ([**dynampi::HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md))
 * **initialize\_window** ([**dynampi::LockFreeRMAWorkDistributor**](classdynampi_1_1LockFreeRMAWorkDistributor.md), [**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
-* **iprobe** ([**dynampi::MPICommunicator**](classdynampi_1_1MPICommunicator.md))
-* **isend** ([**dynampi::MPICommunicator**](classdynampi_1_1MPICommunicator.md))
-* **isend\_empty** ([**dynampi::MPICommunicator**](classdynampi_1_1MPICommunicator.md))
 * **idle\_wait** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **is\_owner** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 
@@ -179,7 +173,6 @@
 * **MPICommunicator** ([**dynampi::HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md), [**dynampi::MPICommunicator**](classdynampi_1_1MPICommunicator.md), [**dynampi::NaiveWorkDistributor**](classdynampi_1_1NaiveWorkDistributor.md))
 * **manager\_per\_node** ([**dynampi::HierarchicalWorkDistributor::Config**](structdynampi_1_1HierarchicalWorkDistributor_1_1Config.md))
 * **max\_workers\_per\_manager** ([**dynampi::HierarchicalWorkDistributor::Config**](structdynampi_1_1HierarchicalWorkDistributor_1_1Config.md), [**dynampi::HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md))
-* **message\_batch\_size** ([**dynampi::HierarchicalWorkDistributor::Config**](structdynampi_1_1HierarchicalWorkDistributor_1_1Config.md))
 * **m\_cached\_parent\_target** ([**dynampi::HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md))
 * **m\_communicator** ([**dynampi::HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md), [**dynampi::NaiveWorkDistributor**](classdynampi_1_1NaiveWorkDistributor.md))
 * **m\_done** ([**dynampi::HierarchicalWorkDistributor**](classdynampi_1_1HierarchicalWorkDistributor.md))
@@ -222,7 +215,6 @@
 * **m\_ownership** ([**dynampi::MPICommunicator**](classdynampi_1_1MPICommunicator.md))
 * **MPIGroup** ([**dynampi::MPIGroup**](classdynampi_1_1MPIGroup.md))
 * **m\_group** ([**dynampi::MPIGroup**](classdynampi_1_1MPIGroup.md))
-* **max\_result\_size** ([**dynampi::NaiveWorkDistributor::Config**](structdynampi_1_1NaiveWorkDistributor_1_1Config.md))
 * **m\_free\_worker\_ranks** ([**dynampi::NaiveWorkDistributor**](classdynampi_1_1NaiveWorkDistributor.md))
 * **m\_front\_result\_idx** ([**dynampi::NaiveWorkDistributor**](classdynampi_1_1NaiveWorkDistributor.md))
 * **m\_known\_contiguous\_results** ([**dynampi::NaiveWorkDistributor**](classdynampi_1_1NaiveWorkDistributor.md))
@@ -237,7 +229,6 @@
 * **m\_claim\_width** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **m\_owner\_collected\_count** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **m\_owner\_errors** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
-* **m\_owner\_marked\_finished** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **m\_owner\_unordered\_completed** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **m\_peer\_window** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **m\_pending\_end** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
@@ -265,7 +256,6 @@
 * **owner\_rank** ([**dynampi::detail::LockFreeRMALevel::Config**](structdynampi_1_1detail_1_1LockFreeRMALevel_1_1Config.md))
 * **owner\_available\_capacity** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **owner\_collected\_count** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
-* **owner\_marked\_finished** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **owner\_published\_count** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 * **owner\_unordered\_completed\_estimate** ([**dynampi::detail::LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md))
 
@@ -402,7 +392,6 @@
 ## u
 
 * **UpperLevelRole** ([**dynampi::HierarchicalLockFreeRMAWorkDistributor**](classdynampi_1_1HierarchicalLockFreeRMAWorkDistributor.md))
-* **use\_immediate\_recv** ([**dynampi::NaiveWorkDistributor::Config**](structdynampi_1_1NaiveWorkDistributor_1_1Config.md))
 * **update\_contiguous\_results\_count** ([**dynampi::NaiveWorkDistributor**](classdynampi_1_1NaiveWorkDistributor.md))
 
 

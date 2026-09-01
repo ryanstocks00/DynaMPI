@@ -196,38 +196,10 @@ class MPICommunicator {
     }
   }
 
-  // Non-blocking counterpart of send(): posts MPI_Isend and records the same
-  // statistics immediately (byte counts are known at post time). Caller owns
-  // the request and must keep `data` alive until the request completes.
-  template <typename T>
-  inline void isend(const T& data, int dest, int tag, MPI_Request* request) {
-    using mpi_type = MPI_Type<T>;
-    timed(&CommStatistics::send_time, [&] {
-      DYNAMPI_MPI_CHECK(MPI_Isend, (mpi_type::ptr(data), mpi_type::count(data), mpi_type::value,
-                                    dest, tag, m_comm, request));
-    });
-    if constexpr (statistics_mode != StatisticsMode::None) {
-      _statistics.send_count++;
-      int size;
-      MPI_Type_size(mpi_type::value, &size);
-      _statistics.bytes_sent += mpi_type::count(data) * size;
-    }
-  }
-
   inline MPI_Status probe(int source = MPI_ANY_SOURCE, int tag = MPI_ANY_TAG) {
     MPI_Status status;
     DYNAMPI_MPI_CHECK(MPI_Probe, (source, tag, m_comm, &status));
     return status;
-  }
-
-  inline std::optional<MPI_Status> iprobe(int source = MPI_ANY_SOURCE, int tag = MPI_ANY_TAG) {
-    MPI_Status status;
-    int flag;
-    DYNAMPI_MPI_CHECK(MPI_Iprobe, (source, tag, m_comm, &flag, &status));
-    if (flag) {
-      return status;
-    }
-    return std::nullopt;
   }
 
   template <typename T>
@@ -293,17 +265,6 @@ class MPICommunicator {
     });
     if constexpr (statistics_mode != StatisticsMode::None) {
       _statistics.recv_count++;
-    }
-  }
-
-  inline void isend_empty(int dest, int tag, MPI_Request* request) {
-    using mpi_type = MPI_Type<std::nullptr_t>;
-    timed(&CommStatistics::send_time, [&] {
-      DYNAMPI_MPI_CHECK(MPI_Isend, (nullptr, mpi_type::count(nullptr), mpi_type::value, dest, tag,
-                                    m_comm, request));
-    });
-    if constexpr (statistics_mode != StatisticsMode::None) {
-      _statistics.send_count++;
     }
   }
 
@@ -411,9 +372,6 @@ class MPICommunicator {
   }
 
   [[nodiscard]] MPI_Comm get() const { return m_comm; }
-
-  // Get the group associated with this communicator
-  [[nodiscard]] MPIGroup get_group() const { return MPIGroup(*this); }
 };
 
 }  // namespace dynampi

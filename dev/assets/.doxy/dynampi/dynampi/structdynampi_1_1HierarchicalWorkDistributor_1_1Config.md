@@ -44,7 +44,6 @@
 |  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**max\_local\_group\_size**](#variable-max_local_group_size)   = `0`<br> |
 |  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**max\_upper\_fanout**](#variable-max_upper_fanout)   = `-1`<br> |
 |  std::optional&lt; [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; | [**max\_workers\_per\_manager**](#variable-max_workers_per_manager)   = `std::nullopt`<br> |
-|  std::optional&lt; [**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; | [**message\_batch\_size**](#variable-message_batch_size)   = `std::nullopt`<br> |
 |  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**pipeline\_depth**](#variable-pipeline_depth)   = `2`<br> |
 |  [**bool**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**rethrow\_task\_errors**](#variable-rethrow_task_errors)   = `[**true**](namespacedynampi.md#function-check_fixed_size_mpi_type)`<br> |
 
@@ -191,19 +190,6 @@ int dynampi::HierarchicalWorkDistributor< TaskT, ResultT, Options >::Config::max
 
 ```C++
 std::optional<int> dynampi::HierarchicalWorkDistributor< TaskT, ResultT, Options >::Config::max_workers_per_manager;
-```
-
-
-
-
-<hr>
-
-
-
-### variable message\_batch\_size 
-
-```C++
-std::optional<size_t> dynampi::HierarchicalWorkDistributor< TaskT, ResultT, Options >::Config::message_batch_size;
 ```
 
 

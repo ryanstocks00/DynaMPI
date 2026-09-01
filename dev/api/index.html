@@ -1768,7 +1768,7 @@ using-declaration.</p>
 <h3 id="mpi-wrappers">MPI wrappers</h3>
 <p><code>dynampi::MPICommunicator&lt;Options...&gt;</code> and <code>dynampi::MPIGroup</code> are the RAII
 wrappers the distributors are built on.  <code>MPICommunicator</code> owns (or references) a
-communicator, offers typed <code>send</code> / <code>isend</code> / <code>recv</code> / <code>probe</code> / <code>broadcast</code> /
+communicator, offers typed <code>send</code> / <code>recv</code> / <code>probe</code> / <code>broadcast</code> /
 <code>gather</code> and RMA helpers (<code>put_bytes</code>, <code>get_bytes</code>, <code>fetch_and_op</code>), records
 <code>CommStatistics</code> when a <code>track_statistics</code> option is supplied, and provides
 <code>split()</code> / <code>split_by_node()</code>.  <code>MPIGroup</code> wraps <code>MPI_Group</code> for rank

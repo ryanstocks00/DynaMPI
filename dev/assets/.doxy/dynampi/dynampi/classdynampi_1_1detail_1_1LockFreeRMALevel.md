@@ -64,7 +64,6 @@
 |   | [**LockFreeRMALevel**](#function-lockfreermalevel-22) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md) &) = delete<br> |
 |  [**bool**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**check\_finished**](#function-check_finished) () <br> |
 |  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**claim\_width**](#function-claim_width) () const<br> |
-|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**comm\_rank**](#function-comm_rank) () const<br> |
 |  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**comm\_size**](#function-comm_size) () const<br> |
 |  [**bool**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**drained**](#function-drained) () <br> |
 |  std::vector&lt; [**ResultT**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; | [**harvest\_ready\_results**](#function-harvest_ready_results) () <br> |
@@ -75,7 +74,6 @@
 |  [**LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md) & | [**operator=**](#function-operator) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**LockFreeRMALevel**](classdynampi_1_1detail_1_1LockFreeRMALevel.md) &) = delete<br> |
 |  [**int64\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**owner\_available\_capacity**](#function-owner_available_capacity) () const<br> |
 |  [**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**owner\_collected\_count**](#function-owner_collected_count) () const<br> |
-|  [**bool**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**owner\_marked\_finished**](#function-owner_marked_finished) () const<br> |
 |  [**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**owner\_published\_count**](#function-owner_published_count) () const<br> |
 |  [**int64\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**owner\_unordered\_completed\_estimate**](#function-owner_unordered_completed_estimate) () const<br> |
 |  [**bool**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**publish\_tasks**](#function-publish_tasks) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) std::vector&lt; [**TaskT**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; & tasks) <br> |
@@ -165,19 +163,6 @@ inline bool dynampi::detail::LockFreeRMALevel::check_finished ()
 
 ```C++
 inline int dynampi::detail::LockFreeRMALevel::claim_width () const
-```
-
-
-
-
-<hr>
-
-
-
-### function comm\_rank 
-
-```C++
-inline int dynampi::detail::LockFreeRMALevel::comm_rank () const
 ```
 
 
@@ -310,19 +295,6 @@ inline int64_t dynampi::detail::LockFreeRMALevel::owner_available_capacity () co
 
 ```C++
 inline size_t dynampi::detail::LockFreeRMALevel::owner_collected_count () const
-```
-
-
-
-
-<hr>
-
-
-
-### function owner\_marked\_finished 
-
-```C++
-inline bool dynampi::detail::LockFreeRMALevel::owner_marked_finished () const
 ```
 
 

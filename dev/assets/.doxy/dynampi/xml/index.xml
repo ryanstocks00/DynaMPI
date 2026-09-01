@@ -63,7 +63,6 @@
     <member refid="structdynampi_1_1HierarchicalWorkDistributor_1_1Config_1a4c2203a42b59dfcd41c6e8fcb20a42d7" kind="variable"><name>comm</name></member>
     <member refid="structdynampi_1_1HierarchicalWorkDistributor_1_1Config_1ac8d970f33c1cfae808ce2590dec91781" kind="variable"><name>manager_rank</name></member>
     <member refid="structdynampi_1_1HierarchicalWorkDistributor_1_1Config_1af888e8cf5d5bbadc6652e8b86c8ce3a1" kind="variable"><name>auto_run_workers</name></member>
-    <member refid="structdynampi_1_1HierarchicalWorkDistributor_1_1Config_1a276400cba18685721cca7a53500145cc" kind="variable"><name>message_batch_size</name></member>
     <member refid="structdynampi_1_1HierarchicalWorkDistributor_1_1Config_1af238915928e2dd4d7f1fa6ee78d72ce1" kind="variable"><name>max_workers_per_manager</name></member>
     <member refid="structdynampi_1_1HierarchicalWorkDistributor_1_1Config_1add0c0e6ed48d8adb7ac26d4e1cef491f" kind="variable"><name>batch_size_multiplier</name></member>
     <member refid="structdynampi_1_1HierarchicalWorkDistributor_1_1Config_1abb52c0c1c4c79b287d314d6d16f028e5" kind="variable"><name>pipeline_depth</name></member>
@@ -85,8 +84,6 @@
     <member refid="structdynampi_1_1NaiveWorkDistributor_1_1Config_1afc2d124a7e956c910726dadae42f8c8d" kind="variable"><name>comm</name></member>
     <member refid="structdynampi_1_1NaiveWorkDistributor_1_1Config_1aad8d600b8c89d115ade13470cf6b6d92" kind="variable"><name>manager_rank</name></member>
     <member refid="structdynampi_1_1NaiveWorkDistributor_1_1Config_1a6e1f297c3981c57ae9bc5f3ac7606551" kind="variable"><name>auto_run_workers</name></member>
-    <member refid="structdynampi_1_1NaiveWorkDistributor_1_1Config_1a75316d8993255f22f6cfc4d7b066b0d8" kind="variable"><name>use_immediate_recv</name></member>
-    <member refid="structdynampi_1_1NaiveWorkDistributor_1_1Config_1a40b3c416b9fb945312511150403a8309" kind="variable"><name>max_result_size</name></member>
     <member refid="structdynampi_1_1NaiveWorkDistributor_1_1Config_1a768ff51cc17cb9f3e20e336c6a6a40fe" kind="variable"><name>rethrow_task_errors</name></member>
   </compound>
   <compound refid="structdynampi_1_1enable__prioritization" kind="struct"><name>dynampi::enable_prioritization</name>
@@ -275,7 +272,6 @@
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1ac65d358af67c79213fba07987d92ef38" kind="variable"><name>m_log_base</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1a5a0eb92ae9e60722a09cd99505f04d4a" kind="variable"><name>m_error_base</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1aec7552152cd0cdc727caed8eccb63edd" kind="variable"><name>m_total_tasks</name></member>
-    <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1a4443ce0a532b30263b3d544375016c7d" kind="variable"><name>m_owner_marked_finished</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1a32c19c293d2d9bb99dd4e91d9861d195" kind="variable"><name>m_owner_collected_count</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1a0863ae3909a48704543243099a0d385d" kind="variable"><name>m_owner_unordered_completed</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1a1f9dcaa8b23cc3166340a43d8e90dbe6" kind="variable"><name>m_cached_head</name></member>
@@ -290,14 +286,12 @@
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1a7681ce6d7db8631d2fd8cc32c3ee173e" kind="function"><name>operator=</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1abd27361b4c76f59a348b42178e8a9b4a" kind="function"><name>~LockFreeRMALevel</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1aac83a6584493d37ff740180429ab8009" kind="function"><name>is_owner</name></member>
-    <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1aeac473bc35aabe9f721077f656a3c6be" kind="function"><name>comm_rank</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1adb90353b30fff2f76ddd08d91ae01a00" kind="function"><name>comm_size</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1aea9ff86c025da4e5e9fdf311419e1d25" kind="function"><name>claim_width</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1ab35194092001ba14c7655e0b4916ca3c" kind="function"><name>idle_wait</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1a61b2c4f83b0efc3fc14b34466b4400dc" kind="function"><name>owner_available_capacity</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1aeba78d33355c11f2eb0134e25086af91" kind="function"><name>publish_tasks</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1aa65d0613437e617ec14403a80b0b80a4" kind="function"><name>mark_finished</name></member>
-    <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1aa10034f14c164f1a290b29503c9904dc" kind="function"><name>owner_marked_finished</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1ab3574abf97a530fa6d973d5b0cf0fe50" kind="function"><name>owner_published_count</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1aa8bc1032e9ad9954bf30810324da9bfa" kind="function"><name>owner_collected_count</name></member>
     <member refid="classdynampi_1_1detail_1_1LockFreeRMALevel_1a8ede4dbf8e13b4bcfe9137a70a8a83f1" kind="function"><name>owner_unordered_completed_estimate</name></member>
@@ -471,14 +465,11 @@
     <member refid="classdynampi_1_1MPICommunicator_1ae08399570bf9b7b3b80d1577aa6ccbe9" kind="function"><name>rank</name></member>
     <member refid="classdynampi_1_1MPICommunicator_1a60803fdde73fb42d1d7a637714134290" kind="function"><name>size</name></member>
     <member refid="classdynampi_1_1MPICommunicator_1a89d3eaae1d7f772706c0259abc5138d5" kind="function"><name>send</name></member>
-    <member refid="classdynampi_1_1MPICommunicator_1af04f5331c0f452ea66af836ddbed516c" kind="function"><name>isend</name></member>
     <member refid="classdynampi_1_1MPICommunicator_1afae2eb6131af281a9cc7717638496841" kind="function"><name>probe</name></member>
-    <member refid="classdynampi_1_1MPICommunicator_1a877f737c54e0f9d6e4cd28c568b73e28" kind="function"><name>iprobe</name></member>
     <member refid="classdynampi_1_1MPICommunicator_1a236bdb1a221ab6f118fad71e8abe9e50" kind="function"><name>recv</name></member>
     <member refid="classdynampi_1_1MPICommunicator_1a083f2257b84cc47458b2a88273a316da" kind="function"><name>recv_any</name></member>
     <member refid="classdynampi_1_1MPICommunicator_1a908609eb1387b8b46fa8bc29b1b971af" kind="function"><name>broadcast</name></member>
     <member refid="classdynampi_1_1MPICommunicator_1a23089e5594e4075a4b0efa8f24d49dfd" kind="function"><name>recv_empty_message</name></member>
-    <member refid="classdynampi_1_1MPICommunicator_1afb477147c59619a1d801d2999fe8db1f" kind="function"><name>isend_empty</name></member>
     <member refid="classdynampi_1_1MPICommunicator_1acac6192d057971c440e62674dc14539b" kind="function"><name>send_empty</name></member>
     <member refid="classdynampi_1_1MPICommunicator_1a780f1e002bea00e97fb16a4ca7f3fc93" kind="function"><name>recv_empty</name></member>
     <member refid="classdynampi_1_1MPICommunicator_1a67630cb450a31446e5cabf679ef5c237" kind="function"><name>gather</name></member>
@@ -486,7 +477,6 @@
     <member refid="classdynampi_1_1MPICommunicator_1a00750ef0ae7985e8c81fe96ae84a18b3" kind="function"><name>get_bytes</name></member>
     <member refid="classdynampi_1_1MPICommunicator_1a26248a4ab1e8855d97ada7873d71c0e0" kind="function"><name>fetch_and_op</name></member>
     <member refid="classdynampi_1_1MPICommunicator_1a822f42f75a2aa920b4171a3f752962ad" kind="function"><name>get</name></member>
-    <member refid="classdynampi_1_1MPICommunicator_1a5c934640af714145ddd879671df7d026" kind="function"><name>get_group</name></member>
   </compound>
   <compound refid="classdynampi_1_1MPIGroup" kind="class"><name>dynampi::MPIGroup</name>
     <member refid="classdynampi_1_1MPIGroup_1a74031a5b8ba169a9e3048282f03b2543" kind="variable"><name>m_group</name></member>
@@ -502,7 +492,6 @@
     <member refid="classdynampi_1_1MPIGroup_1ad17930ebf9ddd0f8801273619511fcd6" kind="function"><name>rank</name></member>
     <member refid="classdynampi_1_1MPIGroup_1aba25c87ae045fc8af89e1f4f39aaffa8" kind="function"><name>operator MPI_Group</name></member>
     <member refid="classdynampi_1_1MPIGroup_1a4f6d8742deffabdbfdb656d4ecf96f62" kind="function"><name>get</name></member>
-    <member refid="classdynampi_1_1MPIGroup_1ac0ef720ca8ac06ab123258638dd0d4eb" kind="function"><name>contains_rank_in_group</name></member>
   </compound>
   <compound refid="classdynampi_1_1NaiveWorkDistributor" kind="class"><name>dynampi::NaiveWorkDistributor</name>
     <member refid="classdynampi_1_1NaiveWorkDistributor_1a14026eacc2ca5bcad7cc36680e815a72" kind="enum"><name>Tag</name></member>

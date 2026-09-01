@@ -550,17 +550,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#function-comm_rank" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        function comm_rank
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#function-comm_size" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -664,17 +653,6 @@
     <span class="md-ellipsis">
       
         function owner_collected_count
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#function-owner_marked_finished" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        function owner_marked_finished
       
     </span>
   </a>
@@ -846,10 +824,6 @@
 </tr>
 <tr>
 <td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>int</strong></a></td>
-<td style="text-align: left;"><a href="#function-comm_rank"><strong>comm_rank</strong></a> () const<br></td>
-</tr>
-<tr>
-<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>int</strong></a></td>
 <td style="text-align: left;"><a href="#function-comm_size"><strong>comm_size</strong></a> () const<br></td>
 </tr>
 <tr>
@@ -887,10 +861,6 @@
 <tr>
 <td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>size_t</strong></a></td>
 <td style="text-align: left;"><a href="#function-owner_collected_count"><strong>owner_collected_count</strong></a> () const<br></td>
-</tr>
-<tr>
-<td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>bool</strong></a></td>
-<td style="text-align: left;"><a href="#function-owner_marked_finished"><strong>owner_marked_finished</strong></a> () const<br></td>
 </tr>
 <tr>
 <td style="text-align: right;"><a href="../namespacedynampi/#function-check_fixed_size_mpi_type"><strong>size_t</strong></a></td>
@@ -952,113 +922,103 @@
 </code></pre></div>
 <hr>
 
-<h3 id="function-comm_rank">function comm_rank</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">comm_rank</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
-</code></pre></div>
-<hr>
-
 <h3 id="function-comm_size">function comm_size</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">comm_size</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">comm_size</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-drained">function drained</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">drained</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">drained</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-harvest_ready_results">function harvest_ready_results</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">ResultT</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">harvest_ready_results</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">ResultT</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">harvest_ready_results</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-harvest_ready_results_throttled">function harvest_ready_results_throttled</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">ResultT</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">harvest_ready_results_throttled</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">ResultT</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">harvest_ready_results_throttled</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-idle_wait">function idle_wait</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">idle_wait</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">idle_wait</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-is_owner">function is_owner</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">is_owner</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">is_owner</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-mark_finished">function mark_finished</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">mark_finished</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">mark_finished</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-operator">function operator=</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">LockFreeRMALevel</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="k">operator</span><span class="o">=</span><span class="w"> </span><span class="p">(</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="k">const</span><span class="w">  </span><span class="n">LockFreeRMALevel</span><span class="w"> </span><span class="o">&amp;</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">LockFreeRMALevel</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="k">operator</span><span class="o">=</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="k">const</span><span class="w">  </span><span class="n">LockFreeRMALevel</span><span class="w"> </span><span class="o">&amp;</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-owner_available_capacity">function owner_available_capacity</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">owner_available_capacity</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">owner_available_capacity</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-owner_collected_count">function owner_collected_count</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">owner_collected_count</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
-</code></pre></div>
-<hr>
-
-<h3 id="function-owner_marked_finished">function owner_marked_finished</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">owner_marked_finished</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">owner_collected_count</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-owner_published_count">function owner_published_count</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">owner_published_count</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">owner_published_count</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-owner_unordered_completed_estimate">function owner_unordered_completed_estimate</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">owner_unordered_completed_estimate</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">owner_unordered_completed_estimate</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-publish_tasks">function publish_tasks</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">publish_tasks</span><span class="w"> </span><span class="p">(</span>
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">tasks</span>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="p">)</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">publish_tasks</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskT</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">tasks</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="p">)</span><span class="w"> </span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-report_task_error">function report_task_error</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">report_task_error</span><span class="w"> </span><span class="p">(</span>
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">    </span><span class="k">const</span><span class="w">  </span><span class="n">TaskError</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">error</span>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="p">)</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">report_task_error</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">    </span><span class="k">const</span><span class="w">  </span><span class="n">TaskError</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">error</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="p">)</span><span class="w"> </span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-take_errors">function take_errors</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskError</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">take_errors</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">TaskError</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">take_errors</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-try_claim">function try_claim</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">ClaimedRange</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">try_claim</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">ClaimedRange</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">try_claim</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-write_result_range">function write_result_range</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">write_result_range</span><span class="w"> </span><span class="p">(</span>
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">    </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">start</span><span class="p">,</span>
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">ResultT</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">results</span><span class="p">,</span>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">contains_error</span><span class="o">=</span><span class="nb">false</span>
-<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="p">)</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::</span><span class="n">write_result_range</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">start</span><span class="p">,</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">ResultT</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">results</span><span class="p">,</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">contains_error</span><span class="o">=</span><span class="nb">false</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="p">)</span><span class="w"> </span>
 </code></pre></div>
 <hr>
 
 <h3 id="function-lockfreermalevel">function ~LockFreeRMALevel</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::~</span><span class="n">LockFreeRMALevel</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">dynampi</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">LockFreeRMALevel</span><span class="o">::~</span><span class="n">LockFreeRMALevel</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
 </code></pre></div>
 <hr>
 

@@ -66,11 +66,6 @@
 |   | [**~MPIGroup**](#function-mpigroup) () <br> |
 
 
-## Public Static Functions
-
-| Type | Name |
-| ---: | :--- |
-|  [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**contains\_rank\_in\_group**](#function-contains_rank_in_group) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) rank\_in\_reference, [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & reference\_group, [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPIGroup**](classdynampi_1_1MPIGroup.md) & target\_group) <br> |
 
 
 
@@ -268,25 +263,6 @@ inline void dynampi::MPIGroup::translate_ranks (
 
 ```C++
 inline dynampi::MPIGroup::~MPIGroup () 
-```
-
-
-
-
-<hr>
-## Public Static Functions Documentation
-
-
-
-
-### function contains\_rank\_in\_group 
-
-```C++
-static inline int dynampi::MPIGroup::contains_rank_in_group (
-    int rank_in_reference,
-    const  MPIGroup & reference_group,
-    const  MPIGroup & target_group
-) 
 ```
 
 

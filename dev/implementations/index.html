@@ -1200,8 +1200,7 @@ prefetching: a worker is idle for one manager round trip between finishing a
 task and receiving the next.</p>
 <h3 id="configuration">Configuration</h3>
 <p>Beyond the <a href="../api/#common-config-fields">common fields</a> there are none that take
-effect.  <code>use_immediate_recv</code> and <code>max_result_size</code> exist on <code>Config</code> but are
-currently unused by the implementation.</p>
+effect.</p>
 <hr />
 <h2 id="hierarchicalworkdistributor-dynamicworkdistributor">HierarchicalWorkDistributor (<code>DynamicWorkDistributor</code>)</h2>
 <p><strong>Best for:</strong> the general multi-node case.  This is the default used by
@@ -1343,7 +1342,6 @@ work only in degenerate topologies where no manager has children.</p>
 </tr>
 </tbody>
 </table>
-<p><code>message_batch_size</code> is present on <code>Config</code> but currently unused.</p>
 <p><strong>Statistics:</strong> <code>track_statistics&lt;Aggregated&gt;</code> and <code>&lt;Detailed&gt;</code> are both
 supported.  <code>Statistics::worker_task_counts</code> is populated by an <code>MPI_Gather</code>
 inside <code>finalize()</code>, so it is <code>std::nullopt</code> until then.</p>
@@ -1392,7 +1390,9 @@ not guaranteed to observe remote writes at all.</p>
   whatever is ready, instead of looping until everything is collected.</li>
 </ul>
 <h3 id="capacity">Capacity</h3>
-<p>The window is preallocated, so capacities are hard limits, not hints.</p>
+<p>The window is preallocated as a ring. Capacities are hard limits on
+simultaneously published, unharvested work, but harvested slots are reused and
+there is no lifetime task cap.</p>
 <table>
 <thead>
 <tr>
@@ -1405,7 +1405,7 @@ not guaranteed to observe remote writes at all.</p>
 <tr>
 <td><code>max_tasks</code></td>
 <td><code>8192</code></td>
-<td><strong>Lifetime</strong> total of published tasks, not a concurrent depth. Exceeding it throws <code>std::length_error</code>.</td>
+<td>Reusable task/result/log ring slots. A single insertion batch larger than the ring throws <code>std::length_error</code>; when live work fills it, publication harvests and waits for space.</td>
 </tr>
 <tr>
 <td><code>max_task_count</code></td>
@@ -1495,12 +1495,12 @@ other ranks still finishing setup.</p>
 <tr>
 <td><code>max_tasks</code></td>
 <td><code>8192</code></td>
-<td>Lifetime task capacity of each <strong>upper-level</strong> window.</td>
+<td>Reusable ring capacity of each <strong>upper-level</strong> window.</td>
 </tr>
 <tr>
 <td><code>max_local_tasks</code></td>
 <td><code>8192</code></td>
-<td>Lifetime task capacity of each <strong>node-local</strong> window.</td>
+<td>Reusable ring capacity of each <strong>node-local</strong> window.</td>
 </tr>
 <tr>
 <td><code>max_task_count</code> / <code>max_result_count</code></td>
@@ -1635,7 +1635,7 @@ repository ships drivers for exactly that (build with
 </thead>
 <tbody>
 <tr>
-<td><code>strong_scaling_distribution_rate</code></td>
+<td><code>weak_scaling_distribution_rate</code></td>
 <td>Task hand-off rate at fixed rank count, across all four full distributors</td>
 </tr>
 <tr>
@@ -1656,17 +1656,16 @@ repository ships drivers for exactly that (build with
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>mpirun<span class="w"> </span>-n<span class="w"> </span><span class="m">64</span><span class="w"> </span>./build/benchmark/strong_scaling_distribution_rate<span class="w"> </span>-D<span class="w"> </span>lockfree_rma<span class="w"> </span>-t<span class="w"> </span><span class="m">100</span><span class="w"> </span>-d<span class="w"> </span><span class="m">10</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>mpirun<span class="w"> </span>-n<span class="w"> </span><span class="m">64</span><span class="w"> </span>./build/benchmark/weak_scaling_distribution_rate<span class="w"> </span>-D<span class="w"> </span>lockfree_rma<span class="w"> </span>-t<span class="w"> </span><span class="m">100</span><span class="w"> </span>-d<span class="w"> </span><span class="m">10</span>
 </code></pre></div>
 <p><code>-D</code> selects <code>naive</code>, <code>hierarchical</code>, <code>lockfree_rma</code> or
 <code>hierarchical_lockfree_rma</code>; <code>-t</code> is the expected task duration in
-microseconds and <code>-d</code> the measurement window in seconds.  The two RMA
-distributors preallocate their windows for <code>--max_tasks</code> tasks (default 500M,
-roughly 19 GiB on the owning rank), so lower it to run them anywhere with less
-memory than a compute node — the run warns and stops early if it exhausts the
-table before <code>-d</code> elapses.  Launch scripts for Frontier and Aurora (which take
-the same value as <code>MAX_TASKS</code>), plus plotting helpers, live under
-<code>benchmark/scripts/</code>.</p>
+microseconds and <code>-d</code> the measurement window in seconds.  For RMA runs,
+<code>--max_tasks</code> is both the reusable ring capacity and a benchmark-only
+publication budget (default 500M, ~19 GiB for this scalar workload).  The
+library itself has no lifetime task cap.  Lower it to save memory; the driver
+warns if the budget ends the window early.  Site scripts expose this as
+<code>MAX_TASKS</code>; plotting helpers live under <code>benchmark/scripts/</code>.</p>
 <p>For orientation, the design work behind these classes found the flat lock-free RMA
 distributor plateauing once a single manager window saturated, while the
 hierarchical topologies kept climbing with node count — which is the entire

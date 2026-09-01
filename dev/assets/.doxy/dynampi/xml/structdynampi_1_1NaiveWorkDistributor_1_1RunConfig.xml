@@ -17,7 +17,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="50" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="50" bodyend="-1"/>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="46" column="12" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="46" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1NaiveWorkDistributor_1_1RunConfig_1af5e13564156bf2d31c4435375877922a" prot="public" static="no" mutable="no">
         <type><ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">bool</ref></type>
@@ -32,7 +32,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="54" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="54" bodyend="-1"/>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="50" column="10" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="50" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structdynampi_1_1NaiveWorkDistributor_1_1RunConfig_1adf982e7669de15586680544c0eef3fb3" prot="public" static="no" mutable="no">
         <type>std::optional&lt; <ref refid="namespacedynampi_1a2b1a032452642133f5018002a52a89bd" kindref="member">double</ref> &gt;</type>
@@ -47,14 +47,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="57" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="57" bodyend="-1"/>
+        <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="53" column="19" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="53" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="48" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="48" bodyend="58"/>
+    <location file="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" line="44" column="3" bodyfile="/home/runner/work/DynaMPI/DynaMPI/include/dynampi/impl/naive_distributor.hpp" bodystart="44" bodyend="54"/>
     <listofallmembers>
       <member refid="structdynampi_1_1NaiveWorkDistributor_1_1RunConfig_1af5e13564156bf2d31c4435375877922a" prot="public" virt="non-virtual"><scope>dynampi::NaiveWorkDistributor::RunConfig</scope><name>allow_more_than_target_tasks</name></member>
       <member refid="structdynampi_1_1NaiveWorkDistributor_1_1RunConfig_1adf982e7669de15586680544c0eef3fb3" prot="public" virt="non-virtual"><scope>dynampi::NaiveWorkDistributor::RunConfig</scope><name>max_seconds</name></member>

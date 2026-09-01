@@ -72,11 +72,7 @@
 |  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**gather**](#function-gather) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) & data, std::vector&lt; [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; \* result, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) root=0) <br> |
 |  [**MPI\_Comm**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**get**](#function-get) () const<br> |
 |  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**get\_bytes**](#function-get_bytes) ([**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* dst, [**size\_t**](namespacedynampi.md#function-check_fixed_size_mpi_type) n, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) target\_rank, [**MPI\_Aint**](namespacedynampi.md#function-check_fixed_size_mpi_type) target\_disp, [**MPI\_Win**](namespacedynampi.md#function-check_fixed_size_mpi_type) win) <br> |
-|  [**MPIGroup**](classdynampi_1_1MPIGroup.md) | [**get\_group**](#function-get_group) () const<br> |
 |  [**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**CommStatistics**](structdynampi_1_1CommStatistics.md) & | [**get\_statistics**](#function-get_statistics) () const<br> |
-|  std::optional&lt; [**MPI\_Status**](namespacedynampi.md#function-check_fixed_size_mpi_type) &gt; | [**iprobe**](#function-iprobe) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) source=[**MPI\_ANY\_SOURCE**](namespacedynampi.md#function-check_fixed_size_mpi_type), [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag=[**MPI\_ANY\_TAG**](namespacedynampi.md#function-check_fixed_size_mpi_type)) <br> |
-|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**isend**](#function-isend) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**T**](namespacedynampi.md#function-check_fixed_size_mpi_type) & data, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) dest, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag, [**MPI\_Request**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* request) <br> |
-|  [**void**](namespacedynampi.md#function-check_fixed_size_mpi_type) | [**isend\_empty**](#function-isend_empty) ([**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) dest, [**int**](namespacedynampi.md#function-check_fixed_size_mpi_type) tag, [**MPI\_Request**](namespacedynampi.md#function-check_fixed_size_mpi_type) \* request) <br> |
 |   | [**operator MPI\_Comm**](#function-operator-mpi_comm) () const<br> |
 |  [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & | [**operator=**](#function-operator) ([**const**](namespacedynampi.md#function-check_fixed_size_mpi_type) [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & other) = delete<br> |
 |  [**MPICommunicator**](classdynampi_1_1MPICommunicator.md) & | [**operator=**](#function-operator_1) ([**MPICommunicator**](classdynampi_1_1MPICommunicator.md) && other) = delete<br> |
@@ -294,19 +290,6 @@ inline void dynampi::MPICommunicator::get_bytes (
 
 
 
-### function get\_group 
-
-```C++
-inline MPIGroup dynampi::MPICommunicator::get_group () const
-```
-
-
-
-
-<hr>
-
-
-
 ### function get\_statistics 
 
 ```C++
@@ -315,62 +298,6 @@ inline const  CommStatistics & dynampi::MPICommunicator::get_statistics () const
 
 
 
-
-<hr>
-
-
-
-### function iprobe 
-
-```C++
-inline std::optional< MPI_Status > dynampi::MPICommunicator::iprobe (
-    int source=MPI_ANY_SOURCE,
-    int tag=MPI_ANY_TAG
-) 
-```
-
-
-
-
-<hr>
-
-
-
-### function isend 
-
-```C++
-template<typename  T>
-inline void dynampi::MPICommunicator::isend (
-    const  T & data,
-    int dest,
-    int tag,
-    MPI_Request * request
-) 
-```
-
-
-
-
-<hr>
-
-
-
-### function isend\_empty 
-
-```C++
-inline void dynampi::MPICommunicator::isend_empty (
-    int dest,
-    int tag,
-    MPI_Request * request
-) 
-```
-
-
-
-Non-blocking 0-byte send (Tag::DONE / Tag::REQUEST). Same statistics as send\_empty; caller owns the request (may MPI\_Request\_free immediately). 
-
-
-        
 
 <hr>
 
