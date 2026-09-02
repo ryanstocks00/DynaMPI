@@ -114,10 +114,6 @@ for nodes in "${NODE_LIST[@]}"; do
                   --nodes "${nodes}"
                   --system "${SYSTEM}"
                   --output "${CSV}")
-        # Unlike weak_scaling_distribution_rate, load_balancing finalizes and
-        # returns 0 on success, so a non-zero exit is a real failure. Keep
-        # going anyway -- one bad combo shouldn't discard the rest of a sweep
-        # that already holds the allocation -- but report it at the end.
         if ! "${run_cmd[@]}"; then
           echo "FAILED nodes=${nodes} ranks_per_node=${ranks_per_node}" \
                "expected_us=${expected_us} duration_mode=${duration_mode}" >&2

@@ -80,6 +80,7 @@ if(MPIEXEC_EXECUTABLE)
   string(REGEX MATCH "HYDRA|MPICH" IS_MPICH "${MPI_VERSION_OUTPUT}")
   string(REGEX MATCH "Intel.*MPI" IS_INTEL "${MPI_VERSION_OUTPUT}")
   string(REGEX MATCH "Microsoft MPI" IS_MICROSOFT "${MPI_VERSION_OUTPUT}")
+  string(REGEX MATCH "^slurm" IS_SLURM "${MPI_VERSION_OUTPUT}")
 
   if(IS_OPENMPI)
     set(MPI_OVERSUBSCRIBE_FLAG "--oversubscribe")
@@ -90,6 +91,20 @@ if(MPIEXEC_EXECUTABLE)
       set(OPENMPI_NEEDS_SPLIT_WIN_WORKAROUND TRUE)
       message(STATUS "Open MPI ${CMAKE_MATCH_2}: using osc/pt2pt for split-window tests")
     endif()
+  elseif(IS_SLURM OR MPIEXEC_EXECUTABLE MATCHES "srun$")
+    # srun refuses a step whose task count exceeds the CPUs the allocation
+    # permits, and Frontier reserves 8 of each node's 64 cores, so a one-node
+    # job tops out at 56 tasks. --overcommit lets tasks share a CPU, which is
+    # what --oversubscribe does for Open MPI.
+    #
+    # --cpu-bind=none is not optional here. Under sbatch, srun's default
+    # binding pins the surplus ranks onto cores already taken, and two ranks
+    # sharing a core deadlock each other's RMA progress spin loops until they
+    # time out: a 64-rank run costs 60s bound versus 1s unbound. Leaving the
+    # ranks unbound lets the kernel balance the spinners across the cores.
+    set(MPI_OVERSUBSCRIBE_FLAG "--overcommit;--cpu-bind=none")
+    message(
+      STATUS "Detected srun, using --overcommit --cpu-bind=none for oversubscription")
   else()
     message(
       STATUS
