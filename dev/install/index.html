@@ -776,9 +776,11 @@ environment variable).</p>
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span>-D<span class="w"> </span>hierarchical<span class="w"> </span>-t<span class="w"> </span><span class="m">100</span><span class="w"> </span>-d<span class="w"> </span><span class="m">10</span>
 </code></pre></div>
 <p>Benchmarks fetch <code>cxxopts</code> at configure time for argument parsing.  See
-<a href="../implementations/#benchmarking">Benchmarking</a> for what each driver measures, and
-<code>benchmark/scripts/</code> for Frontier and Aurora launch scripts plus plotting
-helpers (<code>pip install -r benchmark/scripts/requirements.txt</code>).</p>
+<a href="../implementations/#benchmarking">Benchmarking</a> for what each driver measures.
+Site launch and submit scripts live under <code>benchmark/frontier/</code> and
+<code>benchmark/aurora/</code>; machine-independent helpers, including the plotting
+scripts, stay in <code>benchmark/scripts/</code>
+(<code>pip install -r benchmark/scripts/requirements.txt</code>).</p>
 
 
 
