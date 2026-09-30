@@ -26,7 +26,10 @@ import scienceplots  # noqa: F401  # registers matplotlib styles
 IEEE_FIG_WIDTH = 3.5
 IEEE_FIG_HEIGHT = 3.5
 
-MARKER_SHAPES = ['o', 's', '^', 'v', 'D', 'p', '*', 'h', 'X', '<', '>', 'd']
+# Index 7 is 'X' rather than tab10's next polygon: slot 5 is already a
+# pentagon, and open pentagon against open hexagon is not a distinction that
+# survives a column-width figure.
+MARKER_SHAPES = ['o', 's', '^', 'v', 'D', 'p', '*', 'X', 'h', '<', '>', 'd']
 
 # Line styles run on the same index as the colors and markers. Left to the
 # axes property cycle they are handed out in plotting order instead, so one
@@ -159,8 +162,14 @@ DISTRIBUTOR_DISPLAY_NAMES = {
     "hierarchical": "Hierarchical",
     "lockfree_rma": "Lock-Free RMA",
     "hierarchical_lockfree_rma": "Hierarchical Lock-Free RMA",
-    "adlb": "ADLB",
+    "adlb": "ADLB (single producer)",
+    "adlb_distributed": "ADLB (distributed producers)",
 }
+
+
+# Every ADLB series, however its batch is published. The server count is the
+# variant slot for all of them.
+ADLB_DISTRIBUTORS = frozenset({"adlb", "adlb_distributed"})
 
 
 # The ADLB configuration the figures are drawn from, measured as its best by
@@ -171,17 +180,17 @@ ADLB_CANONICAL_SERVERS = 1
 def variant_applies(distributor: str) -> bool:
     """Whether a series key's second slot names a real variant of this one.
 
-    The hierarchical pair varies by upper fan-out, ADLB by server count;
-    everything else has one topology and always carries -1.
+    The hierarchical pair varies by upper fan-out, the ADLB arms by server
+    count; everything else has one topology and always carries -1.
     """
-    return "hierarchical" in distributor or distributor == "adlb"
+    return "hierarchical" in distributor or distributor in ADLB_DISTRIBUTORS
 
 
 def format_distributor_label(distributor: str, variant: int | None = None) -> str:
     label = DISTRIBUTOR_DISPLAY_NAMES.get(distributor, distributor.replace("_", "-"))
     if variant is None or not variant_applies(distributor):
         return label
-    if distributor == "adlb":
+    if distributor in ADLB_DISTRIBUTORS:
         return f"{label} (servers={variant})"
     return f"{label} ({format_fanout(variant)})"
 
@@ -203,6 +212,7 @@ DISTRIBUTOR_SERIES_ORDER: list[tuple[str, int]] = [
     ("hierarchical_lockfree_rma", 0),
     ("hierarchical_lockfree_rma", -1),
     ("adlb", ADLB_CANONICAL_SERVERS),
+    ("adlb_distributed", ADLB_CANONICAL_SERVERS),
 ]
 
 
@@ -385,7 +395,22 @@ def series_marker(index: int) -> str:
     return MARKER_SHAPES[index % len(MARKER_SHAPES)]
 
 
+# tab10 runs into a mid-grey at index 7, which the "Ideal greedy" reference
+# line already owns, and an olive at 8 that falls outside the lightness band
+# and reads at 2:1 against white on paper. Slot 7 is named instead. Chosen by
+# the OKLab checks rather than by eye: #7b3294 clears delta-E 8 (x100, Machado
+# protan and deutan at severity 1.0) against every series it shares a figure
+# with, holds 7.7:1 contrast on white, and sits inside the 0.43-0.77 lightness
+# band. It is only 13.9 from tab10's purple under normal vision, below the 15
+# floor -- they never co-occur, since the fan-out-0 series that owns that
+# purple is absent from every figure ADLB appears in, but a figure that put
+# them together would need to re-step one of them.
+SERIES_COLOR_OVERRIDES: dict[int, str] = {7: '#7b3294'}
+
+
 def series_color(index: int) -> Any:
+    if index in SERIES_COLOR_OVERRIDES:
+        return SERIES_COLOR_OVERRIDES[index]
     return colormaps['tab10'](index % 10)
 
 
@@ -510,9 +535,9 @@ def add_plot_cli_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--format",
         nargs="+",
-        default=["png"],
+        default=["pdf", "png"],
         choices=["png", "pdf", "svg"],
-        help="Output image format(s); pass several to write each (default: png)",
+        help="Output image format(s); pass several to write each (default: pdf png)",
     )
     parser.add_argument(
         "--adlb-servers",
@@ -561,7 +586,11 @@ def filter_adlb_servers(rows: Sequence[RowT], servers: int) -> list[RowT]:
     """
     if not servers:
         return list(rows)
-    return [row for row in rows if row["distributor"] != "adlb" or int(row["fanout"]) == servers]
+    return [
+        row
+        for row in rows
+        if row["distributor"] not in ADLB_DISTRIBUTORS or int(row["fanout"]) == servers
+    ]
 
 
 def filter_systems(rows: Sequence[RowT], exclude_systems: Sequence[str]) -> list[RowT]:

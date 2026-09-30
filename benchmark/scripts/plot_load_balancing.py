@@ -28,6 +28,7 @@ from matplotlib.ticker import FuncFormatter, LogLocator
 
 from plot_common import (
     Recency,
+    ADLB_DISTRIBUTORS,
     COMPACT_LEGEND_STYLE,
     PANEL_HSPACE,
     add_light_grid,
@@ -92,7 +93,7 @@ def parse_rows(paths: Sequence[str]) -> list[MakespanRow]:
         fanout = int(float(row.get("max_upper_fanout", -1) or -1))
         if "hierarchical" not in distributor:
             fanout = -1
-        if distributor == "adlb":
+        if distributor in ADLB_DISTRIBUTORS:
             fanout = int(float(row.get("adlb_servers", -1) or -1))
         rows.append(
             {
@@ -235,7 +236,7 @@ LABEL_ABOVE = frozenset({"lockfree_rma"})
 
 # The mirror of the above: ADLB runs along the top of the axes, where an
 # above-curve label is clipped by the frame.
-LABEL_BELOW = frozenset({"adlb"})
+LABEL_BELOW = frozenset({"adlb", "adlb_distributed"})
 
 # Where a curve is too close to a neighbour to label cleanly, annotate only
 # the part of the range where the two have separated.

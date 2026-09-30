@@ -41,6 +41,16 @@ IFS=' ' read -r -a ADLB_SERVER_LIST <<< "${ADLB_SERVERS:-}"
 if [[ "${#ADLB_SERVER_LIST[@]}" -eq 0 ]]; then
   ADLB_SERVER_LIST=("")
 fi
+# Producer ranks publishing the batch, for DISTRIBUTIONS=adlb. 0 keeps the
+# master the sole producer, matching how the DynaMPI drivers insert; -1 uses
+# every rank held out of the worker set that --servers has not taken. Space
+# separated sweeps both, which is what puts the two ADLB series on one figure.
+# Producers come out of the held-out pool, so the task-executing count is the
+# same either way and the curves compare directly.
+IFS=' ' read -r -a ADLB_PRODUCER_LIST <<< "${ADLB_PRODUCERS:-}"
+if [[ "${#ADLB_PRODUCER_LIST[@]}" -eq 0 ]]; then
+  ADLB_PRODUCER_LIST=("")
+fi
 # Idle time before ADLB's servers declare the problem exhausted. Reached once,
 # after the last batch: between batches the master counts as busy to its own
 # server, so this is paid per run, not per batch.
@@ -119,10 +129,12 @@ for nodes in "${NODE_LIST[@]}"; do
       fi
       for duration_mode in "${DURATION_MODES[@]}"; do
         for adlb_servers in "${ADLB_SERVER_LIST[@]}"; do
+         for adlb_producers in "${ADLB_PRODUCER_LIST[@]}"; do
           echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node}" \
                "dist=${DISTRIBUTIONS} duration_mode=${duration_mode}" \
                "expected_us=${expected_us} k=${MIN_TASKS_PER_WORKER}-${max_k}" \
-               "${adlb_servers:+adlb_servers=${adlb_servers}}"
+               "${adlb_servers:+adlb_servers=${adlb_servers}}" \
+               "${adlb_producers:+adlb_producers=${adlb_producers}}"
           run_cmd=()
           if [[ -n "${RUN_TIMEOUT_S}" ]]; then
             run_cmd=(timeout "${RUN_TIMEOUT_S}")
@@ -139,6 +151,10 @@ for nodes in "${NODE_LIST[@]}"; do
           if [[ "${DISTRIBUTIONS}" == "adlb" && -n "${adlb_servers}" ]]; then
             servers_arg=(--servers "${adlb_servers}")
           fi
+          producers_arg=()
+          if [[ "${DISTRIBUTIONS}" == "adlb" && -n "${adlb_producers}" ]]; then
+            producers_arg=(--producers "${adlb_producers}")
+          fi
           run_cmd+=("${APP}"
                     --distribution "${DISTRIBUTIONS}"
                     --expected_us "${expected_us}"
@@ -152,6 +168,7 @@ for nodes in "${NODE_LIST[@]}"; do
                     --max_pending_rounds "${MAX_PENDING_ROUNDS}"
                     --nodes "${nodes}"
                     ${servers_arg[@]+"${servers_arg[@]}"}
+                    ${producers_arg[@]+"${producers_arg[@]}"}
                     --system "${SYSTEM}"
                     --output "${CSV}")
           # Unlike weak_scaling_distribution_rate, load_balancing finalizes and
@@ -161,9 +178,11 @@ for nodes in "${NODE_LIST[@]}"; do
           if ! "${run_cmd[@]}"; then
             echo "FAILED nodes=${nodes} ranks_per_node=${ranks_per_node}" \
                  "expected_us=${expected_us} duration_mode=${duration_mode}" \
-                 "${adlb_servers:+adlb_servers=${adlb_servers}}" >&2
+                 "${adlb_servers:+adlb_servers=${adlb_servers}}" \
+                 "${adlb_producers:+adlb_producers=${adlb_producers}}" >&2
             failures=$((failures + 1))
           fi
+         done
         done
       done
     done

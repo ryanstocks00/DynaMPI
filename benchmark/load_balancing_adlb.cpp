@@ -59,6 +59,10 @@ namespace {
 // the rank that published the batch.
 constexpr int kWorkType = 0;
 constexpr int kResultType = 1;
+// Distributed injection only: a producer's instruction to publish one stride
+// of the batch. Its own type so a producer can park in ADLB_Get(kInjectType)
+// without also matching work -- ADLB_Get takes one type, not a set.
+constexpr int kInjectType = 2;
 // ADLB rank 0, the counterpart of the DynaMPI distributors' manager.
 constexpr int kMasterRank = 0;
 
@@ -72,6 +76,10 @@ struct BenchmarkOptions {
   uint64_t nodes = 0;
   // Server ranks; 0 means one per node. Must divide the node count.
   int servers = 0;
+  // Producer ranks that publish the batch on the master's behalf. 0 keeps the
+  // master the sole producer; -1 takes every rank held out and not used as a
+  // server. See build_adlb_comm() for where they come from.
+  int producers = 0;
   // Results kept requested at once (ADLB_Amget).
   int result_window = 128;
   std::string system;
@@ -90,6 +98,18 @@ struct AdlbPlacement {
   uint64_t nodes = 0;
   uint64_t executing_workers = 0;  // every worker but the master
   int servers = 0;
+  int producers = 0;
+  // ADLB rank of producer 0; producer i is producer_base + i.
+  int producer_base = 0;
+};
+
+// What one producer is told to publish. Carried as a kInjectType task rather
+// than over a side communicator: a producer waiting in ADLB_Get is where
+// ADLB's idle detection expects an idle worker to be, whereas one parked in
+// an MPI_Bcast between batches is invisible to it.
+struct InjectDescriptor {
+  uint64_t first_task = 0;
+  uint64_t count = 0;
 };
 
 // Reorders MPI_COMM_WORLD into the communicator ADLB is initialised on.
@@ -104,8 +124,12 @@ struct AdlbPlacement {
 // rank 0 the master). That fixes the task-executing count at
 // world_size - nodes - 1, what the hierarchical distributors also report, so
 // every series drains the same batch and shares one reference line. Held-out
-// ranks that are not servers sit the run out entirely.
-AdlbPlacement build_adlb_comm(MPI_Comm world, int requested_servers) {
+// ranks that are not servers or producers sit the run out entirely.
+//
+// Producers come out of that same held-out pool, so turning them on leaves
+// the task-executing count untouched and the two ADLB arms stay comparable
+// with each other and with the DynaMPI series.
+AdlbPlacement build_adlb_comm(MPI_Comm world, int requested_servers, int requested_producers) {
   int world_rank = 0, world_size = 0;
   MPI_Comm_rank(world, &world_rank);
   MPI_Comm_size(world, &world_size);
@@ -147,18 +171,50 @@ AdlbPlacement build_adlb_comm(MPI_Comm world, int requested_servers) {
   const bool held_out = local_rank == local_size - 1;
   const bool is_server = held_out && node_index % nodes_per_server == 0;
 
+  // One held-out rank per node, minus the ones serving: what is left to draw
+  // producers from. Computed from node_index alone so every rank agrees
+  // without another collective.
+  const int server_nodes_before = (node_index + nodes_per_server - 1) / nodes_per_server;
+  const int spare_index = node_index - server_nodes_before;
+  const int spare_nodes = node_count - servers;
+  const int producers = requested_producers < 0 ? spare_nodes : requested_producers;
+  if (producers > spare_nodes) {
+    throw std::runtime_error(
+        "--producers must be no larger than the held-out ranks left over once --servers has "
+        "taken its own (" +
+        std::to_string(spare_nodes) + " here); got " + std::to_string(producers) + ".");
+  }
+  const bool is_producer = held_out && !is_server && spare_index < producers;
+
   AdlbPlacement placement;
   placement.nodes = static_cast<uint64_t>(node_count);
   placement.servers = servers;
+  placement.producers = producers;
+  placement.producer_base = total_workers;
   placement.executing_workers = static_cast<uint64_t>(total_workers - 1);
 
-  if (held_out && !is_server) {
+  // Producers extend the worker range, so the block each server owns is
+  // (total_workers + producers) / servers rather than total_workers /
+  // servers. Uneven division leaves ADLB's own mapping straddling the block
+  // boundaries this ordering was built to line up with -- harmless for the
+  // canonical single server, worth saying out loud for the sweep.
+  if (world_rank == 0 && servers > 1 && (total_workers + producers) % servers != 0) {
+    std::cerr << "warning: " << producers << " producers and " << servers
+              << " servers do not divide evenly; server affinity is approximate.\n";
+  }
+
+  if (held_out && !is_server && !is_producer) {
     MPI_Comm_split(world, MPI_UNDEFINED, 0, &placement.comm);
     return placement;
   }
-  // Comm_split orders by key, so these keys *are* the ADLB ranks.
-  const int key = is_server ? total_workers + node_index / nodes_per_server
-                            : node_index * workers_per_node + local_rank;
+  // Comm_split orders by key, so these keys *are* the ADLB ranks. Servers
+  // have to trail every worker, producers included.
+  int key = node_index * workers_per_node + local_rank;
+  if (is_producer) {
+    key = total_workers + spare_index;
+  } else if (is_server) {
+    key = total_workers + producers + node_index / nodes_per_server;
+  }
   MPI_Comm_split(world, 0, key, &placement.comm);
   return placement;
 }
@@ -188,18 +244,74 @@ void worker_loop(WorkerFunctor& worker_function, int my_rank) {
   }
 }
 
+// Publishes the stride each inject descriptor asks for, until ADLB shuts the
+// run down. A producer never executes a task -- it is one of the ranks held
+// out of the worker set -- so the executing count is the same whether or not
+// distributed injection is on.
+void producer_loop() {
+  InjectDescriptor descriptor;
+  while (true) {
+    void* payload = &descriptor;
+    int length = static_cast<int>(sizeof(InjectDescriptor));
+    int answer = 0, type_recvd = 0;
+    MPI_Comm task_comm = MPI_COMM_NULL;
+    const adlb_code rc =
+        ADLB_Get(kInjectType, &payload, &length, static_cast<int>(sizeof(InjectDescriptor)),
+                 &answer, &type_recvd, &task_comm);
+    if (rc == ADLB_SHUTDOWN) break;
+    check(rc, "ADLB_Get(inject)");
+
+    for (uint64_t i = 0; i < descriptor.count; ++i) {
+      const Task task = static_cast<Task>(descriptor.first_task + i);
+      check(ADLB_Put(&task, static_cast<int>(sizeof(Task)), ADLB_RANK_ANY, kMasterRank, kWorkType,
+                     ADLB_DEFAULT_PUT_OPTS),
+            "ADLB_Put(work)");
+    }
+  }
+}
+
 // Publishes `count` tasks and blocks until `count` results are back: the ADLB
 // equivalent of insert_tasks() then run_tasks() draining to exhaustion.
 //
 // Publishing is one blocking round trip per task -- ADLB_Put waits for a
 // response and the API has no async or batched put. Collecting does have one,
 // so it uses it: ADLB_Amget posts `window` receives behind a single request.
-void drain_batch(uint64_t first_task, uint64_t count, size_t window) {
-  for (uint64_t i = 0; i < count; ++i) {
-    const Task task = static_cast<Task>(first_task + i);
-    check(ADLB_Put(&task, static_cast<int>(sizeof(Task)), ADLB_RANK_ANY, kMasterRank, kWorkType,
-                   ADLB_DEFAULT_PUT_OPTS),
-          "ADLB_Put(work)");
+//
+// With `producers` > 0 the master publishes one descriptor per producer
+// instead, and they publish the tasks concurrently. That trades `count`
+// serial round trips for `producers` of them plus a concurrent
+// `count / producers` -- minimised near sqrt(count), which is about where a
+// producer per node lands for these batch sizes. It is the shape Swift/T
+// itself generates work in, and the reason the two arms are plotted
+// together: one is ADLB as the DynaMPI drivers are structured, the other is
+// ADLB given a producer set it can actually use.
+void drain_batch(uint64_t first_task, uint64_t count, size_t window, int producers,
+                 int producer_base) {
+  if (producers <= 0) {
+    for (uint64_t i = 0; i < count; ++i) {
+      const Task task = static_cast<Task>(first_task + i);
+      check(ADLB_Put(&task, static_cast<int>(sizeof(Task)), ADLB_RANK_ANY, kMasterRank, kWorkType,
+                     ADLB_DEFAULT_PUT_OPTS),
+            "ADLB_Put(work)");
+    }
+  } else {
+    // Even split, remainder spread over the leading producers. Targeted, so
+    // each descriptor lands on the rank meant to act on it.
+    const uint64_t per_producer = count / static_cast<uint64_t>(producers);
+    const uint64_t remainder = count % static_cast<uint64_t>(producers);
+    uint64_t next_task = first_task;
+    for (int i = 0; i < producers; ++i) {
+      InjectDescriptor descriptor;
+      descriptor.first_task = next_task;
+      descriptor.count = per_producer + (static_cast<uint64_t>(i) < remainder ? 1 : 0);
+      next_task += descriptor.count;
+      // Fewer tasks than producers: the tail has nothing to do, and a
+      // descriptor asking for none would only cost a round trip.
+      if (descriptor.count == 0) continue;
+      check(ADLB_Put(&descriptor, static_cast<int>(sizeof(InjectDescriptor)), producer_base + i,
+                     kMasterRank, kInjectType, ADLB_DEFAULT_PUT_OPTS),
+            "ADLB_Put(inject)");
+    }
   }
 
   // Reused across chunks: every request of a chunk is waited on before its
@@ -263,6 +375,11 @@ int main(int argc, char** argv) {
       "ADLB server ranks. Must divide the node count. 0 (default) puts one on every node, the "
       "same per-node overhead the hierarchical distributors pay for a node manager.",
       cxxopts::value<int>()->default_value("0"))(
+      "producers",
+      "Ranks that publish the batch on the master's behalf, drawn from the ranks held out of "
+      "the worker set. 0 (default) leaves the master the sole producer, as the DynaMPI drivers' "
+      "manager is; -1 uses every held-out rank --servers has not taken.",
+      cxxopts::value<int>()->default_value("0"))(
       "result_window", "Results the master requests at once via ADLB_Amget.",
       cxxopts::value<int>()->default_value("128"))(
       "S,system", "System label for plotting (frontier, aurora, ...)",
@@ -305,6 +422,7 @@ int main(int argc, char** argv) {
     opts.repeats = args["repeats"].as<uint64_t>();
     opts.nodes = args["nodes"].as<uint64_t>();
     opts.servers = args["servers"].as<int>();
+    opts.producers = args["producers"].as<int>();
     opts.result_window = args["result_window"].as<int>();
     opts.system = args["system"].as<std::string>();
     opts.output_path = args["output"].as<std::string>();
@@ -330,7 +448,7 @@ int main(int argc, char** argv) {
     int world_size = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    const AdlbPlacement placement = build_adlb_comm(MPI_COMM_WORLD, opts.servers);
+    const AdlbPlacement placement = build_adlb_comm(MPI_COMM_WORLD, opts.servers, opts.producers);
     if (opts.nodes == 0) opts.nodes = placement.nodes;
     if (placement.comm == MPI_COMM_NULL) {
       // Held out and not a server: takes no part in the run, and only has to
@@ -339,7 +457,7 @@ int main(int argc, char** argv) {
       return 0;
     }
 
-    int type_vect[2] = {kWorkType, kResultType};
+    int type_vect[3] = {kWorkType, kResultType, kInjectType};
     int am_server = 0;
     MPI_Comm adlb_comm = placement.comm;
     MPI_Comm worker_comm = MPI_COMM_NULL;
@@ -348,7 +466,7 @@ int main(int argc, char** argv) {
     // construct_s anyway -- it is what standing an ADLB instance up costs,
     // which is the column the other drivers put their setup cost in.
     dynampi::Timer init_timer;
-    check(ADLB_Init(placement.servers, 2, type_vect, &am_server, adlb_comm, &worker_comm),
+    check(ADLB_Init(placement.servers, 3, type_vect, &am_server, adlb_comm, &worker_comm),
           "ADLB_Init");
     const double construct_s = init_timer.stop().count();
 
@@ -360,8 +478,11 @@ int main(int argc, char** argv) {
       WorkerFunctor worker_function(world_rank, opts.expected_us, opts.duration_mode,
                                     opts.task_duration_cv);
       const size_t window = static_cast<size_t>(opts.result_window);
+      const int producers = placement.producers;
 
-      if (worker_rank == kMasterRank) {
+      if (producers > 0 && worker_rank >= placement.producer_base) {
+        producer_loop();
+      } else if (worker_rank == kMasterRank) {
         const uint64_t workers = placement.executing_workers;
         uint64_t next_task = 0;
         for (uint64_t k = opts.min_tasks_per_worker; k <= opts.max_tasks_per_worker; ++k) {
@@ -369,13 +490,13 @@ int main(int argc, char** argv) {
             // One task per worker, drained untimed, as load_balancing.cpp
             // warms each combo.
             dynampi::Timer warmup_timer;
-            drain_batch(next_task, workers, window);
+            drain_batch(next_task, workers, window, producers, placement.producer_base);
             next_task += workers;
             const double warmup_s = warmup_timer.stop().count();
 
             const uint64_t total_tasks = k * workers;
             dynampi::Timer batch_timer;
-            drain_batch(next_task, total_tasks, window);
+            drain_batch(next_task, total_tasks, window, producers, placement.producer_base);
             const double elapsed_s = batch_timer.stop().count();
             next_task += total_tasks;
 
@@ -384,8 +505,11 @@ int main(int argc, char** argv) {
             // of the process.
             ResultRow row;
             row.system = opts.system;
-            row.distributor = "adlb";
+            // Its own series: same library, a different producer structure,
+            // and the figures carry both.
+            row.distributor = producers > 0 ? "adlb_distributed" : "adlb";
             row.adlb_servers = placement.servers;
+            row.adlb_producers = producers;
             row.nodes = opts.nodes;
             row.world_size = static_cast<uint64_t>(world_size);
             row.workers = workers;
@@ -401,13 +525,16 @@ int main(int argc, char** argv) {
             load_balancing::append_result(opts.output_path, row);
           }
         }
-      }
 
-      // The master joins too: once every worker is parked in a Get with no
-      // work left, the servers hit their exhaustion condition and release
-      // everyone. It is also what keeps the run alive between batches --
-      // while the master is out here, its server counts it as busy.
-      worker_loop(worker_function, worker_rank);
+        // The master joins too: once every worker is parked in a Get with
+        // no work left, the servers hit their exhaustion condition and
+        // release everyone. It is also what keeps the run alive between
+        // batches -- while the master is out here, its server counts it as
+        // busy.
+        worker_loop(worker_function, worker_rank);
+      } else {
+        worker_loop(worker_function, worker_rank);
+      }
     }
 
     ADLB_Finalize();

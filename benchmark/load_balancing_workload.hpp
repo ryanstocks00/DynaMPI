@@ -123,6 +123,10 @@ struct ResultRow {
   int pipeline_depth = -1;
   int max_pending_rounds = -1;
   int adlb_servers = -1;  // ADLB only; -1 from the DynaMPI drivers
+  // ADLB only: producer ranks publishing the batch, 0 when the master
+  // publishes every task itself. -1 from the DynaMPI drivers, whose manager
+  // is always the sole producer and whose insertion is local anyway.
+  int adlb_producers = -1;
   uint64_t expected_us = 0;
   DurationMode duration_mode = DurationMode::Fixed;
   double task_duration_cv = 0.0;
@@ -140,7 +144,8 @@ struct ResultRow {
 
 inline void write_csv_header(std::ostream& os) {
   os << "system,distributor,nodes,world_size,workers,max_upper_fanout,pipeline_depth,"
-        "max_pending_rounds,adlb_servers,expected_us,duration_mode,task_duration_cv,"
+        "max_pending_rounds,adlb_servers,adlb_producers,expected_us,duration_mode,"
+        "task_duration_cv,"
         "tasks_per_worker,repeat,total_tasks,elapsed_s,construct_s,warmup_s,finalize_s,"
         "destruct_s\n";
 }
@@ -148,11 +153,11 @@ inline void write_csv_header(std::ostream& os) {
 inline void write_csv_row(std::ostream& os, const ResultRow& row) {
   os << row.system << "," << row.distributor << "," << row.nodes << "," << row.world_size << ","
      << row.workers << "," << row.max_upper_fanout << "," << row.pipeline_depth << ","
-     << row.max_pending_rounds << "," << row.adlb_servers << "," << row.expected_us << ","
-     << to_string(row.duration_mode) << "," << row.task_duration_cv << "," << row.tasks_per_worker
-     << "," << row.repeat << "," << row.total_tasks << "," << row.elapsed_s << ","
-     << row.construct_s << "," << row.warmup_s << "," << row.finalize_s << "," << row.destruct_s
-     << "\n";
+     << row.max_pending_rounds << "," << row.adlb_servers << "," << row.adlb_producers << ","
+     << row.expected_us << "," << to_string(row.duration_mode) << "," << row.task_duration_cv << ","
+     << row.tasks_per_worker << "," << row.repeat << "," << row.total_tasks << "," << row.elapsed_s
+     << "," << row.construct_s << "," << row.warmup_s << "," << row.finalize_s << ","
+     << row.destruct_s << "\n";
 }
 
 inline void append_result(const std::string& output_path, const ResultRow& row) {
@@ -161,7 +166,8 @@ inline void append_result(const std::string& output_path, const ResultRow& row) 
             << " max_upper_fanout=" << row.max_upper_fanout
             << " pipeline_depth=" << row.pipeline_depth
             << " max_pending_rounds=" << row.max_pending_rounds
-            << " adlb_servers=" << row.adlb_servers << " expected_us=" << row.expected_us
+            << " adlb_servers=" << row.adlb_servers << " adlb_producers=" << row.adlb_producers
+            << " expected_us=" << row.expected_us
             << " duration_mode=" << to_string(row.duration_mode)
             << " task_duration_cv=" << row.task_duration_cv
             << " tasks_per_worker=" << row.tasks_per_worker << " repeat=" << row.repeat

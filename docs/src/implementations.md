@@ -497,6 +497,35 @@ master publishing the whole batch puts every task on its own server's queue
 for the others to steal, and below roughly 10 ms tasks ADLB is limited by that
 master's blocking per-task `ADLB_Put` regardless of how many servers exist.
 
+That limit is the client API's, not the machine's.  `ADLB_Put` posts a
+response receive, sends, and waits (`lb/code/src/adlb.c`), so publishing costs
+one round trip per task with no asynchronous or batched put to amortise it —
+the get side has `ADLB_Iget`, `ADLB_Aget` and `ADLB_Amget`, the put side has
+nothing equivalent.  Nor can the publishing move closer to the queue:
+`ADLB_Server()` holds a server rank in its own loop until shutdown, so no user
+code runs there, and `ADLB_Put` has no local short-circuit for a caller that
+is itself the target server.  The master's puts already go to
+`xlb_s.layout.my_server`, which this driver's placement puts on the master's
+own node.
+
+So `--producers` parallelises the publishing instead.  With `--producers 0`
+(the default) the master publishes every task itself, matching how the DynaMPI
+drivers' manager inserts, and the rows are labelled `adlb`.  With
+`--producers N` the master instead sends one descriptor per producer and they
+publish their strides concurrently, trading `total_tasks` serial round trips
+for `N` of them plus a concurrent `total_tasks / N`; those rows are labelled
+`adlb_distributed` and the figures carry both series.  Producers are drawn
+from the ranks already held out of the worker set, so the task-executing count
+is identical either way and the two arms compare directly with each other and
+with the DynaMPI series.  `--producers -1` takes every held-out rank
+`--servers` has not claimed, which for these batch sizes lands near the
+`sqrt(total_tasks)` that minimises the two-level cost.  Sweep both with
+`ADLB_PRODUCERS="0 -1"`.
+
+The descriptors travel as their own ADLB work type rather than over a side
+communicator, so a producer waiting for its next batch is parked in
+`ADLB_Get` — where ADLB's idle detection expects an idle worker to be.
+
 For orientation, the design work behind these classes found the flat lock-free RMA
 distributor plateauing once a single manager window saturated, while the
 hierarchical topologies kept climbing with node count — which is the entire
