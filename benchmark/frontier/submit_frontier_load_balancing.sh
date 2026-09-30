@@ -12,6 +12,10 @@ set -euo pipefail
 #   NODE_LIST=8 TASK_US_LIST=1000 DURATION_MODES=fixed MAX_TASKS_PER_WORKER=2 \
 #     WALLTIME=00:10:00 CSV_SUFFIX=_smoke JOB_TAG=_smoke \
 #     ./benchmark/frontier/submit_frontier_load_balancing.sh
+# The ADLB arm is its own binary and so its own job (see
+# launch_frontier_load_balancing.sh):
+#   DISTRIBUTIONS=adlb ADLB_SERVERS=1 JOB_TAG=_adlb CSV_SUFFIX=_adlb \
+#     ./benchmark/frontier/submit_frontier_load_balancing.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SYSTEM="frontier"
@@ -35,6 +39,8 @@ MAX_TASKS_PER_WORKER="${MAX_TASKS_PER_WORKER:-}"
 MAX_TASKS_PER_WORKER_LIST="${MAX_TASKS_PER_WORKER_LIST:-}"
 REPEATS="${REPEATS:-}"
 DISTRIBUTIONS="${DISTRIBUTIONS:-}"
+ADLB_SERVERS="${ADLB_SERVERS:-}"
+ADLB_EXHAUST_TIME="${ADLB_EXHAUST_TIME:-}"
 TASK_DURATION_CV="${TASK_DURATION_CV:-}"
 MAX_UPPER_FANOUT="${MAX_UPPER_FANOUT:-}"
 PIPELINE_DEPTH="${PIPELINE_DEPTH:-}"
@@ -65,6 +71,8 @@ export MAX_TASKS_PER_WORKER=\"${MAX_TASKS_PER_WORKER}\"
 export MAX_TASKS_PER_WORKER_LIST=\"${MAX_TASKS_PER_WORKER_LIST}\"
 export REPEATS=\"${REPEATS}\"
 export DISTRIBUTIONS=\"${DISTRIBUTIONS}\"
+export ADLB_SERVERS=\"${ADLB_SERVERS}\"
+export ADLB_EXHAUST_TIME=\"${ADLB_EXHAUST_TIME}\"
 export TASK_DURATION_CV=\"${TASK_DURATION_CV}\"
 export MAX_UPPER_FANOUT=\"${MAX_UPPER_FANOUT}\"
 export PIPELINE_DEPTH=\"${PIPELINE_DEPTH}\"

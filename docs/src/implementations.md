@@ -449,6 +449,8 @@ repository ships drivers for exactly that (build with
 |-----------|----------|
 | `weak_scaling_distribution_rate` | Task hand-off rate at fixed rank count, across all four full distributors |
 | `asymptotic_distribution_throughput` | Throughput vs. task count |
+| `load_balancing` | Wall clock to drain a fixed batch, against a simulated greedy floor |
+| `load_balancing_adlb` | The same batch drain run against ADLB, as an external reference |
 | `shutdown_time` | Cost of finalisation at scale |
 | `rma_atomic_microbench` | Raw `MPI_Fetch_and_op` ceiling for the RMA path |
 | `pingpong`, `timer_resolution` | Baseline latency and clock granularity |
@@ -465,6 +467,35 @@ publication budget (default 500M, ~19 GiB for this scalar workload).  The
 library itself has no lifetime task cap.  Lower it to save memory; the driver
 warns if the budget ends the window early.  Site scripts expose this as
 `MAX_TASKS`; plotting helpers live under `benchmark/scripts/`.
+
+### Comparing against ADLB
+
+`load_balancing_adlb` runs the batch-drain measurement against
+[ADLB/X](https://github.com/swift-lang/swift-t), so the load-balancing figures
+carry an established external work-stealing scheduler alongside DynaMPI's own
+classes.  It is optional — the target only appears when CMake is pointed at a
+build of ADLB and its `c-utils` dependency:
+
+```bash
+./benchmark/frontier/build_adlb_frontier.sh   # clones and builds both
+cmake -B build -DDYNAMPI_BUILD_BENCHMARKS=ON \
+      -DADLB_ROOT=<prefix>/install/lb -DCUTILS_ROOT=<prefix>/install/c-utils
+```
+
+It is a separate binary because ADLB owns its ranks for the life of the
+process and cannot be re-initialised, so it cannot share one with distributors
+built per batch; the workload and CSV schema are shared through
+`benchmark/load_balancing_workload.hpp`.  The run is shaped to match: one rank
+per node is held out of the worker set whatever `--servers` is, leaving the
+same `world_size - nodes - 1` task-executing ranks the hierarchical
+distributors report, and the driver reorders `MPI_COMM_WORLD` so that ADLB's
+trailing-rank servers land inside the worker blocks they serve.
+
+Server count is a real knob, so sweep it (`ADLB_SERVERS="1 4 16 128"`) rather
+than assuming.  On Frontier at 128 nodes one server measured best: a single
+master publishing the whole batch puts every task on its own server's queue
+for the others to steal, and below roughly 10 ms tasks ADLB is limited by that
+master's blocking per-task `ADLB_Put` regardless of how many servers exist.
 
 For orientation, the design work behind these classes found the flat lock-free RMA
 distributor plateauing once a single manager window saturated, while the

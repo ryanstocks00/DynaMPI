@@ -151,21 +151,39 @@ def format_fanout(fanout: int) -> str:
     return f"fanout={fanout}"
 
 
-# Display names for the four distributor implementations. The CSV carries the
-# driver's --distribution values; these are what the paper calls them.
+# Display names for the four distributor implementations, plus ADLB, the
+# external reference the load-balancing sweep also measures. The CSV carries
+# the driver's --distribution values; these are what the paper calls them.
 DISTRIBUTOR_DISPLAY_NAMES = {
     "naive": "Naive",
     "hierarchical": "Hierarchical",
     "lockfree_rma": "Lock-Free RMA",
     "hierarchical_lockfree_rma": "Hierarchical Lock-Free RMA",
+    "adlb": "ADLB",
 }
 
 
-def format_distributor_label(distributor: str, fanout: int | None = None) -> str:
+# The ADLB configuration the figures are drawn from, measured as its best by
+# sweeping the server count at 128 nodes (see --adlb-servers).
+ADLB_CANONICAL_SERVERS = 1
+
+
+def variant_applies(distributor: str) -> bool:
+    """Whether a series key's second slot names a real variant of this one.
+
+    The hierarchical pair varies by upper fan-out, ADLB by server count;
+    everything else has one topology and always carries -1.
+    """
+    return "hierarchical" in distributor or distributor == "adlb"
+
+
+def format_distributor_label(distributor: str, variant: int | None = None) -> str:
     label = DISTRIBUTOR_DISPLAY_NAMES.get(distributor, distributor.replace("_", "-"))
-    if fanout is None or "hierarchical" not in distributor:
+    if variant is None or not variant_applies(distributor):
         return label
-    return f"{label} ({format_fanout(fanout)})"
+    if distributor == "adlb":
+        return f"{label} (servers={variant})"
+    return f"{label} ({format_fanout(variant)})"
 
 
 # Fixed color/marker slot for each (distributor, fanout) identity, independent
@@ -174,6 +192,9 @@ def format_distributor_label(distributor: str, fanout: int | None = None) -> str
 # the same algorithm gets the same color/marker in every figure; legend
 # *order* within one plot is sorted separately by whatever ranking that plot
 # wants (e.g. fastest-first), decoupling "reading order" from "identity".
+# Appended to, never reordered: an entry's position is its color, so
+# inserting one would repaint every series after it in figures already
+# published.
 DISTRIBUTOR_SERIES_ORDER: list[tuple[str, int]] = [
     ("naive", -1),
     ("hierarchical", 0),
@@ -181,16 +202,17 @@ DISTRIBUTOR_SERIES_ORDER: list[tuple[str, int]] = [
     ("lockfree_rma", -1),
     ("hierarchical_lockfree_rma", 0),
     ("hierarchical_lockfree_rma", -1),
+    ("adlb", ADLB_CANONICAL_SERVERS),
 ]
 
 
-def distributor_series_index(distributor: str, fanout: int) -> int:
-    """Stable color/marker index for a (distributor, fanout) identity.
+def distributor_series_index(distributor: str, variant: int) -> int:
+    """Stable color/marker index for a (distributor, variant) identity.
 
     Falls back to a slot past the known variants for anything else, so an
     unexpected series still gets *a* consistent slot rather than crashing.
     """
-    key = (distributor, fanout if "hierarchical" in distributor else -1)
+    key = (distributor, variant if variant_applies(distributor) else -1)
     if key in DISTRIBUTOR_SERIES_ORDER:
         return DISTRIBUTOR_SERIES_ORDER.index(key)
     return len(DISTRIBUTOR_SERIES_ORDER) + (hash(key) % 10)
@@ -493,6 +515,17 @@ def add_plot_cli_args(parser: argparse.ArgumentParser) -> None:
         help="Output image format(s); pass several to write each (default: png)",
     )
     parser.add_argument(
+        "--adlb-servers",
+        type=int,
+        # Server count is not part of the figures' story, so only the best
+        # configuration is drawn; 0 keeps every count, which is how the
+        # sensitivity sweep is plotted.
+        default=ADLB_CANONICAL_SERVERS,
+        help=f"Only keep ADLB rows run with this many servers (default: "
+        f"{ADLB_CANONICAL_SERVERS}, ADLB's measured best). Pass 0 to keep "
+        f"every server count.",
+    )
+    parser.add_argument(
         "--ranks-per-node",
         type=int,
         nargs="+",
@@ -518,6 +551,17 @@ def filter_ranks_per_node(rows: Sequence[RowT], ranks_per_node: Sequence[int]) -
         return list(rows)
     allowed = set(ranks_per_node)
     return [row for row in rows if int(row["ranks_per_node"]) in allowed]
+
+
+def filter_adlb_servers(rows: Sequence[RowT], servers: int) -> list[RowT]:
+    """Keep one ADLB server count; 0 disables filtering.
+
+    ADLB's server count is the variant slot of its series key, so that is
+    where this reads it from. No other distributor is touched.
+    """
+    if not servers:
+        return list(rows)
+    return [row for row in rows if row["distributor"] != "adlb" or int(row["fanout"]) == servers]
 
 
 def filter_systems(rows: Sequence[RowT], exclude_systems: Sequence[str]) -> list[RowT]:
