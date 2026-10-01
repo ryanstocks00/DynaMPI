@@ -28,12 +28,15 @@ from matplotlib.ticker import FuncFormatter, LogLocator
 
 from plot_common import (
     Recency,
+    ADLB_DISTRIBUTORS,
     COMPACT_LEGEND_STYLE,
     PANEL_HSPACE,
     add_light_grid,
     add_plot_cli_args,
     collect_csv_paths,
     distributor_series_index,
+    filter_adlb_arms,
+    filter_adlb_servers,
     filter_ranks_per_node,
     filter_systems,
     format_distributor_label,
@@ -86,9 +89,13 @@ def parse_rows(paths: Sequence[str]) -> list[MakespanRow]:
         nodes = int(float(row.get("nodes", 0)))
         world_size = int(float(row.get("world_size", 0)))
         distributor = row.get("distributor", "").strip()
+        # The variant slot: upper fan-out for the hierarchical pair, server
+        # count for ADLB, -1 for the flat distributors, which have neither.
         fanout = int(float(row.get("max_upper_fanout", -1) or -1))
         if "hierarchical" not in distributor:
             fanout = -1
+        if distributor in ADLB_DISTRIBUTORS:
+            fanout = int(float(row.get("adlb_servers", -1) or -1))
         rows.append(
             {
                 "system": row.get("system", "").strip() or "unknown",
@@ -227,6 +234,12 @@ LABEL_NUDGES: dict[tuple[str, int], float] = {}
 # range, so the generic choice puts the flat one's labels below its curve
 # and the hierarchical one's above its curve -- both into the same gap.
 LABEL_ABOVE = frozenset({"lockfree_rma"})
+
+# The mirror of the above: ADLB runs along the top of the axes, where an
+# above-curve label is clipped by the frame.
+LABEL_BELOW = frozenset(
+    {"adlb", "adlb_distributed", "adlb_no_results", "adlb_distributed_no_results"}
+)
 
 # Where a curve is too close to a neighbour to label cleanly, annotate only
 # the part of the range where the two have separated.
@@ -402,15 +415,21 @@ def draw_load_balancing_axes(
             )
         }
 
+    # The variant suffix is redundant unless a sweep put two configurations
+    # of the same distributor side by side.
+    variants: dict[str, set[int]] = defaultdict(set)
+    for series_distributor, series_variant in totals:
+        variants[series_distributor].add(series_variant)
+
     overrides = LABEL_OVERRIDES.get(expected_us)
     for rank, series_key in enumerate(ordered):
         distributor, fanout = series_key
         points = totals[series_key]
         batches = sorted(points)
         idx = distributor_series_index(distributor, fanout)
-        # Only the default topology appears in this figure, so the fan-out
-        # suffix would be the same on every series.
-        label = format_distributor_label(distributor)
+        label = format_distributor_label(
+            distributor, fanout if len(variants[distributor]) > 1 else None
+        )
         line = plot_node_series(
             ax, idx, batches, [points[b] for b in batches], label, linewidth=1.0,
             markersize=SERIES_MARKERSIZE,
@@ -456,6 +475,8 @@ def draw_load_balancing_axes(
             offset = 5.0 if rank % 2 == 0 else -10.0
             if distributor in LABEL_ABOVE:
                 offset = 5.0
+            if distributor in LABEL_BELOW:
+                offset = -10.0
             skipped = LABEL_SKIP.get(distributor, frozenset())
         else:
             offset = overrides.get(distributor, 0.0)
@@ -612,6 +633,8 @@ def main() -> None:
     rows = parse_rows(paths)
     rows = launch_ranks_per_node(rows)
     rows = filter_ranks_per_node(rows, args.ranks_per_node)
+    rows = filter_adlb_servers(rows, args.adlb_servers)
+    rows = filter_adlb_arms(rows, args.adlb_arms)
     rows = filter_systems(rows, args.exclude_system)
     if not rows:
         raise SystemExit("No load-balancing makespan rows found in the given inputs")

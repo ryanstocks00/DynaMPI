@@ -449,6 +449,8 @@ repository ships drivers for exactly that (build with
 |-----------|----------|
 | `weak_scaling_distribution_rate` | Task hand-off rate at fixed rank count, across all four full distributors |
 | `asymptotic_distribution_throughput` | Throughput vs. task count |
+| `load_balancing` | Wall clock to drain a fixed batch, against a simulated greedy floor |
+| `load_balancing_adlb` | The same batch drain run against ADLB, as an external reference |
 | `shutdown_time` | Cost of finalisation at scale |
 | `rma_atomic_microbench` | Raw `MPI_Fetch_and_op` ceiling for the RMA path |
 | `pingpong`, `timer_resolution` | Baseline latency and clock granularity |
@@ -465,6 +467,43 @@ publication budget (default 500M, ~19 GiB for this scalar workload).  The
 library itself has no lifetime task cap.  Lower it to save memory; the driver
 warns if the budget ends the window early.  Site scripts expose this as
 `MAX_TASKS`; plotting helpers live under `benchmark/scripts/`.
+
+### Comparing against ADLB
+
+`load_balancing_adlb` runs the same batch drain against
+[ADLB/X](https://github.com/swift-lang/swift-t), so the figures carry an
+external work-stealing scheduler.  It is optional — the target appears only
+when CMake is pointed at a build of ADLB and `c-utils`:
+
+```bash
+./benchmark/frontier/build_adlb_frontier.sh   # clones and builds both
+cmake -B build -DDYNAMPI_BUILD_BENCHMARKS=ON \
+      -DADLB_ROOT=<prefix>/install/lb -DCUTILS_ROOT=<prefix>/install/c-utils
+```
+
+Separate binary because ADLB owns its ranks for the whole process and cannot
+be re-initialised; the workload and CSV schema are shared via
+`load_balancing_workload.hpp`.  One rank per node is held out whatever
+`--servers` is, leaving the same `world_size - nodes - 1` task-executing ranks
+the hierarchical distributors report, and `MPI_COMM_WORLD` is reordered so
+ADLB's trailing-rank servers land in the worker blocks they serve.
+
+Four knobs, all worth sweeping rather than assuming — ADLB's defaults are not
+neutral for a master-worker batch:
+
+| flag | effect |
+|------|--------|
+| `--servers` | server ranks; each serves its own nodes' workers |
+| `--producers` | `1` master publishes everything, `-1` every worker publishes its own share |
+| `--put_routing` | `--producers 1` only: `spread` (default) round-robins a soft target so puts reach every server; `local` is lb's default, all on the master's server |
+| `--steal_rate_limit` | overrides lb's compile-time 0.05 s; `backoffs.c`'s own comment derives 0.0005 |
+
+Cost model, from ADLB's counters (`ADLB_PERF_COUNTERS=true`): roughly three
+message exchanges per task — task in, result back, worker get — all on a
+single-threaded server rank.  `ADLB_Put` is one blocking round trip with no
+async or batched equivalent, so spreading the producers is the only way to
+parallelise entry.  Results stay centralised in both arms (every result is
+targeted at the master), which caps what that can recover.
 
 For orientation, the design work behind these classes found the flat lock-free RMA
 distributor plateauing once a single manager window saturated, while the
