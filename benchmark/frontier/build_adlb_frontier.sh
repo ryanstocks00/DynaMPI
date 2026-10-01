@@ -3,12 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 set -euo pipefail
 
-# Builds ADLB/X (the `lb` component of Swift/T, the current implementation of
-# ADLB) and its c-utils dependency, for benchmark/load_balancing_adlb.cpp.
-# ADLB is an external reference, not a DynaMPI dependency, so this is not part
-# of a normal build; it prints the CMake flags to use afterwards.
-#
-# Run from a login node: it clones over https and needs autoconf/automake.
+# Builds ADLB/X (Swift/T's `lb`) and its c-utils dependency for
+# benchmark/load_balancing_adlb.cpp, printing the CMake flags to use after.
+# Run from a login node: clones over https, needs autoconf/automake.
 
 PREFIX="${PREFIX:-/lustre/orion/${ACCOUNT:-chm213}/scratch/${USER}/adlb}"
 SRC_DIR="${SRC_DIR:-${PREFIX}/swift-t}"

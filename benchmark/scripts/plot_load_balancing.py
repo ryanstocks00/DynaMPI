@@ -35,6 +35,7 @@ from plot_common import (
     add_plot_cli_args,
     collect_csv_paths,
     distributor_series_index,
+    filter_adlb_arms,
     filter_adlb_servers,
     filter_ranks_per_node,
     filter_systems,
@@ -236,7 +237,9 @@ LABEL_ABOVE = frozenset({"lockfree_rma"})
 
 # The mirror of the above: ADLB runs along the top of the axes, where an
 # above-curve label is clipped by the frame.
-LABEL_BELOW = frozenset({"adlb", "adlb_distributed"})
+LABEL_BELOW = frozenset(
+    {"adlb", "adlb_distributed", "adlb_no_results", "adlb_distributed_no_results"}
+)
 
 # Where a curve is too close to a neighbour to label cleanly, annotate only
 # the part of the range where the two have separated.
@@ -631,6 +634,7 @@ def main() -> None:
     rows = launch_ranks_per_node(rows)
     rows = filter_ranks_per_node(rows, args.ranks_per_node)
     rows = filter_adlb_servers(rows, args.adlb_servers)
+    rows = filter_adlb_arms(rows, args.adlb_arms)
     rows = filter_systems(rows, args.exclude_system)
     if not rows:
         raise SystemExit("No load-balancing makespan rows found in the given inputs")

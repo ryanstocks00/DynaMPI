@@ -470,11 +470,10 @@ warns if the budget ends the window early.  Site scripts expose this as
 
 ### Comparing against ADLB
 
-`load_balancing_adlb` runs the batch-drain measurement against
-[ADLB/X](https://github.com/swift-lang/swift-t), so the load-balancing figures
-carry an established external work-stealing scheduler alongside DynaMPI's own
-classes.  It is optional — the target only appears when CMake is pointed at a
-build of ADLB and its `c-utils` dependency:
+`load_balancing_adlb` runs the same batch drain against
+[ADLB/X](https://github.com/swift-lang/swift-t), so the figures carry an
+external work-stealing scheduler.  It is optional — the target appears only
+when CMake is pointed at a build of ADLB and `c-utils`:
 
 ```bash
 ./benchmark/frontier/build_adlb_frontier.sh   # clones and builds both
@@ -482,49 +481,29 @@ cmake -B build -DDYNAMPI_BUILD_BENCHMARKS=ON \
       -DADLB_ROOT=<prefix>/install/lb -DCUTILS_ROOT=<prefix>/install/c-utils
 ```
 
-It is a separate binary because ADLB owns its ranks for the life of the
-process and cannot be re-initialised, so it cannot share one with distributors
-built per batch; the workload and CSV schema are shared through
-`benchmark/load_balancing_workload.hpp`.  The run is shaped to match: one rank
-per node is held out of the worker set whatever `--servers` is, leaving the
-same `world_size - nodes - 1` task-executing ranks the hierarchical
-distributors report, and the driver reorders `MPI_COMM_WORLD` so that ADLB's
-trailing-rank servers land inside the worker blocks they serve.
+Separate binary because ADLB owns its ranks for the whole process and cannot
+be re-initialised; the workload and CSV schema are shared via
+`load_balancing_workload.hpp`.  One rank per node is held out whatever
+`--servers` is, leaving the same `world_size - nodes - 1` task-executing ranks
+the hierarchical distributors report, and `MPI_COMM_WORLD` is reordered so
+ADLB's trailing-rank servers land in the worker blocks they serve.
 
-Server count is a real knob, so sweep it (`ADLB_SERVERS="1 4 16 128"`) rather
-than assuming.  On Frontier at 128 nodes one server measured best: a single
-master publishing the whole batch puts every task on its own server's queue
-for the others to steal, and below roughly 10 ms tasks ADLB is limited by that
-master's blocking per-task `ADLB_Put` regardless of how many servers exist.
+Four knobs, all worth sweeping rather than assuming — ADLB's defaults are not
+neutral for a master-worker batch:
 
-That limit is the client API's, not the machine's.  `ADLB_Put` posts a
-response receive, sends, and waits (`lb/code/src/adlb.c`), so publishing costs
-one round trip per task with no asynchronous or batched put to amortise it —
-the get side has `ADLB_Iget`, `ADLB_Aget` and `ADLB_Amget`, the put side has
-nothing equivalent.  Nor can the publishing move closer to the queue:
-`ADLB_Server()` holds a server rank in its own loop until shutdown, so no user
-code runs there, and `ADLB_Put` has no local short-circuit for a caller that
-is itself the target server.  The master's puts already go to
-`xlb_s.layout.my_server`, which this driver's placement puts on the master's
-own node.
+| flag | effect |
+|------|--------|
+| `--servers` | server ranks; each serves its own nodes' workers |
+| `--producers` | `1` master publishes everything, `-1` every worker publishes its own share |
+| `--put_routing` | `--producers 1` only: `spread` (default) round-robins a soft target so puts reach every server; `local` is lb's default, all on the master's server |
+| `--steal_rate_limit` | overrides lb's compile-time 0.05 s; `backoffs.c`'s own comment derives 0.0005 |
 
-So `--producers` parallelises the publishing instead.  With `--producers 0`
-(the default) the master publishes every task itself, matching how the DynaMPI
-drivers' manager inserts, and the rows are labelled `adlb`.  With
-`--producers N` the master instead sends one descriptor per producer and they
-publish their strides concurrently, trading `total_tasks` serial round trips
-for `N` of them plus a concurrent `total_tasks / N`; those rows are labelled
-`adlb_distributed` and the figures carry both series.  Producers are drawn
-from the ranks already held out of the worker set, so the task-executing count
-is identical either way and the two arms compare directly with each other and
-with the DynaMPI series.  `--producers -1` takes every held-out rank
-`--servers` has not claimed, which for these batch sizes lands near the
-`sqrt(total_tasks)` that minimises the two-level cost.  Sweep both with
-`ADLB_PRODUCERS="0 -1"`.
-
-The descriptors travel as their own ADLB work type rather than over a side
-communicator, so a producer waiting for its next batch is parked in
-`ADLB_Get` — where ADLB's idle detection expects an idle worker to be.
+Cost model, from ADLB's counters (`ADLB_PERF_COUNTERS=true`): roughly three
+message exchanges per task — task in, result back, worker get — all on a
+single-threaded server rank.  `ADLB_Put` is one blocking round trip with no
+async or batched equivalent, so spreading the producers is the only way to
+parallelise entry.  Results stay centralised in both arms (every result is
+targeted at the master), which caps what that can recover.
 
 For orientation, the design work behind these classes found the flat lock-free RMA
 distributor plateauing once a single manager window saturated, while the

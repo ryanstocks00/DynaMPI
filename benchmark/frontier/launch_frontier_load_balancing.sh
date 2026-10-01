@@ -32,28 +32,38 @@ MIN_TASKS_PER_WORKER="${MIN_TASKS_PER_WORKER:-1}"
 REPEATS="${REPEATS:-3}"
 # Comma-separated, or "all", or "adlb".
 DISTRIBUTIONS="${DISTRIBUTIONS:-all}"
-# ADLB server ranks, for DISTRIBUTIONS=adlb; each must divide the node count,
-# empty leaves the binary's default. Space-separated values sweep the whole
-# run once per count, which is how the count in use was chosen -- every
-# setting has the same task-executing rank count, so the curves compare
-# directly.
+# ADLB server ranks; each must divide the node count, empty takes the binary's
+# default. Space-separated sweeps one run per count.
 IFS=' ' read -r -a ADLB_SERVER_LIST <<< "${ADLB_SERVERS:-}"
 if [[ "${#ADLB_SERVER_LIST[@]}" -eq 0 ]]; then
   ADLB_SERVER_LIST=("")
 fi
-# Producer ranks publishing the batch, for DISTRIBUTIONS=adlb. 0 keeps the
-# master the sole producer, matching how the DynaMPI drivers insert; -1 uses
-# every rank held out of the worker set that --servers has not taken. Space
-# separated sweeps both, which is what puts the two ADLB series on one figure.
-# Producers come out of the held-out pool, so the task-executing count is the
-# same either way and the curves compare directly.
+# Who publishes: 1 the master alone, -1 every worker publishing its own share.
+# Only those two; "1 -1" sweeps both, putting both ADLB series on one figure.
 IFS=' ' read -r -a ADLB_PRODUCER_LIST <<< "${ADLB_PRODUCERS:-}"
 if [[ "${#ADLB_PRODUCER_LIST[@]}" -eq 0 ]]; then
   ADLB_PRODUCER_LIST=("")
 fi
+# --producers 1 only: spread round-robins a soft target over every server;
+# local is lb's default, all on the master's own. Space separated sweeps both.
+IFS=' ' read -r -a ADLB_ROUTING_LIST <<< "${ADLB_PUT_ROUTING:-}"
+if [[ "${#ADLB_ROUTING_LIST[@]}" -eq 0 ]]; then
+  ADLB_ROUTING_LIST=("")
+fi
+# master (default) targets results at the master; local puts them on the
+# worker's own server and lets the master's server steal them in batches.
+IFS=' ' read -r -a ADLB_RESULT_LIST <<< "${ADLB_RESULT_ROUTING:-}"
+if [[ "${#ADLB_RESULT_LIST[@]}" -eq 0 ]]; then
+  ADLB_RESULT_LIST=("")
+fi
+# Seconds between a starved server's steal attempts, overriding lb's
+# compile-time 0.05; backoffs.c's own comment derives 0.0005.
+IFS=' ' read -r -a ADLB_STEAL_LIST <<< "${ADLB_STEAL_RATE_LIMIT:-}"
+if [[ "${#ADLB_STEAL_LIST[@]}" -eq 0 ]]; then
+  ADLB_STEAL_LIST=("")
+fi
 # Idle time before ADLB's servers declare the problem exhausted. Reached once,
-# after the last batch: between batches the master counts as busy to its own
-# server, so this is paid per run, not per batch.
+# after the last batch, so it is paid per run rather than per batch.
 ADLB_EXHAUST_TIME="${ADLB_EXHAUST_TIME:-1.0}"
 TASK_DURATION_CV="${TASK_DURATION_CV:-1.0}"
 # Negative leaves the library default in place for each of these.
@@ -64,8 +74,7 @@ MAX_PENDING_ROUNDS="${MAX_PENDING_ROUNDS:--1}"
 # allocation otherwise; empty (the default) means no timeout.
 RUN_TIMEOUT_S="${RUN_TIMEOUT_S:-}"
 
-# ADLB is a separate binary -- it owns its ranks for the whole process, see
-# load_balancing_adlb.cpp -- but takes the same flags and writes the same CSV.
+# ADLB is a separate binary but takes the same flags and writes the same CSV.
 if [[ -z "${APP:-}" ]]; then
   if [[ "${DISTRIBUTIONS}" == "adlb" ]]; then
     APP="${BUILD_DIR}/benchmark/load_balancing_adlb"
@@ -130,11 +139,17 @@ for nodes in "${NODE_LIST[@]}"; do
       for duration_mode in "${DURATION_MODES[@]}"; do
         for adlb_servers in "${ADLB_SERVER_LIST[@]}"; do
          for adlb_producers in "${ADLB_PRODUCER_LIST[@]}"; do
+          for adlb_routing in "${ADLB_ROUTING_LIST[@]}"; do
+           for adlb_steal in "${ADLB_STEAL_LIST[@]}"; do
+            for adlb_result in "${ADLB_RESULT_LIST[@]}"; do
           echo "Running ${SYSTEM} nodes=${nodes} ranks_per_node=${ranks_per_node}" \
                "dist=${DISTRIBUTIONS} duration_mode=${duration_mode}" \
                "expected_us=${expected_us} k=${MIN_TASKS_PER_WORKER}-${max_k}" \
                "${adlb_servers:+adlb_servers=${adlb_servers}}" \
-               "${adlb_producers:+adlb_producers=${adlb_producers}}"
+               "${adlb_producers:+adlb_producers=${adlb_producers}}" \
+               "${adlb_routing:+put_routing=${adlb_routing}}" \
+               "${adlb_steal:+steal_rate_limit=${adlb_steal}}" \
+               "${adlb_result:+result_routing=${adlb_result}}"
           run_cmd=()
           if [[ -n "${RUN_TIMEOUT_S}" ]]; then
             run_cmd=(timeout "${RUN_TIMEOUT_S}")
@@ -154,6 +169,15 @@ for nodes in "${NODE_LIST[@]}"; do
           producers_arg=()
           if [[ "${DISTRIBUTIONS}" == "adlb" && -n "${adlb_producers}" ]]; then
             producers_arg=(--producers "${adlb_producers}")
+          fi
+          if [[ "${DISTRIBUTIONS}" == "adlb" && -n "${adlb_routing}" ]]; then
+            producers_arg+=(--put_routing "${adlb_routing}")
+          fi
+          if [[ "${DISTRIBUTIONS}" == "adlb" && -n "${adlb_steal}" ]]; then
+            producers_arg+=(--steal_rate_limit "${adlb_steal}")
+          fi
+          if [[ "${DISTRIBUTIONS}" == "adlb" && -n "${adlb_result}" ]]; then
+            producers_arg+=(--result_routing "${adlb_result}")
           fi
           run_cmd+=("${APP}"
                     --distribution "${DISTRIBUTIONS}"
@@ -179,9 +203,15 @@ for nodes in "${NODE_LIST[@]}"; do
             echo "FAILED nodes=${nodes} ranks_per_node=${ranks_per_node}" \
                  "expected_us=${expected_us} duration_mode=${duration_mode}" \
                  "${adlb_servers:+adlb_servers=${adlb_servers}}" \
-                 "${adlb_producers:+adlb_producers=${adlb_producers}}" >&2
+                 "${adlb_producers:+adlb_producers=${adlb_producers}}" \
+                 "${adlb_routing:+put_routing=${adlb_routing}}" \
+                 "${adlb_steal:+steal_rate_limit=${adlb_steal}}" \
+                 "${adlb_result:+result_routing=${adlb_result}}" >&2
             failures=$((failures + 1))
           fi
+            done
+           done
+          done
          done
         done
       done

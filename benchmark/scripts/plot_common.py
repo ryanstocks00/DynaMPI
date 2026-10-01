@@ -163,18 +163,36 @@ DISTRIBUTOR_DISPLAY_NAMES = {
     "lockfree_rma": "Lock-Free RMA",
     "hierarchical_lockfree_rma": "Hierarchical Lock-Free RMA",
     "adlb": "ADLB (single producer)",
-    "adlb_distributed": "ADLB (distributed producers)",
+    "adlb_distributed": "ADLB (all producers)",
+    "adlb_no_results": "ADLB (single producer, no results)",
+    "adlb_distributed_no_results": "ADLB (all producers, no results)",
 }
 
 
 # Every ADLB series, however its batch is published. The server count is the
 # variant slot for all of them.
-ADLB_DISTRIBUTORS = frozenset({"adlb", "adlb_distributed"})
+ADLB_DISTRIBUTORS = frozenset(
+    {"adlb", "adlb_distributed", "adlb_no_results", "adlb_distributed_no_results"}
+)
 
 
-# The ADLB configuration the figures are drawn from, measured as its best by
-# sweeping the server count at 128 nodes (see --adlb-servers).
-ADLB_CANONICAL_SERVERS = 1
+# Each arm's best server count, from sweeping 1..128 at 128 nodes. A lone
+# producer wants one server -- its work all lands there anyway, and extra
+# servers only add rate-limited stealing; workers publishing their own share
+# reach every server directly and want one per node.
+ADLB_CANONICAL_SERVERS: dict[str, int] = {
+    "adlb": 1,
+    "adlb_distributed": 128,
+    "adlb_no_results": 1,
+    "adlb_distributed_no_results": 128,
+}
+
+
+# Which ADLB arms the figures draw. All four are measured; plotting every one
+# is eight series on a column-width figure, which is unreadable. The default
+# pair isolates producer structure with the result path removed -- see the
+# caveat in filter_adlb_arms().
+ADLB_DEFAULT_ARMS = ("adlb_no_results", "adlb_distributed_no_results")
 
 
 def variant_applies(distributor: str) -> bool:
@@ -201,9 +219,8 @@ def format_distributor_label(distributor: str, variant: int | None = None) -> st
 # the same algorithm gets the same color/marker in every figure; legend
 # *order* within one plot is sorted separately by whatever ranking that plot
 # wants (e.g. fastest-first), decoupling "reading order" from "identity".
-# Appended to, never reordered: an entry's position is its color, so
-# inserting one would repaint every series after it in figures already
-# published.
+# Appended to, never reordered: position is color, so inserting repaints
+# every later series in already-published figures.
 DISTRIBUTOR_SERIES_ORDER: list[tuple[str, int]] = [
     ("naive", -1),
     ("hierarchical", 0),
@@ -211,8 +228,10 @@ DISTRIBUTOR_SERIES_ORDER: list[tuple[str, int]] = [
     ("lockfree_rma", -1),
     ("hierarchical_lockfree_rma", 0),
     ("hierarchical_lockfree_rma", -1),
-    ("adlb", ADLB_CANONICAL_SERVERS),
-    ("adlb_distributed", ADLB_CANONICAL_SERVERS),
+    ("adlb", ADLB_CANONICAL_SERVERS["adlb"]),
+    ("adlb_distributed", ADLB_CANONICAL_SERVERS["adlb_distributed"]),
+    ("adlb_no_results", ADLB_CANONICAL_SERVERS["adlb_no_results"]),
+    ("adlb_distributed_no_results", ADLB_CANONICAL_SERVERS["adlb_distributed_no_results"]),
 ]
 
 
@@ -395,17 +414,19 @@ def series_marker(index: int) -> str:
     return MARKER_SHAPES[index % len(MARKER_SHAPES)]
 
 
-# tab10 runs into a mid-grey at index 7, which the "Ideal greedy" reference
-# line already owns, and an olive at 8 that falls outside the lightness band
-# and reads at 2:1 against white on paper. Slot 7 is named instead. Chosen by
-# the OKLab checks rather than by eye: #7b3294 clears delta-E 8 (x100, Machado
-# protan and deutan at severity 1.0) against every series it shares a figure
-# with, holds 7.7:1 contrast on white, and sits inside the 0.43-0.77 lightness
-# band. It is only 13.9 from tab10's purple under normal vision, below the 15
-# floor -- they never co-occur, since the fan-out-0 series that owns that
-# purple is absent from every figure ADLB appears in, but a figure that put
-# them together would need to re-step one of them.
-SERIES_COLOR_OVERRIDES: dict[int, str] = {7: '#7b3294'}
+# tab10's index 7 is the mid-grey the "Ideal greedy" line already owns, and 8
+# an olive too light for paper. #7b3294 replaces it: OKLab-checked at dE >= 8
+# (Machado protan/deutan) against every series sharing its figures, 7.7:1 on
+# white. Only 13.9 from tab10's purple, which no ADLB figure draws.
+# Slot 8's olive is the other unusable tab10 entry: 2.0:1 on white. Darkened
+# to the same hue. With four ADLB series the palette can no longer keep every
+# pair above dE 8 -- marker and line style carry the rest.
+SERIES_COLOR_OVERRIDES: dict[int, str] = {
+    6: '#ae017e',  # tab10 pink is 2.7:1 on white
+    7: '#7b3294',
+    8: '#4d4d00',  # tab10 olive is 2.0:1
+    9: '#01665e',  # tab10 cyan is 2.3:1
+}
 
 
 def series_color(index: int) -> Any:
@@ -541,14 +562,23 @@ def add_plot_cli_args(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument(
         "--adlb-servers",
-        type=int,
-        # Server count is not part of the figures' story, so only the best
-        # configuration is drawn; 0 keeps every count, which is how the
+        nargs="+",
+        # Server count is not part of the figures' story, so only each arm's
+        # best configuration is drawn; 0 keeps every count, which is how the
         # sensitivity sweep is plotted.
-        default=ADLB_CANONICAL_SERVERS,
-        help=f"Only keep ADLB rows run with this many servers (default: "
-        f"{ADLB_CANONICAL_SERVERS}, ADLB's measured best). Pass 0 to keep "
-        f"every server count.",
+        default=[f"{name}={count}" for name, count in ADLB_CANONICAL_SERVERS.items()],
+        help="Only keep ADLB rows run with this many servers. A bare number "
+        "applies to every ADLB arm; name=count sets one arm (e.g. adlb=1 "
+        "adlb_distributed=16), which is the default since the two arms have "
+        "different optima. Pass 0 to keep every server count.",
+    )
+    parser.add_argument(
+        "--adlb-arms",
+        nargs="+",
+        default=list(ADLB_DEFAULT_ARMS),
+        help="Which ADLB arms to draw: adlb, adlb_distributed, adlb_no_results, "
+        "adlb_distributed_no_results, or all. The *_no_results arms discard results "
+        "and so are not comparable with the DynaMPI series.",
     )
     parser.add_argument(
         "--ranks-per-node",
@@ -578,18 +608,63 @@ def filter_ranks_per_node(rows: Sequence[RowT], ranks_per_node: Sequence[int]) -
     return [row for row in rows if int(row["ranks_per_node"]) in allowed]
 
 
-def filter_adlb_servers(rows: Sequence[RowT], servers: int) -> list[RowT]:
-    """Keep one ADLB server count; 0 disables filtering.
+def parse_adlb_servers(spec: Sequence[str] | int) -> dict[str, int]:
+    """Read --adlb-servers into a per-arm server count.
 
-    ADLB's server count is the variant slot of its series key, so that is
+    Accepts a bare count for every arm, or name=count pairs. 0 anywhere means
+    keep every count for the arms it covers.
+    """
+    if isinstance(spec, int):
+        return dict.fromkeys(ADLB_DISTRIBUTORS, spec)
+    wanted: dict[str, int] = {}
+    for token in spec:
+        name, sep, count = str(token).partition("=")
+        if not sep:
+            wanted.update(dict.fromkeys(ADLB_DISTRIBUTORS, int(name)))
+            continue
+        if name not in ADLB_DISTRIBUTORS:
+            raise SystemExit(
+                f"--adlb-servers: unknown arm {name!r}; expected one of "
+                f"{sorted(ADLB_DISTRIBUTORS)}"
+            )
+        wanted[name] = int(count)
+    return wanted
+
+
+def filter_adlb_servers(rows: Sequence[RowT], spec: Sequence[str] | int) -> list[RowT]:
+    """Keep one server count per ADLB arm; 0 disables filtering for that arm.
+
+    An arm's server count is the variant slot of its series key, so that is
     where this reads it from. No other distributor is touched.
     """
-    if not servers:
-        return list(rows)
+    wanted = parse_adlb_servers(spec)
     return [
         row
         for row in rows
-        if row["distributor"] not in ADLB_DISTRIBUTORS or int(row["fanout"]) == servers
+        if row["distributor"] not in ADLB_DISTRIBUTORS
+        or not wanted.get(str(row["distributor"]), 0)
+        or int(row["fanout"]) == wanted[str(row["distributor"])]
+    ]
+
+
+def filter_adlb_arms(rows: Sequence[RowT], arms: Sequence[str]) -> list[RowT]:
+    """Keep only the named ADLB arms; "all" keeps every one.
+
+    Note for anyone reading a figure drawn with a *_no_results arm: those
+    discard results and count completions outside ADLB, while every DynaMPI
+    series returns a result per task. They bound ADLB's dispatch path, they
+    are not a configuration ADLB can be run in, and a caption has to say so.
+    """
+    if not arms or "all" in arms:
+        return list(rows)
+    keep = set(arms)
+    unknown = keep - ADLB_DISTRIBUTORS
+    if unknown:
+        raise SystemExit(
+            f"--adlb-arms: unknown {sorted(unknown)}; expected from {sorted(ADLB_DISTRIBUTORS)}"
+        )
+    return [
+        row for row in rows if row["distributor"] not in ADLB_DISTRIBUTORS or row["distributor"] in keep
     ]
 
 

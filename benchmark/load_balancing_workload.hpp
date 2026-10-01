@@ -4,9 +4,8 @@
  */
 
 // Workload and CSV schema shared by load_balancing.cpp and
-// load_balancing_adlb.cpp. Both plot into the same figures against a floor
-// simulated from this duration distribution (plot_load_balancing.py's
-// duration_sampler), so it has to be one implementation rather than two that
+// load_balancing_adlb.cpp. Both plot against a floor simulated from this
+// duration distribution, so it has to be one implementation, not two that
 // agree by inspection.
 
 #ifndef DYNAMPI_BENCHMARK_LOAD_BALANCING_WORKLOAD_HPP
@@ -127,6 +126,11 @@ struct ResultRow {
   // publishes every task itself. -1 from the DynaMPI drivers, whose manager
   // is always the sole producer and whose insertion is local anyway.
   int adlb_producers = -1;
+  // ADLB only: the three knobs whose effect is being measured. Empty/0 from
+  // the DynaMPI drivers, which have no equivalent.
+  std::string adlb_put_routing{};
+  std::string adlb_result_routing{};
+  double adlb_steal_rate_limit = 0.0;
   uint64_t expected_us = 0;
   DurationMode duration_mode = DurationMode::Fixed;
   double task_duration_cv = 0.0;
@@ -144,8 +148,8 @@ struct ResultRow {
 
 inline void write_csv_header(std::ostream& os) {
   os << "system,distributor,nodes,world_size,workers,max_upper_fanout,pipeline_depth,"
-        "max_pending_rounds,adlb_servers,adlb_producers,expected_us,duration_mode,"
-        "task_duration_cv,"
+        "max_pending_rounds,adlb_servers,adlb_producers,adlb_put_routing,"
+        "adlb_result_routing,adlb_steal_rate_limit,expected_us,duration_mode,task_duration_cv,"
         "tasks_per_worker,repeat,total_tasks,elapsed_s,construct_s,warmup_s,finalize_s,"
         "destruct_s\n";
 }
@@ -154,10 +158,11 @@ inline void write_csv_row(std::ostream& os, const ResultRow& row) {
   os << row.system << "," << row.distributor << "," << row.nodes << "," << row.world_size << ","
      << row.workers << "," << row.max_upper_fanout << "," << row.pipeline_depth << ","
      << row.max_pending_rounds << "," << row.adlb_servers << "," << row.adlb_producers << ","
-     << row.expected_us << "," << to_string(row.duration_mode) << "," << row.task_duration_cv << ","
-     << row.tasks_per_worker << "," << row.repeat << "," << row.total_tasks << "," << row.elapsed_s
-     << "," << row.construct_s << "," << row.warmup_s << "," << row.finalize_s << ","
-     << row.destruct_s << "\n";
+     << row.adlb_put_routing << "," << row.adlb_result_routing << "," << row.adlb_steal_rate_limit
+     << "," << row.expected_us << "," << to_string(row.duration_mode) << "," << row.task_duration_cv
+     << "," << row.tasks_per_worker << "," << row.repeat << "," << row.total_tasks << ","
+     << row.elapsed_s << "," << row.construct_s << "," << row.warmup_s << "," << row.finalize_s
+     << "," << row.destruct_s << "\n";
 }
 
 inline void append_result(const std::string& output_path, const ResultRow& row) {
@@ -167,6 +172,9 @@ inline void append_result(const std::string& output_path, const ResultRow& row) 
             << " pipeline_depth=" << row.pipeline_depth
             << " max_pending_rounds=" << row.max_pending_rounds
             << " adlb_servers=" << row.adlb_servers << " adlb_producers=" << row.adlb_producers
+            << " adlb_put_routing=" << row.adlb_put_routing
+            << " adlb_result_routing=" << row.adlb_result_routing
+            << " adlb_steal_rate_limit=" << row.adlb_steal_rate_limit
             << " expected_us=" << row.expected_us
             << " duration_mode=" << to_string(row.duration_mode)
             << " task_duration_cv=" << row.task_duration_cv

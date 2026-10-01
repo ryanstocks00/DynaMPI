@@ -3,15 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// The ADLB arm of the load_balancing sweep: the same batch-drain measurement,
-// made against ADLB/X (shipped as `lb` in Swift/T) so the figures have an
-// external work-stealing scheduler to compare against.
-//
-// A separate binary because ADLB owns its ranks for the whole process --
-// ADLB_Init() parks servers in ADLB_Server() and workers in ADLB_Get() until
-// its own idle detection ends the run, and it cannot be re-initialised -- so
-// it cannot share one with distributors built per batch. The workload and CSV
-// schema are shared with load_balancing.cpp via load_balancing_workload.hpp.
+// The ADLB arm of the load_balancing sweep: the same batch drain, against
+// ADLB/X (Swift/T's `lb`). Its own binary because ADLB owns its ranks for the
+// whole process and cannot be re-initialised; workload and CSV schema are
+// shared with load_balancing.cpp via load_balancing_workload.hpp.
 
 #include <mpi.h>
 
@@ -47,6 +42,14 @@ extern "C" {
 #pragma GCC diagnostic pop
 #endif
 
+// lb fixes its steal tuning at compile time with no environment override, but
+// leaves the values writable. Setting them before any steal happens is
+// equivalent to rebuilding with different constants.
+extern "C" {
+extern double xlb_steal_rate_limit;
+extern double xlb_steal_backoff;
+}
+
 using load_balancing::DurationMode;
 using load_balancing::Result;
 using load_balancing::ResultRow;
@@ -59,12 +62,13 @@ namespace {
 // the rank that published the batch.
 constexpr int kWorkType = 0;
 constexpr int kResultType = 1;
-// Distributed injection only: a producer's instruction to publish one stride
-// of the batch. Its own type so a producer can park in ADLB_Get(kInjectType)
-// without also matching work -- ADLB_Get takes one type, not a set.
-constexpr int kInjectType = 2;
 // ADLB rank 0, the counterpart of the DynaMPI distributors' manager.
 constexpr int kMasterRank = 0;
+// End-of-batch marker, sent as an ordinary work task because ADLB_Get takes
+// one type and a worker parked in it cannot listen on a second. Task ids run
+// to a few hundred thousand over a whole sweep, so the top of the range is
+// free; publish_tasks() asserts they never meet.
+constexpr Task kBatchDone = 0xFFFFFFFFu;
 
 struct BenchmarkOptions {
   uint64_t expected_us = 1000;
@@ -76,12 +80,22 @@ struct BenchmarkOptions {
   uint64_t nodes = 0;
   // Server ranks; 0 means one per node. Must divide the node count.
   int servers = 0;
-  // Producer ranks that publish the batch on the master's behalf. 0 keeps the
-  // master the sole producer; -1 takes every rank held out and not used as a
-  // server. See build_adlb_comm() for where they come from.
-  int producers = 0;
+  // Who publishes: 1 = the master alone, as the DynaMPI drivers' manager
+  // does; -1 = every worker publishes its own tasks_per_worker share.
+  int producers = 1;
   // Results kept requested at once (ADLB_Amget).
   int result_window = 128;
+  // --producers 1 only: round-robin the master's puts over every server.
+  // Off by default: measured worse than lb's own untargeted routing at every
+  // server count above 1, because it trades node-local puts for remote ones.
+  bool spread_puts = false;
+  // master: results targeted at the master, so its server collects them all.
+  // none: no results at all; completion is counted through a one-sided MPI
+  // counter instead, which bounds what removing the return path could buy.
+  std::string result_routing = "master";
+  // Seconds between a starved server's steal attempts. <= 0 keeps lb's own
+  // shipped value (0.05 s, with a 0.1 s backoff after a full round fails).
+  double steal_rate_limit = 0.0;
   std::string system;
   std::string output_path;
 };
@@ -98,38 +112,19 @@ struct AdlbPlacement {
   uint64_t nodes = 0;
   uint64_t executing_workers = 0;  // every worker but the master
   int servers = 0;
-  int producers = 0;
-  // ADLB rank of producer 0; producer i is producer_base + i.
-  int producer_base = 0;
-};
-
-// What one producer is told to publish. Carried as a kInjectType task rather
-// than over a side communicator: a producer waiting in ADLB_Get is where
-// ADLB's idle detection expects an idle worker to be, whereas one parked in
-// an MPI_Bcast between batches is invisible to it.
-struct InjectDescriptor {
-  uint64_t first_task = 0;
-  uint64_t count = 0;
 };
 
 // Reorders MPI_COMM_WORLD into the communicator ADLB is initialised on.
-// ADLB's layout is fixed -- workers are ranks [0, workers), servers are the
-// trailing ones, and worker r is served by server r / (workers / servers)
-// (lb's xlb_map_to_server) -- so ordering workers node-major and appending
-// one server per server-block puts each server inside the block it serves.
-// Left alone, the servers would be every rank of the last few nodes.
+// ADLB's layout is fixed -- workers are ranks [0, workers), servers trail
+// them, and worker r maps to server r / (workers / servers) -- so ordering
+// workers node-major and appending one server per block puts each server in
+// the block it serves, and a worker's ADLB_RANK_ANY put reaches its own node.
 //
-// One rank per node is held out of the worker set whatever --servers is (the
-// last local rank, as load_balancing.cpp's flat_comm drops, keeping world
-// rank 0 the master). That fixes the task-executing count at
-// world_size - nodes - 1, what the hierarchical distributors also report, so
-// every series drains the same batch and shares one reference line. Held-out
-// ranks that are not servers or producers sit the run out entirely.
-//
-// Producers come out of that same held-out pool, so turning them on leaves
-// the task-executing count untouched and the two ADLB arms stay comparable
-// with each other and with the DynaMPI series.
-AdlbPlacement build_adlb_comm(MPI_Comm world, int requested_servers, int requested_producers) {
+// One rank per node is held out whatever --servers is (the last local rank,
+// as load_balancing.cpp's flat_comm drops), fixing the task-executing count
+// at world_size - nodes - 1 -- what the hierarchical distributors report, so
+// every series drains the same batch. Held-out non-servers sit the run out.
+AdlbPlacement build_adlb_comm(MPI_Comm world, int requested_servers) {
   int world_rank = 0, world_size = 0;
   MPI_Comm_rank(world, &world_rank);
   MPI_Comm_size(world, &world_size);
@@ -154,8 +149,10 @@ AdlbPlacement build_adlb_comm(MPI_Comm world, int requested_servers, int request
   MPI_Bcast(&node_count, 1, MPI_INT, 0, node_comm);
   MPI_Comm_free(&node_comm);
 
-  if (local_size < 2) {
-    throw std::runtime_error("load_balancing_adlb needs at least 2 ranks per node.");
+  if (local_size < 2 || node_count * (local_size - 1) < 2) {
+    throw std::runtime_error(
+        "load_balancing_adlb needs at least 2 ranks per node and 2 workers overall: one rank per "
+        "node is held out, and one of the rest is the master.");
   }
   const int servers = requested_servers > 0 ? requested_servers : node_count;
   if (servers > node_count || node_count % servers != 0) {
@@ -171,59 +168,98 @@ AdlbPlacement build_adlb_comm(MPI_Comm world, int requested_servers, int request
   const bool held_out = local_rank == local_size - 1;
   const bool is_server = held_out && node_index % nodes_per_server == 0;
 
-  // One held-out rank per node, minus the ones serving: what is left to draw
-  // producers from. Computed from node_index alone so every rank agrees
-  // without another collective.
-  const int server_nodes_before = (node_index + nodes_per_server - 1) / nodes_per_server;
-  const int spare_index = node_index - server_nodes_before;
-  const int spare_nodes = node_count - servers;
-  const int producers = requested_producers < 0 ? spare_nodes : requested_producers;
-  if (producers > spare_nodes) {
-    throw std::runtime_error(
-        "--producers must be no larger than the held-out ranks left over once --servers has "
-        "taken its own (" +
-        std::to_string(spare_nodes) + " here); got " + std::to_string(producers) + ".");
-  }
-  const bool is_producer = held_out && !is_server && spare_index < producers;
-
   AdlbPlacement placement;
   placement.nodes = static_cast<uint64_t>(node_count);
   placement.servers = servers;
-  placement.producers = producers;
-  placement.producer_base = total_workers;
   placement.executing_workers = static_cast<uint64_t>(total_workers - 1);
 
-  // Producers extend the worker range, so the block each server owns is
-  // (total_workers + producers) / servers rather than total_workers /
-  // servers. Uneven division leaves ADLB's own mapping straddling the block
-  // boundaries this ordering was built to line up with -- harmless for the
-  // canonical single server, worth saying out loud for the sweep.
-  if (world_rank == 0 && servers > 1 && (total_workers + producers) % servers != 0) {
-    std::cerr << "warning: " << producers << " producers and " << servers
-              << " servers do not divide evenly; server affinity is approximate.\n";
-  }
-
-  if (held_out && !is_server && !is_producer) {
+  if (held_out && !is_server) {
     MPI_Comm_split(world, MPI_UNDEFINED, 0, &placement.comm);
     return placement;
   }
-  // Comm_split orders by key, so these keys *are* the ADLB ranks. Servers
-  // have to trail every worker, producers included.
-  int key = node_index * workers_per_node + local_rank;
-  if (is_producer) {
-    key = total_workers + spare_index;
-  } else if (is_server) {
-    key = total_workers + producers + node_index / nodes_per_server;
-  }
+  // Comm_split orders by key, so these keys *are* the ADLB ranks.
+  const int key = is_server ? total_workers + node_index / nodes_per_server
+                            : node_index * workers_per_node + local_rank;
   MPI_Comm_split(world, 0, key, &placement.comm);
   return placement;
 }
 
-// Drains tasks until ADLB shuts the run down. Results go back as a task
-// targeted at the master, which is what makes a batch's completion
-// observable there -- the same thing run_tasks() returning gives the
-// DynaMPI drivers, through the same one-result-per-task funnel.
-void worker_loop(WorkerFunctor& worker_function, int my_rank) {
+// Publishes tasks [first, first + count). One blocking round trip each:
+// ADLB_Put waits for a response and the API has no async or batched put.
+//
+// spread_over == 0 uses ADLB_RANK_ANY, which lb routes to the caller's own
+// server -- right for a worker publishing its own share. For the master that
+// would pile the batch on one server and leave the rest to steal, so
+// spread_over > 0 round-robins a *soft* target over that many worker ranks:
+// lb routes each put to the target's server and, for anything but
+// STRICT_HARD, also files it in that server's untargeted pool, so the batch
+// spreads without pinning any task.
+void publish_tasks(uint64_t first, uint64_t count, uint64_t spread_over) {
+  if (first + count >= kBatchDone) {
+    throw std::runtime_error("task ids reached the end-of-batch marker; shorten the sweep.");
+  }
+  adlb_put_opts opts = ADLB_DEFAULT_PUT_OPTS;
+  if (spread_over > 0) opts.strictness = ADLB_TGT_STRICT_SOFT;
+  for (uint64_t i = 0; i < count; ++i) {
+    const Task task = static_cast<Task>(first + i);
+    // Worker ranks are 1..spread_over, so a full pass covers every server.
+    const int target = spread_over > 0 ? static_cast<int>(1 + i % spread_over) : ADLB_RANK_ANY;
+    check(ADLB_Put(&task, static_cast<int>(sizeof(Task)), target, kMasterRank, kWorkType, opts),
+          "ADLB_Put(work)");
+  }
+}
+
+// Counts executed tasks without ADLB, for --result_routing none. One
+// fire-and-forget MPI_Accumulate per task: no reply, no round trip, and it
+// never reaches a server. The master polls its own copy. This measures ADLB's
+// task distribution with its return path removed, so those rows are not
+// comparable with series that return a result per task.
+struct DoneCounter {
+  MPI_Win win = MPI_WIN_NULL;
+  int64_t* counter = nullptr;  // master only
+  bool enabled = false;
+
+  MPI_Comm comm = MPI_COMM_NULL;
+
+  void open(MPI_Comm c, int rank) {
+    enabled = true;
+    comm = c;
+    const MPI_Aint bytes = (rank == kMasterRank) ? static_cast<MPI_Aint>(sizeof(int64_t)) : 0;
+    MPI_Win_allocate(bytes, sizeof(int64_t), MPI_INFO_NULL, comm, &counter, &win);
+    if (rank == kMasterRank) *counter = 0;
+    MPI_Win_lock_all(MPI_MODE_NOCHECK, win);
+    MPI_Barrier(comm);
+  }
+  void bump() {
+    const int64_t one = 1;
+    MPI_Accumulate(&one, 1, MPI_INT64_T, kMasterRank, 0, 1, MPI_INT64_T, MPI_SUM, win);
+    // flush, not flush_local: the latter only frees the origin buffer and
+    // leaves the master free never to observe the increment.
+    MPI_Win_flush(kMasterRank, win);
+  }
+  void wait_for(int64_t target) {
+    while (true) {
+      MPI_Win_sync(win);
+      if (*static_cast<volatile int64_t*>(counter) >= target) return;
+      // The two-sided engine has to run for remote RMA state to advance; a
+      // bare spin starves passive-target progress and livelocks. Same reason
+      // dynampi's rma_detail::rma_wait_idle exists.
+      int flag = 0;
+      MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm, &flag, MPI_STATUS_IGNORE);
+    }
+  }
+  void close() {
+    if (!enabled) return;
+    MPI_Win_unlock_all(win);
+    MPI_Win_free(&win);
+    enabled = false;
+  }
+};
+
+// Executes tasks until the master's end-of-batch marker arrives. Returns
+// false if ADLB shut the run down instead, which ends the sweep.
+bool drain_until_batch_end(WorkerFunctor& worker_function, int my_rank,
+                           const std::string& result_routing, DoneCounter& done) {
   Task task = 0;
   while (true) {
     // Buffer and limit are both sizeof(Task), so ADLB never reallocates:
@@ -234,86 +270,29 @@ void worker_loop(WorkerFunctor& worker_function, int my_rank) {
     MPI_Comm task_comm = MPI_COMM_NULL;
     const adlb_code rc = ADLB_Get(kWorkType, &payload, &length, static_cast<int>(sizeof(Task)),
                                   &answer, &type_recvd, &task_comm);
-    if (rc == ADLB_SHUTDOWN) break;
+    if (rc == ADLB_SHUTDOWN) return false;
     check(rc, "ADLB_Get(work)");
+    if (task == kBatchDone) return true;
 
     const Result result = worker_function(task);
+    if (result_routing == "none") {
+      done.bump();
+      continue;
+    }
+    // Only the master ever requests kResultType, so an untargeted result is
+    // still unambiguous -- it just waits on this node's server until the
+    // master's server steals it.
     check(ADLB_Put(&result, static_cast<int>(sizeof(Result)), kMasterRank, my_rank, kResultType,
                    ADLB_DEFAULT_PUT_OPTS),
           "ADLB_Put(result)");
   }
 }
 
-// Publishes the stride each inject descriptor asks for, until ADLB shuts the
-// run down. A producer never executes a task -- it is one of the ranks held
-// out of the worker set -- so the executing count is the same whether or not
-// distributed injection is on.
-void producer_loop() {
-  InjectDescriptor descriptor;
-  while (true) {
-    void* payload = &descriptor;
-    int length = static_cast<int>(sizeof(InjectDescriptor));
-    int answer = 0, type_recvd = 0;
-    MPI_Comm task_comm = MPI_COMM_NULL;
-    const adlb_code rc =
-        ADLB_Get(kInjectType, &payload, &length, static_cast<int>(sizeof(InjectDescriptor)),
-                 &answer, &type_recvd, &task_comm);
-    if (rc == ADLB_SHUTDOWN) break;
-    check(rc, "ADLB_Get(inject)");
-
-    for (uint64_t i = 0; i < descriptor.count; ++i) {
-      const Task task = static_cast<Task>(descriptor.first_task + i);
-      check(ADLB_Put(&task, static_cast<int>(sizeof(Task)), ADLB_RANK_ANY, kMasterRank, kWorkType,
-                     ADLB_DEFAULT_PUT_OPTS),
-            "ADLB_Put(work)");
-    }
-  }
-}
-
-// Publishes `count` tasks and blocks until `count` results are back: the ADLB
-// equivalent of insert_tasks() then run_tasks() draining to exhaustion.
-//
-// Publishing is one blocking round trip per task -- ADLB_Put waits for a
-// response and the API has no async or batched put. Collecting does have one,
-// so it uses it: ADLB_Amget posts `window` receives behind a single request.
-//
-// With `producers` > 0 the master publishes one descriptor per producer
-// instead, and they publish the tasks concurrently. That trades `count`
-// serial round trips for `producers` of them plus a concurrent
-// `count / producers` -- minimised near sqrt(count), which is about where a
-// producer per node lands for these batch sizes. It is the shape Swift/T
-// itself generates work in, and the reason the two arms are plotted
-// together: one is ADLB as the DynaMPI drivers are structured, the other is
-// ADLB given a producer set it can actually use.
-void drain_batch(uint64_t first_task, uint64_t count, size_t window, int producers,
-                 int producer_base) {
-  if (producers <= 0) {
-    for (uint64_t i = 0; i < count; ++i) {
-      const Task task = static_cast<Task>(first_task + i);
-      check(ADLB_Put(&task, static_cast<int>(sizeof(Task)), ADLB_RANK_ANY, kMasterRank, kWorkType,
-                     ADLB_DEFAULT_PUT_OPTS),
-            "ADLB_Put(work)");
-    }
-  } else {
-    // Even split, remainder spread over the leading producers. Targeted, so
-    // each descriptor lands on the rank meant to act on it.
-    const uint64_t per_producer = count / static_cast<uint64_t>(producers);
-    const uint64_t remainder = count % static_cast<uint64_t>(producers);
-    uint64_t next_task = first_task;
-    for (int i = 0; i < producers; ++i) {
-      InjectDescriptor descriptor;
-      descriptor.first_task = next_task;
-      descriptor.count = per_producer + (static_cast<uint64_t>(i) < remainder ? 1 : 0);
-      next_task += descriptor.count;
-      // Fewer tasks than producers: the tail has nothing to do, and a
-      // descriptor asking for none would only cost a round trip.
-      if (descriptor.count == 0) continue;
-      check(ADLB_Put(&descriptor, static_cast<int>(sizeof(InjectDescriptor)), producer_base + i,
-                     kMasterRank, kInjectType, ADLB_DEFAULT_PUT_OPTS),
-            "ADLB_Put(inject)");
-    }
-  }
-
+// Blocks until `count` results are back. ADLB_Amget posts `window` receives
+// behind a single request, so collecting a batch costs a handful of messages
+// rather than one round trip per result -- but every result is targeted at
+// the master, so they all land on the master's server either way.
+void collect_results(uint64_t count, size_t window) {
   // Reused across chunks: every request of a chunk is waited on before its
   // slot is posted again.
   std::vector<Result> buffers(window);
@@ -340,6 +319,16 @@ void drain_batch(uint64_t first_task, uint64_t count, size_t window, int produce
       check(rc, "ADLB_Aget_wait(result)");
     }
     remaining -= n;
+  }
+}
+
+// Releases every worker from its drain loop, one marker each. Sent after the
+// batch timer has stopped: it is harness teardown, not part of the drain.
+void end_batch(uint64_t workers) {
+  for (uint64_t w = 1; w <= workers; ++w) {
+    check(ADLB_Put(&kBatchDone, static_cast<int>(sizeof(Task)), static_cast<int>(w), kMasterRank,
+                   kWorkType, ADLB_DEFAULT_PUT_OPTS),
+          "ADLB_Put(batch end)");
   }
 }
 
@@ -376,10 +365,27 @@ int main(int argc, char** argv) {
       "same per-node overhead the hierarchical distributors pay for a node manager.",
       cxxopts::value<int>()->default_value("0"))(
       "producers",
-      "Ranks that publish the batch on the master's behalf, drawn from the ranks held out of "
-      "the worker set. 0 (default) leaves the master the sole producer, as the DynaMPI drivers' "
-      "manager is; -1 uses every held-out rank --servers has not taken.",
-      cxxopts::value<int>()->default_value("0"))(
+      "Who publishes the batch: 1 (default) the master alone, as the DynaMPI drivers' manager "
+      "does; -1 every worker, each publishing its own tasks_per_worker share to its node's "
+      "server. Those are the only two values -- a partial producer set is not a configuration "
+      "anyone would run.",
+      cxxopts::value<int>()->default_value("1"))(
+      "put_routing",
+      "--producers 1 only: local (default) is lb's own untargeted routing, all on the master's "
+      "own server; spread round-robins a soft target over every server, which measured worse "
+      "because a targeted put leaves the node.",
+      cxxopts::value<std::string>()->default_value("local"))(
+      "result_routing",
+      "master (default) targets every result at the master; none returns no results at all and "
+      "counts completions through a one-sided MPI counter, which bounds what removing the return "
+      "path could buy. Untargeted results are not an option: lb's heap_steal_type() skips heap "
+      "indices 0 and 1, so the last two units on a server can never be stolen and results "
+      "stranded away from the master's server hang the collection.",
+      cxxopts::value<std::string>()->default_value("master"))(
+      "steal_rate_limit",
+      "Seconds between a starved server's steal attempts, overriding lb's compile-time 0.05 s. "
+      "<= 0 (default) leaves it alone. The post-failure backoff is scaled with it.",
+      cxxopts::value<double>()->default_value("0"))(
       "result_window", "Results the master requests at once via ADLB_Amget.",
       cxxopts::value<int>()->default_value("128"))(
       "S,system", "System label for plotting (frontier, aurora, ...)",
@@ -424,6 +430,17 @@ int main(int argc, char** argv) {
     opts.servers = args["servers"].as<int>();
     opts.producers = args["producers"].as<int>();
     opts.result_window = args["result_window"].as<int>();
+    const std::string routing = args["put_routing"].as<std::string>();
+    if (routing != "spread" && routing != "local") {
+      throw std::runtime_error("--put_routing must be spread or local; got '" + routing + "'.");
+    }
+    opts.spread_puts = routing == "spread";
+    opts.steal_rate_limit = args["steal_rate_limit"].as<double>();
+    opts.result_routing = args["result_routing"].as<std::string>();
+    if (opts.result_routing != "master" && opts.result_routing != "none") {
+      throw std::runtime_error("--result_routing must be master or none; got '" +
+                               opts.result_routing + "'.");
+    }
     opts.system = args["system"].as<std::string>();
     opts.output_path = args["output"].as<std::string>();
 
@@ -438,6 +455,10 @@ int main(int argc, char** argv) {
     }
     if (opts.repeats == 0) throw std::runtime_error("--repeats must be >= 1.");
     if (opts.result_window < 1) throw std::runtime_error("--result_window must be >= 1.");
+    if (opts.producers != 1 && opts.producers != -1) {
+      throw std::runtime_error("--producers must be 1 (master alone) or -1 (every worker); got " +
+                               std::to_string(opts.producers) + ".");
+    }
   } catch (const std::exception& e) {
     if (world_rank == 0) std::cerr << "Error: " << e.what() << std::endl;
     MPI_Finalize();
@@ -448,7 +469,7 @@ int main(int argc, char** argv) {
     int world_size = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    const AdlbPlacement placement = build_adlb_comm(MPI_COMM_WORLD, opts.servers, opts.producers);
+    const AdlbPlacement placement = build_adlb_comm(MPI_COMM_WORLD, opts.servers);
     if (opts.nodes == 0) opts.nodes = placement.nodes;
     if (placement.comm == MPI_COMM_NULL) {
       // Held out and not a server: takes no part in the run, and only has to
@@ -457,7 +478,7 @@ int main(int argc, char** argv) {
       return 0;
     }
 
-    int type_vect[3] = {kWorkType, kResultType, kInjectType};
+    int type_vect[2] = {kWorkType, kResultType};
     int am_server = 0;
     MPI_Comm adlb_comm = placement.comm;
     MPI_Comm worker_comm = MPI_COMM_NULL;
@@ -466,9 +487,16 @@ int main(int argc, char** argv) {
     // construct_s anyway -- it is what standing an ADLB instance up costs,
     // which is the column the other drivers put their setup cost in.
     dynampi::Timer init_timer;
-    check(ADLB_Init(placement.servers, 3, type_vect, &am_server, adlb_comm, &worker_comm),
+    check(ADLB_Init(placement.servers, 2, type_vect, &am_server, adlb_comm, &worker_comm),
           "ADLB_Init");
     const double construct_s = init_timer.stop().count();
+
+    // After Init so nothing re-initialises them, before ADLB_Server so the
+    // server ranks -- the only ones that steal -- pick the values up.
+    if (opts.steal_rate_limit > 0.0) {
+      xlb_steal_rate_limit = opts.steal_rate_limit;
+      xlb_steal_backoff = 2.0 * opts.steal_rate_limit;  // lb ships a 2:1 ratio
+    }
 
     if (am_server) {
       ADLB_Server(1024L * 1024L * 1024L);
@@ -478,28 +506,63 @@ int main(int argc, char** argv) {
       WorkerFunctor worker_function(world_rank, opts.expected_us, opts.duration_mode,
                                     opts.task_duration_cv);
       const size_t window = static_cast<size_t>(opts.result_window);
-      const int producers = placement.producers;
+      const uint64_t workers = placement.executing_workers;
+      const bool distributed = opts.producers < 0;
 
-      if (producers > 0 && worker_rank >= placement.producer_base) {
-        producer_loop();
-      } else if (worker_rank == kMasterRank) {
-        const uint64_t workers = placement.executing_workers;
-        uint64_t next_task = 0;
-        for (uint64_t k = opts.min_tasks_per_worker; k <= opts.max_tasks_per_worker; ++k) {
-          for (uint64_t repeat = 0; repeat < opts.repeats; ++repeat) {
-            // One task per worker, drained untimed, as load_balancing.cpp
-            // warms each combo.
-            dynampi::Timer warmup_timer;
-            drain_batch(next_task, workers, window, producers, placement.producer_base);
-            next_task += workers;
-            const double warmup_s = warmup_timer.stop().count();
+      // Our own communicator rather than ADLB's, so the per-batch barrier
+      // cannot collide with anything the library does on its own. A rank
+      // waiting here is outside ADLB's request queue and so counts as busy,
+      // which is the safe direction: idle detection cannot fire mid-sweep.
+      MPI_Comm bench_comm = MPI_COMM_NULL;
+      MPI_Comm_dup(worker_comm, &bench_comm);
 
-            const uint64_t total_tasks = k * workers;
-            dynampi::Timer batch_timer;
-            drain_batch(next_task, total_tasks, window, producers, placement.producer_base);
-            const double elapsed_s = batch_timer.stop().count();
-            next_task += total_tasks;
+      DoneCounter done;
+      if (opts.result_routing == "none") done.open(bench_comm, worker_rank);
+      int64_t done_target = 0;
 
+      // Both arms run the same protocol -- barrier, publish, drain to the
+      // master's end-of-batch marker -- so the only difference between them
+      // is which ranks call publish_tasks().
+      uint64_t next_task = 0;
+      bool running = true;
+      for (uint64_t k = opts.min_tasks_per_worker; running && k <= opts.max_tasks_per_worker; ++k) {
+        for (uint64_t repeat = 0; running && repeat < opts.repeats; ++repeat) {
+          // One task per worker first, drained untimed, as load_balancing.cpp
+          // warms each combo; then the batch proper.
+          double phase_s[2] = {0.0, 0.0};
+          for (int phase = 0; phase < 2 && running; ++phase) {
+            const uint64_t per_worker = (phase == 0) ? 1 : k;
+            const uint64_t count = per_worker * workers;
+
+            MPI_Barrier(bench_comm);
+            done_target += static_cast<int64_t>(count);
+            if (worker_rank == kMasterRank) {
+              dynampi::Timer timer;
+              // Static split: worker w owns [next_task + (w-1)*per_worker, ...).
+              // The master publishes the lot only when it is the sole producer.
+              if (!distributed) {
+                publish_tasks(next_task, count, opts.spread_puts ? workers : 0);
+              }
+              if (opts.result_routing == "none") {
+                done.wait_for(done_target);
+              } else {
+                collect_results(count, window);
+              }
+              phase_s[phase] = timer.stop().count();
+              end_batch(workers);
+            } else {
+              if (distributed) {
+                // Untargeted: a worker's own server is already the right one.
+                publish_tasks(next_task + static_cast<uint64_t>(worker_rank - 1) * per_worker,
+                              per_worker, 0);
+              }
+              running =
+                  drain_until_batch_end(worker_function, worker_rank, opts.result_routing, done);
+            }
+            next_task += count;
+          }
+
+          if (worker_rank == kMasterRank) {
             // finalize_s/destruct_s stay 0: ADLB has no per-batch teardown,
             // and its one shutdown is the servers' idle timeout at the end
             // of the process.
@@ -507,9 +570,16 @@ int main(int argc, char** argv) {
             row.system = opts.system;
             // Its own series: same library, a different producer structure,
             // and the figures carry both.
-            row.distributor = producers > 0 ? "adlb_distributed" : "adlb";
+            // Both knobs are in the series name, not just columns: the plot
+            // keys series on the distributor, so anything left out of the
+            // name silently averages across it.
+            row.distributor = distributed ? "adlb_distributed" : "adlb";
+            if (opts.result_routing == "none") row.distributor += "_no_results";
             row.adlb_servers = placement.servers;
-            row.adlb_producers = producers;
+            row.adlb_producers = distributed ? static_cast<int>(workers) : 1;
+            row.adlb_put_routing = distributed ? "n/a" : (opts.spread_puts ? "spread" : "local");
+            row.adlb_result_routing = opts.result_routing;
+            row.adlb_steal_rate_limit = opts.steal_rate_limit;
             row.nodes = opts.nodes;
             row.world_size = static_cast<uint64_t>(world_size);
             row.workers = workers;
@@ -518,22 +588,22 @@ int main(int argc, char** argv) {
             row.task_duration_cv = opts.task_duration_cv;
             row.tasks_per_worker = k;
             row.repeat = repeat;
-            row.total_tasks = total_tasks;
-            row.elapsed_s = elapsed_s;
+            row.total_tasks = k * workers;
+            row.elapsed_s = phase_s[1];
             row.construct_s = construct_s;
-            row.warmup_s = warmup_s;
+            row.warmup_s = phase_s[0];
             load_balancing::append_result(opts.output_path, row);
           }
         }
+      }
 
-        // The master joins too: once every worker is parked in a Get with
-        // no work left, the servers hit their exhaustion condition and
-        // release everyone. It is also what keeps the run alive between
-        // batches -- while the master is out here, its server counts it as
-        // busy.
-        worker_loop(worker_function, worker_rank);
-      } else {
-        worker_loop(worker_function, worker_rank);
+      done.close();
+      MPI_Comm_free(&bench_comm);
+      // Everyone parks in a Get with no work left, which is the servers'
+      // exhaustion condition; it releases the whole run.
+      if (running) {
+        DoneCounter unused;
+        drain_until_batch_end(worker_function, worker_rank, "master", unused);
       }
     }
 
