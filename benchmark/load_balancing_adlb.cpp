@@ -42,14 +42,6 @@ extern "C" {
 #pragma GCC diagnostic pop
 #endif
 
-// lb fixes its steal tuning at compile time with no environment override, but
-// leaves the values writable. Setting them before any steal happens is
-// equivalent to rebuilding with different constants.
-extern "C" {
-extern double xlb_steal_rate_limit;
-extern double xlb_steal_backoff;
-}
-
 using load_balancing::DurationMode;
 using load_balancing::Result;
 using load_balancing::ResultRow;
@@ -86,16 +78,16 @@ struct BenchmarkOptions {
   // Results kept requested at once (ADLB_Amget).
   int result_window = 128;
   // --producers 1 only: round-robin the master's puts over every server.
-  // Off by default: measured worse than lb's own untargeted routing at every
-  // server count above 1, because it trades node-local puts for remote ones.
+  // Off by default because it loses where the figures are drawn: at 1 ms and
+  // 4+ servers it costs 1.2-1.6x against local routing, trading node-local
+  // puts for remote ones, and at one server the two are the same path. It
+  // wins only at 10 ms above 4 servers, where local routing degrades with
+  // server count and spread stays flat -- a region no plotted series uses.
   bool spread_puts = false;
   // master: results targeted at the master, so its server collects them all.
   // none: no results at all; completion is counted through a one-sided MPI
   // counter instead, which bounds what removing the return path could buy.
   std::string result_routing = "master";
-  // Seconds between a starved server's steal attempts. <= 0 keeps lb's own
-  // shipped value (0.05 s, with a 0.1 s backoff after a full round fails).
-  double steal_rate_limit = 0.0;
   std::string system;
   std::string output_path;
 };
@@ -372,8 +364,8 @@ int main(int argc, char** argv) {
       cxxopts::value<int>()->default_value("1"))(
       "put_routing",
       "--producers 1 only: local (default) is lb's own untargeted routing, all on the master's "
-      "own server; spread round-robins a soft target over every server, which measured worse "
-      "because a targeted put leaves the node.",
+      "own server; spread round-robins a soft target over every server, which costs 1.2-1.6x at "
+      "1 ms because a targeted put leaves the node, and is identical at one server.",
       cxxopts::value<std::string>()->default_value("local"))(
       "result_routing",
       "master (default) targets every result at the master; none returns no results at all and "
@@ -382,10 +374,6 @@ int main(int argc, char** argv) {
       "indices 0 and 1, so the last two units on a server can never be stolen and results "
       "stranded away from the master's server hang the collection.",
       cxxopts::value<std::string>()->default_value("master"))(
-      "steal_rate_limit",
-      "Seconds between a starved server's steal attempts, overriding lb's compile-time 0.05 s. "
-      "<= 0 (default) leaves it alone. The post-failure backoff is scaled with it.",
-      cxxopts::value<double>()->default_value("0"))(
       "result_window", "Results the master requests at once via ADLB_Amget.",
       cxxopts::value<int>()->default_value("128"))(
       "S,system", "System label for plotting (frontier, aurora, ...)",
@@ -435,7 +423,6 @@ int main(int argc, char** argv) {
       throw std::runtime_error("--put_routing must be spread or local; got '" + routing + "'.");
     }
     opts.spread_puts = routing == "spread";
-    opts.steal_rate_limit = args["steal_rate_limit"].as<double>();
     opts.result_routing = args["result_routing"].as<std::string>();
     if (opts.result_routing != "master" && opts.result_routing != "none") {
       throw std::runtime_error("--result_routing must be master or none; got '" +
@@ -490,13 +477,6 @@ int main(int argc, char** argv) {
     check(ADLB_Init(placement.servers, 2, type_vect, &am_server, adlb_comm, &worker_comm),
           "ADLB_Init");
     const double construct_s = init_timer.stop().count();
-
-    // After Init so nothing re-initialises them, before ADLB_Server so the
-    // server ranks -- the only ones that steal -- pick the values up.
-    if (opts.steal_rate_limit > 0.0) {
-      xlb_steal_rate_limit = opts.steal_rate_limit;
-      xlb_steal_backoff = 2.0 * opts.steal_rate_limit;  // lb ships a 2:1 ratio
-    }
 
     if (am_server) {
       ADLB_Server(1024L * 1024L * 1024L);
@@ -579,7 +559,6 @@ int main(int argc, char** argv) {
             row.adlb_producers = distributed ? static_cast<int>(workers) : 1;
             row.adlb_put_routing = distributed ? "n/a" : (opts.spread_puts ? "spread" : "local");
             row.adlb_result_routing = opts.result_routing;
-            row.adlb_steal_rate_limit = opts.steal_rate_limit;
             row.nodes = opts.nodes;
             row.world_size = static_cast<uint64_t>(world_size);
             row.workers = workers;

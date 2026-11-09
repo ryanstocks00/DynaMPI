@@ -495,8 +495,15 @@ neutral for a master-worker batch:
 |------|--------|
 | `--servers` | server ranks; each serves its own nodes' workers |
 | `--producers` | `1` master publishes everything, `-1` every worker publishes its own share |
-| `--put_routing` | `--producers 1` only: `spread` (default) round-robins a soft target so puts reach every server; `local` is lb's default, all on the master's server |
-| `--steal_rate_limit` | overrides lb's compile-time 0.05 s; `backoffs.c`'s own comment derives 0.0005 |
+| `--put_routing` | `--producers 1` only: `local` (default) is lb's own untargeted routing, all on the master's server; `spread` round-robins a soft target so puts reach every server |
+| `--result_routing` | `master` (default) returns a result per task; `none` discards them and counts completions through a one-sided MPI counter |
+
+`--producers` and `--result_routing` are what name a row's series: the four
+combinations are `adlb`, `adlb_distributed`, `adlb_no_results` and
+`adlb_distributed_no_results`.  The two `_no_results` arms return nothing,
+while every DynaMPI series returns a result per task, so they bound ADLB's
+dispatch path rather than comparing with it — a figure drawing them has to
+say so in its caption.
 
 Cost model, from ADLB's counters (`ADLB_PERF_COUNTERS=true`): roughly three
 message exchanges per task — task in, result back, worker get — all on a
@@ -504,6 +511,18 @@ single-threaded server rank.  `ADLB_Put` is one blocking round trip with no
 async or batched equivalent, so spreading the producers is the only way to
 parallelise entry.  Results stay centralised in both arms (every result is
 targeted at the master), which caps what that can recover.
+
+There is no single best `--servers`.  It moves with task duration — at 128
+nodes a lone producer wants one server at 10 ms and sixteen at 1 ms, while
+workers publishing their own share want 32 to 128 — and the penalty for
+getting it wrong grows with the batch: one server costs a lone producer
+nothing at one task per worker and 23% at twenty.  So the plotting scripts
+default to `--adlb-servers best`, keeping the fastest point of the sweep at
+each batch size; the ADLB curves are the lower envelope of their own tuning,
+while every DynaMPI series runs at its library default.  That is deliberate —
+it is the most generous reading of the comparison — but the legend names only
+the arm, so it is the caption that has to say the ADLB curves are enveloped
+and the DynaMPI ones are not.
 
 For orientation, the design work behind these classes found the flat lock-free RMA
 distributor plateauing once a single manager window saturated, while the
