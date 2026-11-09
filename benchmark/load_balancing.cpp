@@ -5,8 +5,6 @@
 
 #include <mpi.h>
 
-#include <array>
-#include <cmath>
 #include <cstdint>
 #include <cxxopts.hpp>
 #include <dynampi/impl/hierarchical_distributor.hpp>
@@ -15,22 +13,19 @@
 #include <dynampi/impl/naive_distributor.hpp>
 #include <dynampi/mpi/mpi_communicator.hpp>
 #include <dynampi/utilities/timer.hpp>
-#include <fstream>
 #include <iostream>
 #include <memory>
-#include <random>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-using Task = uint32_t;
-using Result = uint32_t;
+#include "load_balancing_workload.hpp"
 
-enum class DurationMode {
-  Fixed,
-  Uniform,
-  LogNormal,
-};
+using load_balancing::DurationMode;
+using load_balancing::Result;
+using load_balancing::ResultRow;
+using load_balancing::Task;
+using load_balancing::WorkerFunctor;
 
 enum class DistributorKind {
   Naive,
@@ -84,135 +79,6 @@ struct BenchmarkOptions {
   std::string system;
   std::string output_path;
 };
-
-struct ResultRow {
-  DistributorKind distributor;
-  uint64_t tasks_per_worker = 0;
-  uint64_t repeat = 0;
-  uint64_t world_size = 0;
-  uint64_t workers = 0;
-  uint64_t total_tasks = 0;
-  double elapsed_s = 0.0;
-  // Manager-side wall time for each phase outside the timed batch drain
-  // above, so the fixed per-combo cost (construction, warmup, the done
-  // broadcast, and destructor teardown) can be reported separately instead
-  // of folded into elapsed_s or left to the sub-microsecond floor a k=0 row
-  // shows on its own.
-  double construct_s = 0.0;
-  double warmup_s = 0.0;
-  double finalize_s = 0.0;
-  double destruct_s = 0.0;
-};
-
-static void spin_wait(std::chrono::microseconds duration) {
-  auto start = std::chrono::high_resolution_clock::now();
-  while (std::chrono::high_resolution_clock::now() - start < duration) {
-  }
-}
-
-// Fixed by default so a run isolates scheduling/distribution overhead from
-// task-duration variance. Two ways to opt back into variance, both mean
-// expected_us: uniform on [0, 2*expected_us] -- the same symmetric spread
-// weak_scaling_distribution_rate's WorkerFunctor calls its "random" mode --
-// and lognormal, deliberately shaped like real task-duration distributions
-// instead (heavily right-skewed: most tasks well under the mean, a long tail
-// of much longer ones, rather than uniform's hard cutoff at 2x).
-struct WorkerFunctor {
-  uint64_t expected_us;
-  DurationMode duration_mode;
-  std::mt19937_64 rng;
-  std::uniform_int_distribution<uint64_t> uniform;
-  std::lognormal_distribution<double> lognormal;
-
-  WorkerFunctor(int rank, uint64_t expected_us_in, DurationMode mode, double task_duration_cv)
-      : expected_us(expected_us_in),
-        duration_mode(mode),
-        rng([rank]() {
-          std::random_device rd;
-          std::mt19937_64 seed_gen(rd());
-          return seed_gen() + static_cast<uint64_t>(rank);
-        }()),
-        uniform(0, 2 * expected_us_in),
-        lognormal(lognormal_mu(static_cast<double>(expected_us_in), task_duration_cv),
-                  lognormal_sigma(task_duration_cv)) {}
-
-  // Derives the underlying normal distribution's (mu, sigma) so the
-  // lognormal's own mean and coefficient of variation match expected_us and
-  // task_duration_cv exactly, rather than expecting the caller to reason
-  // about the underlying-normal parameterization std::lognormal_distribution
-  // itself takes.
-  static double lognormal_sigma(double cv) { return std::sqrt(std::log1p(cv * cv)); }
-  static double lognormal_mu(double mean, double cv) {
-    const double sigma = lognormal_sigma(cv);
-    return std::log(mean) - sigma * sigma / 2.0;
-  }
-
-  Result operator()(Task task) {
-    uint64_t duration_us = expected_us;
-    if (duration_mode == DurationMode::Uniform) {
-      duration_us = uniform(rng);
-    } else if (duration_mode == DurationMode::LogNormal) {
-      // >= 1: a 0us spin_wait is a no-op distinguishable from "ran, just
-      // fast" only by timing noise, not a meaningful sample of the
-      // distribution's near-zero left tail.
-      duration_us = std::max<uint64_t>(1, static_cast<uint64_t>(std::llround(lognormal(rng))));
-    }
-    spin_wait(std::chrono::microseconds(duration_us));
-    return static_cast<Result>(task);
-  }
-};
-
-static std::string to_string(DurationMode mode) {
-  switch (mode) {
-    case DurationMode::Fixed:
-      return "fixed";
-    case DurationMode::Uniform:
-      return "uniform";
-    case DurationMode::LogNormal:
-      return "lognormal";
-  }
-  return "unknown";
-}
-
-static void write_csv_header(std::ostream& os) {
-  os << "system,distributor,nodes,world_size,workers,max_upper_fanout,pipeline_depth,"
-        "max_pending_rounds,expected_us,duration_mode,task_duration_cv,tasks_per_worker,repeat,"
-        "total_tasks,elapsed_s,construct_s,warmup_s,finalize_s,destruct_s\n";
-}
-
-static void write_csv_row(std::ostream& os, const BenchmarkOptions& opts, const ResultRow& row) {
-  os << opts.system << "," << to_string(row.distributor) << "," << opts.nodes << ","
-     << row.world_size << "," << row.workers << "," << opts.max_upper_fanout << ","
-     << opts.pipeline_depth << "," << opts.max_pending_rounds << "," << opts.expected_us << ","
-     << to_string(opts.duration_mode) << "," << opts.task_duration_cv << "," << row.tasks_per_worker
-     << "," << row.repeat << "," << row.total_tasks << "," << row.elapsed_s << ","
-     << row.construct_s << "," << row.warmup_s << "," << row.finalize_s << "," << row.destruct_s
-     << "\n";
-}
-
-static void append_result(const BenchmarkOptions& opts, const ResultRow& row) {
-  std::cout << "RESULT distributor=" << to_string(row.distributor) << " nodes=" << opts.nodes
-            << " world_size=" << row.world_size << " workers=" << row.workers
-            << " max_upper_fanout=" << opts.max_upper_fanout
-            << " pipeline_depth=" << opts.pipeline_depth
-            << " max_pending_rounds=" << opts.max_pending_rounds
-            << " expected_us=" << opts.expected_us
-            << " duration_mode=" << to_string(opts.duration_mode)
-            << " task_duration_cv=" << opts.task_duration_cv
-            << " tasks_per_worker=" << row.tasks_per_worker << " repeat=" << row.repeat
-            << " total_tasks=" << row.total_tasks << " elapsed_s=" << row.elapsed_s
-            << " construct_s=" << row.construct_s << " warmup_s=" << row.warmup_s
-            << " finalize_s=" << row.finalize_s << " destruct_s=" << row.destruct_s << std::endl;
-  if (opts.output_path.empty()) return;
-  std::ifstream check(opts.output_path);
-  const bool needs_header = !check.good() || check.peek() == std::ifstream::traits_type::eof();
-  check.close();
-  std::ofstream out(opts.output_path, std::ios::app);
-  if (needs_header) {
-    write_csv_header(out);
-  }
-  write_csv_row(out, opts, row);
-}
 
 // Runs one (distributor kind, tasks_per_worker, repeat) combo: constructs a
 // fresh distributor, publishes exactly tasks_per_worker * hierarchical's
@@ -379,9 +245,25 @@ static void run_batch(DistributorKind kind, uint64_t tasks_per_worker, uint64_t 
   const double destruct_s = destruct_timer.stop().count();
 
   if (is_manager) {
-    results.push_back(ResultRow{kind, tasks_per_worker, repeat, static_cast<uint64_t>(size),
-                                real_worker_count, total_tasks, elapsed_s, construct_s, warmup_s,
-                                finalize_s, destruct_s});
+    results.push_back(ResultRow{.system = opts.system,
+                                .distributor = to_string(kind),
+                                .nodes = opts.nodes,
+                                .world_size = static_cast<uint64_t>(size),
+                                .workers = real_worker_count,
+                                .max_upper_fanout = opts.max_upper_fanout,
+                                .pipeline_depth = opts.pipeline_depth,
+                                .max_pending_rounds = opts.max_pending_rounds,
+                                .expected_us = opts.expected_us,
+                                .duration_mode = opts.duration_mode,
+                                .task_duration_cv = opts.task_duration_cv,
+                                .tasks_per_worker = tasks_per_worker,
+                                .repeat = repeat,
+                                .total_tasks = total_tasks,
+                                .elapsed_s = elapsed_s,
+                                .construct_s = construct_s,
+                                .warmup_s = warmup_s,
+                                .finalize_s = finalize_s,
+                                .destruct_s = destruct_s});
   }
 }
 
@@ -486,16 +368,8 @@ int main(int argc, char** argv) {
   BenchmarkOptions opts;
   try {
     opts.expected_us = args["expected_us"].as<uint64_t>();
-    const std::string duration_mode_arg = args["duration_mode"].as<std::string>();
-    if (duration_mode_arg == "fixed") {
-      opts.duration_mode = DurationMode::Fixed;
-    } else if (duration_mode_arg == "uniform") {
-      opts.duration_mode = DurationMode::Uniform;
-    } else if (duration_mode_arg == "lognormal") {
-      opts.duration_mode = DurationMode::LogNormal;
-    } else {
-      throw std::runtime_error("Unknown duration_mode: " + duration_mode_arg);
-    }
+    opts.duration_mode =
+        load_balancing::parse_duration_mode(args["duration_mode"].as<std::string>());
     opts.task_duration_cv = args["task_duration_cv"].as<double>();
     opts.min_tasks_per_worker = args["min_tasks_per_worker"].as<uint64_t>();
     opts.max_tasks_per_worker = args["max_tasks_per_worker"].as<uint64_t>();
@@ -610,7 +484,7 @@ int main(int argc, char** argv) {
       run_all(kind, opts, use_flat_comm ? flat_comm : comm, hierarchical_worker_count, results);
       if (world_rank == 0) {
         for (size_t i = before; i < results.size(); ++i) {
-          append_result(opts, results[i]);
+          load_balancing::append_result(opts.output_path, results[i]);
         }
       }
     }

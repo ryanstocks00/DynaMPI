@@ -8,8 +8,10 @@ import csv
 import math
 import os
 import re
+from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
+from statistics import mean
 from typing import Any, TypeVar, cast
 
 import matplotlib.pyplot as plt
@@ -26,12 +28,21 @@ import scienceplots  # noqa: F401  # registers matplotlib styles
 IEEE_FIG_WIDTH = 3.5
 IEEE_FIG_HEIGHT = 3.5
 
-MARKER_SHAPES = ['o', 's', '^', 'v', 'D', 'p', '*', 'h', 'X', '<', '>', 'd']
+# Index 7 is 'X' rather than tab10's next polygon: slot 5 is already a
+# pentagon, and open pentagon against open hexagon is not a distinction that
+# survives a column-width figure.
+MARKER_SHAPES = ['o', 's', '^', 'v', 'D', 'p', '*', 'X', 'h', '<', '>', 'd']
 
 # Line styles run on the same index as the colors and markers. Left to the
 # axes property cycle they are handed out in plotting order instead, so one
 # series can come out dashed in one figure (or one panel) and dotted in
 # another depending on how that plot happened to sort its legend.
+# One per slot rather than a cycle: with four ADLB arms the list is ten long,
+# and a modulo of eight gave slot 8 the same solid line as naive and slot 9
+# the same dashes as the first hierarchical series. Slots 0-5 are the
+# published ones and are left exactly as they are; only 6 and up are chosen
+# here, each kept clear of every earlier pattern at a column-width figure's
+# line weight.
 LINE_STYLES = [
     '-',
     '--',
@@ -39,8 +50,10 @@ LINE_STYLES = [
     '-.',
     (0, (3, 1, 1, 1)),
     (0, (5, 1)),
-    (0, (1, 1)),
+    (0, (1, 1.5, 5, 1.5)),
     (0, (7, 1, 1, 1, 1, 1)),
+    (0, (1, 1.5, 1, 1.5, 6, 1.5)),
+    (0, (2, 2)),
 ]
 
 # Trailing PBS/Slurm job id in result directory names, e.g. ...-8725895 or
@@ -151,8 +164,9 @@ def format_fanout(fanout: int) -> str:
     return f"fanout={fanout}"
 
 
-# Display names for the four distributor implementations. The CSV carries the
-# driver's --distribution values; these are what the paper calls them.
+# Display names for the four distributor implementations, plus ADLB, the
+# external reference the load-balancing sweep also measures. The CSV carries
+# the driver's --distribution values; these are what the paper calls them.
 DISTRIBUTOR_DISPLAY_NAMES = {
     "naive": "Naive",
     "hierarchical": "Hierarchical",
@@ -161,11 +175,63 @@ DISTRIBUTOR_DISPLAY_NAMES = {
 }
 
 
-def format_distributor_label(distributor: str, fanout: int | None = None) -> str:
+# ADLB arms render with the server count they were drawn at: it is chosen per
+# figure now, not fixed for the sweep, so a legend that left it out would not
+# say what was measured.
+ADLB_ARM_LABELS = {
+    "adlb": "ADLB (1 producer{servers})",
+    "adlb_distributed": "ADLB (all producers{servers})",
+    "adlb_no_results": "ADLB (1 producer{servers}, no results)",
+    "adlb_distributed_no_results": "ADLB (all producers{servers}, no results)",
+}
+
+
+# Every ADLB series, however its batch is published. The server count is the
+# variant slot for all of them.
+ADLB_DISTRIBUTORS = frozenset(
+    {"adlb", "adlb_distributed", "adlb_no_results", "adlb_distributed_no_results"}
+)
+
+
+# Which ADLB arms the figures draw. All four are measured; plotting every one
+# is eight series on a column-width figure, which is unreadable. The default
+# pair isolates producer structure with the result path removed -- see the
+# caveat in filter_adlb_arms().
+ADLB_DEFAULT_ARMS = ("adlb_no_results", "adlb_distributed_no_results")
+
+
+# --adlb-servers value asking for the count to be read off the data instead
+# of fixed in advance.
+ADLB_BEST = "best"
+
+# Variant slot for a curve assembled that way. Negative so it cannot collide
+# with a real server count, and distinct from the -1 the flat distributors
+# carry for "no variant".
+ADLB_BEST_VARIANT = -2
+
+
+def variant_applies(distributor: str) -> bool:
+    """Whether a series key's second slot names a real variant of this one.
+
+    The hierarchical pair varies by upper fan-out, the ADLB arms by server
+    count; everything else has one topology and always carries -1.
+    """
+    return "hierarchical" in distributor or distributor in ADLB_DISTRIBUTORS
+
+
+def format_distributor_label(distributor: str, variant: int | None = None) -> str:
+    if distributor in ADLB_DISTRIBUTORS:
+        if variant is None:
+            servers = ""
+        elif variant == ADLB_BEST_VARIANT:
+            servers = ", best servers"
+        else:
+            servers = f", {variant} server{'' if variant == 1 else 's'}"
+        return ADLB_ARM_LABELS[distributor].format(servers=servers)
     label = DISTRIBUTOR_DISPLAY_NAMES.get(distributor, distributor.replace("_", "-"))
-    if fanout is None or "hierarchical" not in distributor:
+    if variant is None or not variant_applies(distributor):
         return label
-    return f"{label} ({format_fanout(fanout)})"
+    return f"{label} ({format_fanout(variant)})"
 
 
 # Fixed color/marker slot for each (distributor, fanout) identity, independent
@@ -174,6 +240,8 @@ def format_distributor_label(distributor: str, fanout: int | None = None) -> str
 # the same algorithm gets the same color/marker in every figure; legend
 # *order* within one plot is sorted separately by whatever ranking that plot
 # wants (e.g. fastest-first), decoupling "reading order" from "identity".
+# Appended to, never reordered: position is color, so inserting repaints
+# every later series in already-published figures.
 DISTRIBUTOR_SERIES_ORDER: list[tuple[str, int]] = [
     ("naive", -1),
     ("hierarchical", 0),
@@ -181,19 +249,67 @@ DISTRIBUTOR_SERIES_ORDER: list[tuple[str, int]] = [
     ("lockfree_rma", -1),
     ("hierarchical_lockfree_rma", 0),
     ("hierarchical_lockfree_rma", -1),
+    # Variant -1: an ADLB arm's identity is its producer/result structure,
+    # not its server count, which is a tuning choice that now differs
+    # between figures and must not repaint the series.
+    ("adlb", -1),
+    ("adlb_distributed", -1),
+    ("adlb_no_results", -1),
+    ("adlb_distributed_no_results", -1),
 ]
 
 
-def distributor_series_index(distributor: str, fanout: int) -> int:
-    """Stable color/marker index for a (distributor, fanout) identity.
+# An ADLB arm's color and marker say how the batch is published; whether the
+# results came back is a line style. Two identities rather than four: the
+# *_no_results twin of an arm is the same producer structure measured with
+# the return path removed, and --adlb-arms draws one pair or the other, so
+# sharing a slot gives every figure the same well-separated pink/violet pair
+# instead of leaving the default figure on the two dark slots at the end of
+# the list, which sat at delta-E 10.5 from each other under protan/deutan.
+ADLB_STRUCTURE_SLOT = {
+    "adlb": "adlb",
+    "adlb_no_results": "adlb",
+    "adlb_distributed": "adlb_distributed",
+    "adlb_distributed_no_results": "adlb_distributed",
+}
 
-    Falls back to a slot past the known variants for anything else, so an
-    unexpected series still gets *a* consistent slot rather than crashing.
-    """
-    key = (distributor, fanout if "hierarchical" in distributor else -1)
+
+def _series_key(distributor: str, variant: int) -> tuple[str, int]:
+    if distributor in ADLB_DISTRIBUTORS:
+        # -1: the server count is a tuning choice that differs between
+        # figures and must not repaint the series.
+        return (distributor, -1)
+    return (distributor, variant if variant_applies(distributor) else -1)
+
+
+def _order_index(key: tuple[str, int]) -> int:
     if key in DISTRIBUTOR_SERIES_ORDER:
         return DISTRIBUTOR_SERIES_ORDER.index(key)
     return len(DISTRIBUTOR_SERIES_ORDER) + (hash(key) % 10)
+
+
+def distributor_series_index(distributor: str, variant: int) -> int:
+    """Stable color/marker index for a (distributor, variant) identity.
+
+    The four ADLB arms collapse onto two slots, one per producer structure;
+    `distributor_linestyle_index` is what still tells an arm from its
+    no-results twin. Falls back to a slot past the known variants for
+    anything else, so an unexpected series still gets *a* consistent slot
+    rather than crashing.
+    """
+    key = _series_key(distributor, variant)
+    if distributor in ADLB_DISTRIBUTORS:
+        key = (ADLB_STRUCTURE_SLOT[distributor], -1)
+    return _order_index(key)
+
+
+def distributor_linestyle_index(distributor: str, variant: int) -> int:
+    """Line-style slot: unique per series, including each ADLB arm.
+
+    Separate from the color slot only because the ADLB twins share a color
+    and a marker; for everything else the two indices are the same.
+    """
+    return _order_index(_series_key(distributor, variant))
 
 
 # A legend spanning most of the axes width has to clear the curves out at
@@ -363,7 +479,31 @@ def series_marker(index: int) -> str:
     return MARKER_SHAPES[index % len(MARKER_SHAPES)]
 
 
+# tab10's index 7 is the mid-grey the "Ideal greedy" line already owns, and 8
+# an olive too light for paper. #7b3294 replaces it: OKLab-checked at dE >= 8
+# (Machado protan/deutan) against every series sharing its figures, 7.7:1 on
+# white. Only 13.9 from tab10's purple, which no ADLB figure draws.
+# Slot 8's olive is the other unusable tab10 entry: 2.0:1 on white. Darkened
+# to the same hue. With four ADLB series the palette can no longer keep every
+# pair above dE 8 -- marker and line style carry the rest.
+SERIES_COLOR_OVERRIDES: dict[int, str] = {
+    # tab10's own pink. It is the one ADLB slot that is light rather than
+    # dark, which is what separates the two arms: the darker magenta tried
+    # here before sat at OKLab delta-E 4.0 from slot 7's violet under
+    # simulated protan/deutan -- indistinguishable -- against 23.9 for this
+    # one, and 26.1 under normal vision. The cost is 2.7:1 against white,
+    # below the 3:1 relief threshold, which the open star marker, the dotted
+    # line style and the legend entry have to carry.
+    6: '#e377c2',
+    7: '#7b3294',
+    8: '#4d4d00',  # tab10 olive is 2.0:1
+    9: '#01665e',  # tab10 cyan is 2.3:1
+}
+
+
 def series_color(index: int) -> Any:
+    if index in SERIES_COLOR_OVERRIDES:
+        return SERIES_COLOR_OVERRIDES[index]
     return colormaps['tab10'](index % 10)
 
 
@@ -386,15 +526,21 @@ def plot_node_series(
     *,
     linewidth: float | None = None,
     markersize: float | None = None,
+    linestyle_idx: int | None = None,
 ) -> Any:
-    """Plot one node-count series in the shared marker/color style, returning its handle."""
+    """Plot one node-count series in the shared marker/color style, returning its handle.
+
+    `linestyle_idx` separates the dash pattern from the color/marker slot, for
+    the ADLB arms that share a color with their no-results twin. Defaults to
+    `idx`, which is every other series.
+    """
     kwargs: dict[str, Any] = {
         "marker": series_marker(idx),
         "label": label,
         "fillstyle": "none",
         "markeredgewidth": 1.0,
         "color": series_color(idx),
-        "linestyle": series_linestyle(idx),
+        "linestyle": series_linestyle(idx if linestyle_idx is None else linestyle_idx),
     }
     if linewidth is not None:
         kwargs["linewidth"] = linewidth
@@ -488,9 +634,30 @@ def add_plot_cli_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--format",
         nargs="+",
-        default=["png"],
+        default=["pdf", "png"],
         choices=["png", "pdf", "svg"],
-        help="Output image format(s); pass several to write each (default: png)",
+        help="Output image format(s); pass several to write each (default: pdf png)",
+    )
+    parser.add_argument(
+        "--adlb-servers",
+        nargs="+",
+        # Server count is not part of the figures' story, so only each arm's
+        # best configuration is drawn; 0 keeps every count, which is how the
+        # sensitivity sweep is plotted.
+        default=[ADLB_BEST],
+        help="Only keep ADLB rows run with this many servers. 'best' (the "
+        "default) keeps the fastest point of the server sweep at each batch "
+        "size, so the ADLB curve is the lower envelope of its own tuning. A "
+        "bare number applies to every arm; name=count sets one (e.g. adlb=1 "
+        "adlb_distributed=16). Pass 0 to keep every server count.",
+    )
+    parser.add_argument(
+        "--adlb-arms",
+        nargs="+",
+        default=list(ADLB_DEFAULT_ARMS),
+        help="Which ADLB arms to draw: adlb, adlb_distributed, adlb_no_results, "
+        "adlb_distributed_no_results, or all. The *_no_results arms discard results "
+        "and so are not comparable with the DynaMPI series.",
     )
     parser.add_argument(
         "--ranks-per-node",
@@ -520,6 +687,142 @@ def filter_ranks_per_node(rows: Sequence[RowT], ranks_per_node: Sequence[int]) -
     return [row for row in rows if int(row["ranks_per_node"]) in allowed]
 
 
+def parse_adlb_servers(spec: Sequence[str] | int) -> dict[str, int | str]:
+    """Read --adlb-servers into a per-arm server count.
+
+    Accepts a bare count for every arm, or name=count pairs, where the count
+    may be ``best``. 0 anywhere means keep every count for the arms it covers.
+    """
+    if isinstance(spec, int):
+        return dict.fromkeys(ADLB_DISTRIBUTORS, spec)
+    wanted: dict[str, int | str] = {}
+    for token in spec:
+        name, sep, count = str(token).partition("=")
+        if not sep:
+            value: int | str = ADLB_BEST if name == ADLB_BEST else int(name)
+            wanted.update(dict.fromkeys(ADLB_DISTRIBUTORS, value))
+            continue
+        if name not in ADLB_DISTRIBUTORS:
+            raise SystemExit(
+                f"--adlb-servers: unknown arm {name!r}; expected one of "
+                f"{sorted(ADLB_DISTRIBUTORS)}"
+            )
+        wanted[name] = ADLB_BEST if count == ADLB_BEST else int(count)
+    return wanted
+
+
+# The figure key a server count is chosen within: one workload on one
+# machine. The optimum moves with task duration -- a lone producer wants one
+# server at 10 ms and sixteen at 1 ms -- so choosing once for the whole sweep
+# picks the wrong count for every panel but one.
+def _adlb_figure_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
+    return (
+        row["system"],
+        row["nodes"],
+        row["ranks_per_node"],
+        row["duration_mode"],
+        row["task_duration_cv"],
+        row["expected_us"],
+    )
+
+
+def best_adlb_servers(rows: Sequence[RowT]) -> dict[tuple[Any, ...], int]:
+    """Per figure, arm and batch size, the server count with the fastest drain.
+
+    Chosen per point rather than per curve: the penalty for a wrong count
+    grows with the batch -- a lone producer at 1 ms loses nothing at one task
+    per worker and 23% at twenty -- so one count for a whole curve is wrong
+    at one end of it. The plotted ADLB curve is then the lower envelope of its
+    server sweep, which is the most generous reading of the competitor and
+    the one a caption has to state.
+
+    Repeats are averaged first, and only the newest run of each point is
+    scored -- the same rule the plotted curves are built with. Without it a
+    configuration that was re-run under different settings would be averaged
+    together with the run that superseded it, and the choice would be made on
+    a mixture that no figure ever draws.
+    """
+    #        figure -> arm -> servers -> batch -> (recency, [elapsed])
+    samples: dict[
+        tuple[Any, ...], dict[str, dict[int, dict[int, tuple[Any, list[float]]]]]
+    ] = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+    for row in rows:
+        if row["distributor"] not in ADLB_DISTRIBUTORS:
+            continue
+        bucket = samples[_adlb_figure_key(row)][str(row["distributor"])][int(row["fanout"])]
+        batch = int(row["tasks_per_worker"])
+        recency = row["recency"] or path_recency(str(row["path"]), float(row["file_mtime"]))
+        elapsed = float(row["phases"]["elapsed_s"])
+        if batch not in bucket or recency > bucket[batch][0]:
+            bucket[batch] = (recency, [elapsed])
+        elif recency == bucket[batch][0]:
+            bucket[batch][1].append(elapsed)
+
+    chosen: dict[tuple[Any, ...], int] = {}
+    for figure_key, arms in samples.items():
+        for arm, by_servers in arms.items():
+            batches = {batch for bucket in by_servers.values() for batch in bucket}
+            for batch in batches:
+                measured = {
+                    servers: mean(bucket[batch][1])
+                    for servers, bucket in by_servers.items()
+                    if batch in bucket
+                }
+                chosen[(*figure_key, arm, batch)] = min(measured, key=lambda s: measured[s])
+    return chosen
+
+
+def filter_adlb_servers(rows: Sequence[RowT], spec: Sequence[str] | int) -> list[RowT]:
+    """Keep one server count per ADLB arm; 0 disables filtering for that arm.
+
+    An arm's server count is the variant slot of its series key, so that is
+    where this reads it from. ``best`` resolves per batch size, keeping the
+    fastest point of the server sweep at each one; those rows then carry
+    ADLB_BEST_VARIANT in the variant slot so they group into a single curve
+    rather than one short series per count. No other distributor is touched.
+    """
+    wanted = parse_adlb_servers(spec)
+    best = best_adlb_servers(rows) if ADLB_BEST in wanted.values() else {}
+
+    kept: list[RowT] = []
+    for row in rows:
+        arm = str(row["distributor"])
+        if arm not in ADLB_DISTRIBUTORS:
+            kept.append(row)
+            continue
+        choice = wanted.get(arm, 0)
+        if choice == ADLB_BEST:
+            chosen = best.get((*_adlb_figure_key(row), arm, int(row["tasks_per_worker"])))
+            if chosen is not None and int(row["fanout"]) != chosen:
+                continue
+            row = cast(RowT, {**row, "fanout": ADLB_BEST_VARIANT})
+        elif choice and int(row["fanout"]) != choice:
+            continue
+        kept.append(row)
+    return kept
+
+
+def filter_adlb_arms(rows: Sequence[RowT], arms: Sequence[str]) -> list[RowT]:
+    """Keep only the named ADLB arms; "all" keeps every one.
+
+    Note for anyone reading a figure drawn with a *_no_results arm: those
+    discard results and count completions outside ADLB, while every DynaMPI
+    series returns a result per task. They bound ADLB's dispatch path, they
+    are not a configuration ADLB can be run in, and a caption has to say so.
+    """
+    if not arms or "all" in arms:
+        return list(rows)
+    keep = set(arms)
+    unknown = keep - ADLB_DISTRIBUTORS
+    if unknown:
+        raise SystemExit(
+            f"--adlb-arms: unknown {sorted(unknown)}; expected from {sorted(ADLB_DISTRIBUTORS)}"
+        )
+    return [
+        row for row in rows if row["distributor"] not in ADLB_DISTRIBUTORS or row["distributor"] in keep
+    ]
+
+
 def filter_systems(rows: Sequence[RowT], exclude_systems: Sequence[str]) -> list[RowT]:
     excluded = {name.lower() for name in exclude_systems}
     if not excluded:
@@ -535,11 +838,15 @@ SERIES_MARKERSIZE = 5.2
 # markersize sets a marker's bounding diameter, not its area, so shapes that
 # fill less of that box read smaller at the same nominal size. A regular
 # pentagon covers ~59% of the square its size defines against a disc's ~79%,
-# which is visible against the other five shapes. Only that one is corrected:
-# equalising area outright would scale the triangles by ~1.25 and they would
-# then read as oversized, since open markers are judged on extent as much as
-# on fill.
-MARKER_SIZE_SCALE = {'p': 1.15}
+# which is visible against the other five shapes. The triangles are left
+# alone: equalising area would scale them by ~1.25 and they would then read
+# as oversized, since open markers are judged on extent as much as on fill.
+#
+# The star is the one shape short on both counts -- its points reach only
+# ~82% of the nominal radius, so at 5.2pt it draws 22x23 px against the
+# circle's 27x27 and the triangles' and cross's 28x28, with 278 px of ink to
+# the circle's 328. 1.25 puts its extent at 28x28, level with the rest.
+MARKER_SIZE_SCALE = {'p': 1.15, '*': 1.25}
 
 # Gap between stacked panels, as a fraction of panel height. Panels sharing
 # an x axis need no room for a label between them, so this is well below

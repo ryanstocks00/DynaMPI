@@ -28,12 +28,16 @@ from matplotlib.ticker import FuncFormatter, LogLocator
 
 from plot_common import (
     Recency,
+    ADLB_DISTRIBUTORS,
     COMPACT_LEGEND_STYLE,
     PANEL_HSPACE,
     add_light_grid,
     add_plot_cli_args,
     collect_csv_paths,
+    distributor_linestyle_index,
     distributor_series_index,
+    filter_adlb_arms,
+    filter_adlb_servers,
     filter_ranks_per_node,
     filter_systems,
     format_distributor_label,
@@ -86,9 +90,13 @@ def parse_rows(paths: Sequence[str]) -> list[MakespanRow]:
         nodes = int(float(row.get("nodes", 0)))
         world_size = int(float(row.get("world_size", 0)))
         distributor = row.get("distributor", "").strip()
+        # The variant slot: upper fan-out for the hierarchical pair, server
+        # count for ADLB, -1 for the flat distributors, which have neither.
         fanout = int(float(row.get("max_upper_fanout", -1) or -1))
         if "hierarchical" not in distributor:
             fanout = -1
+        if distributor in ADLB_DISTRIBUTORS:
+            fanout = int(float(row.get("adlb_servers", -1) or -1))
         rows.append(
             {
                 "system": row.get("system", "").strip() or "unknown",
@@ -216,38 +224,25 @@ PHASE_SETS: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 
-# Per-label vertical nudges, in points, for the few places where the generic
-# above/below rule leaves a label crowding its neighbour. Positive is up.
-LABEL_NUDGES: dict[tuple[str, int], float] = {}
-
-# Distributors that must break the alternating above/below rule below. The
-# rule assumes each curve's nearest neighbour is the one it alternates
-# against, which fails where two curves converge: the flat RMA distributor
-# runs close above the hierarchical RMA one over the lower half of the
-# range, so the generic choice puts the flat one's labels below its curve
-# and the hierarchical one's above its curve -- both into the same gap.
-LABEL_ABOVE = frozenset({"lockfree_rma"})
-
-# Where a curve is too close to a neighbour to label cleanly, annotate only
-# the part of the range where the two have separated.
-LABEL_SKIP: dict[str, frozenset[int]] = {
-    "lockfree_rma": frozenset({5, 10}),
-}
-
-# Batch sizes at which each curve is annotated with its efficiency against
-# the simulated floor. Sparse on purpose: one label per curve per point is
-# already four labels, and every batch size would bury the curves.
+# Batch sizes at which a labelled curve is annotated with its efficiency
+# against the simulated floor.
 ANNOTATE_AT = (5, 10, 15, 20)
 
-# Per-figure replacement for the two rules above, keyed by task duration in
-# microseconds: the distributors to annotate, and the offset in points from
-# their curve. At 10 ms all four curves sit within a few percent of the
-# floor and of each other, so four label sets stack into one illegible band;
-# that figure is there for the naive/hierarchical pair alone, placed clear of
-# the bunch on either side.
-LABEL_OVERRIDES: dict[int, dict[str, float]] = {
-    10000: {"hierarchical": 6.0, "naive": -12.0},
+# Which curves carry those labels, per task duration in microseconds, and the
+# offset in points from their own curve -- positive above, negative below.
+# One or two series per figure rather than all of them: seven curves times
+# four batch sizes is twenty-eight numbers on a column-width plot, and the
+# ones the claim rests on are only readable if the rest stay bare. The sides
+# push the labelled pair apart where they converge -- the hierarchical RMA
+# curve runs just above the hierarchical one, so its labels go up and the
+# other's down.
+ANNOTATE_SERIES: dict[int, dict[str, float]] = {
+    1000: {"hierarchical": -10.0, "hierarchical_lockfree_rma": 5.0},
 }
+
+# Every other duration: all the curves sit within a few percent of the floor
+# and of each other, so a second labelled series only stacks into the first.
+ANNOTATE_SERIES_DEFAULT: dict[str, float] = {"naive": -10.0}
 
 # Enough to settle the simulated offset to a few parts in a thousand, which
 # is far below the spread of the measurements it is drawn against.
@@ -402,18 +397,28 @@ def draw_load_balancing_axes(
             )
         }
 
-    overrides = LABEL_OVERRIDES.get(expected_us)
-    for rank, series_key in enumerate(ordered):
+    # The variant suffix is redundant unless a sweep put two configurations
+    # of the same distributor side by side. The ADLB arms' server count is
+    # not in the legend either: every ADLB row carries the same
+    # ADLB_BEST_VARIANT slot, so there is one entry per arm, and which counts
+    # the envelope used belongs in the caption.
+    variants: dict[str, set[int]] = defaultdict(set)
+    for series_distributor, series_variant in totals:
+        variants[series_distributor].add(series_variant)
+
+    annotated = ANNOTATE_SERIES.get(expected_us, ANNOTATE_SERIES_DEFAULT)
+    for series_key in ordered:
         distributor, fanout = series_key
         points = totals[series_key]
         batches = sorted(points)
         idx = distributor_series_index(distributor, fanout)
-        # Only the default topology appears in this figure, so the fan-out
-        # suffix would be the same on every series.
-        label = format_distributor_label(distributor)
+        style_idx = distributor_linestyle_index(distributor, fanout)
+        label = format_distributor_label(
+            distributor, fanout if len(variants[distributor]) > 1 else None
+        )
         line = plot_node_series(
             ax, idx, batches, [points[b] for b in batches], label, linewidth=1.0,
-            markersize=SERIES_MARKERSIZE,
+            markersize=SERIES_MARKERSIZE, linestyle_idx=style_idx,
         )
         handles.append(line)
         labels.append(label)
@@ -443,31 +448,20 @@ def draw_load_balancing_axes(
                 zorder=1,
             )
 
-        # Efficiency against the floor, in the curve's own color so it
-        # needs no leader line, over a white halo so it stays readable
-        # where it crosses a neighbouring curve. `ordered` runs
-        # slowest-first, i.e. top to bottom on the axes, so alternating
-        # the side puts every label on the face away from its nearest
-        # neighbour; with all four on one side the upper curve's labels
-        # land on the lower curve.
-        # A LABEL_OVERRIDES entry replaces both rules: it names the
-        # distributors to label and the side, and silences the rest.
-        if overrides is None:
-            offset = 5.0 if rank % 2 == 0 else -10.0
-            if distributor in LABEL_ABOVE:
-                offset = 5.0
-            skipped = LABEL_SKIP.get(distributor, frozenset())
-        else:
-            offset = overrides.get(distributor, 0.0)
-            skipped = frozenset() if distributor in overrides else frozenset(ANNOTATE_AT)
+        # Efficiency against the floor, in the curve's own color so it needs
+        # no leader line, over a white halo so it stays readable where it
+        # crosses a neighbouring curve.
+        if distributor not in annotated:
+            continue
+        offset = annotated[distributor]
         for k in ANNOTATE_AT:
-            if k not in points or k not in ideal_ms or k in skipped:
+            if k not in points or k not in ideal_ms:
                 continue
             ax.annotate(
                 f"{100.0 * ideal_ms[k] / points[k]:.0f}%",
                 (k, points[k]),
                 textcoords="offset points",
-                xytext=(1, offset + LABEL_NUDGES.get((distributor, k), 0.0)),
+                xytext=(1, offset),
                 ha="center",
                 fontsize=7,
                 color=series_color(idx),
@@ -612,6 +606,8 @@ def main() -> None:
     rows = parse_rows(paths)
     rows = launch_ranks_per_node(rows)
     rows = filter_ranks_per_node(rows, args.ranks_per_node)
+    rows = filter_adlb_servers(rows, args.adlb_servers)
+    rows = filter_adlb_arms(rows, args.adlb_arms)
     rows = filter_systems(rows, args.exclude_system)
     if not rows:
         raise SystemExit("No load-balancing makespan rows found in the given inputs")
